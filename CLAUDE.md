@@ -48,7 +48,8 @@ placeholders in `assets/placeholder/`, indefinitely. `tools/gen_placeholders.gd`
 ## The engine
 
 **Linux and cloud sessions (the default since 2026-10-16):** run `bash tools/cloud_setup.sh`
-first. It installs the build CI pins and runs `--import`; then `G=godot`. Also read
+first. It installs the build CI pins and runs `--import`; then `G=godot`. Cloud sessions need not:
+the SessionStart hook in `.claude/hooks/session-start.sh` runs it and exports `G`. Also read
 [`.claude/agent-notes.md`](.claude/agent-notes.md), what earlier sessions learned about working
 here.
 
