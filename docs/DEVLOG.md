@@ -11826,3 +11826,25 @@ cache question before a code question. PR #80's CI on `f6f0344`: stripped `2592`
 **not** removed: the tooling refused the bulk removal as irreversible, so it is the owner's to
 run. The rule is prose, and nothing gates it; a chat can still ignore it. `user://dev_saves` is
 still shared across worktrees.
+
+## 2026-10-16 — Process · Development moves to Linux and the cloud
+
+**Did.** The owner is wiping this Windows machine and moving to Linux and Claude Code cloud
+sessions. Audited what lived only on its disk: the repository was fully pushed (no uncommitted
+work, no unpushed branch, no stash, one worktree), so the losses were Claude's per-machine memory
+and the Windows engine install. Added `tools/cloud_setup.sh`, which installs the engine CI pins
+(same digest and `--version` string as `.github/actions/setup-godot`) and runs `--import`; moved
+the memory into `.claude/agent-notes.md`; `CLAUDE.md` § The engine points at both.
+
+**Why.** A cloud session starts from a clone with no engine and no memory. Without these it would
+relearn the merge procedure and the suite-total fixpoint by failing them.
+
+**Connects.** `.github/actions/setup-godot/action.yml` is still the one pin; the script copies it.
+
+**Verified.** On the Windows machine before the move: `--import` 0 `SCRIPT ERROR` / `Parse Error`; boot `0 warnings, 0 errors`; suite `=== 2669 passed, 0 failed, 0 skipped ===`, exit 0, unmoved; all seven checkers exit 0.
+
+**Unblocks.** Every later package, run from the cloud.
+
+**Gaps.** The script has not run on a Linux machine from this session; the cloud session that
+continues this work runs it first. The windowed capture rung needs a GPU, which cloud sessions
+lack, so it needs the owner's Linux desktop.
