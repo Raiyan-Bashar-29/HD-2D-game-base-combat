@@ -46,5 +46,15 @@ intentions: budgets, checkers, and the engine running everything.
 
 `bash tools/cloud_setup.sh` installs the pinned 4.7.2 standard build (same digest as CI) and runs
 `--import`. Then use `godot` wherever `CLAUDE.md` says `"$G"`; Linux has no `_console` variant.
-Cloud sessions have no GPU, so the windowed capture rung cannot run there: visual claims still need
-the owner to run it on their Linux desktop and look at the PNG.
+**The windowed capture rung DOES run in a cloud session** (measured 2026-10-16, T6.15). There is no
+GPU, but `xvfb-run` and Mesa's llvmpipe are installed, and the OpenGL renderer draws real frames:
+
+```bash
+xvfb-run -a -s "-screen 0 1280x720x24" godot --rendering-driver opengl3 --resolution 960x540 \
+  --quit-after 90 -- --new-game --shot=<path> --shot-frame=70 --time=18:40 --freeze-time
+```
+
+Look at the PNG with the Read tool. The first run in a fresh container is about twice as slow (14 s
+against 7 s) while shaders compile. Software rendering is slow, so a capture rung that must
+see an NPC move needs a longer `--quit-after` (600 frames covers a few wander picks). For anything
+intermittent, loop the capture ten times and count, because one clean run proves nothing.

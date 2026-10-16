@@ -13,7 +13,7 @@ situation; [`docs/TEMPLATE.md`](docs/TEMPLATE.md) is the framing both assume.
 | starting any session | `docs/CONTEXT.md`, then your package on the board |
 | confused about what this project IS | `docs/TEMPLATE.md` |
 | picking the next package | `docs/WORK_PACKAGES.md` (the board) and `docs/ROADMAP.md` |
-| surprised by the engine | the gotcha list in `docs/CONTEXT.md` — eighty-two, each cost an hour |
+| surprised by the engine | the gotcha list in `docs/CONTEXT.md` — eighty-three, each cost an hour |
 | wondering why a file is shaped that way | its own `##` header first, then `docs/ARCHITECTURE.md` and `docs/decisions/` |
 | about to write a player-facing string | `localization/strings.csv`, and quote any value containing a comma |
 | starting a new game on this base | `docs/NEW_GAME.md` |
@@ -51,7 +51,7 @@ placeholders in `assets/placeholder/`, indefinitely. `tools/gen_placeholders.gd`
 first. It installs the build CI pins and runs `--import`; then `G=godot`. Cloud sessions need not:
 the SessionStart hook in `.claude/hooks/session-start.sh` runs it and exports `G`. Also read
 [`.claude/agent-notes.md`](.claude/agent-notes.md), what earlier sessions learned about working
-here.
+here, including the `xvfb-run` command that runs the windowed capture rung in a cloud session.
 
 On the old Windows machine it was always the **console** executable; the plain one detaches and
 prints nothing.
@@ -102,7 +102,7 @@ G=/c/Rai/softwares/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_conso
 "$G" --headless --check-only --script <file>   # type gate; filter "Identifier not found: <Autoload>"
 "$G" --headless --import                       # scenes and resources
 "$G" --headless --quit-after 30                # must end "0 warnings, 0 errors"
-"$G" --headless res://tests/test_runner.tscn --quit-after 400   # 2,669 assertions, exit 1 on fail
+"$G" --headless res://tests/test_runner.tscn --quit-after 400   # 2,678 assertions, exit 1 on fail
 "$G" --headless --script tools/check_budgets.gd
 "$G" --headless --script tools/check_content.gd    # ids, duplicate object_ids, CSV keys
 "$G" --headless --script tools/check_boundary.gd   # no file under src/ or tests/ names demo content
@@ -162,7 +162,7 @@ same reasoning as the file budgets: a package that outgrows one chat gets half-f
 | You want to | Read |
 |---|---|
 | know what to work on now | [`docs/WORK_PACKAGES.md`](docs/WORK_PACKAGES.md) — the board |
-| know where things stand | [`docs/CONTEXT.md`](docs/CONTEXT.md) — state, settled decisions, eighty-two gotchas |
+| know where things stand | [`docs/CONTEXT.md`](docs/CONTEXT.md) — state, settled decisions, eighty-three gotchas |
 | understand why this is a template and not a game | [`docs/TEMPLATE.md`](docs/TEMPLATE.md) |
 | **add an area, an NPC, a conversation, an item, an object, a quest, equipment, a place on the world map** | **[`docs/AUTHORING.md`](docs/AUTHORING.md)** |
 | **make art that drops into this** | **[`docs/ART_CONTRACT.md`](docs/ART_CONTRACT.md)** |
