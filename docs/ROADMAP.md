@@ -1581,6 +1581,12 @@ was classified, including the ones refused.
   form on a row with an empty key), so `.po` was not needed; `RestPoint` asks `translate_plural`
   and reports the nearest hour, never zero. Red first with 8 failed, photographed after. No exit
   criterion covers a defect fix, so none is ticked. **The last row: Phase T6 is COMPLETE.**
+- **T6.15 A wandering NPC never picks a spot it cannot walk to — DONE, 2026-10-16, `5.16.2`.**
+  A defect found after the phase closed, by the first windowed capture a cloud session ran, and
+  numbered here so that no closed row moves. A random wander offset could land on a riser or in the
+  eroded strip beside it, and `NpcBrain` logged an ERROR for a destination nobody authored. The
+  offset now goes through `NpcBrain.reachable_point()`, the end of a real path. Red first, 5 of 7
+  failed; 10 windowed runs after, 0 errors. No exit criterion covers a defect fix.
 
 **Exit criteria for the phase:**
 

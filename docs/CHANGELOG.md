@@ -19,6 +19,24 @@ the exact rot this discipline exists to prevent.
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
 ---
+## 5.16.2
+
+*2026-10-16 — T6.15: a wandering NPC never picks a spot it cannot walk to.*
+
+**A consuming game does: nothing.** No file a game wrote changes; one public static method is new.
+
+**What changed.** `NpcBrain._tick_wander()` used to hand the agent a raw random offset from the
+post. Now it passes the offset through the new `NpcBrain.reachable_point(map, from, wish, layers)`,
+which returns where a real path from the NPC ends. With no path at all, it returns `from`.
+`_check_reachable()` is unchanged, so an *authored* waypoint that cannot be reached is still an
+error. `tests/unit/npc_reach_test.gd` covers the clamp on a hand-built map.
+
+**Why.** A wander target near a riser the body cannot climb, or in the strip the bake erodes by
+`agent_radius`, was reported as `Keeper cannot reach 'dais'`: an ERROR for a destination nobody
+wrote. In the demo courtyard it fired 10 times in 8 windowed runs; after the fix, 0 in 10.
+**A game with a post beside a step, a wall or a prop had the same error waiting.**
+
+---
 ## 5.16.1
 
 *2026-09-30 — packages run one at a time: the next starts only after the last one's PR merges.*

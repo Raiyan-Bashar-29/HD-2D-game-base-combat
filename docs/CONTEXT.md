@@ -3,8 +3,15 @@
 A state snapshot for a new session. `CLAUDE.md` has the *rules*; this file has the *situation*.
 Keep it short. When it drifts from reality, fix it in the same commit as the change.
 
-**Last updated:** 2026-09-30 · **Packages now run one at a time (a docs-only PATCH, 5.16.1). Before it: T6.14 (a count that reaches a string picks its plural form) complete, at 5.16.0, a MINOR.**
+**Last updated:** 2026-10-16 · **T6.15 (a wandering NPC never picks a spot it cannot walk to) complete, at 5.16.2, a PATCH. Development has moved to cloud sessions, and they CAN run the windowed capture rung (see `.claude/agent-notes.md`).**
 **Phases T1 to T6 are complete and stay complete. No row is open and no phase is planned; the next input is the owner's playtest, or a phase the owner opens.**
+
+**A SELF-CHOSEN TARGET IS CLAMPED; ONLY AN AUTHORED ONE MAY BE "UNREACHABLE"** — T6.15, `5.16.2`.
+The first cloud capture logged `Keeper cannot reach 'dais'`. It was not gotcha 21's timing: every
+error came from a random wander offset on the dais or beside its riser. `_tick_wander` now hands
+the agent `NpcBrain.reachable_point()`, the end of a real path, so the error once again means a
+content defect. Anything else that invents a destination should go through the same method.
+Suite 2,669 → **2,678**, measured after the docs; stripped 2,592 → 2,601.
 
 **ONE PACKAGE AT A TIME, FROM NOW ON** — `5.16.1`, a docs-only PATCH. Phase T6 ran T6.9 to
 T6.13 as five chats in five worktrees at once, and it cost renumbered rows, versions claimed by
@@ -381,7 +388,7 @@ another sheet, and every facing draws a different figure.
 **A new session's default is still NOT to invent work.** A genuine defect, an unticked criterion,
 or a seam the owner's reframing actually needs is a package. One invented so that there is one is
 how the previous project reached 3,983 lines in a single file, twenty reasonable lines at a time.
-**The version is** **5.16.1**, and it is UNTAGGED — `v4.2.1` is the most recent tag, and the gap is
+**The version is** **5.16.2**, and it is UNTAGGED — `v4.2.1` is the most recent tag, and the gap is
 the owner's to close or to leave.
 
 **THERE IS NO NEXT PACKAGE, AGAIN: PHASE T6 IS COMPLETE.** T6.14 was its last row, on 2026-09-30.
@@ -454,7 +461,7 @@ three steps (one of them a COUNT), 2 mapped areas, 2 path actions, 2 sprite shee
 3 tagged surfaces, 2 languages, **5 gait blocks on the swap sheet and 4 on the default one, the
 fourth being a second IDLE rather than a gait**,
 1 shared area material, **24 settings and 24 consumers**.
-Template version **5.16.1**, and that version is deliberately UNTAGGED — `v4.2.1` is the most
+Template version **5.16.2**, and that version is deliberately UNTAGGED — `v4.2.1` is the most
 recent tag, each tag naming the tree that declares it.
 Boots headless with **0 warnings, 0 errors**, and a run killed mid-load now shuts down clean too.
 
@@ -1359,7 +1366,7 @@ G=/c/Rai/softwares/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_conso
 "$G" --resolution 960x540 --quit-after 90 -- --new-game --shot=<path> --shot-frame=70 --time=18:40 --freeze-time
 ```
 
-## Eighty-two gotchas that each cost an hour
+## Eighty-three gotchas that each cost an hour
 
 1. Autoload identifiers (`Log`, `Events`, …) **do not resolve** under `--check-only`. That
    error is expected. Rungs 2 and 3 are the real compile check.
@@ -2403,6 +2410,13 @@ G=/c/Rai/softwares/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_conso
     names the plural key, and each further form is a following row with an EMPTY key. A missing
     form comes back as the key itself, so a check that the forms merely differ passes on a row with
     one form; T6.14's lint also refuses the key.
+83. **IN 4.7, `map_force_update` DOES NOTHING WHILE ASYNC ITERATIONS ARE ON, AND THEY ARE ON BY
+    DEFAULT.** A map built by hand in a synchronous test kept iteration id 0, every query came back
+    empty, and a clamp that returns `from` on an empty path passed its island case for the wrong
+    reason. `map_set_use_async_iterations(map, false)` AND `region_set_use_async_iterations(region,
+    false)` make it synchronous. Assert `map_get_iteration_id(map) > 0` before trusting any answer.
+    The sibling lesson from T6.15: a "cannot reach" from a target the code INVENTED is the code's
+    fault. Log the target before blaming timing.
 
 ## How work is sliced
 

@@ -11871,3 +11871,48 @@ unset exited 0 and printed nothing. Then `--check-only` on a checker exited 0, t
 
 **Gaps.** The hook runs synchronously, so a fresh container waits about 25 s for the download and
 import before the first turn. The windowed capture rung still needs a GPU.
+
+## 2026-10-16 — T6.15 · A wandering NPC never picks a spot it cannot walk to
+
+**Did.** `NpcBrain._tick_wander()` now passes its random offset through a new public static
+`NpcBrain.reachable_point(map, from, wish, layers)`, which returns the last point of
+`NavigationServer3D.map_get_path(map, from, wish, true, layers)`, or `from` when there is no path.
+New `tests/unit/npc_reach_test.gd`, 7 assertions on a hand-built two-polygon map: a floor and an
+unjoined island, the shape a dais with a high riser bakes to. `5.16.2`, a PATCH.
+
+**Why.** The first cloud session's check ran the windowed capture under `xvfb-run` and got
+`0 warnings, 1 errors`: `[npc] Keeper cannot reach 'dais'`. Gotcha 21 suggested timing on a slow
+cold start. **Measured instead.** A temporary print of the wander target and
+`get_final_position()` over 8 runs at `--time=14:00`, 600 frames, logged 10 errors, and every one
+was a wander target on the dais (whose 0.4m riser is above the 0.2m `agent_max_climb`) or within
+the 0.4m `agent_radius` strip beside it. Examples: target `(2.43, 0, -0.02)`, final
+`(3.6, 0.2, -0.02)`, 1.19m short; target `(0.69, 0, 0.71)`, final `(0.69, 0.2, 1.6)`. The
+authored `dais` marker at `(2.6, 0, 1.6)` never failed. So the code invented an unreachable
+destination and then reported it as a content error. Any game with a post beside a step, a wall
+or a prop would meet the same thing.
+
+**Connects.** `_check_reachable()` is unchanged, and it still errors for an authored waypoint,
+which is a real content defect. `map_get_path` already snaps the destination onto the navmesh and
+returns a path to the nearest reachable point, so one synchronous query does the whole clamp,
+once per wandering NPC every 4–6 s.
+
+**Verified.**
+- Red first: with `reachable_point` stubbed to `return wish` (behind `if layers >= 0:`, because a
+  bare early return is an unreachable-code parse error), the suite read
+  `=== 2671 passed, 5 failed ===`, failing the island, edge and empty-map cases.
+- **The test's first draft passed vacuously.** `map_force_update` did not synchronise the map, so
+  every query was empty, the clamp returned `from`, and only the open-floor case failed. A probe
+  showed `map_get_iteration_id` stayed 0 until async iterations were switched off on both the map
+  and the region (gotcha 83). The case now asserts the map synchronised before anything else.
+- After: suite `=== 2678 passed, 0 failed, 0 skipped ===`, exit 0 (stripped template, as CI
+  strips it: `=== 2601 passed, 0 failed, 25 skipped ===`); boot `0 warnings, 0 errors`;
+  all seven checkers exit 0 (`npc_brain.gd` at 179 / 250).
+- Windowed, `xvfb-run` + `opengl3` (llvmpipe): 10 runs, 600 frames each (7 at 14:00, 3 at 18:40),
+  `cannot reach` 0 times and `0 warnings, 0 errors` every run, against 10 errors in 8 runs before.
+  One frame was examined: at 14:00 the keeper stands beside the dais's east step, so it still
+  wanders where it should.
+
+**Unblocks.** A clean capture rung in cloud sessions, and the owner's playtest.
+
+**Gaps.** Only wander invents targets today. Anything later that invents one, such as a flee
+point, a crowd shuffle or a patrol jitter, should call `reachable_point` too. Nothing enforces that.

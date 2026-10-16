@@ -272,7 +272,25 @@ func _tick_wander(delta: float) -> void:
 	# different destination.
 	_unreachable_reported = false
 	_unreachable_frames = 0
-	_agent.target_position = marker.global_position + Vector3(cos(angle), 0.0, sin(angle)) * reach
+	var wish: Vector3 = marker.global_position + Vector3(cos(angle), 0.0, sin(angle)) * reach
+	_agent.target_position = reachable_point(_agent.get_navigation_map(), global_position, wish,
+			_agent.navigation_layers)
+
+
+## The nearest point to `wish` that a walk from `from` can actually end on.
+##
+## A WANDER TARGET IS INVENTED, NOT AUTHORED, SO IT IS CLAMPED BEFORE IT IS HANDED OUT. A random
+## offset from a post can land on a riser the body cannot climb, inside a prop, or in the strip
+## the bake erodes by `agent_radius` beside a wall, and `_check_reachable()` then logs an ERROR
+## for a destination nobody wrote. Only an authored waypoint may be reported unreachable: that
+## is a content defect, and this is not. The query is synchronous, which is fine at one per NPC
+## every few seconds. With no path at all (no region, or a map not yet synchronised) the answer
+## is `from`, so the NPC stands still rather than pushing at nothing.
+static func reachable_point(map: RID, from: Vector3, wish: Vector3, layers: int) -> Vector3:
+	var path: PackedVector3Array = NavigationServer3D.map_get_path(map, from, wish, true, layers)
+	if path.is_empty():
+		return from
+	return path[path.size() - 1]
 
 
 func _next_wander_delay() -> float:
