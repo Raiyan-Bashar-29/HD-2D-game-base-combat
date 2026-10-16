@@ -47,7 +47,13 @@ placeholders in `assets/placeholder/`, indefinitely. `tools/gen_placeholders.gd`
 
 ## The engine
 
-Always the **console** executable; the plain one detaches and prints nothing.
+**Linux and cloud sessions (the default since 2026-10-16):** run `bash tools/cloud_setup.sh`
+first. It installs the build CI pins and runs `--import`; then `G=godot`. Also read
+[`.claude/agent-notes.md`](.claude/agent-notes.md), what earlier sessions learned about working
+here.
+
+On the old Windows machine it was always the **console** executable; the plain one detaches and
+prints nothing.
 
 ```
 /c/Rai/softwares/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe
