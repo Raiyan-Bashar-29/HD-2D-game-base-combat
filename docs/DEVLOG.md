@@ -11848,3 +11848,26 @@ relearn the merge procedure and the suite-total fixpoint by failing them.
 **Gaps.** The script has not run on a Linux machine from this session; the cloud session that
 continues this work runs it first. The windowed capture rung needs a GPU, which cloud sessions
 lack, so it needs the owner's Linux desktop.
+
+## 2026-10-16 — Process · Cloud sessions set themselves up
+
+**Did.** Added a SessionStart hook (`.claude/hooks/session-start.sh`, registered in
+`.claude/settings.json`) that runs `tools/cloud_setup.sh` in every Claude Code cloud session and
+exports `G=godot`. Outside a cloud session it exits at once. `CLAUDE.md` § The engine says so.
+
+**Why.** The owner asked for the setup to be automatic rather than a step each session remembers.
+The hook lives in the repository, so it needs no change to the cloud environment's settings.
+
+**Connects.** The hook calls `cloud_setup.sh` and copies none of it; the pin stays in
+`.github/actions/setup-godot/action.yml`.
+
+**Verified.** In a cloud container, with the engine removed and `.godot/` deleted, the hook exited 0,
+the digest and version checks passed, and the import was clean. A run with `CLAUDE_CODE_REMOTE`
+unset exited 0 and printed nothing. Then `--check-only` on a checker exited 0, the suite showed
+`=== 2669 passed, 0 failed, 0 skipped ===`, and all seven checkers exited 0. This was also
+`cloud_setup.sh`'s first Linux run, which closes the gap the previous entry left.
+
+**Unblocks.** Every cloud session starts ready to run the ladder.
+
+**Gaps.** The hook runs synchronously, so a fresh container waits about 25 s for the download and
+import before the first turn. The windowed capture rung still needs a GPU.
