@@ -17,6 +17,10 @@ extends MenuScreen
 ## A WIN IS REWARDED ONCE, through `Rewards.grant`, when the screen first sees the outcome, and
 ## its summary is drawn above Continue: experience, each level gained, each item found.
 ##
+## IN PLAIN WORDS: the battle menu you see. It lists everyone's HP, who moves next, and the
+## buttons for the current party member. Enemy turns are played automatically by `advance()`.
+## Pressing a button only asks `Battle` to act; the rules all live in `battle.gd`.
+##
 ## OWNS: which menu is up, the pending command, and drawing the battle's state.
 ## MUST NOT: decide what a command does, who wins, or what winning gives; `Rewards` does.
 
@@ -40,6 +44,7 @@ const LEFT_KEY: String = "ui.battle.left_behind"
 ## How many upcoming turns the order line shows.
 const ORDER_LENGTH: int = 5
 
+## The fight being shown. `_pending` is a command chosen but still waiting for a target.
 var battle: Battle
 var _pending: BattleCommand
 var _refused: bool = false
@@ -71,6 +76,7 @@ func _ready() -> void:
 func advance() -> void:
 	if battle == null:
 		return
+	# Keep playing AI turns until a player-controlled fighter is up, or the fight ends.
 	while battle.outcome() == Battle.Outcome.ONGOING:
 		var actor: Combatant = battle.current()
 		if actor == null:
@@ -78,16 +84,19 @@ func advance() -> void:
 		if actor == null or battle.brain_of(actor) == null:
 			break
 		BattleAi.take_turn(battle, battle.brain_of(actor))
+	# The fight just ended: hand out rewards exactly once (Rewards only gives on a win).
 	if battle.outcome() != Battle.Outcome.ONGOING and rewards == null:
 		rewards = Rewards.grant(battle, battle.encounter, battle.inventory)
 	refresh()
 
 
+# Rebuilds the menu's rows from scratch. MenuScreen calls this on every refresh().
 func _fill() -> void:
 	if battle == null:
 		return
 	for fighter: Combatant in battle.party + battle.enemies:
 		add_note(_pools_line(fighter))
+	# Over: show the result, the rewards, and one Continue button.
 	if battle.outcome() != Battle.Outcome.ONGOING:
 		add_note(tr(_outcome_key()))
 		_reward_notes()
@@ -98,15 +107,18 @@ func _fill() -> void:
 		add_note(tr(REFUSED_KEY))
 	if battle.current() == null:
 		return
+	# A command is waiting for a target: list the targets, plus Back.
 	if _pending != null:
 		for target: Combatant in battle.targets_for(_pending):
 			add_row(name_of(target), _aim.bind(target))
 		add_row(tr(BACK_KEY), _back)
 		return
+	# Otherwise: the current fighter's command list.
 	for command: BattleCommand in _menu():
 		add_row(_label(command), _choose.bind(command))
 
 
+# Leaving the screen frees the fighter nodes and forgets the enemies' HP.
 func _closed() -> void:
 	if battle != null:
 		BattleSetup.release(battle)
@@ -122,6 +134,7 @@ func name_of(fighter: Combatant) -> String:
 	return tr(def.name_key) + suffix.replace("_", " ")
 
 
+# A fighter with no authored commands gets Attack, Defend and Flee.
 func _menu() -> Array[BattleCommand]:
 	var def: CombatantDef = battle.defs.get(battle.current().combatant_id, null)
 	if def != null and not def.commands.is_empty():
@@ -147,6 +160,7 @@ func _label(command: BattleCommand) -> String:
 	return tr(command.skill.name_key)
 
 
+# A one-target command asks for a target first; anything else acts immediately.
 func _choose(command: BattleCommand) -> void:
 	var single: bool = command.kind == BattleCommand.Kind.ATTACK or (command.skill != null
 			and command.skill.scope == Skill.Scope.ONE and command.kind != BattleCommand.Kind.DEFEND
@@ -171,6 +185,7 @@ func _back() -> void:
 
 
 func _act(command: BattleCommand, targets: Array[Combatant]) -> void:
+	# If the battle refused (e.g. not enough MP), show a line saying so and keep the menu.
 	_refused = not battle.act(command, targets)
 	advance()
 

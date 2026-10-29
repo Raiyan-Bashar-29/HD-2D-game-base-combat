@@ -14,6 +14,10 @@ extends RefCounted
 ## `release`, so a save after the fight carries none of them. The party's are kept: a party
 ## member's hp is meant to carry from one fight to the next.
 ##
+## IN PLAIN WORDS: the factory. Give it an encounter file and the party, and it makes one
+## fighter node per combatant, picks the turn order the encounter asked for, and starts the
+## `Battle`. `release` cleans everything up afterwards.
+##
 ## OWNS: turning definitions into fighters, and freeing them.
 ## MUST NOT: open a screen, play music, or decide rewards.
 
@@ -29,6 +33,7 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	for def: CombatantDef in party:
 		ours.append(_fighter(def, def.combatant_id, holder, false))
 	var theirs: Array[Combatant] = []
+	# Count each enemy type first, so only duplicates get a number ("Wisp 1", "Wisp 2").
 	var seen: Dictionary[StringName, int] = {}
 	for def: CombatantDef in encounter.enemies:
 		seen[def.combatant_id] = seen.get(def.combatant_id, 0) + 1
@@ -39,12 +44,14 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 			counted[id] = counted.get(id, 0) + 1
 			id = StringName("%s_%d" % [id, counted[def.combatant_id]])
 		theirs.append(_fighter(def, id, holder, true))
+	# The encounter file chooses the turn order: plain rounds, or CTB where speed buys extra turns.
 	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
 			else RoundScheduler.new()
 	var battle := Battle.new(ours, theirs, turns, rng)
 	battle.encounter = encounter
 	battle.can_flee = encounter.can_flee
 	battle.flee_chance = encounter.flee_chance
+	# Remember each fighter's definition (for names and menus) and each enemy's AI brain.
 	for i: int in party.size():
 		battle.defs[ours[i].combatant_id] = party[i]
 	for i: int in encounter.enemies.size():
@@ -69,6 +76,7 @@ static func release(battle: Battle) -> void:
 			actor.queue_free()
 
 
+# One fighter = a plain Node with three children: Vitals (HP/MP), StatusSet, Combatant.
 static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: bool) -> Combatant:
 	var actor := Node.new()
 	actor.name = String(id)
@@ -82,6 +90,7 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 	combatant.base_stats = def.base_stats
 	actor.add_child(combatant)
 	holder.add_child(actor)
+	# Enemies always start at full HP, even if an old flag says otherwise.
 	if fresh:
 		_forget_pools(combatant)
 	return combatant

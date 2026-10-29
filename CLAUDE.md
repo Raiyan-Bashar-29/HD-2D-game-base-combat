@@ -42,7 +42,8 @@ content it needs from `tests/framework/fixtures.gd`, and the suite passes with t
 ([ADR-0008](docs/decisions/ADR-0008-combat-is-in-scope.md)). Upstream, the non-combat base at the
 `template` remote, keeps no combat as a rule, and its fixes arrive by `git merge template/main`.
 **Combat code never goes upstream.** This repository's state, phases and board are in
-**[`docs/COMBAT.md`](docs/COMBAT.md)**, and its log is `docs/COMBAT_DEVLOG.md`. Read those before
+**[`docs/COMBAT.md`](docs/COMBAT.md)**, and its log is `docs/COMBAT_DEVLOG.md`. **New here, or picking up from another account or tool? Start with
+[`docs/HANDOFF.md`](docs/HANDOFF.md)**, the plain-words map and the current state. Read those before
 upstream's `CONTEXT.md`. Every rule below still applies.
 
 **Art is deferred.** Do not generate or request art. Every system must work on the procedural
