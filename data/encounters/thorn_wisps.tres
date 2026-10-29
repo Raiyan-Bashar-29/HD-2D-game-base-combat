@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="Encounter" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/encounter.gd" id="1_enc"]
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="2_def"]
+[ext_resource type="Script" path="res://src/content/combat/battle_brain.gd" id="3_brain"]
+[ext_resource type="Script" path="res://src/content/combat/brain_entry.gd" id="4_entry"]
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="5_cmd"]
+
+[sub_resource type="Resource" id="strike"]
+script = ExtResource("5_cmd")
+
+[sub_resource type="Resource" id="lash"]
+script = ExtResource("4_entry")
+command = SubResource("strike")
+weight = 3.0
+target_rule = 1
+
+[sub_resource type="Resource" id="press"]
+script = ExtResource("4_entry")
+command = SubResource("strike")
+weight = 1.0
+target_rule = 2
+
+[sub_resource type="Resource" id="brain"]
+script = ExtResource("3_brain")
+entries = Array[ExtResource("4_entry")]([SubResource("lash"), SubResource("press")])
+
+[sub_resource type="Resource" id="wisp"]
+script = ExtResource("2_def")
+combatant_id = &"thorn_wisp"
+name_key = "combat.enemy.thorn_wisp.name"
+faction = &"wilds"
+base_stats = Dictionary[StringName, float]({
+&"attack": 7.0,
+&"max_hp": 22.0,
+&"resist_fire": -0.5,
+&"speed": 6.0
+})
+brain = SubResource("brain")
+
+[resource]
+script = ExtResource("1_enc")
+id = &"encounter/thorn_wisps"
+enemies = Array[ExtResource("2_def")]([SubResource("wisp"), SubResource("wisp")])
+experience = 30
+loot = Array[StringName]([&"item/stone_chip"])

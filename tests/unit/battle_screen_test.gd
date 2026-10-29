@@ -12,7 +12,7 @@ var _holder: Node
 
 
 func run() -> void:
-	plan(16)
+	plan(18)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_stack = UiRoot.new()
@@ -129,3 +129,11 @@ func _the_host_refuses() -> void:
 	attach(host)
 	equal("the host refuses an encounter that does not exist", host.open_encounter(&"encounter/fixture_missing"), false)
 	host.free()
+	equal("a roster path with no file is no party, not an error", BattleHost.roster_from("res://fixture/missing_roster.tres").size(), 0)
+	var directory: String = RunScratch.path("roster")
+	DirAccess.make_dir_recursive_absolute(directory)
+	var written := PartyRoster.new()
+	written.members = [_hero()]
+	ResourceSaver.save(written, directory.path_join("fixture_roster.tres"))
+	var read: Array[CombatantDef] = BattleHost.roster_from(directory.path_join("fixture_roster.tres"))
+	equal("a roster file's members are read", read.size() == 1 and read[0].combatant_id == &"fixture_hero", true)

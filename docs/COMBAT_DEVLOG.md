@@ -742,3 +742,63 @@ C2.6's gap of a party that was only a list on a node.
   game's UI.
 - A level-up raises the maximum, but current hp is not topped up, so it stays where it was.
   Some games heal on a level-up; this one does not by default.
+
+## 2026-10-29 — C2.9 · Demo proof: one turn-based encounter
+
+**Did.**
+- `src/content/combat/party_roster.gd`.
+- `BattleHost.roster_from(path)`, and the `[combat] party/roster` project setting.
+- `scenes/objects/encounter_point.tscn`, a placeholder bush.
+- Demo data:
+  - `data/party/roster.tres`: the Wanderer (Attack, Ember, Defend, Flee) and the Keeper (the
+    basic menu), both with a level curve;
+  - `data/skills/ember.tres`: fire, 3 mp, hits all enemies;
+  - `data/encounters/thorn_wisps.tres`: two Thorn Wisps, weak to fire, each with a brain mixing
+    RANDOM and LOWEST_HP attacks. Win for 30 experience and a Chipped Stone.
+- The courtyard's `WispNest`.
+- Five strings.
+- `AUTHORING.md` § Add an encounter and a party.
+- Two `battle_screen_test.gd` assertions for `roster_from`.
+- Combat `0.16.0`.
+
+**Why.** C2.0's proof clause: one demo encounter, played from the field and back. With it, every
+turn-based row has run in the game, not only in fixtures. **Phase C2 is closed.**
+
+**Connects.** All of C2 meets in one fight:
+- `EncounterPoint` asks for the encounter, and `BattleHost` builds it:
+  - the party comes from `Party.active` at each member's level;
+  - the enemies come from the encounter;
+  - the scheduler (rounds) and the brains come from data.
+- `BattleScreen` drives the turns. Enemies play through `BattleAi` between the player's turns.
+- `Rewards` levels both members and puts the stone in the bag.
+- Release erases the wisps' flags, and the field resumes exactly where it was.
+
+The party is a file named by a project setting, `GameConfig`'s first-area pattern, so the
+composition root names no content.
+
+**Verified.**
+- Suite `2957 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.16.0`. All
+  seven checkers exit 0.
+- A load check of the three data files: no problems, and the roster has 2 members and 4
+  commands.
+- Two windowed captures under `xvfb-run`, using a throwaway driver (not committed) that
+  interacts with the thicket and attacks until the fight ends:
+  - before Continue: the reward lines over the frozen courtyard ("Wanderer reached level 2!",
+    "Keeper reached level 2!", "Found Chipped Stone."), with the world paused;
+  - after Continue: the live courtyard and the thicket bush, with the world unpaused, the
+    stone in the bag, and the Wanderer at level 2 with 30 exp.
+  - The first driver stalled because it was itself pausable, which is a nice proof that the
+    battle really freezes the world. It was rerun with `PROCESS_MODE_ALWAYS`.
+- Stripped run, done locally exactly as CI does it: no compile errors, `2880 passed, 0 failed,
+  25 skipped`, and all six checkers it runs exit 0. The battle host finds no roster file, and so no party.
+
+**Unblocks.** C3.0, which plans the action formula.
+
+**Gaps.**
+- `NEW_GAME.md`'s prune removes `object.` rows but not `combat.` ones. A combat game strips its
+  `combat.*` demo rows by hand. That is written in AUTHORING.md; teaching upstream's prune about
+  `combat.` would be an upstream edit, so it is left out.
+- `Encounter.music` is still not played. Upstream's `AudioDirector.play_music` takes a stream,
+  not an id, so wiring it needs a music catalogue. That is a C5 row.
+- The demo party is not the template's player; the field character fights as the "Wanderer". A
+  game that wants its field actor in the party gives the roster member the player's id.

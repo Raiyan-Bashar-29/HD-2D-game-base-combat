@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="PartyRoster" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/party_roster.gd" id="1_roster"]
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="2_def"]
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="3_cmd"]
+[ext_resource type="Script" path="res://src/content/combat/level_curve.gd" id="4_curve"]
+[ext_resource type="Resource" path="res://data/skills/ember.tres" id="5_ember"]
+
+[sub_resource type="Resource" id="attack"]
+script = ExtResource("3_cmd")
+
+[sub_resource type="Resource" id="ember"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("5_ember")
+
+[sub_resource type="Resource" id="defend"]
+script = ExtResource("3_cmd")
+kind = 3
+
+[sub_resource type="Resource" id="flee"]
+script = ExtResource("3_cmd")
+kind = 4
+
+[sub_resource type="Resource" id="curve"]
+script = ExtResource("4_curve")
+growth = Dictionary[StringName, float]({
+&"attack": 2.0,
+&"max_hp": 6.0
+})
+
+[sub_resource type="Resource" id="wanderer"]
+script = ExtResource("2_def")
+combatant_id = &"wanderer"
+name_key = "combat.member.wanderer.name"
+faction = &"player"
+base_stats = Dictionary[StringName, float]({
+&"attack": 9.0,
+&"defence": 10.0,
+&"max_hp": 46.0,
+&"max_mp": 9.0,
+&"speed": 8.0
+})
+commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("ember"), SubResource("defend"), SubResource("flee")])
+level_curve = SubResource("curve")
+
+[sub_resource type="Resource" id="keeper"]
+script = ExtResource("2_def")
+combatant_id = &"keeper_ally"
+name_key = "combat.member.keeper.name"
+faction = &"player"
+base_stats = Dictionary[StringName, float]({
+&"attack": 6.0,
+&"defence": 16.0,
+&"max_hp": 38.0,
+&"speed": 5.0
+})
+level_curve = SubResource("curve")
+
+[resource]
+script = ExtResource("1_roster")
+members = Array[ExtResource("2_def")]([SubResource("wanderer"), SubResource("keeper")])

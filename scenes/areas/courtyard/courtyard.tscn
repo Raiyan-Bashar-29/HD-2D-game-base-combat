@@ -26,6 +26,7 @@
 [ext_resource type="Resource" path="res://data/actions/keeper_scrutinise.tres" id="21_scrut"]
 [ext_resource type="Resource" path="res://data/actions/keeper_barter.tres" id="22_barter"]
 [ext_resource type="PackedScene" path="res://scenes/objects/strike_target.tscn" id="40_strike"]
+[ext_resource type="PackedScene" path="res://scenes/objects/encounter_point.tscn" id="41_encounter"]
 
 [sub_resource type="StandardMaterial3D" id="m_ground"]
 albedo_texture = ExtResource("4_grass")
@@ -384,6 +385,12 @@ base_stats = Dictionary[StringName, float]({
 &"defence": 20.0,
 &"max_hp": 30.0
 })
+
+[node name="WispNest" parent="Interactables" instance=ExtResource("41_encounter")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6, 0, 5.8)
+object_id = &"wisp_nest"
+label_key = "object.wisp_nest.label"
+encounter_id = &"encounter/thorn_wisps"
 
 [editable path="Actors/Keeper"]
 [editable path="Interactables/TrainingDummy"]

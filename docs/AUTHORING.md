@@ -1266,6 +1266,48 @@ action and hybrid, are phases C2 to C4 in [`COMBAT.md`](COMBAT.md).
 **Seeing it:** walk to the dummy and press Interact. The toast reads, for example, "Thwack. 7
 damage, 23 of 30 left."
 
+## Add an encounter and a party (combat fork only)
+
+**A turn-based fight is data and one placed object.** The courtyard's thorn thicket is the worked
+example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`, the skill
+`data/skills/ember.tres`, and a `WispNest` instance of `scenes/objects/encounter_point.tscn`.
+
+1. **Skills**: `data/skills/<name>.tres`, a `Skill` with id `skill/<name>`. It holds:
+   - a `name_key`;
+   - a `cost_pool` and `cost`;
+   - a `target` (SELF, ALLY, ENEMY or ANY) and a `scope` (ONE or ALL);
+   - `power`, where a negative power heals;
+   - an `element`;
+   - `statuses` with a `status_chance`.
+2. **The party**: one `PartyRoster` file, named in `project.godot` by `[combat] party/roster`.
+   Each member is a `CombatantDef` with:
+   - a unique `combatant_id`, a `name_key`, a `faction` and `base_stats` (at least `max_hp`;
+     `speed` orders turns);
+   - `commands` (empty means Attack, Defend, Flee);
+   - a `level_curve` to grow.
+
+   Everyone is active until something calls `Party.arrange`.
+3. **The encounter**: `data/encounters/<name>.tres`, an `Encounter` with id `encounter/<name>`.
+   - Its `enemies` are `CombatantDef`s. List one twice for two of it; they become "Name 1" and
+     "Name 2".
+   - Give each enemy a `brain` (weighted `BrainEntry`s with a target rule and optional
+     conditions), or leave it null to just attack.
+   - Set `turn_order` (ROUNDS or CTB), `can_flee`, `experience` and `loot` (item ids).
+4. **The trigger**: place `encounter_point.tscn` under `Interactables`. Set its `object_id`, its
+   `label_key`, and its `encounter_id`. A game's own trigger, such as a zone, a cutscene or a
+   random roll, emits `Events.encounter_requested(id)` instead.
+5. **Strings**:
+   - fighter and skill names live under `combat.`;
+   - the point's label lives under `object.<object_id>.`.
+
+   `NEW_GAME.md`'s prune removes `object.` rows but not `combat.` ones, so a game strips those by
+   hand.
+
+**Seeing it:** walk to the thicket and press Interact. The field freezes under the battle menu.
+Win, and the screen lists the experience, each level gained and the loot; Continue returns to the
+field exactly where it was. `skill_test.gd` and `encounter_test.gd` fail on any authoring problem
+in `data/skills/`, `data/statuses/` or `data/encounters/`.
+
 ## Read next
 
 [`ART_CONTRACT.md`](ART_CONTRACT.md) — what art has to satisfy to drop in ·

@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/interactables/encounter_point.gd" id="1_point"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="2_grass"]
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_color = Color(0.55, 0.75, 0.5, 1)
+albedo_texture = ExtResource("2_grass")
+texture_filter = 0
+
+[sub_resource type="SphereMesh" id="bush"]
+radius = 0.55
+height = 0.9
+
+[sub_resource type="SphereShape3D" id="reach"]
+radius = 1.6
+
+[node name="EncounterPoint" type="Area3D"]
+script = ExtResource("1_point")
+
+[node name="Reach" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("reach")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
+mesh = SubResource("bush")
+surface_material_override/0 = SubResource("mat")
