@@ -354,3 +354,38 @@ area, the interaction sensor, the toast.
   placing a target on a walked path adds the group.
 - The courtyard edit is one appended instance plus one `ext_resource`. It is the fork's only
   change to an upstream scene, and a merge that touches the courtyard may conflict there.
+
+## 2026-10-29 — C2.0 · Plan the turn-based formula
+
+**Did.** Wrote C2's nine rows (C2.1 to C2.9) onto the board in `COMBAT.md`, and a short
+"Settled by C2.0" list under § C2. This row is documents only, so the combat version is
+unchanged at `0.7.0`.
+
+**Why.** Each phase opens by planning against the code, as C1.0 did. Rows guessed from intent
+are rows that get renumbered.
+
+**Connects.** What was read, and what it decided:
+- **`ui_root.gd`'s pause table.** `WorldRoot` is pausable under any modal screen. So a battle
+  is a modal layer over the frozen field, not an area. It returns exactly, with no save, no
+  reload and no `Director` change, and `Director`'s MUST NOT line stands.
+- **`director.gd`.** It must not know what is inside an area. That confirms the battle is not
+  routed through it.
+- **The layer rule.** Anything holding a `Combatant` is gameplay. So the battle runtime goes
+  in gameplay (C2.4), and the scheduler, which orders ids by a number, goes in systems (C2.1,
+  C2.2).
+- **`flag_query.gd`.** It is the one condition reader, a closed set. `BattleBrain` (C2.5) reuses
+  it and adds a single pool-fraction test, not an expression language.
+- **`Inventory.of(who).add`.** It is the loot seam (C2.8).
+- **Party and enemies are data.** A battle builds its own `Combatant`s from definitions
+  (C2.6). That is why the template's player still needs none.
+
+**Verified.** Suite `2824 passed, 0 failed`; all seven checkers exit 0.
+`combat_record_test` holds the new C ids against the board.
+
+**Unblocks.** C2.1, the turn scheduler.
+
+**Gaps.**
+- Whether the battle screen draws 3D combatants through a `SubViewport` or uses 2D placeholders
+  is C2.7's call, made against a capture.
+- The CTB delay formula's constants (C2.2) are a template default, to be tuned in C2.9's
+  playtest.
