@@ -139,3 +139,39 @@ statuses add modifiers. Nothing in the base had a modifier concept.
 **Unblocks.** C1.3, vitals, whose maximum is a sheet's `max_<pool>`.
 
 **Gaps.** No sheet is attached to a character yet. That is C1.6's `Combatant`.
+
+## 2026-10-29 — C1.3 · Vitals
+
+**Did.**
+- `src/gameplay/combat/vitals.gd`: a `Vitals` component, found by `of(who)`. It has `key`,
+  `maximum`, `current`, `change`, `set_to`, `is_defeated` and `revive`. A `restore_all` was written and removed: `check_methods.gd` failed it, because nothing called it yet.
+- Three signals in a new combat section at the end of `events.gd`: `vitals_changed`,
+  `combatant_defeated` and `combatant_revived`.
+- `tests/unit/vitals_test.gd`, 21 assertions.
+- Combat `0.3.0`.
+
+**Why.** Every formula needs a number that falls and a moment it reaches zero.
+
+**Connects.**
+- **The current value is stored in `Flags` as `vital/<who>/<pool>`, `Attributes`' rule.** That
+  gives saving, new-game reset and gate-readability for free, and `save_system.gd` stays
+  untouched.
+- **The maximum is the C1.2 sheet's `max_<pool>`.** A sword or a curse changes it as a
+  modifier.
+- **An unset pool is full,** so nothing has to be written to start a character.
+- **Defeat is an edge, fired once.** A heal cannot lift a defeated combatant; only `revive()`
+  can. "A heal spell on a fallen ally does nothing" is a decision the base makes once, not one
+  each formula re-decides.
+
+**Verified.**
+- Red first: with the "announce only real changes" and "defeated cannot be healed" guards
+  removed, 7 failed.
+- Restored: suite `2729 passed, 0 failed`. The save round-trip goes through
+  `SaveSystem.save_to_slot` and `load_from_slot` under `SaveFixture`.
+
+**Unblocks.** C1.4, the damage pipeline, whose result is applied through `Vitals.change`.
+
+**Gaps.**
+- Each `Vitals` holds its own sheet until C1.6's `Combatant` supplies a shared one.
+- The signals are appended to an upstream file, so a later upstream append at the same place
+  would conflict. Resolving it means keeping both blocks.

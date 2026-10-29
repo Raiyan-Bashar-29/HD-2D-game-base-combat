@@ -262,3 +262,17 @@ signal setting_changed(section: String, key: String, value: Variant)
 ## demo content and routing them over the bus would carry those names out of it. Kept as the
 ## hook a game's own tooling emits on and listens to. `tools/check_signals.gd` reads that phrase.
 signal debug_command(command: String, args: PackedStringArray)
+
+# ---------------------------------------------------------------------------------------
+# Combat. The combat fork's own section (ADR-0008), appended so upstream's lines stay theirs.
+# ---------------------------------------------------------------------------------------
+
+## A pool on one combatant moved: hp, mp, or any pool a game names. Emitted by a `Vitals`
+## component and nothing else, and only when the value actually changed. `who` is carried for
+## `equipment_changed`'s reason: a listener that assumed "the player" would be wrong at once.
+signal vitals_changed(who: StringName, pool: StringName, value: int, maximum: int)
+## A combatant's defeat pool reached zero. Emitted by `Vitals`, ONCE per defeat: further damage
+## to a defeated combatant changes nothing and says nothing, so a listener never counts one twice.
+signal combatant_defeated(who: StringName)
+## A defeated combatant was brought back. Emitted by `Vitals.revive()` and nothing else.
+signal combatant_revived(who: StringName)
