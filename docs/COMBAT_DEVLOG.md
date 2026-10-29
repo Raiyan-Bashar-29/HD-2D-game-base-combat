@@ -215,3 +215,52 @@ arithmetic, "a fire sword does more to ice enemies" would be written three times
 - Nothing applies a result to a `Vitals` yet. That is C1.6's `Combatant.receive`.
 - Ten code files, over the board's "about 8". Eight of them are one-class files under 40 lines,
   and splitting the row would have shipped a formula with no stages.
+
+## 2026-10-29 — C1.5 · Status effects
+
+**Did.**
+- `src/content/combat/status_effect.gd`: a `StatusEffect` `ContentEntry`:
+  - a unit, TURNS or SECONDS, and a duration;
+  - a stacking rule, REFRESH, STACK (up to `max_stacks`) or IGNORE;
+  - modifiers;
+  - an optional tick (`tick_pool`, `tick_change`, `tick_interval`);
+  - `problems()`.
+- `src/content/combat/status_db.gd`: `StatusDb`, `ItemDb`'s shape, reading `data/statuses/`.
+- `src/gameplay/combat/status_set.gd`: a `StatusSet` component with `apply`, `stacks`,
+  `remaining`, `cure`, `tick_turn` and `tick_seconds`, and its own save section.
+- `Events.status_applied` and `status_expired`.
+- `tests/unit/status_set_test.gd`, 27 assertions.
+- Combat `0.5.0`.
+
+**Why.** Every formula has statuses: poison, haste, stagger, pressure (C4 is defined as C1
+modifiers). Duration in TURNS or SECONDS is the one switch that lets a turn-based and a
+real-time formula share the same status file.
+
+**Connects.**
+- **A set never ticks itself.** The formula owns the clock: a battle's turn end, an action
+  scene's `_physics_process`, the hybrid's scaled time. So C4's slowed menu and C5's pause need
+  nothing here.
+- **Modifiers leave by source, the C1.2 rule.** An author leaves the source blank, and the set
+  stamps each modifier with the status id. Expiry, cure, a new game and a load then remove
+  exactly what the status added.
+- **Its own save section, `Inventory`'s pattern.** `save_system.gd` is untouched. The section
+  stores ids, time left and stacks, never the sheet. A status whose `.tres` has gone is dropped
+  with a warning, because nothing could know what it changed.
+- **One change from the plan:** the tick is a pool change, not a `DamageRequest`. Content cannot
+  depend on systems, and most games' poison ignores defence anyway. A tick resolved through a
+  formula belongs to C1.6, where a `Combatant` holds both.
+
+**Verified.**
+- Red first, with the tick and the modifier clean-up stubbed: 6 failed. One of them is the save
+  test, whose rebuild doubled the modifiers. Restored.
+- Suite `2781 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.5.0`. All seven
+  checkers exit 0.
+- The suite's 19 `Parse JSON failed` lines are on `main` too. They come from the corrupt-save
+  cases, which feed it bad JSON on purpose.
+
+**Unblocks.** C1.6, `Combatant`, which gives `Vitals` and `StatusSet` one shared sheet.
+
+**Gaps.**
+- Statuses have no `name_key` yet. Nothing shows one until C2's battle UI, which adds it.
+- `check_content.gd` does not scan `data/statuses/`. Widening it means editing an upstream
+  tool; until then `StatusDb.problems()` holds the errors, and `StatusSet.apply` refuses a broken status.

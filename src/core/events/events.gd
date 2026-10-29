@@ -276,3 +276,7 @@ signal vitals_changed(who: StringName, pool: StringName, value: int, maximum: in
 signal combatant_defeated(who: StringName)
 ## A defeated combatant was brought back. Emitted by `Vitals.revive()` and nothing else.
 signal combatant_revived(who: StringName)
+## A status was applied, refreshed or stacked. Emitted by `StatusSet.apply`; never on a load.
+signal status_applied(who: StringName, status_id: StringName, stacks: int)
+## A status ran out or was cured. Emitted by `StatusSet`; never on a new game or a load.
+signal status_expired(who: StringName, status_id: StringName)
