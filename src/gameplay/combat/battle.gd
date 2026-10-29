@@ -13,8 +13,9 @@ extends RefCounted
 ##
 ## THE RULES, each a template default:
 ## - ATTACK is a power-0 hit through the actor's formula, so the attack stat alone decides it.
-## - SKILL and ITEM spend the cost (and, for ITEM, one item from `inventory`), then hit (power
-##   above zero), heal (below zero, not through defence) and roll each status at its chance.
+## - SKILL and ITEM spend the cost (and, for ITEM, one item from `inventory`), then do what
+##   `SkillUse.apply` says: power, effects, hits and statuses (C2.13). A reviving skill aims only
+##   at the fallen, and anyone revived rejoins the turn order.
 ## - DEFEND applies `defend_status`, by default one turn of +100 defence: half damage against
 ##   the standard softness of 100.
 ## - FLEE succeeds at `flee_chance` when `can_flee`; a failed flee still spends the turn.
@@ -128,8 +129,11 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 		# DEFEND and FLEE aim at nobody.
 		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE:
 			return out
+	# A reviving skill aims only at the fallen; everything else only at those still standing.
+	var reviving: bool = command.skill != null and command.skill.revives() \
+			and command.kind != BattleCommand.Kind.ATTACK
 	for fighter: Combatant in party + enemies:
-		if not _vitals(fighter).is_defeated() and _current.can_target(fighter, filter):
+		if _vitals(fighter).is_defeated() == reviving and _current.can_target(fighter, filter):
 			out.append(fighter)
 	return out
 
@@ -169,27 +173,17 @@ func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant]) -
 	var single: bool = skill.scope == Skill.Scope.ONE
 	if not _legal(command, targets, single):
 		return false
-	var vitals: Vitals = _vitals(actor)
 	# Check everything that can refuse BEFORE paying, so a refused command costs nothing.
-	if skill.cost > 0 and vitals.current(skill.cost_pool) < skill.cost:
+	if not SkillUse.affordable(actor, skill):
 		return false
-	# An item command also needs the item in the bag, and uses one up.
 	if command.kind == BattleCommand.Kind.ITEM:
+		# An item command also needs the item in the bag, and uses one up.
 		if inventory == null or not inventory.remove(command.item_id, 1):
 			return false
-	if skill.cost > 0:
-		vitals.change(skill.cost_pool, -skill.cost)
+	SkillUse.pay(actor, skill)
 	# One-target skills hit the chosen target; ALL skills hit everyone they are allowed to.
-	for target: Combatant in (targets if single else targets_for(command)):
-		# Positive power hurts (through the damage formula), negative power heals (straight to the pool).
-		if skill.power > 0.0:
-			actor.hit(target, skill.power, skill.element, rng)
-		elif skill.power < 0.0:
-			_vitals(target).change(target.damage_pool, roundi(-skill.power))
-		# Each status the skill carries lands on its own dice roll.
-		for status: StatusEffect in skill.statuses:
-			if rng.randf() < skill.status_chance:
-				StatusSet.of(target.get_parent()).apply(status)
+	# What the skill then does is `SkillUse`'s, shared with the field and the hybrid (C2.13).
+	SkillUse.apply(actor, skill, targets if single else targets_for(command), rng)
 	# Heavy skills push the user back in a CTB queue; in round-based battles this does nothing.
 	if skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
@@ -203,11 +197,16 @@ func _legal(command: BattleCommand, targets: Array[Combatant], single: bool) -> 
 	return targets.size() == 1 and targets_for(command).has(targets[0])
 
 
-## Removes the fallen from the queue and decides whether the battle is over.
+## Removes the fallen from the queue, puts anyone revived back in it, and decides whether the
+## battle is over.
 func _settle() -> void:
 	for fighter: Combatant in party + enemies:
-		if _vitals(fighter).is_defeated() and scheduler.has(fighter.combatant_id):
+		var down: bool = _vitals(fighter).is_defeated()
+		if down and scheduler.has(fighter.combatant_id):
 			scheduler.leave(fighter.combatant_id)
+		elif not down and not scheduler.has(fighter.combatant_id):
+			# Revived this turn (C2.13): they take turns again from the next ordering.
+			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
 	_check_outcome()
 
 

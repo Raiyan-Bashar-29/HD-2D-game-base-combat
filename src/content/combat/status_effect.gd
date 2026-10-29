@@ -34,6 +34,9 @@ enum Stacking { REFRESH, STACK, IGNORE }
 @export var tick_change: int = 0
 ## Seconds between ticks, for a SECONDS status. A TURNS status ticks once a turn.
 @export var tick_interval: float = 1.0
+## Free labels a skill can match: `buff`, `debuff`, `ailment`, or any name a game uses. A
+## DISPEL effect clears every held status carrying its tag (C2.13).
+@export var tags: Array[StringName] = []
 
 
 func problems() -> PackedStringArray:

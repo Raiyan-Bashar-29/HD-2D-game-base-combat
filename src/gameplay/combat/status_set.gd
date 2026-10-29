@@ -127,6 +127,16 @@ func cure(status_id: StringName) -> bool:
 	return true
 
 
+## Ends every held status carrying `tag` (a DISPEL). Returns how many ended.
+func cure_tagged(tag: StringName) -> int:
+	var ended: int = 0
+	for status_id: StringName in _ids():
+		if _held[status_id].effect.tags.has(tag):
+			_expire(status_id)
+			ended += 1
+	return ended
+
+
 ## One turn passes for every TURNS status: each ticks, then loses a turn.
 func tick_turn() -> void:
 	for status_id: StringName in _ids():

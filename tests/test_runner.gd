@@ -102,6 +102,7 @@ const CASES: Array[String] = [
 	"res://tests/unit/encounter_test.gd",
 	"res://tests/unit/battle_screen_test.gd",
 	"res://tests/unit/combat_content_test.gd",
+	"res://tests/unit/skill_use_test.gd",
 	"res://tests/unit/party_rewards_test.gd",
 	"res://tests/unit/gates_test.gd",
 	"res://tests/unit/settings_consumers_test.gd",
