@@ -15,6 +15,10 @@ extends Node
 ## from `StatusDb` on load, so a sheet is never saved. A status whose definition has gone is
 ## dropped with a warning: without its definition nothing knows what it changed.
 ##
+## IN PLAIN WORDS: the list of buffs and ailments on one fighter (poison, guard, haste...).
+## Something else says "a turn passed" or "half a second passed"; this file counts down,
+## applies each status's per-tick change (e.g. -5 hp), and removes it when time runs out.
+##
 ## OWNS: which statuses are held, their time left, stacks and tick timing, and its save section.
 ## MUST NOT: decide when a turn or a second passes, or what a status means beyond its data.
 
@@ -22,6 +26,7 @@ const CATEGORY: String = "status"
 const SAVE_VERSION: int = 1
 
 
+## One status currently on the fighter, with its own countdown.
 class Held:
 	extends RefCounted
 	var effect: StatusEffect
@@ -67,6 +72,7 @@ static func of(who: Node) -> StatusSet:
 func apply(effect: StatusEffect) -> bool:
 	if effect == null or not effect.problems().is_empty():
 		return false
+	# First time this status lands: start its timer and put its stat changes on the sheet.
 	if not _held.has(effect.id):
 		var held := Held.new()
 		held.effect = effect
@@ -76,6 +82,8 @@ func apply(effect: StatusEffect) -> bool:
 	else:
 		var held: Held = _held[effect.id]
 		match effect.stacking:
+			# Already held. What happens now depends on the status's stacking rule:
+			# IGNORE refuses, REFRESH restarts the timer, STACK restarts it and adds one more layer.
 			StatusEffect.Stacking.IGNORE:
 				return false
 			StatusEffect.Stacking.REFRESH:
@@ -112,7 +120,9 @@ func tick_turn() -> void:
 		var held: Held = _held[status_id]
 		if held.effect.unit != StatusEffect.Unit.TURNS:
 			continue
+		# Apply the per-turn effect first, so the last turn of poison still hurts.
 		_tick(held)
+		# A duration of 0 means "until cured", so it never counts down.
 		if held.effect.duration > 0.0:
 			held.remaining -= 1.0
 			if held.remaining <= 0.0:
@@ -126,9 +136,11 @@ func tick_seconds(delta: float) -> void:
 		if held.effect.unit != StatusEffect.Unit.SECONDS:
 			continue
 		var lasting: bool = held.effect.duration > 0.0
+		# Never count more time than the status has left, so a long frame cannot over-tick it.
 		var step: float = minf(delta, held.remaining) if lasting else delta
 		var interval: float = held.effect.tick_interval
 		if interval > 0.0:
+			# Bank the time; tick once for every full interval banked (e.g. burn every 1.0 s).
 			held.carry += step
 			while held.carry >= interval:
 				held.carry -= interval
@@ -150,6 +162,7 @@ func _tick(held: Held) -> void:
 		return
 	var vitals: Vitals = Vitals.of(get_parent())
 	if vitals != null:
+		# Three stacks of poison hurt three times as much.
 		vitals.change(held.effect.tick_pool, held.effect.tick_change * held.stacks)
 
 
@@ -165,6 +178,7 @@ func _add_modifiers(effect: StatusEffect) -> void:
 	if target == null:
 		return
 	for modifier: StatModifier in effect.modifiers:
+		# Tag each modifier with the status id, so removing the status removes exactly these.
 		target.add(StatModifier.of(modifier.stat, modifier.op, modifier.value, effect.id))
 
 
@@ -189,6 +203,7 @@ func _on_game_started() -> void:
 	_clear()
 
 
+# Save only ids and numbers; the stat changes are rebuilt from the status files on load.
 func _collect_save() -> Dictionary:
 	var out: Dictionary = {}
 	for status_id: StringName in _held:

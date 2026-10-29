@@ -802,3 +802,43 @@ composition root names no content.
   not an id, so wiring it needs a music catalogue. That is a C5 row.
 - The demo party is not the template's player; the field character fights as the "Wanderer". A
   game that wants its field actor in the party gives the roster member the player's id.
+
+## 2026-10-29 — C2.10 · A handoff page for any reader, and plain comments in the battle code
+
+**Did.**
+- `docs/HANDOFF.md`, new. It is the start-here page for any session, other Claude account, other
+  AI tool or person. It holds:
+  - a "Where things stand" block, to be updated by every package;
+  - what the repository is, in five lines;
+  - how to pick up the work, and the ladder as one copyable block;
+  - a plain-words table of every combat folder;
+  - the six steps of one turn-based fight, from the field to the field again;
+  - the rules that bite, and the closing checklist.
+- The root `AGENTS.md`, new: the file other AI coding tools look for. It points at HANDOFF,
+  `CLAUDE.md` and `COMBAT.md`.
+- `CLAUDE.md` gains one pointer sentence in its combat-fork paragraph.
+- IN PLAIN WORDS paragraphs, plus inline `#` comments on the lines whose reason is not obvious,
+  in the four largest combat files: `battle.gd`, `battle_screen.gd`, `status_set.gd` and
+  `battle_setup.gd`.
+- Combat `0.16.1`, a patch: no behaviour changed.
+
+**Why.** The owner asked for it, so that work can resume from a different account or tool, and
+so the owner can read the code later. The project's records were complete but written for a
+reader who already knew the project's voice. HANDOFF is the plain-words way in.
+
+**Connects.** HANDOFF links `CLAUDE.md`, `COMBAT.md`, `COMBAT_DEVLOG.md`, `CONTEXT.md`'s gotchas,
+`.claude/agent-notes.md` and the CI workflow. It duplicates none of them, and the state it holds
+is one short block.
+
+**Verified.** Suite `2959 passed, 0 failed`, two more than C2.9 because `docs_test` scans the new
+page. Boot `0 warnings, 0 errors`, printing `combat 0.16.1`. All seven checkers exit 0.
+`combat_record_test` holds the bold `0.16.1`.
+
+**Unblocks.** C3.0. A future session can now start from `AGENTS.md` or HANDOFF alone.
+
+**Gaps.**
+- The smaller combat files keep their dense `##` headers without an IN PLAIN WORDS paragraph.
+  The standing rule adds plain comments to a file whenever a package touches it, rather than
+  rewriting every file in one package.
+- HANDOFF's state block is prose that a person keeps current. Only the version it points at is
+  machine-checked.

@@ -21,6 +21,10 @@ extends RefCounted
 ## - Each actor's TURNS statuses tick at the start of its own turn, so DEFEND lasts until then.
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
 ##
+## IN PLAIN WORDS: this is the referee of a turn-based fight. Hand it two lists of fighters,
+## then loop: ask `next_turn()` who moves, tell `act()` what they do, and stop when `outcome()`
+## says someone won, lost or ran. It never draws or waits; `BattleScreen` does the showing.
+##
 ## OWNS: whose turn it is, whether a command is legal, and the outcome.
 ## MUST NOT: draw anything, read input, wait for time, or decide what winning gives (C2.8).
 
@@ -61,12 +65,15 @@ func _init(our_side: Array[Combatant], their_side: Array[Combatant], turns: Turn
 func start() -> void:
 	var enemy_ids: Array[StringName] = []
 	for fighter: Combatant in party + enemies:
+		# Remember every fighter by id, so the scheduler's ids can be turned back into nodes.
 		_by_id[fighter.combatant_id] = fighter
+		# Only fighters still standing get a place in the turn order.
 		if not _vitals(fighter).is_defeated():
 			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
 	for fighter: Combatant in enemies:
 		enemy_ids.append(fighter.combatant_id)
 	Events.battle_started.emit(enemy_ids)
+	# A side that starts with nobody standing ends the fight at once.
 	_check_outcome()
 
 
@@ -74,15 +81,18 @@ func start() -> void:
 ## statuses tick first, and one that falls to a tick is skipped.
 func next_turn() -> Combatant:
 	_current = null
+	# Loop because a fighter may fall to poison at the start of their turn; then try the next one.
 	while _outcome == Outcome.ONGOING:
 		var id: StringName = scheduler.next()
 		if id == &"":
 			return null
 		var actor: Combatant = _by_id[id]
+		# Turn-counted statuses (poison, DEFEND) tick when their holder's own turn begins.
 		var statuses: StatusSet = StatusSet.of(actor.get_parent())
 		if statuses != null:
 			statuses.tick_turn()
 		if _vitals(actor).is_defeated():
+			# The tick knocked them out: take them out of the queue and look for the next actor.
 			_settle()
 			continue
 		_current = actor
@@ -110,10 +120,12 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 	var out: Array[Combatant] = []
 	if _current == null or command == null:
 		return out
+	# A plain ATTACK always aims at enemies; a skill or item says who it may aim at.
 	var filter: FactionTable.Target = FactionTable.Target.ENEMY
 	match command.kind:
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			filter = command.skill.target
+		# DEFEND and FLEE aim at nobody.
 		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE:
 			return out
 	for fighter: Combatant in party + enemies:
@@ -129,6 +141,7 @@ func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
 		return false
 	var actor: Combatant = _current
 	match command.kind:
+		# A basic hit with no extra power: the attacker's attack stat against the target's defence.
 		BattleCommand.Kind.ATTACK:
 			if not _legal(command, targets, true):
 				return false
@@ -136,13 +149,16 @@ func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			if not _use(actor, command, targets):
 				return false
+		# Guard: a one-turn defence bonus that wears off when this fighter's next turn starts.
 		BattleCommand.Kind.DEFEND:
 			StatusSet.of(actor.get_parent()).apply(defend_status)
+		# Running away. A failed roll still uses up the turn, which is the classic rule.
 		BattleCommand.Kind.FLEE:
 			if not can_flee:
 				return false
 			if rng.randf() < flee_chance:
 				_end(Outcome.FLED)
+	# The turn is spent: clear it, then remove the fallen and check for a winner.
 	_current = null
 	_settle()
 	return true
@@ -154,21 +170,27 @@ func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant]) -
 	if not _legal(command, targets, single):
 		return false
 	var vitals: Vitals = _vitals(actor)
+	# Check everything that can refuse BEFORE paying, so a refused command costs nothing.
 	if skill.cost > 0 and vitals.current(skill.cost_pool) < skill.cost:
 		return false
+	# An item command also needs the item in the bag, and uses one up.
 	if command.kind == BattleCommand.Kind.ITEM:
 		if inventory == null or not inventory.remove(command.item_id, 1):
 			return false
 	if skill.cost > 0:
 		vitals.change(skill.cost_pool, -skill.cost)
+	# One-target skills hit the chosen target; ALL skills hit everyone they are allowed to.
 	for target: Combatant in (targets if single else targets_for(command)):
+		# Positive power hurts (through the damage formula), negative power heals (straight to the pool).
 		if skill.power > 0.0:
 			actor.hit(target, skill.power, skill.element, rng)
 		elif skill.power < 0.0:
 			_vitals(target).change(target.damage_pool, roundi(-skill.power))
+		# Each status the skill carries lands on its own dice roll.
 		for status: StatusEffect in skill.statuses:
 			if rng.randf() < skill.status_chance:
 				StatusSet.of(target.get_parent()).apply(status)
+	# Heavy skills push the user back in a CTB queue; in round-based battles this does nothing.
 	if skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
 	return true
