@@ -67,14 +67,14 @@ world/player_scene="res://scenes/characters/player.tscn"
 ; when the base gains something a game may ignore, the patch when nothing a game wrote is
 ; affected. That promise is stated in full in docs/UPGRADING.md and encoded in
 ; src/core/util/template_version.gd, which reads this setting and is what the boot banner prints.
-base/version="5.16.3"
+base/version="5.16.4"
 
 [combat]
 
 ; THE COMBAT FORK'S OWN RELEASE, beside [template] base/version, which is the base this fork has
 ; merged up to and is upstream's to bump. This one is bumped by combat packages, under the same
 ; major / minor / patch promise. Read by src/core/util/combat_version.gd; ADR-0008.
-core/version="0.5.0"
+core/version="0.6.0"
 
 [debug]
 

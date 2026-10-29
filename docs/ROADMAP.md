@@ -1616,6 +1616,10 @@ phase that fixes what playing finds cannot list its rows in advance.*
     from a cloud session;
   - #8's first-run question is asked before settings are opened;
   - findings are reported in one shape, and each becomes a `T7.n` row.
+- **T7.1 CI's actions off the deprecated Node 20 — DONE, 2026-10-29, `5.16.4`.** Found by the
+  combat fork's CI, not the playtest: every job warned that `checkout`, `cache` and
+  `upload-artifact` at `@v4` target Node 20. Moved to `checkout@v5`, `cache@v5`,
+  `upload-artifact@v6`. CI only.
 
 **Exit criteria for the phase:**
 
