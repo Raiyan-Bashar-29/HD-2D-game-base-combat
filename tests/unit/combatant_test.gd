@@ -11,7 +11,7 @@ var _defeats: int = 0
 
 
 func run() -> void:
-	plan(24)
+	plan(27)
 	SaveFixture.activate()
 	Flags.clear_all()
 	Events.combatant_damaged.connect(_on_damaged)
@@ -20,6 +20,7 @@ func run() -> void:
 	_filters()
 	_a_combatant_shares_its_sheet_and_id()
 	_a_hit_runs_through_to_defeat()
+	_a_default_save_id_is_made_unique()
 	Events.combatant_damaged.disconnect(_on_damaged)
 	Events.combatant_defeated.disconnect(_on_defeated)
 	Flags.clear_all()
@@ -108,6 +109,35 @@ func _a_hit_runs_through_to_defeat() -> void:
 	equal("and nothing is announced", _damaged, before)
 	striker.free()
 	target.free()
+
+
+## C2.12: two fighters whose `StatusSet` was left at the default save id used to share one save
+## section, so one fighter's statuses overwrote the other's. Each now gets its own.
+func _a_default_save_id_is_made_unique() -> void:
+	var first := _bare(&"fixture_first")
+	var second := _bare(&"fixture_second")
+	equal("a default save id is renamed after its combatant", StatusSet.of(first).save_id, &"statuses/fixture_first")
+	equal("so two fighters never share one", StatusSet.of(first).save_id != StatusSet.of(second).save_id, true)
+	var chosen := _bare(&"fixture_third", &"statuses/fixture_chosen")
+	equal("an id the author chose is kept", StatusSet.of(chosen).save_id, &"statuses/fixture_chosen")
+	first.free()
+	second.free()
+	chosen.free()
+
+
+## An actor built the way an author would by hand: the StatusSet keeps whatever id it is given,
+## the default when none is.
+func _bare(id: StringName, save_id: StringName = StatusSet.DEFAULT_SAVE_ID) -> Node:
+	var actor := Node.new()
+	actor.add_child(Vitals.new())
+	var statuses := StatusSet.new()
+	statuses.save_id = save_id
+	actor.add_child(statuses)
+	var combatant := Combatant.new()
+	combatant.combatant_id = id
+	actor.add_child(combatant)
+	attach(actor)
+	return actor
 
 
 func _on_damaged(_who: StringName, _by: StringName, amount: int, _critical: bool) -> void:

@@ -899,3 +899,53 @@ All three are C2.12.
 
 **Gaps.** The C4 and C5 rows are outlines at the same depth as C2's were before C2.0. Each
 phase's first row re-reads them against the code as it stands then.
+
+## 2026-10-29 — C2.12 · Fixes found in review
+
+**Did.**
+- New `tests/unit/combat_content_test.gd`:
+  - it walks `data/skills`, `data/encounters` and `data/party`;
+  - it collects every translation key the data names: skill names, fighter names, command
+    labels, and the skills those commands use;
+  - it asserts each key is a row in `strings.csv`;
+  - it also asserts that `EncounterDb.problems()` is empty;
+  - a made-up key must not be found, which proves the lookup can fail.
+- `Encounter.music` changed from an unused id to an `AudioStream`. `BattleHost` plays it when the
+  battle screen opens. When the screen leaves the tree, it restores the live area's music, which
+  the new static `BattleHost.area_music(root)` finds by a breadth-first walk to the first
+  `AreaRoot`.
+- `StatusSet.DEFAULT_SAVE_ID` and `StatusSet.rename_save(new_id)`, which unregisters the old save
+  section and registers the new one. `Combatant._ready` renames a set still at the default to
+  `statuses/<combatant_id>`. An id an author chose is kept, and so is the player's own default.
+- `AUTHORING.md` § Add an encounter documents `music`.
+- Combat `0.17.0`. It is a minor version because `Encounter.music` changed type.
+
+**Why.** The three gaps the C2.11 review found:
+- **Translation keys:** a typo in a data file's translation key would have shown a raw key on
+  screen, and nothing would have caught it. The fork leaves upstream's `check_content.gd` alone,
+  so this is a test.
+- **Music:** the encounter's music field existed and was documented, but nothing played it.
+- **Save ids:** two fighters built by hand and left at the default save id shared one save
+  section, so one's statuses overwrote the other's.
+
+**Verified.**
+- Suite: `2973 passed, 0 failed`. Stripped run, done locally the way CI does it: `2892 passed, 0 failed, 25 skipped`, and all seven checkers exit 0.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- **Red first:**
+  - with the key check stubbed to always pass, 1 assertion failed;
+  - with `Combatant`'s rename disabled, 2 failed.
+- **The engine ran it:** a throwaway probe, not committed, booted the real game, opened the demo
+  fight with a stream on its encounter, and closed it. The log read:
+  - `Music -> <the probe's stream>` while the fight was open, with the
+    world paused;
+  - `Music -> (silence)` after closing, which is the courtyard's own (it has no music), with the
+    world unpaused.
+
+**Unblocks.** C2.13.
+
+**Gaps.**
+- No demo encounter has music, because the template ships no audio assets and art and audio are
+  deferred. The path is proven by the probe and by `area_music`'s two assertions.
+- Statuses still have no `name_key`, so this test checks none. C2.14 adds tags, and C2.18 shows
+  statuses on screen; whichever row first shows a status name adds its key and widens this test.

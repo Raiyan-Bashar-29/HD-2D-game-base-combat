@@ -9,8 +9,8 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C2.11, the plan for everything left, written as rows on
-  `COMBAT.md`'s board.
+- **Last finished package:** C2.12, the fixes found in review: a translation-key gate over the
+  combat data, encounter music that plays, and unique status save ids.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -18,12 +18,10 @@ between them, written in plain words.
     factions;
   - the whole turn-based formula (C2): a courtyard encounter you can walk up to and fight, with
     rewards and levels at the end.
-- **Next package:** **C2.12**, fixes found in review:
-  - a translation-key gate over the combat data;
-  - encounter music that actually plays;
-  - a status save-id footgun.
+- **Next package:** **C2.13**: one shared skill path, `SkillUse`, plus cure, dispel, revive,
+  restore, drain and multi-hit effects.
 - **Then, in order:**
-  1. **C2b, combat depth (C2.13–C2.19):**
+  1. **C2b, combat depth (C2.14–C2.19, after C2.13):**
      - one shared skill path, with cure, dispel, revive, drain and multi-hit;
      - sleep, stun and silence;
      - misses, counters and reflect;

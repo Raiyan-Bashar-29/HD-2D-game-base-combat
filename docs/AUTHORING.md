@@ -1293,6 +1293,8 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
    - Give each enemy a `brain` (weighted `BrainEntry`s with a target rule and optional
      conditions), or leave it null to just attack.
    - Set `turn_order` (ROUNDS or CTB), `can_flee`, `experience` and `loot` (item ids).
+   - Optionally set `music`, an audio stream: it plays while the fight is open, and the area's
+     own music returns afterwards. Left empty, the field's music keeps playing.
 4. **The trigger**: place `encounter_point.tscn` under `Interactables`. Set its `object_id`, its
    `label_key`, and its `encounter_id`. A game's own trigger, such as a zone, a cutscene or a
    random roll, emits `Events.encounter_requested(id)` instead.
