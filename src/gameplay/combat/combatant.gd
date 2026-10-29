@@ -41,6 +41,10 @@ func _ready() -> void:
 	if statuses != null:
 		statuses.sheet = sheet
 		statuses.owner_id = combatant_id
+		# A set left at the default save id would collide with every other fighter left at it,
+		# so it is given one named after this combatant instead (C2.12).
+		if statuses.save_id == StatusSet.DEFAULT_SAVE_ID and combatant_id != &"player":
+			statuses.rename_save(StringName("statuses/" + String(combatant_id)))
 
 
 static func of(who: Node) -> Combatant:

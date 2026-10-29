@@ -12,7 +12,7 @@ var _holder: Node
 
 
 func run() -> void:
-	plan(18)
+	plan(20)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_stack = UiRoot.new()
@@ -137,3 +137,14 @@ func _the_host_refuses() -> void:
 	ResourceSaver.save(written, directory.path_join("fixture_roster.tres"))
 	var read: Array[CombatantDef] = BattleHost.roster_from(directory.path_join("fixture_roster.tres"))
 	equal("a roster file's members are read", read.size() == 1 and read[0].combatant_id == &"fixture_hero", true)
+	# C2.12: the area's music is found under the root, so it can come back after a fight. The
+	# tree here is built by hand and never enters the scene, so no area really loads.
+	var root := Node.new()
+	var world := Node.new()
+	root.add_child(world)
+	equal("with no area loaded there is no music to restore", BattleHost.area_music(root), null)
+	var area := AreaRoot.new()
+	area.music = AudioStreamGenerator.new()
+	world.add_child(area)
+	equal("the loaded area's music is found a level down", BattleHost.area_music(root), area.music)
+	root.free()

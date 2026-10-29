@@ -24,6 +24,9 @@ extends Node
 
 const CATEGORY: String = "status"
 const SAVE_VERSION: int = 1
+## The save id a set has when nobody chose one. `Combatant` replaces it with one built from its
+## own id, so two fighters left at the default never write over each other's statuses (C2.12).
+const DEFAULT_SAVE_ID: StringName = &"statuses/player"
 
 
 ## One status currently on the fighter, with its own countdown.
@@ -39,7 +42,7 @@ class Held:
 ## Unique per combatant: it is the `who` in every signal. Vitals' rule.
 @export var owner_id: StringName = &"player"
 ## Unique per combatant, Inventory's rule: two sets sharing it means one never saves.
-@export var save_id: StringName = &"statuses/player"
+@export var save_id: StringName = DEFAULT_SAVE_ID
 
 ## Where modifiers go. Null means the sibling `Vitals`' sheet.
 var sheet: StatSheet
@@ -56,6 +59,16 @@ func _exit_tree() -> void:
 	SaveSystem.unregister(save_id)
 	if Events.game_started.is_connected(_on_game_started):
 		Events.game_started.disconnect(_on_game_started)
+
+
+## Moves this set's save section to `new_id`. In plain words: from now on its statuses are saved
+## under a different name. The old registration is dropped, so nothing is saved twice.
+func rename_save(new_id: StringName) -> void:
+	if new_id == save_id:
+		return
+	SaveSystem.unregister(save_id)
+	save_id = new_id
+	SaveSystem.register(save_id, _collect_save, _apply_save, SAVE_VERSION)
 
 
 static func of(who: Node) -> StatusSet:

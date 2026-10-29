@@ -17,8 +17,9 @@ enum TurnOrder { ROUNDS, CTB }
 @export var turn_order: TurnOrder = TurnOrder.ROUNDS
 @export var can_flee: bool = true
 @export_range(0.0, 1.0, 0.01) var flee_chance: float = 1.0
-## The music cue for the fight, an `Audio` id. Empty keeps the field's music.
-@export var music: StringName = &""
+## The music for the fight, played when it opens; the area's own music comes back when it
+## closes. Empty keeps the field's music playing throughout (C2.12).
+@export var music: AudioStream = null
 
 @export_group("On win")
 ## Given to every party member standing at the end of a won battle.

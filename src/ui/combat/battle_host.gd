@@ -9,7 +9,13 @@ extends Node
 ## `Inventory`, and loot goes there too. An empty line-up, or an unknown encounter, is refused
 ## with a log line and no screen.
 ##
-## OWNS: turning a request into an open battle screen.
+## MUSIC: an encounter with its own `music` plays it when the screen opens, and the area's music
+## comes back when the screen closes. An encounter without music leaves the field's playing.
+##
+## IN PLAIN WORDS: when something in the field says "start fight X", this node builds the fight
+## and opens the battle menu on top of the frozen world.
+##
+## OWNS: turning a request into an open battle screen, and the fight's music.
 ## MUST NOT: decide what a command does, what winning gives, or change areas.
 
 const CATEGORY: StringName = &"combat"
@@ -62,4 +68,33 @@ func open_encounter(encounter_id: StringName) -> bool:
 	# set up in its `_ready`, and a screen not yet opened has not had one.
 	var battle: Battle = BattleSetup.build(encounter, party, self, rng)
 	battle.inventory = Inventory.of(Director.player)
-	return stack.open(BattleScreen.for_battle(battle))
+	var screen: BattleScreen = BattleScreen.for_battle(battle)
+	if encounter.music != null:
+		# Swap to the fight's music now, and put the area's back when the screen goes away.
+		Audio.play_music(encounter.music)
+		screen.tree_exited.connect(_restore_music)
+	return stack.open(screen)
+
+
+## The music of the area the player is in, found by walking down from `root`. Null when no
+## area is loaded (a test, or the title screen).
+static func area_music(root: Node) -> AudioStream:
+	var area: AreaRoot = _find_area(root)
+	return area.music if area != null else null
+
+
+func _restore_music() -> void:
+	# Fades back to the field's track. A null stream (no area music) fades to silence.
+	Audio.play_music(area_music(get_tree().root) if is_inside_tree() else null)
+
+
+## Areas sit a few levels under the root (GameRoot / WorldRoot / area), so a breadth-first walk
+## finds the live one quickly. The first AreaRoot found is the live one: only one is loaded.
+static func _find_area(root: Node) -> AreaRoot:
+	var queue: Array[Node] = [root]
+	while not queue.is_empty():
+		var node: Node = queue.pop_front()
+		if node is AreaRoot:
+			return node as AreaRoot
+		queue.append_array(node.get_children())
+	return null
