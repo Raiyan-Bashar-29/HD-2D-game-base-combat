@@ -11963,3 +11963,24 @@ board and in the roadmap.
 - The script cannot judge feel. The *(feel)* steps need the owner.
 - The demo ships no Bengali or CJK translation, so script rendering stays a capture step, as in
   T6.6.
+
+## 2026-10-29 — T7.1 · CI's actions off the deprecated Node 20
+
+**Did.** `actions/checkout@v4` → `@v5` and `actions/upload-artifact@v4` → `@v6` in
+`.github/workflows/ladder.yml`; `actions/cache@v4` → `@v5` in `.github/actions/setup-godot`.
+Base `5.16.4`, a PATCH.
+
+**Why.** Every CI job, here and in the combat fork, ended with GitHub's warning that these three
+target Node 20, which is deprecated and was being forced onto Node 24. A warning on every run
+trains everybody to stop reading the end of the log.
+
+**Connects.** Found reading the combat fork's CI, not the playtest, so it is a T7 row by the
+board's rule that a defect found on the way becomes a row. The fork receives it through
+`git merge template/main`.
+
+**Verified.** Locally: the ladder and all seven checkers, unchanged code. The real proof is CI on
+this PR: both ladder jobs green and no Node 20 warning in their logs.
+
+**Unblocks.** Nothing; it removes noise.
+
+**Gaps.** None.

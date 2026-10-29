@@ -19,6 +19,22 @@ the exact rot this discipline exists to prevent.
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
 ---
+## 5.16.4
+
+*2026-10-29 — T7.1: CI's actions off the deprecated Node 20.*
+
+**A consuming game does: nothing**, unless it edited `.github/` itself, in which case the merge
+may conflict there and the resolution is to take these version lines. `src/`, `tools/` and
+`tests/` are byte-identical.
+
+**What changed.** `actions/checkout@v4` to `@v5` and `actions/upload-artifact@v4` to `@v6` in
+`ladder.yml`, and `actions/cache@v4` to `@v5` in `setup-godot`.
+
+**Why.** Every CI job ended in GitHub's warning that these three target Node 20, which is
+deprecated and was being forced onto Node 24. A warning on every run is one nobody reads, so it
+would have hidden the next real one.
+
+---
 ## 5.16.3
 
 *2026-10-29 — T7.0: a script for the owner's playtest.*
