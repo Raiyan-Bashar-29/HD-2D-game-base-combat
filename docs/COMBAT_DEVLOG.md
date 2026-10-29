@@ -842,3 +842,60 @@ page. Boot `0 warnings, 0 errors`, printing `combat 0.16.1`. All seven checkers 
   rewriting every file in one package.
 - HANDOFF's state block is prose that a person keeps current. Only the version it points at is
   machine-checked.
+
+## 2026-10-29 — C2.11 · Plan everything that is left: C2b depth, C3 action, C4 hybrid, C5
+
+**Did.** Documents only.
+- `COMBAT.md` gains a new phase, **C2b — Combat depth**, with its "Settled by C2.11" facts.
+- The board gains every row left:
+  - C2.12 to C2.19;
+  - C3.1 to C3.9;
+  - C4.1 to C4.8;
+  - C5.1 to C5.7.
+- C3.0 is folded into this row.
+- HANDOFF's state block names the order.
+- Combat `0.16.2`.
+
+**Why.**
+- The owner asked for the next stages to be planned deeply before more work, for anything broken
+  to be fixed, and for combat to hold "everything": skills, spells, specials, toggles, a way
+  back to the normal attack, buffs and debuffs. The phases C3 to C5 existed only as outlines.
+- What turn-based lacked for "everything" became C2b: cure, dispel, revive, drain, multi-hit,
+  turn-blocking ailments, resistance, misses, counters, reflect, stances, Boost, limit specials,
+  weakness and Break, and a categorised menu. It comes before C3, so action and hybrid inherit it.
+
+**Connects.** Three read-only passes read the code each later row leans on:
+- **Player and input:**
+  - `PlayerController` polls in `_physics_process` and freezes on `InputLock` tokens;
+  - `Actions` defines actions in code, with no context stack;
+  - the free pad buttons are X, R3 and both triggers;
+  - layers 11 to 32 are free.
+- **NPCs:**
+  - `NpcBrain` is schedule-driven and cannot be extended;
+  - its static `reachable_point` is reusable.
+- **Time, pause and HUD:**
+  - all-or-nothing pause;
+  - no `Engine.time_scale`;
+  - `DialogueScreen`'s `pauses_world=false` precedent;
+  - Label HUD widgets on events.
+- **Audio:** `play_music` takes a stream, with no catalogue.
+- **Tests:** none await a frame.
+
+Each fact shaped a row. Combat nodes are attached at runtime, so `player.tscn` stays upstream's.
+`CombatActions` is fork-side, so `actions.gd` stays upstream's. The hybrid's slow-down is a
+combat-only clock. The rebinding and settings seams go upstream first, at C5.3.
+
+**Verified.** Import, boot, suite and all seven checkers pass. `combat_record_test` gates every
+C id in this log against the board, and the bold `0.16.2`.
+
+**Unblocks.** C2.12.
+
+**Found while planning, and made rows:**
+- the combat data's translation keys are not checked against the CSV;
+- `Encounter.music` is never played;
+- a `StatusSet` left at the default save id collides.
+
+All three are C2.12.
+
+**Gaps.** The C4 and C5 rows are outlines at the same depth as C2's were before C2.0. Each
+phase's first row re-reads them against the code as it stands then.

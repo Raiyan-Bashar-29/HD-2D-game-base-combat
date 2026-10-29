@@ -9,7 +9,8 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C2.10, this page plus plain-English comments in the battle code.
+- **Last finished package:** C2.11, the plan for everything left, written as rows on
+  `COMBAT.md`'s board.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -17,11 +18,25 @@ between them, written in plain words.
     factions;
   - the whole turn-based formula (C2): a courtyard encounter you can walk up to and fight, with
     rewards and levels at the end.
-- **Next package:** **C3.0**, which plans the action (real-time) formula. It is documents only:
-  it reads the existing player controller, `NpcBrain`, navigation and input contexts, then writes
-  C3's rows on the board in `COMBAT.md`.
-- **After that:** the C3 rows (action combat), then C4 (the FF7-Remake-style hybrid built from
-  C2 and C3 parts), then C5 (mixing formulas, robustness, a 1.0.0 release).
+- **Next package:** **C2.12**, fixes found in review:
+  - a translation-key gate over the combat data;
+  - encounter music that actually plays;
+  - a status save-id footgun.
+- **Then, in order:**
+  1. **C2b, combat depth (C2.13–C2.19):**
+     - one shared skill path, with cure, dispel, revive, drain and multi-hit;
+     - sleep, stun and silence;
+     - misses, counters and reflect;
+     - stances, Boost and limit specials;
+     - weakness and Break;
+     - a battle menu with categories.
+  2. **C3, action combat (C3.1–C3.9):** hitboxes, the player's attack chain and dodge, lock-on,
+     enemies that chase, and a field HUD.
+  3. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
+  4. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
+
+  Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,
+  "Settled by C2.11".
 - **Known gaps:** each package's "Gaps" list in `COMBAT_DEVLOG.md`, newest last.
 
 ## What this repository is, in five lines
@@ -48,7 +63,8 @@ between them, written in plain words.
    - `COMBAT.md`: the phases, the board and the releases. The first row not marked **DONE** is
      your package.
    - That row's text: its file list is all you need to open.
-3. **Work one package at a time.** Branch from `origin/main`, then:
+3. **Work one package at a time, and finish it before starting the next.** This is the owner's
+   standing rule: never build several half-working things at once. Branch from `origin/main`, then:
    - make it red first: write the test, watch it fail, then make it pass;
    - update the docs;
    - open a pull request;

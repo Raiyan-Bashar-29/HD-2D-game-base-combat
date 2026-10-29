@@ -7,7 +7,7 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-10-29 · **C2.10 complete. Combat version 0.16.1** (`[combat] core/version`; the boot log prints it). **New here? Read [`HANDOFF.md`](HANDOFF.md) first.** Seeded from upstream `aaf281b` (base `5.16.2`), full history kept, `template` remote set. **The shared core (C1) and the turn-based formula (C2) are complete**, with a training dummy and a playable courtyard encounter as their proof. C2.10 added the handoff page and plain-English comments for any later reader. **The next row is C3.0, which plans the action formula.**
+**Last updated:** 2026-10-29 · **C2.11 complete. Combat version 0.16.2** (`[combat] core/version`; the boot log prints it). **New here? Read [`HANDOFF.md`](HANDOFF.md) first.** Seeded from upstream `aaf281b` (base `5.16.2`), full history kept, `template` remote set. **C1, the shared core, and C2, turn-based, are complete.** C2.11 planned everything that is left as rows: C2b (combat depth), C3 (action), C4 (hybrid) and C5 (mix and harden). **The next row is C2.12, fixes found in review.**
 full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, C2.6 builds a battle from an encounter, C2.7 draws it as a screen over the frozen field, C2.8 rewards a win and grows the party, and C2.9 puts a playable fight in the courtyard. **The turn-based formula is complete. The next row is C3.0, which plans the action formula.**
 
 ## How the two repositories relate
@@ -96,6 +96,61 @@ formulas through data, never through `src/`.
     `Combatant`.
   - The field player and the battle party are joined only by the `Party` roster's ids.
 
+### C2b — Combat depth · **in progress**
+
+Added by C2.11 at the owner's request: "skills, spells, magic, special moves, toggling, back to a
+normal attack, buffs, debuffs, everything that happens in combat". It is built for turn-based
+first, and every piece is shaped so C3 and C4 reuse it rather than copy it.
+
+- **One way to use a skill:**
+  - `SkillUse` is shared by the battle, the field and the hybrid;
+  - it adds cure, dispel, revive, restore, drain and multi-hit effects.
+- **Statuses that change behaviour:**
+  - tags (buff, debuff, ailment);
+  - skip a turn (stun, sleep), silence and no items;
+  - wake on hit;
+  - resistance and immunity.
+- **Accuracy and evasion** (a miss), **counters** and **reflect**.
+- **Meters, all one rule** (a pool that regenerates or fills on hit):
+  - MP regen;
+  - Octopath-style Boost;
+  - a limit gauge for special moves;
+  - toggled stances.
+- **Weakness and Break:**
+  - one shield system;
+  - C3's poise and C4's pressure are the same code.
+- **The battle menu:**
+  - categories (Skills, Magic, Items, Special);
+  - costs, greyed-out choices with their reason, On/Off for toggles, and a Boost selector;
+  - statuses on each fighter, and a battle log.
+
+**Settled by C2.11, read against the code** (three read-only passes over the player, NPCs, input,
+time, HUD and settings):
+
+- **The player is not edited.**
+  - `PlayerController` polls input in `_physics_process` and freezes through `InputLock` tokens.
+  - A child node processes after its parent, so it can drive `velocity` for a dodge or
+    knockback while it holds an `&"action"` token.
+  - The combat nodes are attached at runtime, on `player_spawned`, from a loadout named in
+    `[combat]`, so `player.tscn` stays upstream's.
+- **Input and layers:**
+  - Combat actions are defined by a fork-side `CombatActions`, so `actions.gd` is untouched.
+  - The free pad buttons are X, R3 and both triggers.
+  - Physics layers 11 and 12 become `hitbox` and `hurtbox`; layers 11 to 32 are free.
+  - Rebinding these needs an upstream seam (`Actions.extend`). That is C5.3, and it is
+    combat-neutral.
+- **Action enemies:**
+  - `NpcBrain` is schedule-driven and cannot be extended, so an action enemy is its own script.
+  - It reuses `NavigationAgent3D` and the static `NpcBrain.reachable_point`.
+- **Time:**
+  - Pausing is all or nothing, and `Engine.time_scale` is unused.
+  - The hybrid's slow-down is a combat-only `CombatClock` scale that only combat nodes read.
+  - The command menu is a `pauses_world=false` overlay, `DialogueScreen`'s precedent.
+- **Tests never await frames.** Every timed system has a pure core stepped by `dt`, and
+  overlap is driven by emitting `area_entered` by hand.
+- **Settings:** a player-facing combat setting needs upstream's `Settings.DEFAULTS`, so it waits
+  for C5.3. Until then, project settings.
+
 ### C3 — Action formula
 
 - Hitbox/hurtbox components feeding the same C1 damage pipeline.
@@ -155,7 +210,8 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.16.1** — C2.10. A patch, with no behaviour change.
+- **0.16.2** — C2.11. A patch, documents only: the plan for C2b to C5, read against the code. A game does: nothing.
+- `0.16.1` — C2.10. A patch, with no behaviour change.
   - `docs/HANDOFF.md` and the root `AGENTS.md`, a start-here page for any session, account or
     tool.
   - IN PLAIN WORDS paragraphs and inline comments in `battle.gd`, `battle_screen.gd`,
@@ -305,7 +361,40 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C2.8 | Rewards, levels and the party | **DONE**, combat `0.15.0`. `src/content/combat/level_curve.gd`, `src/gameplay/combat/party.gd`, `rewards.gd`, plus fields on `Encounter` and `CombatantDef`, wiring in `BattleHost`, `BattleScreen`, `BattleSetup` and `Battle.encounter`, four `ui.battle.*` strings, and `party_rewards_test.gd` (18). **One change from the plan:** the party has no save section of its own. Its line-up, levels and experience are `Flags`, `Attributes`' rule, so it is saved and reset by a new game for nothing; the test proves a save round trip. A fallen member standing at 1 hp is the template default until C5's defeat flow. The layer checker caught an `@export_group("Rewards")` string naming the new gameplay class from content, and the group was renamed. Red first: with `Party.gain` stubbed, 5 failed. Was planned as: `Party` roster (active and reserve ids, its own save section, `Inventory`'s pattern), a `LevelCurve` resource (exp to level, with stat growth as base-stat deltas), exp on WON, and loot through `Inventory.of(player).add`. Tests: the curve, level-up applied to base stats, loot landing, and a save round trip |
 | C2.9 | Demo proof: one turn-based encounter | **DONE**, combat `0.16.0`, and **phase C2 is closed**. `src/content/combat/party_roster.gd`, `BattleHost.roster_from` and the `[combat] party/roster` setting, `scenes/objects/encounter_point.tscn`, `data/party/roster.tres`, `data/skills/ember.tres`, `data/encounters/thorn_wisps.tres`, the courtyard's `WispNest`, five strings, and `AUTHORING.md` § Add an encounter and a party. `battle_screen_test.gd` gained 2 assertions (18). Two windowed captures: the reward screen over the frozen courtyard, with both members reaching level 2 and the Chipped Stone found; then, after Continue, the live field with the thicket, unpaused. Stripped run: `2880 passed, 0 failed, 25 skipped`, and all six checkers it runs exit 0. **One change from the plan:** the party is a data file named by a project setting rather than a field on the `BattleHost` node, so `game_root.tscn` names no content and a stripped template has no party rather than a broken reference. Was planned as: Data and scenes: a fixture-free encounter in the courtyard and a two-member demo party. A full fight from the field and back, as a windowed capture. The stripped run passes. `AUTHORING.md` § Add an encounter. **Closes phase C2**, and C3.0 plans the action formula |
 | C2.10 | Handoff for any reader, and plain comments | **DONE**, combat `0.16.1`, at the owner's request: "write so future sessions on other accounts, Claude or another AI, can read it and know what is happening, and comment the code so I know what is what". `docs/HANDOFF.md` is the start-here page. It has a "Where things stand" block that every package now updates, five lines on what this is, how to pick up the work, the ladder, a plain-words map of every combat folder, how one fight flows, the rules that bite, and the closing checklist. The root `AGENTS.md` points other AI tools at it, and `CLAUDE.md` gains one pointer line. IN PLAIN WORDS paragraphs and inline comments were added to the four largest combat files. Comments are not code lines, so no budget moved. **Standing rule from here on:** every package updates HANDOFF's state block and comments any line whose reason is not obvious |
-| C3.0 | Plan the action formula: write C3's rows here | TODO, next. Documents only, as C1.0 and C2.0 were: read the player controller, `NpcBrain`, navigation and the input contexts against § C3, then write rows of ≤8 files each |
+| C2.11 | Plan C2b, C3, C4 and C5 as rows | **DONE**, documents only, combat `0.16.2`. Three read-only passes read the player controller, input, interaction, layers, the character kit, `NpcBrain`, navigation, pause, time, the HUD, settings, audio and test stepping against §§ C2b–C5. The facts are in § C2b, "Settled by C2.11". It writes every row below, and stands in for C3.0 |
+| C2.12 | Fixes found in review | TODO, next. `combat_content_test.gd`: every `name_key` and `label_key` in the combat data is in `strings.csv`, and `EncounterDb.problems()` is empty over `data/`. `Encounter.music` becomes an `AudioStream`, which `BattleHost` plays and then restores the area's. `Combatant` gives its `StatusSet` the save id `statuses/<id>` when it was left at the default |
+| C2.13 | One shared skill path, and more effects | TODO. Extract `Battle._use` into `src/gameplay/combat/skill_use.gd`, so the battle, the field and the hybrid share it. `Skill.hits` adds multi-hit. `SkillEffect` content: DAMAGE, HEAL, RESTORE, DRAIN, CURE, DISPEL and REVIVE. The old `power` still works. Tests: each kind, multi-hit, revive targeting |
+| C2.14 | Statuses that change behaviour | TODO. `StatusEffect.tags`; `blocks` SKIP_TURN, NO_SKILLS, NO_ITEMS and NO_FLEE; `breaks_on_hit`; resistance through the `resist_<tag>` stat. `Battle` skips a blocked turn and refuses a blocked command. Tests: each block, waking on a hit, resistance |
+| C2.15 | Hit or miss, counters and reflect | TODO. `AccuracyStage` (accuracy against evasion) sets `DamageResult.missed`, and a skill may be `sure_hit`. Status reactions COUNTER and REFLECT. A miss is announced. Tests under a seed |
+| C2.16 | Meters: stances, Boost and limit specials | TODO. One rule: `regen_<pool>` each turn and `fill_on_hit_<pool>`, which gives MP regen, Boost points and a limit gauge. `Skill.toggle_status` is a stance, on and off. `BattleCommand.boost` spends points to multiply power or hits. Specials cost the limit pool. Tests for each |
+| C2.17 | Weakness and Break | TODO. The `shield` pool and `CombatantDef.weak_to`, by element or skill tag. A weakness hit takes one shield point and reveals the weakness. At 0, BROKEN skips the next turn and raises damage taken through `VulnerabilityStage`. Reveals are kept in `Flags`. C3's poise and C4's pressure reuse this path |
+| C2.18 | A battle menu with depth | TODO. `BattleCommand.category` gives the submenus. Costs are shown and greyed out with their reason. On/Off for toggles. A Boost selector. Statuses and known weaknesses on each fighter's line. A short battle log. Keyed strings, and tests through the screen. Windowed capture |
+| C2.19 | Demo proof: the depth, played | TODO. Fire, Heal, Cure, Raise, a buff, a debuff, Sleep, a stance, a limit special and Boost on the demo party, plus a wisp weak to fire. Captures of the submenu and of a Break. The stripped run passes. `AUTHORING.md` § Skills and statuses. **Closes C2b** |
+| C3.0 | Plan the action formula: write C3's rows here | **Folded into C2.11**, which read the code and wrote C3's rows below. It was planned as: documents only, as C1.0 and C2.0 were: read the player controller, `NpcBrain`, navigation and the input contexts against § C3, then write rows of ≤8 files each |
+| C3.1 | Combat input and layers | TODO. `src/systems/input/combat_actions.gd`: `attack` (J / pad X), `dodge` (K / pad RT), `lock_on` (L / pad LT) and `lock_cycle` (`;` / pad R3), defined at boot with `actions.gd` untouched. `combat_layers.gd` holds layer 11 `hitbox` and layer 12 `hurtbox`, named in `project.godot`. Rebinding waits for C5.3 |
+| C3.2 | Moves as data, timing as pure code | TODO. `ActionMove`: startup, active and recovery seconds; a chain window; power, element, hits and poise; knockback; the hitbox shape. It can wrap a `Skill`, so spells are cast in real time. `MoveSet`: a chain, a dodge with i-frames, and skill slots. `MoveTimeline` (systems, pure) is stepped by `dt`. Tests step it |
+| C3.3 | Hitbox and hurtbox | TODO. `Hitbox` (Area3D) hits each target once per swing. `Hurtbox.take()` checks factions and i-frames, resolves through `SkillUse` or `Combatant.hit`, takes poise down the C2.17 path, and emits `Events.knockback_requested`. Tests emit `area_entered` by hand |
+| C3.4 | The player fights | TODO. `ActionHost` attaches `Vitals`, `StatusSet`, `Combatant`, `Hurtbox` and `ActionFighter` to the player on `player_spawned`, from the `ActionLoadout` named by `[combat] action/loadout`; `player.tscn` is untouched. `ActionFighter` respects `is_input_locked()`, runs the chain, drives the dodge and knockback through an `&"action"` lock token, and ticks `StatusSet.tick_seconds`. Tests step `_physics_process` |
+| C3.5 | Lock-on | TODO. `LockOn`: the nearest hostile hurtbox in range and in front; cycling; dropping on range or defeat; facing the target. `Events.lock_on_changed`. Tests with placed fixture nodes |
+| C3.6 | Enemies that chase, attack and retreat | TODO. `ActionEnemy` (its own script and prefab) reuses `NavigationAgent3D` and `NpcBrain.reachable_point`. `ActionBrain` content: aggro, leash, range, retreat and weighted moves. `ActionDecider` (systems, pure) holds the state transitions, tested without physics |
+| C3.7 | Defeat, rewards and respawn | TODO. `Rewards.grant` no longer needs a `Battle`, so a field kill rewards. A defeated enemy stays gone until re-entry. `DefeatRule` content (RELOAD_SAVE, RESPAWN_AT_ENTRY, REVIVE_IN_PLACE) and `FieldDefeat` for the player |
+| C3.8 | Field HUD | TODO. `CombatHud` under UILayer: the player's pools and statuses, the locked target's hp, and the skill slots. Hidden with no fighter. Driven by events |
+| C3.9 | Demo proof: an action fight | TODO. A loadout, and two action enemies in `lantern_hall`. Captures of a swing, a hit, a dodge and lock-on. The stripped run passes. `AUTHORING.md` § Action combat. **Closes C3** |
+| C4.1 | `CombatClock` | TODO. A combat-only time scale (a static var, so no autoload), read by every C3 node and by field status ticking. 0 is pause-and-play |
+| C4.2 | ATB gauge | TODO. `AtbGauge` (systems, pure): segments, filling over time and on hits, guards and dodges. The rules live in `AtbRules` content |
+| C4.3 | Command overlay | TODO. A `pauses_world=false` screen with C2.18's categories, spending ATB through `SkillUse`. It slows `CombatClock` to `[combat] hybrid/slow`, where 0 is wait mode. Its key is chosen here, against the buttons still free |
+| C4.4 | Pressure and stagger | TODO. C2.17's Break and C3's poise, timed in seconds: PRESSURED, then STAGGERED, with damage taken raised |
+| C4.5 | A party in the field | TODO. Followers for the active party, and switching which member you control |
+| C4.6 | Allies think in real time | TODO. `BattleAi` decoupled from `Battle` through a `BrainContext`. Allies move by `ActionBrain` and spend ATB on weighted commands |
+| C4.7 | Variants with no new system | TODO. One fixture test each: an ATB-menu battle, pause-and-play, and timed hits through a pure `TimedWindow` |
+| C4.8 | Demo proof: a hybrid fight | TODO. One hybrid encounter, captures, and AUTHORING. **Closes C4** |
+| C5.1 | Mixed formulas | TODO. `Encounter.mode` is TURN, ACTION or HYBRID. Touching an action enemy can start a turn-based fight |
+| C5.2 | Saves around combat | TODO. Saving is refused while a battle screen is open. A field fight survives a save and load |
+| C5.3 | Upstream seams | TODO. Rows on upstream's board first, then merged down: `Actions.extend` (rebindable extra actions), and a game-registered settings section for lock-on assist, wait/active mode, difficulty and auto-battle |
+| C5.4 | Accessibility | TODO. A difficulty multiplier stage, auto-battle, hold-to-attack |
+| C5.5 | Docs | TODO. `AUTHORING.md` combat chapters. `NEW_GAME.md` § Choose your combat, with the `combat.*` CSV prune |
+| C5.6 | Playtest | TODO. `PLAYTEST.md`'s loop; each finding becomes a row |
+| C5.7 | Release 1.0.0 | TODO. Release notes and a final strip test |
 
 **Rules for the rows:** the same as upstream's board (`WORK_PACKAGES.md` § The rules), unchanged:
 
