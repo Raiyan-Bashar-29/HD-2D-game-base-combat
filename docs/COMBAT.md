@@ -7,8 +7,8 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-10-29 · **C1.7 complete, phase C1 closed. Combat version 0.7.0** (`[combat] core/version`; the boot log prints it). Seeded from upstream `aaf281b` (base `5.16.2`),
-full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. The next row is C2.0, which plans the turn-based formula's rows.**
+**Last updated:** 2026-10-29 · **C2.0 complete: phase C2 is planned. Combat version 0.7.0** (`[combat] core/version`; the boot log prints it). Seeded from upstream `aaf281b` (base `5.16.2`),
+full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, and the next row is C2.1, the turn scheduler.**
 
 ## How the two repositories relate
 
@@ -77,6 +77,24 @@ formulas through data, never through `src/`.
 - Battle UI: commands, target select and a turn-order strip, keyed strings, T6 input prompts.
 - EXP and level curve, loot into the existing `Inventory`, and a saved `Party` roster.
 - **Proof:** one demo encounter, and a whole battle driven headlessly from fixtures.
+
+**Settled by C2.0, read against the code:**
+
+- **A battle is a modal layer over the paused field, not an area.**
+  - Opening a modal screen already sets `get_tree().paused`, and `WorldRoot` is pausable
+    (`ui_root.gd`'s table).
+  - So the field is frozen exactly where it was, and closing the battle returns to it with no
+    save, no reload and no `Director` change.
+  - `Director` keeps its "MUST NOT know what is inside an area" line.
+- **The battle never runs on `_process`.** It advances only when called (`act`, `next_turn`),
+  so pausing cannot stop it, and a test drives a whole battle with no frames.
+- **The battle runtime is gameplay, the scheduler is systems.** A battle holds `Combatant`
+  nodes, which are gameplay. A scheduler only orders ids by a speed number, so it stays pure
+  and swappable, under `src/systems/combat/`.
+- **Party members and enemies are data, not field nodes.**
+  - A battle builds its own `Combatant`s from definitions, so the template's player needs no
+    `Combatant`.
+  - The field player and the battle party are joined only by the `Party` roster's ids.
 
 ### C3 — Action formula
 
@@ -181,7 +199,16 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C1.5 | Status effects | **DONE**, combat `0.5.0`. `src/content/combat/status_effect.gd` and `status_db.gd`, `src/gameplay/combat/status_set.gd`, `Events.status_applied` / `status_expired`, `status_set_test.gd` (27). A set never ticks itself, so pause and slow-motion need nothing here. Modifiers are authored without a source and stamped with the status id, so expiry, cure, a new game and a load remove exactly them. A long `tick_seconds` step never ticks past expiry. A duration of zero lasts until cured. The save section stores ids, time left and stacks, and rebuilds modifiers from `StatusDb`. **One change from the plan:** the tick is a pool change, not a `DamageRequest`, because content may not depend on systems; a tick through a formula is C1.6's. Red first: with ticks and clean-up stubbed, 6 failed. Was planned as: `StatusEffect` content: duration in TURNS **or** SECONDS, which is what lets every formula share it; stacking rule REFRESH / STACK / IGNORE; modifiers; an optional tick. A `StatusSet` component with `tick_turn()` / `tick_seconds()`; expiry removes its modifiers by source. Its own save section, registered without editing `save_system.gd`. Tests: both units, the three stacking rules, clean expiry |
 | C1.6 | Factions, targeting and `Combatant` | **DONE**, combat `0.6.0`. `src/content/combat/faction_table.gd`, `src/gameplay/combat/combatant.gd`, `Events.combatant_damaged`, `combatant_test.gd` (24). No table is needed for the common rule (same faction allied, different hostile); a table lists exceptions as `a:b`, symmetric. ALLY includes the user, so a party heal reaches its caster; ENEMY never does. `Combatant` hands its sheet and id to its siblings on ready, so a status's modifier and `Vitals`' maximum read one sheet. **The attacker's formula resolves**, and the defender only applies the result, so a preview and the real hit agree. A defeated combatant receives nothing. Red first: with the sheet unshared and `receive` applying nothing, 5 failed. Upstream `5.16.4` (T7.1) merged in with no conflict. Was planned as: Faction hostility (content); target filters SELF / ALLY / ENEMY / ANY; a `Combatant` component tying sheet, vitals, statuses and faction to a `combatant_id`; `receive(request)` resolves, applies and emits `Events.combatant_damaged`. Tests: hostility, filters, a request through to defeat |
 | C1.7 | Demo proof: a training dummy | **DONE**, combat `0.7.0`, and **phase C1 is closed**. `src/gameplay/interactables/strike_target.gd` (generic, it names no content), `Combatant.base_stats` and `resolving_formula()`, the prefab `scenes/objects/strike_target.tscn`, the courtyard's `TrainingDummy` (30 hp, 20 defence, revives) and its three strings, `strike_target_test.gd` (14), and § Make something you can hit in `AUTHORING.md`. An interactor without a `Combatant` (the template's player) strikes with `power` alone. Windowed capture: the toast reads "Thwack. 7 damage, 23 of 30 left." Stripped run: `2745 passed, 0 failed, 25 skipped`. Red first: with `perform` stubbed, 9 failed. **One change from the plan:** a `src/` class was needed after all, because no interactable could hit; it is generic, so the row's rule (nothing under `src/` names the dummy) holds |
-| C2.0 | Plan the turn-based formula: write C2's rows here | TODO, next. Documents only, as C1.0 was: read the Director, area transitions and `FlagQuery` against § C2, then write rows of ≤8 files each |
+| C2.0 | Plan the turn-based formula: write C2's rows here | **DONE**, documents only. The rows below were read against the code: `UiRoot` pauses `WorldRoot` under any modal screen, `Director` must not know an area's insides, `FlagQuery.passes` is the one condition reader, `Inventory.of(who).add` is the loot seam, and the layer rule puts anything holding a `Combatant` in gameplay. Decisions are in § C2, "Settled by C2.0" |
+| C2.1 | `TurnScheduler` and speed-sorted rounds | TODO, next. `src/systems/combat/turn_scheduler.gd`, a pure base class: `join(id, speed)`, `leave(id)`, `next() -> StringName`, `preview(n)` for the turn-order strip. `round_scheduler.gd` is the default: each round orders everyone by speed, highest first, with ties broken by join order so a seed is never needed. Someone who leaves mid-round is skipped. Tests: order, ties, leaving mid-round, `preview` matching `next` |
+| C2.2 | A CTB queue, the second scheduler | `ctb_scheduler.gd`: each actor waits `delay / speed` ticks, so a fast actor can act twice before a slow one. A `delay_by(id, ticks)` seam lets a heavy skill or a slow status push someone back. Tests: a 2× speed acting twice, `delay_by`, `preview`, and the same fixture battle running unchanged on both schedulers. **Proves the scheduler is the swap point** |
+| C2.3 | Skills and commands as data | `src/content/combat/skill.gd`: a cost (pool and amount), a `FactionTable.Target` filter, a scope (ONE or ALL), power, element, and statuses applied with their chance. `battle_command.gd` holds the kind (ATTACK, SKILL, ITEM, DEFEND, FLEE) and the skill or item it uses. `skill_db.gd` over `data/skills/`, and `check_content` taught to scan both `data/skills/` and `data/statuses/`, which closes C1.5's gap. Tests: `problems()` for each, and a scan |
+| C2.4 | The battle runtime | `src/gameplay/combat/battle.gd`: sides of `Combatant`s, a scheduler, `current()`, and `act(command, targets) -> bool`, which checks the target filter, spends the cost, resolves through the actor's formula and applies statuses. DEFEND is a one-turn status, and `tick_turn` runs on each actor's own turn. Outcomes: WON, LOST, FLED. `Events.battle_started` / `battle_ended(outcome)`. Test: a whole fixture battle, start to WON, with a seeded rng and no frames |
+| C2.5 | `BattleBrain`, the enemy AI | `src/content/combat/battle_brain.gd`: weighted entries, each with a command, a target rule (lowest hp, random, self) and an optional condition. Conditions use `FlagQuery`'s closed set, plus one test on the actor's own pool fraction. The pick is seeded. Tests: a weight of zero never fires, a condition gates, seeded determinism |
+| C2.6 | Encounters and the field trigger | `src/content/combat/encounter.gd`: an enemy group (definitions plus count), `can_flee`, a music id, and rewards. `encounter_db.gd`. A `combatant_def.gd` holds an id, faction, base stats, skills and brain, and is used by both party and enemies. A field trigger raises `Events.encounter_requested(id)` through an existing `TriggerVolume` / interactable flag seam where one fits, with no new trigger class if possible. Tests: a request builds the right sides |
+| C2.7 | The battle screen | `src/ui/screens/battle_screen.gd`, a modal `UiScreen`: a command menu, target select, a turn-order strip from `preview`, and hp bars from `Events.vitals_changed`. All strings keyed, with T6 input prompts. Closing it returns to the frozen field. Windowed capture. Tests: open pauses the world, and a scripted battle through the screen ends and closes it |
+| C2.8 | Rewards, levels and the party | `Party` roster (active and reserve ids, its own save section, `Inventory`'s pattern), a `LevelCurve` resource (exp to level, with stat growth as base-stat deltas), exp on WON, and loot through `Inventory.of(player).add`. Tests: the curve, level-up applied to base stats, loot landing, and a save round trip |
+| C2.9 | Demo proof: one turn-based encounter | Data and scenes: a fixture-free encounter in the courtyard and a two-member demo party. A full fight from the field and back, as a windowed capture. The stripped run passes. `AUTHORING.md` § Add an encounter. **Closes phase C2**, and C3.0 plans the action formula |
 
 **Rules for the rows:** the same as upstream's board (`WORK_PACKAGES.md` § The rules), unchanged:
 
