@@ -8,7 +8,7 @@
   base's record, still true for every system inherited from it.
 
 **Last updated:** 2026-10-29 · **C0.1 complete.** Seeded from upstream `aaf281b` (base `5.16.2`),
-full history kept, `template` remote set. **No combat code exists yet; the next row is C1.0,
+full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **No combat code exists yet; the next row is C1.0,
 planning the shared core.**
 
 ## How the two repositories relate

@@ -44,5 +44,8 @@ were run on the seeded tree.
 
 - `record_shape_test.gd` does not gate C ids yet, and no `combat/version` key exists. Both
   belong to C1, the first package that changes code.
-- The upgrade path is merged "Already up to date" today. It is first tested for real when
-  upstream ships its next version.
+- ~~The upgrade path is merged "Already up to date" today.~~ **Tested for real the same day.**
+  Upstream shipped `5.16.3` (T7.0, `docs/PLAYTEST.md`), and `git merge template/main` into
+  this branch auto-merged 9 files with **no conflict**, including `CONTEXT.md`, where this
+  fork's pointer sits above the lines upstream changed. Ladder after the merge: import clean,
+  boot `0 warnings, 0 errors`, suite `2683 passed, 0 failed`, all seven checkers exit 0.
