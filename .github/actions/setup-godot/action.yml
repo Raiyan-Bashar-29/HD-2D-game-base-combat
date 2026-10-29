@@ -24,7 +24,7 @@ runs:
     # cannot go stale - the class of risk that keeps `.godot/` OUT of the cache (see ladder.yml).
     - name: Cache the engine archive
       id: cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: /tmp/godot-download
         key: godot-4.7.2-stable-linux-x86_64
