@@ -588,3 +588,52 @@ author write "heal below half, burn things once the bridge falls" with no code.
 **Gaps.** The pool condition supports "below" only. "Above", and conditions on a target's state
 (for example "finish off whoever is weakest"), are LOWEST_HP's job today. A richer test waits
 for a game that needs one.
+
+## 2026-10-29 — C2.6 · Encounters and the field trigger
+
+**Did.**
+- `src/content/combat/combatant_def.gd`: an id, a name key, a faction, base stats, commands and
+  a brain. Party and enemies share it.
+- `encounter.gd`: the enemies, a ROUNDS or CTB turn order, `can_flee`, `flee_chance` and a music
+  id.
+- `encounter_db.gd`.
+- `src/gameplay/combat/battle_setup.gd`: `build` and `release`.
+- `src/gameplay/interactables/encounter_point.gd`.
+- `Events.encounter_requested(encounter_id)`.
+- `Battle.brains` and `brain_of`.
+- `encounter_test.gd` (17).
+- Combat `0.13.0`.
+
+**Why.** A battle needs fighters built from data, and the field needs a way to ask for one.
+This is the seam between the two.
+
+**Connects.**
+- **One definition for both sides** (C2.0). `BattleSetup` turns each one into C1.6's node shape
+  (`Vitals`, `StatusSet`, `Combatant`) under a holder the caller owns.
+- **Enemies leave no trace.** Their `vital/` flags are erased on build and on release, so a save
+  after a fight never carries an enemy's hp. The party's are kept, so hp carries between fights.
+- **The layer rule shaped two fields.** An encounter names its turn order as an enum, and a
+  definition names no formula, because both of those are systems types and content may not
+  depend on systems. `BattleSetup` (gameplay) maps the enum, and a fighter uses the standard
+  formula.
+- **`EncounterPoint` asks; it never builds.** C2.7's battle host answers
+  `encounter_requested`, so a game's own trigger (a zone, a cutscene, a timer) emits the same
+  signal and needs nothing else.
+- **Fixed on the way:** `StatusDb`, `SkillDb` and `EncounterDb` now treat a missing directory as
+  no content. C1.5 on had the suite logging an engine `Couldn't open directory` error for each,
+  and so did the stripped run.
+
+**Verified.**
+- Red first, each stub run on its own: the enemy flag reset stubbed failed 2; the duplicate
+  suffix stubbed failed 1. Run together they masked each other down to 1, so they were split.
+  Restored.
+- Suite `2918 passed, 0 failed`, and the only directory error left is upstream's deliberate one.
+  Boot `0 warnings, 0 errors`, printing `combat 0.13.0`. All seven checkers exit 0.
+
+**Unblocks.** C2.7, the battle screen: it hosts `encounter_requested`, builds with
+`BattleSetup`, and drives turns with `BattleAi` for brains and the menu for the rest.
+
+**Gaps.**
+- `music` is stored but nothing plays it yet. C2.7's host does.
+- A fighter's formula cannot be chosen in data. A game sets it on the built `Combatant`. A
+  content-side formula reference waits for a game that needs a non-standard one per enemy.

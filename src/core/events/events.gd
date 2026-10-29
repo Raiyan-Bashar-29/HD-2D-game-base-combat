@@ -288,3 +288,6 @@ signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,
 ## LOST or FLED), carried as an int because the bus lives below gameplay.
 signal battle_ended(outcome: int)
+## The field asked for a fight. Emitted by an `EncounterPoint`, or a game's own trigger, with an
+## `encounter/<name>` id; whoever hosts battles (C2.7) builds it with `BattleSetup`.
+signal encounter_requested(encounter_id: StringName)

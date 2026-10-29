@@ -35,6 +35,9 @@ var inventory: Inventory
 var can_flee: bool = true
 var flee_chance: float = 1.0
 var defend_status: StatusEffect = _default_defend()
+## The brain of each fighter nobody controls, by combatant id. `BattleSetup` fills it from the
+## definitions; the screen asks `brain_of` to know whose turn it plays itself.
+var brains: Dictionary[StringName, BattleBrain] = {}
 
 var _by_id: Dictionary[StringName, Combatant] = {}
 var _current: Combatant
@@ -84,6 +87,13 @@ func next_turn() -> Combatant:
 
 func current() -> Combatant:
 	return _current
+
+
+## The brain that plays `fighter`, or null for one the player controls.
+func brain_of(fighter: Combatant) -> BattleBrain:
+	if fighter == null or not brains.has(fighter.combatant_id):
+		return null
+	return brains[fighter.combatant_id]
 
 
 func outcome() -> Outcome:
