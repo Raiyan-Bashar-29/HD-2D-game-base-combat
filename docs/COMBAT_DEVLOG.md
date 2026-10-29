@@ -691,3 +691,54 @@ layer, and the first time a person can play a fight.
   or C5 hardening.
 - `UiRoot` closes a screen deferred, so the test closes through the stack after checking that
   Continue asked to close.
+
+## 2026-10-29 — C2.8 · Rewards, levels and the party
+
+**Did.**
+- `src/content/combat/level_curve.gd`: experience to reach level L is `base * (L-1)^exponent`,
+  with a max level and per-level `growth` deltas.
+- `CombatantDef.level_curve`, and `Encounter.experience` and `loot`.
+- `src/gameplay/combat/party.gd`: `active`, `arrange`, `level_of`, `experience_of`, `gain` and
+  `at_level`, all over `Flags`.
+- `rewards.gd`: `Rewards.grant`, plus its summary.
+- `Battle.encounter`.
+- `BattleSetup.release` revives a fallen member at 1 hp.
+- `BattleHost`: `party` is renamed `roster`, and a battle is built from `Party.active` at each
+  member's level, with the player's `Inventory`.
+- `BattleScreen` draws the reward lines.
+- Four strings.
+- `party_rewards_test.gd` (18).
+- Combat `0.15.0`.
+
+**Why.** A won fight should leave something behind, and the plan's "saved Party roster" closes
+C2.6's gap of a party that was only a list on a node.
+
+**Connects.**
+- **No new save section.** The line-up, levels and experience are flags (`party/active`,
+  `level/<id>`, `exp/<id>`), the same rule as `Attributes`, `Vitals` and `Equipment`. They are
+  saved, reset by a new game, and readable from a gate or a dialogue line. The test saves to
+  slot 3, clears and loads.
+- **Levels are base stats, not modifiers.** `at_level` grows a copy of the definition, so
+  equipment and statuses still layer on top through C1.2's modifiers.
+- **Loot goes through `Inventory.add`,** all or nothing per item. What does not fit is reported on
+  the screen, never silently dropped.
+- **ITEM commands now spend from the player's bag.** That closes C2.4's gap.
+- **A fallen member stands back up at 1 hp on release.** Without that, a lost fight would start
+  the next one already lost. It is a template default until C5's defeat flow.
+- **The layer checker earned its keep.** It flagged `@export_group("Rewards")` in content as
+  naming the gameplay class `Rewards`. The group is now "On win".
+
+**Verified.**
+- Red first: with `Party.gain` stubbed, 5 failed. Restored.
+- Suite `2954 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.15.0`. All
+  seven checkers exit 0.
+
+**Unblocks.** C2.9, the demo encounter, which closes phase C2.
+
+**Gaps.**
+- Experience is the encounter's full amount for each standing member, not split. That is a
+  template default; a game wanting a split changes `Rewards.grant`.
+- Nothing yet shows a member's level outside the battle, such as a party screen. That is a
+  game's UI.
+- A level-up raises the maximum, but current hp is not topped up, so it stays where it was.
+  Some games heal on a level-up; this one does not by default.

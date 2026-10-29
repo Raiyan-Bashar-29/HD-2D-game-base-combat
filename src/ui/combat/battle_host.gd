@@ -3,8 +3,9 @@ extends Node
 ## Answers `Events.encounter_requested`: builds the battle and opens `BattleScreen` over the
 ## field. It sits beside `ScreenKeys` under the UI layer, and is the only listener of that signal.
 ##
-## THE PARTY IS A LIST OF DEFINITIONS here until C2.8's roster replaces it, so a game can fight
-## today by filling `party` in the scene. An empty party, or an unknown encounter, is refused
+## THE ROSTER IS EVERY FIGHTER THAT COULD JOIN, set in the scene. `Party` picks the active
+## line-up from it and builds each member at its level. ITEM commands spend from the player's
+## `Inventory`, and loot goes there too. An empty line-up, or an unknown encounter, is refused
 ## with a log line and no screen.
 ##
 ## OWNS: turning a request into an open battle screen.
@@ -12,7 +13,7 @@ extends Node
 
 const CATEGORY: StringName = &"combat"
 
-@export var party: Array[CombatantDef] = []
+@export var roster: Array[CombatantDef] = []
 
 var _seed: RandomNumberGenerator = RandomNumberGenerator.new()
 
@@ -32,6 +33,9 @@ func _exit_tree() -> void:
 func open_encounter(encounter_id: StringName) -> bool:
 	var encounter: Encounter = EncounterDb.encounter(encounter_id)
 	var stack: UiRoot = UiRoot.find(self)
+	var party: Array[CombatantDef] = []
+	for def: CombatantDef in Party.active(roster):
+		party.append(Party.at_level(def))
 	if encounter == null or party.is_empty() or stack == null:
 		Log.warn(CATEGORY, "cannot start '%s': encounter %s, party of %d, stack %s" % [
 				encounter_id, encounter != null, party.size(), stack != null])
@@ -40,4 +44,6 @@ func open_encounter(encounter_id: StringName) -> bool:
 	rng.seed = _seed.randi()
 	# The fighters live under this node, which is in the tree: a fighter's sheet and pools are
 	# set up in its `_ready`, and a screen not yet opened has not had one.
-	return stack.open(BattleScreen.for_battle(BattleSetup.build(encounter, party, self, rng)))
+	var battle: Battle = BattleSetup.build(encounter, party, self, rng)
+	battle.inventory = Inventory.of(Director.player)
+	return stack.open(BattleScreen.for_battle(battle))

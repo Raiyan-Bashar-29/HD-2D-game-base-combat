@@ -20,12 +20,21 @@ enum TurnOrder { ROUNDS, CTB }
 ## The music cue for the fight, an `Audio` id. Empty keeps the field's music.
 @export var music: StringName = &""
 
+@export_group("On win")
+## Given to every party member standing at the end of a won battle.
+@export var experience: int = 0
+## Item ids added to the player's inventory on a win, one each. An item that does not fit is
+## left behind and reported, `Inventory.add`'s all-or-nothing rule.
+@export var loot: Array[StringName] = []
+
 
 func problems() -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
 	var where: String = "%s (%s)" % [resource_path, id]
 	if id == &"":
 		found.append("%s has no id" % resource_path)
+	if experience < 0:
+		found.append("%s gives negative experience" % where)
 	if enemies.is_empty():
 		found.append("%s has no enemies" % where)
 	for enemy: CombatantDef in enemies:
