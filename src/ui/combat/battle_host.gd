@@ -3,7 +3,8 @@ extends Node
 ## Answers `Events.encounter_requested`: builds the battle and opens `BattleScreen` over the
 ## field. It sits beside `ScreenKeys` under the UI layer, and is the only listener of that signal.
 ##
-## THE ROSTER IS EVERY FIGHTER THAT COULD JOIN, set in the scene. `Party` picks the active
+## THE ROSTER IS EVERY FIGHTER THAT COULD JOIN: `roster` if set on the node, else the
+## `PartyRoster` file `[combat] party/roster` names, loaded on ready. `Party` picks the active
 ## line-up from it and builds each member at its level. ITEM commands spend from the player's
 ## `Inventory`, and loot goes there too. An empty line-up, or an unknown encounter, is refused
 ## with a log line and no screen.
@@ -12,6 +13,7 @@ extends Node
 ## MUST NOT: decide what a command does, what winning gives, or change areas.
 
 const CATEGORY: StringName = &"combat"
+const ROSTER_SETTING: String = "combat/party/roster"
 
 @export var roster: Array[CombatantDef] = []
 
@@ -20,12 +22,26 @@ var _seed: RandomNumberGenerator = RandomNumberGenerator.new()
 
 func _ready() -> void:
 	_seed.randomize()
+	if roster.is_empty():
+		roster = roster_from(str(ProjectSettings.get_setting(ROSTER_SETTING, "")))
 	Events.encounter_requested.connect(open_encounter)
 
 
 func _exit_tree() -> void:
 	if Events.encounter_requested.is_connected(open_encounter):
 		Events.encounter_requested.disconnect(open_encounter)
+
+
+## The members of the `PartyRoster` at `path`, or none when there is no such file: the
+## stripped template's case, which is not an error.
+static func roster_from(path: String) -> Array[CombatantDef]:
+	var members: Array[CombatantDef] = []
+	if path == "" or not ResourceLoader.exists(path):
+		return members
+	var found: PartyRoster = ResourceLoader.load(path) as PartyRoster
+	if found != null:
+		members = found.members
+	return members
 
 
 ## Builds `encounter_id` against the party and opens the screen. False, with nothing opened,
