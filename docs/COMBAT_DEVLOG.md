@@ -505,3 +505,48 @@ so a fire spell, a heal and a poison dart differ only in numbers.
   (C2.9), as a CSV-key assertion in `skill_test.gd`.
 - Commands have no catalogue. They live inline in a combatant definition (C2.6), and their
   problems are reported through it.
+
+## 2026-10-29 — C2.4 · The battle runtime
+
+**Did.**
+- `src/gameplay/combat/battle.gd`. It holds two sides of `Combatant`s, a scheduler (a duplicate,
+  `RoundScheduler` by default) and a seeded rng.
+  - Turn flow: `start()`, then `next_turn()`, `current()`, `act(command, targets)`, `outcome()`,
+    plus `targets_for(command)`.
+  - The commands are ATTACK, SKILL, ITEM, DEFEND and FLEE.
+- `Events.battle_started(enemy_ids)` and `battle_ended(outcome)`.
+- `battle_test.gd` (20).
+- Combat `0.11.0`.
+
+**Why.** C2.1 to C2.3 built the order and the data. This is the one piece of code that runs
+them, and it is what C2.5's AI, C2.7's screen and C2.9's demo all drive.
+
+**Connects.**
+- **Calls only, no `_process`** (C2.0). A whole fight in the test runs in one frame.
+- **The commands use C1:**
+  - a hit is `Combatant.hit`, through the actor's own formula;
+  - a cost and a heal go through `Vitals.change`;
+  - a status goes through `StatusSet.apply`;
+  - a target goes through `Combatant.can_target`.
+- **Statuses tick on the actor's own turn.** So a one-turn DEFEND lasts exactly until the
+  defender acts again, and a poison that defeats someone skips their turn.
+- **The scheduler only hears `join` and `leave`.** So it stays swappable. A skill's `delay`
+  reaches it only when it is a `CtbScheduler`.
+- **ITEM spends from an `Inventory` the caller hands in.** Without one, ITEM is refused.
+  C2.8 wires the player's.
+- **The bus carries the outcome as an int,** because `events.gd` lives in core, below gameplay.
+
+**Verified.**
+- Red first: with `act` stubbed, 12 failed. Restored.
+- Suite `2889 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.11.0`. All
+  seven checkers exit 0.
+
+**Unblocks.** C2.5, `BattleBrain`, which picks an enemy's command and targets from
+`targets_for`.
+
+**Gaps.**
+- DEFEND's status is built in code with the id `status/defend`, so a save made mid-battle could
+  not rebuild it. Battles do not save mid-fight, and a game wanting a different guard sets
+  `defend_status`.
+- A heal on an ALL scope heals everyone the filter allows, the user included (ALLY includes
+  self, C1.6). That is the usual meaning, and it is noted here in case it surprises.

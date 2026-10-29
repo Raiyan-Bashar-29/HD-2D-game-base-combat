@@ -283,3 +283,8 @@ signal status_expired(who: StringName, status_id: StringName)
 ## A combatant received a resolved hit. Emitted by `Combatant.receive`; the amount is the hit's
 ## total, negative for an absorbed one, and a defeated combatant receives nothing.
 signal combatant_damaged(who: StringName, by: StringName, amount: int, critical: bool)
+## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
+signal battle_started(enemy_ids: Array[StringName])
+## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,
+## LOST or FLED), carried as an int because the bus lives below gameplay.
+signal battle_ended(outcome: int)
