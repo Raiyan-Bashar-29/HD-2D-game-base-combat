@@ -550,3 +550,41 @@ them, and it is what C2.5's AI, C2.7's screen and C2.9's demo all drive.
   `defend_status`.
 - A heal on an ALL scope heals everyone the filter allows, the user included (ALLY includes
   self, C1.6). That is the usual meaning, and it is noted here in case it surprises.
+
+## 2026-10-29 — C2.5 · `BattleBrain`, the enemy AI
+
+**Did.**
+- `src/content/combat/brain_entry.gd`. An entry is a command and a weight, plus:
+  - a target rule: FIRST, RANDOM, LOWEST_HP or SELF;
+  - a `FlagQuery` condition (`condition_flag` / `_test` / `_value`);
+  - an own-pool condition (`below_pool` under `below_fraction`).
+- `battle_brain.gd`: a list of entries, with `problems()`.
+- `src/gameplay/combat/battle_ai.gd`: `BattleAi.take_turn(battle, brain)`.
+- `battle_ai_test.gd` (10).
+- Combat `0.12.0`.
+
+**Why.** A battle needs someone to play the other side. Keeping that as data is what lets an
+author write "heal below half, burn things once the bridge falls" with no code.
+
+**Connects.**
+- **The conditions reuse `FlagQuery.passes`**, the same closed set dialogue and quests read. The
+  only addition is the pool fraction, which a flag cannot express. That holds the C2.0 rule of
+  no expression language.
+- **It acts only through `Battle.act`.** Candidates come from `Battle.targets_for`, and an
+  unaffordable cost rules an entry out before the draw. So the AI can never do anything a player
+  could not.
+- **Every draw is the battle's own seeded rng.** A seeded fight replays its choices exactly, and
+  the test asserts that.
+- **The same call serves enemies now,** auto-battle for the party in C5, and the hybrid's
+  uncontrolled allies in C4.
+
+**Verified.**
+- Red first: with the weighted choice disabled, 3 failed. Restored.
+- Suite `2900 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.12.0`. All
+  seven checkers exit 0.
+
+**Unblocks.** C2.6, encounters and combatant definitions. A definition carries the brain.
+
+**Gaps.** The pool condition supports "below" only. "Above", and conditions on a target's state
+(for example "finish off whoever is weakest"), are LOWEST_HP's job today. A richer test waits
+for a game that needs one.
