@@ -1,0 +1,210 @@
+class_name Battle
+extends RefCounted
+## One turn-based fight: two sides of `Combatant`s, a `TurnScheduler`, and the rules for what a
+## command does. The battle screen (C2.7), a `BattleBrain` (C2.5) and a test all drive it the
+## same way: `next_turn()`, then `act(command, targets)`, until `outcome()` is not ONGOING.
+##
+## IT NEVER RUNS ON `_process`. It moves only when called, so the modal pause that freezes the
+## field cannot freeze it, and a test plays a whole battle with no frames (C2.0).
+##
+## IT HOLDS COMBATANTS, IT DOES NOT OWN THEM. Whoever builds the sides (C2.6) adds the nodes to
+## the tree and frees them. Each combatant's `Vitals` and `StatusSet` are its parent's children,
+## C1.6's rule, and everything said here goes through them.
+##
+## THE RULES, each a template default:
+## - ATTACK is a power-0 hit through the actor's formula, so the attack stat alone decides it.
+## - SKILL and ITEM spend the cost (and, for ITEM, one item from `inventory`), then hit (power
+##   above zero), heal (below zero, not through defence) and roll each status at its chance.
+## - DEFEND applies `defend_status`, by default one turn of +100 defence: half damage against
+##   the standard softness of 100.
+## - FLEE succeeds at `flee_chance` when `can_flee`; a failed flee still spends the turn.
+## - Each actor's TURNS statuses tick at the start of its own turn, so DEFEND lasts until then.
+## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
+##
+## OWNS: whose turn it is, whether a command is legal, and the outcome.
+## MUST NOT: draw anything, read input, wait for time, or decide what winning gives (C2.8).
+
+enum Outcome { ONGOING, WON, LOST, FLED }
+
+var party: Array[Combatant] = []
+var enemies: Array[Combatant] = []
+var scheduler: TurnScheduler
+var rng: RandomNumberGenerator
+## Where ITEM commands spend from. Null refuses every ITEM.
+var inventory: Inventory
+var can_flee: bool = true
+var flee_chance: float = 1.0
+var defend_status: StatusEffect = _default_defend()
+
+var _by_id: Dictionary[StringName, Combatant] = {}
+var _current: Combatant
+var _outcome: Outcome = Outcome.ONGOING
+
+
+func _init(our_side: Array[Combatant], their_side: Array[Combatant], turns: TurnScheduler = null,
+		seeded: RandomNumberGenerator = null) -> void:
+	party = our_side
+	enemies = their_side
+	scheduler = turns.duplicate() as TurnScheduler if turns != null else RoundScheduler.new()
+	rng = seeded if seeded != null else RandomNumberGenerator.new()
+
+
+## Joins everyone standing to the scheduler and announces the battle.
+func start() -> void:
+	var enemy_ids: Array[StringName] = []
+	for fighter: Combatant in party + enemies:
+		_by_id[fighter.combatant_id] = fighter
+		if not _vitals(fighter).is_defeated():
+			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
+	for fighter: Combatant in enemies:
+		enemy_ids.append(fighter.combatant_id)
+	Events.battle_started.emit(enemy_ids)
+	_check_outcome()
+
+
+## Begins the next turn and returns whose it is: null once the battle is over. The actor's
+## statuses tick first, and one that falls to a tick is skipped.
+func next_turn() -> Combatant:
+	_current = null
+	while _outcome == Outcome.ONGOING:
+		var id: StringName = scheduler.next()
+		if id == &"":
+			return null
+		var actor: Combatant = _by_id[id]
+		var statuses: StatusSet = StatusSet.of(actor.get_parent())
+		if statuses != null:
+			statuses.tick_turn()
+		if _vitals(actor).is_defeated():
+			_settle()
+			continue
+		_current = actor
+		return actor
+	return null
+
+
+func current() -> Combatant:
+	return _current
+
+
+func outcome() -> Outcome:
+	return _outcome
+
+
+## Who `command` may be aimed at by the current actor. An ALL skill takes every one of them.
+func targets_for(command: BattleCommand) -> Array[Combatant]:
+	var out: Array[Combatant] = []
+	if _current == null or command == null:
+		return out
+	var filter: FactionTable.Target = FactionTable.Target.ENEMY
+	match command.kind:
+		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
+			filter = command.skill.target
+		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE:
+			return out
+	for fighter: Combatant in party + enemies:
+		if not _vitals(fighter).is_defeated() and _current.can_target(fighter, filter):
+			out.append(fighter)
+	return out
+
+
+## The current actor does `command` to `targets`. False, changing nothing, when it is illegal:
+## no turn, a bad target, a cost it cannot pay, a flee it may not make.
+func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
+	if _current == null or command == null or not command.problems("act").is_empty():
+		return false
+	var actor: Combatant = _current
+	match command.kind:
+		BattleCommand.Kind.ATTACK:
+			if not _legal(command, targets, true):
+				return false
+			actor.hit(targets[0], 0.0, &"", rng)
+		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
+			if not _use(actor, command, targets):
+				return false
+		BattleCommand.Kind.DEFEND:
+			StatusSet.of(actor.get_parent()).apply(defend_status)
+		BattleCommand.Kind.FLEE:
+			if not can_flee:
+				return false
+			if rng.randf() < flee_chance:
+				_end(Outcome.FLED)
+	_current = null
+	_settle()
+	return true
+
+
+func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant]) -> bool:
+	var skill: Skill = command.skill
+	var single: bool = skill.scope == Skill.Scope.ONE
+	if not _legal(command, targets, single):
+		return false
+	var vitals: Vitals = _vitals(actor)
+	if skill.cost > 0 and vitals.current(skill.cost_pool) < skill.cost:
+		return false
+	if command.kind == BattleCommand.Kind.ITEM:
+		if inventory == null or not inventory.remove(command.item_id, 1):
+			return false
+	if skill.cost > 0:
+		vitals.change(skill.cost_pool, -skill.cost)
+	for target: Combatant in (targets if single else targets_for(command)):
+		if skill.power > 0.0:
+			actor.hit(target, skill.power, skill.element, rng)
+		elif skill.power < 0.0:
+			_vitals(target).change(target.damage_pool, roundi(-skill.power))
+		for status: StatusEffect in skill.statuses:
+			if rng.randf() < skill.status_chance:
+				StatusSet.of(target.get_parent()).apply(status)
+	if skill.delay > 0.0 and scheduler is CtbScheduler:
+		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
+	return true
+
+
+## A ONE command needs exactly one allowed target; an ALL command ignores what it is given.
+func _legal(command: BattleCommand, targets: Array[Combatant], single: bool) -> bool:
+	if not single:
+		return true
+	return targets.size() == 1 and targets_for(command).has(targets[0])
+
+
+## Removes the fallen from the queue and decides whether the battle is over.
+func _settle() -> void:
+	for fighter: Combatant in party + enemies:
+		if _vitals(fighter).is_defeated() and scheduler.has(fighter.combatant_id):
+			scheduler.leave(fighter.combatant_id)
+	_check_outcome()
+
+
+func _check_outcome() -> void:
+	if _outcome != Outcome.ONGOING:
+		return
+	if _all_down(enemies):
+		_end(Outcome.WON)
+	elif _all_down(party):
+		_end(Outcome.LOST)
+
+
+func _all_down(side: Array[Combatant]) -> bool:
+	for fighter: Combatant in side:
+		if not _vitals(fighter).is_defeated():
+			return false
+	return true
+
+
+func _end(how: Outcome) -> void:
+	if _outcome != Outcome.ONGOING:
+		return
+	_outcome = how
+	_current = null
+	Events.battle_ended.emit(how)
+
+
+func _vitals(fighter: Combatant) -> Vitals:
+	return Vitals.of(fighter.get_parent())
+
+
+static func _default_defend() -> StatusEffect:
+	var guard := StatusEffect.new()
+	guard.id = &"status/defend"
+	guard.duration = 1.0
+	guard.modifiers = [StatModifier.of(&"defence", StatModifier.Op.ADD, 100.0, &"")]
+	return guard
