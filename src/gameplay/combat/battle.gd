@@ -41,6 +41,8 @@ var brains: Dictionary[StringName, BattleBrain] = {}
 ## Each fighter's definition, by combatant id, for its name and command menu. `BattleSetup`
 ## fills it; a fighter built by hand has none, and the screen falls back to its id.
 var defs: Dictionary[StringName, CombatantDef] = {}
+## The encounter this battle was built from, for its rewards. Null for one built by hand.
+var encounter: Encounter
 
 var _by_id: Dictionary[StringName, Combatant] = {}
 var _current: Combatant

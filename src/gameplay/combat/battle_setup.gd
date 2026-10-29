@@ -7,6 +7,9 @@ extends RefCounted
 ## added under the holder the caller gives. A group of two of the same enemy is told apart by a
 ## suffix: `<id>_1`, `<id>_2`, so every flag and signal names one fighter.
 ##
+## THE PARTY IS BUILT AT ITS LEVEL by the caller (`Party.at_level`), so this file never reads
+## experience.
+##
 ## ENEMIES START FULL AND LEAVE NO TRACE. Their pool flags are erased when built and again on
 ## `release`, so a save after the fight carries none of them. The party's are kept: a party
 ## member's hp is meant to carry from one fight to the next.
@@ -39,6 +42,7 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
 			else RoundScheduler.new()
 	var battle := Battle.new(ours, theirs, turns, rng)
+	battle.encounter = encounter
 	battle.can_flee = encounter.can_flee
 	battle.flee_chance = encounter.flee_chance
 	for i: int in party.size():
@@ -51,10 +55,14 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	return battle
 
 
-## Frees every fighter node the battle held and erases the enemies' pool flags.
+## Frees every fighter node the battle held and erases the enemies' pool flags. A party member
+## left at zero stands back up at 1 hp: the template default until C5's defeat flow, so a lost
+## or a costly fight never leaves the next one starting already lost.
 static func release(battle: Battle) -> void:
 	for fighter: Combatant in battle.enemies:
 		_forget_pools(fighter)
+	for fighter: Combatant in battle.party:
+		Vitals.of(fighter.get_parent()).revive(1)
 	for fighter: Combatant in battle.party + battle.enemies:
 		var actor: Node = fighter.get_parent()
 		if is_instance_valid(actor):

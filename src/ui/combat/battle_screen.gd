@@ -14,8 +14,11 @@ extends MenuScreen
 ## When it ends, the outcome is shown with one row that closes the screen, and closing releases
 ## the fighters (`BattleSetup.release`), which erases every enemy flag.
 ##
+## A WIN IS REWARDED ONCE, through `Rewards.grant`, when the screen first sees the outcome, and
+## its summary is drawn above Continue: experience, each level gained, each item found.
+##
 ## OWNS: which menu is up, the pending command, and drawing the battle's state.
-## MUST NOT: decide what a command does, who wins, or what winning gives (C2.8).
+## MUST NOT: decide what a command does, who wins, or what winning gives; `Rewards` does.
 
 const SCREEN_ID: StringName = &"battle"
 const TITLE_KEY: String = "ui.battle.title"
@@ -30,12 +33,18 @@ const CONTINUE_KEY: String = "ui.battle.continue"
 const WON_KEY: String = "ui.battle.won"
 const LOST_KEY: String = "ui.battle.lost"
 const FLED_KEY: String = "ui.battle.fled"
+const EXPERIENCE_KEY: String = "ui.battle.experience"
+const LEVEL_UP_KEY: String = "ui.battle.level_up"
+const FOUND_KEY: String = "ui.battle.found"
+const LEFT_KEY: String = "ui.battle.left_behind"
 ## How many upcoming turns the order line shows.
 const ORDER_LENGTH: int = 5
 
 var battle: Battle
 var _pending: BattleCommand
 var _refused: bool = false
+## What the win gave, asked for once when the screen first sees the outcome.
+var rewards: Rewards
 
 
 func _init() -> void:
@@ -69,6 +78,8 @@ func advance() -> void:
 		if actor == null or battle.brain_of(actor) == null:
 			break
 		BattleAi.take_turn(battle, battle.brain_of(actor))
+	if battle.outcome() != Battle.Outcome.ONGOING and rewards == null:
+		rewards = Rewards.grant(battle, battle.encounter, battle.inventory)
 	refresh()
 
 
@@ -79,6 +90,7 @@ func _fill() -> void:
 		add_note(_pools_line(fighter))
 	if battle.outcome() != Battle.Outcome.ONGOING:
 		add_note(tr(_outcome_key()))
+		_reward_notes()
 		add_row(tr(CONTINUE_KEY), request_close)
 		return
 	add_note(tr(ORDER_KEY).format({"names": ", ".join(_upcoming())}))
@@ -176,6 +188,26 @@ func _upcoming() -> Array[String]:
 			if fighter.combatant_id == id:
 				names.append(name_of(fighter))
 	return names
+
+
+func _reward_notes() -> void:
+	if rewards == null or battle.outcome() != Battle.Outcome.WON:
+		return
+	if rewards.experience > 0:
+		add_note(tr(EXPERIENCE_KEY).format({"amount": rewards.experience}))
+	for fighter: Combatant in battle.party:
+		if rewards.levelled.has(fighter.combatant_id):
+			add_note(tr(LEVEL_UP_KEY).format({"name": name_of(fighter),
+					"level": Party.level_of(fighter.combatant_id)}))
+	for item_id: StringName in rewards.items:
+		add_note(tr(FOUND_KEY).format({"item": _item_name(item_id)}))
+	for item_id: StringName in rewards.left_behind:
+		add_note(tr(LEFT_KEY).format({"item": _item_name(item_id)}))
+
+
+func _item_name(item_id: StringName) -> String:
+	var definition: ItemDefinition = ItemDb.definition(item_id)
+	return tr(definition.name_key) if definition != null else String(item_id)
 
 
 func _outcome_key() -> String:

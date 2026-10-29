@@ -22,6 +22,8 @@ extends Resource
 @export var commands: Array[BattleCommand] = []
 ## How it plays when nobody controls it. Null means the fallback: attack, then defend.
 @export var brain: BattleBrain
+## How a party member grows with experience. Null means it never levels: an enemy, or a guest.
+@export var level_curve: LevelCurve
 
 
 func problems(context: String) -> PackedStringArray:
