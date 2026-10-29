@@ -68,6 +68,9 @@ func _ready() -> void:
 		DisplayServer.get_name(),
 		str(OS.is_debug_build()),
 	])
+	# THE COMBAT FORK'S OWN VERSION, on a line of its own so the base's banner above stays
+	# byte-identical to upstream's and a merge never conflicts on it (ADR-0008).
+	info("boot", "combat %s" % CombatVersion.current())
 
 
 func _exit_tree() -> void:

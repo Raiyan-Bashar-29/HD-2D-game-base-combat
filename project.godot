@@ -69,6 +69,13 @@ world/player_scene="res://scenes/characters/player.tscn"
 ; src/core/util/template_version.gd, which reads this setting and is what the boot banner prints.
 base/version="5.16.3"
 
+[combat]
+
+; THE COMBAT FORK'S OWN RELEASE, beside [template] base/version, which is the base this fork has
+; merged up to and is upstream's to bump. This one is bumped by combat packages, under the same
+; major / minor / patch promise. Read by src/core/util/combat_version.gd; ADR-0008.
+core/version="0.1.0"
+
 [debug]
 
 ; Static enforcement. This is deliberate and load-bearing: it makes GDScript behave like a

@@ -7,8 +7,8 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-10-29 · **C1.0 complete (C0.1 before it).** Seeded from upstream `aaf281b` (base `5.16.2`),
-full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **No combat code exists yet. C1.0 has planned the shared core; the next row is C1.1.**
+**Last updated:** 2026-10-29 · **C1.1 complete. Combat version 0.1.0** (`[combat] core/version`; the boot log prints it). Seeded from upstream `aaf281b` (base `5.16.2`),
+full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **No combat code exists yet. The next row is C1.2, stats and ordered modifiers.**
 
 ## How the two repositories relate
 
@@ -131,14 +131,22 @@ Built **only** from C2 and C3 parts.
 
 Classes, job systems, crafting, a bestiary and difficulty tuning. **Art stays deferred.**
 
+## Releases
+
+Each row that changes code bumps `[combat] core/version`, with the same promise upstream's
+`CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
+`combat_record_test.gd` holds it to that; every other spelling is a record of what was.
+
+- **0.1.0** — C1.1. The version exists. A game does: nothing.
+
 ## Board
 
 | # | Package | Status |
 |---|---|---|
 | C0.1 | Fork and re-scope | **DONE**: seeded from upstream `aaf281b` with history, `template` remote, ADR-0008, this file, `COMBAT_DEVLOG.md`, pointer lines in `CLAUDE.md` / `README.md` / `CONTEXT.md`. Ladder green. |
 | C1.0 | Plan the shared core: write C1's rows here | **DONE**, documents only. The rows below were read against the code, not guessed: components are a `Node` child found by a static `of(who)` type lookup (`inventory.gd`, `equipment.gd`); per-actor saved numbers live in `Flags` under a namespaced key (`Attributes`, `Standing`), which gives save, new-game reset and `flag_changed` for free; content is a `ContentEntry` with `problems()`; `save_system.gd` is at 179 of its 180-line budget, so nothing here edits it; **no modifier system exists anywhere yet**. |
-| C1.1 | Gate the combat record and give it a version | TODO, next. `record_shape_test.gd` reads `COMBAT_DEVLOG.md` too, with C ids checked against this file. `[combat] core/version="0.1.0"`; `TemplateVersion` gains `of(setting)` so the base's reading is unchanged; the boot banner prints `combat 0.1.0`; `version_test` covers it |
-| C1.2 | Stats and ordered modifiers | TODO. `StatModifier` (content: stat, op ADD / MULTIPLY / OVERRIDE, value, source) and a pure `StatSheet` (systems): base plus modifiers, applied in that fixed order, removable by source. Stat names are free `StringName`s, Attributes' rule. Tests: order, removal by source, override wins |
+| C1.1 | Gate the combat record and give it a version | **DONE**, combat **0.1.0**. New `combat_record_test.gd` (upstream's tests untouched, so merges never conflict on them): every C id in the log has a row here, the version is declared and printed at boot, and every bold semver in this file is it. `CombatVersion` is a sibling of `TemplateVersion`, not a parameter on it, for the same reason. Red first, 4 failed. Was planned as: `record_shape_test.gd` reads `COMBAT_DEVLOG.md` too, with C ids checked against this file. `[combat] core/version="0.1.0"`; `TemplateVersion` gains `of(setting)` so the base's reading is unchanged; the boot banner prints `combat 0.1.0`; `version_test` covers it |
+| C1.2 | Stats and ordered modifiers | TODO, next. `StatModifier` (content: stat, op ADD / MULTIPLY / OVERRIDE, value, source) and a pure `StatSheet` (systems): base plus modifiers, applied in that fixed order, removable by source. Stat names are free `StringName`s, Attributes' rule. Tests: order, removal by source, override wins |
 | C1.3 | Vitals | TODO. `Vitals` component: named pools (hp, mp, …), current values in `Flags` at `vital/<who>/<pool>`, the maximum read from the sheet's `max_<pool>`. `Events.vitals_changed` and `Events.combatant_defeated`, fired once at zero; `revive`. Tests: clamp, defeat once, save round-trip |
 | C1.4 | Damage pipeline | TODO. `DamageRequest` and `DamageResult`, and `DamageStage` resources applied in order by a pure, seeded `DamageResolver`. Shipped stages: attack against defence, element affinity, crit, variance. A game changes the formula by listing different stages in data. Tests: each stage, the order, determinism under a seed |
 | C1.5 | Status effects | TODO. `StatusEffect` content: duration in TURNS **or** SECONDS, which is what lets every formula share it; stacking rule REFRESH / STACK / IGNORE; modifiers; an optional tick. A `StatusSet` component with `tick_turn()` / `tick_seconds()`; expiry removes its modifiers by source. Its own save section, registered without editing `save_system.gd`. Tests: both units, the three stacking rules, clean expiry |
