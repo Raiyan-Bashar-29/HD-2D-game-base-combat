@@ -25,6 +25,7 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/path_action.tscn" id="20_pap"]
 [ext_resource type="Resource" path="res://data/actions/keeper_scrutinise.tres" id="21_scrut"]
 [ext_resource type="Resource" path="res://data/actions/keeper_barter.tres" id="22_barter"]
+[ext_resource type="PackedScene" path="res://scenes/objects/strike_target.tscn" id="40_strike"]
 
 [sub_resource type="StandardMaterial3D" id="m_ground"]
 albedo_texture = ExtResource("4_grass")
@@ -368,4 +369,21 @@ requires_flag = &"equip/player/item/brass_lantern"
 locked_key = "object.gate.arch.locked"
 opened_key = "object.gate.arch.opened"
 
+[node name="TrainingDummy" parent="Interactables" instance=ExtResource("40_strike")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0, 5.6)
+label_key = "object.dummy.courtyard.label"
+power = 8.0
+struck_key = "object.dummy.courtyard.struck"
+critical_key = "object.dummy.courtyard.critical"
+revive_when_defeated = true
+
+[node name="Combatant" parent="Interactables/TrainingDummy"]
+combatant_id = &"training_dummy"
+faction = &"training"
+base_stats = Dictionary[StringName, float]({
+&"defence": 20.0,
+&"max_hp": 30.0
+})
+
 [editable path="Actors/Keeper"]
+[editable path="Interactables/TrainingDummy"]

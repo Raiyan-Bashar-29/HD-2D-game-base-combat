@@ -7,8 +7,8 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-10-29 · **C1.6 complete. Combat version 0.6.0** (`[combat] core/version`; the boot log prints it). Seeded from upstream `aaf281b` (base `5.16.2`),
-full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core's code is complete: stats, vitals, damage, statuses, factions and `Combatant`. The next row is C1.7, the training-dummy demo that proves it in the game.**
+**Last updated:** 2026-10-29 · **C1.7 complete, phase C1 closed. Combat version 0.7.0** (`[combat] core/version`; the boot log prints it). Seeded from upstream `aaf281b` (base `5.16.2`),
+full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. The next row is C2.0, which plans the turn-based formula's rows.**
 
 ## How the two repositories relate
 
@@ -37,7 +37,7 @@ Each phase opens with a planning row (`Cn.0`, the way T6.0 worked), which writes
 
 ### C0 — Fork and re-scope · **COMPLETE**
 
-### C1 — Shared combat core (both formulas use it)
+### C1 — Shared combat core (both formulas use it) · **COMPLETE**
 
 `src/content/combat/` holds the data and `src/systems/combat/` the systems. A game swaps
 formulas through data, never through `src/`.
@@ -137,7 +137,13 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.6.0** — C1.6. `FactionTable` (content): hostility, by default the same faction allied and
+- **0.7.0** — C1.7. `StrikeTarget` (gameplay): an interactable whose `Combatant` child takes
+  one resolved hit when used, toasts `{amount}`, `{left}` and `{max}`, and can stand back up.
+  `Combatant.base_stats` authors a sheet's base values on the scene, and
+  `Combatant.resolving_formula()` names the formula its hits use. The generic prefab
+  `scenes/objects/strike_target.tscn`, and the demo's training dummy in the courtyard. A game
+  does: nothing; it may place strike targets.
+- `0.6.0` — C1.6. `FactionTable` (content): hostility, by default the same faction allied and
   different ones hostile, with listed exceptions; target filters SELF / ALLY / ENEMY / ANY.
   `Combatant` (gameplay): an id, a faction, one sheet shared with its `Vitals` and `StatusSet`
   siblings, `hit` (the attacker's formula resolves) and `receive`. `Events.combatant_damaged`.
@@ -174,7 +180,8 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C1.4 | Damage pipeline | **DONE**, combat `0.4.0`. `src/systems/combat/`: `damage_request.gd`, `damage_result.gd`, `damage_stage.gd`, `damage_formula.gd` (the ordered list, and `resolve`), and four stages, `attack_defence_stage.gd`, `element_stage.gd`, `crit_stage.gd`, `variance_stage.gd`; `damage_formula_test.gd` (23). All in systems, not content, because a stage reads a `StatSheet`. Defence is diminishing (`softness / (softness + defence)`), so no hit is ever zero by defence alone; resistance above 1 absorbs and the result goes negative; the crit and variance stages always draw once, so a seeded fight replays. No separate `DamageResolver`: the formula resolves itself. Red first: `resolve` ignoring its stages failed 11. Ten code files against the board's "about 8": eight are one-class files under 40 lines each. Was planned as: `DamageRequest` and `DamageResult`, and `DamageStage` resources applied in order by a pure, seeded `DamageResolver`. Shipped stages: attack against defence, element affinity, crit, variance. A game changes the formula by listing different stages in data. Tests: each stage, the order, determinism under a seed |
 | C1.5 | Status effects | **DONE**, combat `0.5.0`. `src/content/combat/status_effect.gd` and `status_db.gd`, `src/gameplay/combat/status_set.gd`, `Events.status_applied` / `status_expired`, `status_set_test.gd` (27). A set never ticks itself, so pause and slow-motion need nothing here. Modifiers are authored without a source and stamped with the status id, so expiry, cure, a new game and a load remove exactly them. A long `tick_seconds` step never ticks past expiry. A duration of zero lasts until cured. The save section stores ids, time left and stacks, and rebuilds modifiers from `StatusDb`. **One change from the plan:** the tick is a pool change, not a `DamageRequest`, because content may not depend on systems; a tick through a formula is C1.6's. Red first: with ticks and clean-up stubbed, 6 failed. Was planned as: `StatusEffect` content: duration in TURNS **or** SECONDS, which is what lets every formula share it; stacking rule REFRESH / STACK / IGNORE; modifiers; an optional tick. A `StatusSet` component with `tick_turn()` / `tick_seconds()`; expiry removes its modifiers by source. Its own save section, registered without editing `save_system.gd`. Tests: both units, the three stacking rules, clean expiry |
 | C1.6 | Factions, targeting and `Combatant` | **DONE**, combat `0.6.0`. `src/content/combat/faction_table.gd`, `src/gameplay/combat/combatant.gd`, `Events.combatant_damaged`, `combatant_test.gd` (24). No table is needed for the common rule (same faction allied, different hostile); a table lists exceptions as `a:b`, symmetric. ALLY includes the user, so a party heal reaches its caster; ENEMY never does. `Combatant` hands its sheet and id to its siblings on ready, so a status's modifier and `Vitals`' maximum read one sheet. **The attacker's formula resolves**, and the defender only applies the result, so a preview and the real hit agree. A defeated combatant receives nothing. Red first: with the sheet unshared and `receive` applying nothing, 5 failed. Upstream `5.16.4` (T7.1) merged in with no conflict. Was planned as: Faction hostility (content); target filters SELF / ALLY / ENEMY / ANY; a `Combatant` component tying sheet, vitals, statuses and faction to a `combatant_id`; `receive(request)` resolves, applies and emits `Events.combatant_damaged`. Tests: hostility, filters, a request through to defeat |
-| C1.7 | Demo proof: a training dummy | TODO, next. Data and a scene only, nothing under `src/` names it. Interacting deals one resolved hit and shows the result; a windowed capture; the stripped run still passes; a short "combat core" note in `AUTHORING.md` |
+| C1.7 | Demo proof: a training dummy | **DONE**, combat `0.7.0`, and **phase C1 is closed**. `src/gameplay/interactables/strike_target.gd` (generic, it names no content), `Combatant.base_stats` and `resolving_formula()`, the prefab `scenes/objects/strike_target.tscn`, the courtyard's `TrainingDummy` (30 hp, 20 defence, revives) and its three strings, `strike_target_test.gd` (14), and § Make something you can hit in `AUTHORING.md`. An interactor without a `Combatant` (the template's player) strikes with `power` alone. Windowed capture: the toast reads "Thwack. 7 damage, 23 of 30 left." Stripped run: `2745 passed, 0 failed, 25 skipped`. Red first: with `perform` stubbed, 9 failed. **One change from the plan:** a `src/` class was needed after all, because no interactable could hit; it is generic, so the row's rule (nothing under `src/` names the dummy) holds |
+| C2.0 | Plan the turn-based formula: write C2's rows here | TODO, next. Documents only, as C1.0 was: read the Director, area transitions and `FlagQuery` against § C2, then write rows of ≤8 files each |
 
 **Rules for the rows:** the same as upstream's board (`WORK_PACKAGES.md` § The rules), unchanged:
 

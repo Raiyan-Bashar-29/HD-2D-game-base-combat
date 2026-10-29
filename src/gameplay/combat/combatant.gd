@@ -22,11 +22,17 @@ extends Node
 @export var factions: FactionTable
 ## The pool a hit lowers.
 @export var damage_pool: StringName = &"hp"
+## The sheet's base values, authored on the actor: `max_hp`, `attack`, `defence` and the rest.
+## Copied into the sheet on ready, so an actor scene is combat-ready with no code. Modifiers from
+## equipment and statuses still layer on top.
+@export var base_stats: Dictionary[StringName, float] = {}
 
 var sheet: StatSheet = StatSheet.new()
 
 
 func _ready() -> void:
+	for stat: StringName in base_stats:
+		sheet.set_base(stat, base_stats[stat])
 	var vitals: Vitals = Vitals.of(get_parent())
 	if vitals != null:
 		vitals.sheet = sheet
@@ -54,13 +60,17 @@ func can_target(other: Combatant, filter: FactionTable.Target) -> bool:
 	return table.allows(filter, combatant_id, faction, other.combatant_id, other.faction)
 
 
+## The formula this combatant's hits resolve through: its own, or the standard one.
+func resolving_formula() -> DamageFormula:
+	return formula if formula != null else DamageFormula.standard()
+
+
 ## Resolves one hit on `target` and applies it. Null when there is nobody to hit.
 func hit(target: Combatant, power: float, element: StringName,
 		rng: RandomNumberGenerator) -> DamageResult:
 	if target == null:
 		return null
-	var using: DamageFormula = formula if formula != null else DamageFormula.standard()
-	var result: DamageResult = using.resolve(DamageRequest.of(sheet, target.sheet, power, element), rng)
+	var result: DamageResult = resolving_formula().resolve(DamageRequest.of(sheet, target.sheet, power, element), rng)
 	target.receive(result, combatant_id)
 	return result
 
