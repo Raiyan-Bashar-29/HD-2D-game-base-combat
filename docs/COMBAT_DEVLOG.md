@@ -424,3 +424,40 @@ contract.
 
 **Gaps.** `preview` in a round scheduler assumes nobody joins or leaves before the previewed
 turns happen. That is fine for a strip that is redrawn on every turn.
+
+## 2026-10-29 — C2.2 · A CTB queue, the second scheduler
+
+**Did.**
+- `src/systems/combat/ctb_scheduler.gd`:
+  - each actor waits `delay / speed` ticks between turns;
+  - whoever's wait runs out first acts, every other wait drops by the same amount, and the
+    actor's own wait starts again;
+  - `delay_by(id, ticks)` pushes an actor back, `wait_of(id)` reads its wait, and `delay` is
+    exported.
+- `ctb_scheduler_test.gd` (15).
+- Combat `0.9.0`.
+
+**Why.** C2.0 named the scheduler as the swap point. A second, genuinely different order is what
+proves that claim.
+
+**Connects.**
+- **The order contract runs unchanged against both `RoundScheduler` and `CtbScheduler`:** an
+  empty roster has no turn, the fastest acts first, `preview` agrees with `next`, and a leaver
+  never acts again. C2.4's battle may assume only those, so either scheduler drops in.
+- **The same tie rule as rounds:** whoever joined first. Neither scheduler ever draws a random
+  number.
+- **A tick is an ordering unit, not time.** C4's real-time gauge is a different scheduler built
+  from the same base, not this one run against a clock.
+- **`delay_by` is the seam for "slow" and for heavy skills.** C2.3's skills can name a delay,
+  and C2.4 applies it.
+
+**Verified.**
+- Red first: with `next` stubbed, 6 failed. Restored.
+- Suite `2853 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.9.0`. All seven
+  checkers exit 0.
+
+**Unblocks.** C2.3, skills and commands as data.
+
+**Gaps.** A speed change mid-wait keeps the running wait, and only the next wait uses the new
+speed. A haste that should take effect at once can use `delay_by` with a negative number; a
+rescale-on-change rule waits until a game asks for one.
