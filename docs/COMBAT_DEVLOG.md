@@ -49,3 +49,31 @@ were run on the seeded tree.
   this branch auto-merged 9 files with **no conflict**, including `CONTEXT.md`, where this
   fork's pointer sits above the lines upstream changed. Ladder after the merge: import clean,
   boot `0 warnings, 0 errors`, suite `2683 passed, 0 failed`, all seven checkers exit 0.
+
+## 2026-10-29 — C1.0 · Plan the shared combat core
+
+**Did.** Wrote C1's rows, C1.1 to C1.7, onto `COMBAT.md`'s board, after reading the code each
+row will build on.
+
+**Why.** C1 is the core that every combat formula uses: turn-based, action and the hybrid. Its
+seams have to be the base's own, or C2 to C4 inherit a second way of doing everything.
+
+**Connects.** These reuse decisions are recorded so no row re-derives them:
+- **Components** are a `Node` child found by a static `of(who)` type lookup, as in
+  `Inventory` and `Equipment`. That is the shape for `Vitals`, `StatusSet` and `Combatant`.
+- **Per-actor numbers live in `Flags`**, as `Attributes` and `Standing` do. That gives save,
+  new-game reset and `flag_changed` for free, so `Vitals` uses it.
+- **`save_system.gd` stays untouched.** It is at 179 of its 180-line budget, so `StatusSet`
+  registers a section the way `Inventory` does.
+- **Each signal is declared by the row that emits it**, because `check_signals.gd` fails a
+  declaration with no emitter.
+- **No modifier system exists yet.** C1.2 is new ground, and `Attributes.multiplier` is the only
+  precedent.
+
+**Verified.** Documents only. Import, the suite and all seven checkers were run; see the PR.
+
+**Unblocks.** C1.1.
+
+**Gaps.**
+- C1.1 is what makes this log's headings gated. Until it lands, a C row missing from the board
+  is caught by nothing.
