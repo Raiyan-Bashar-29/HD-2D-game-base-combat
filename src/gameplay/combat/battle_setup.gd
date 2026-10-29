@@ -16,8 +16,12 @@ extends RefCounted
 
 
 ## A battle between `party` and `encounter`'s enemies, built under `holder` and started.
+## `holder` MUST be in the tree: each fighter's sheet, id and pools are wired in its `_ready`,
+## and before that its `Vitals` would answer for the default owner.
 static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node,
 		rng: RandomNumberGenerator = null) -> Battle:
+	if not holder.is_inside_tree():
+		push_error("BattleSetup.build: the holder must be in the tree")
 	var ours: Array[Combatant] = []
 	for def: CombatantDef in party:
 		ours.append(_fighter(def, def.combatant_id, holder, false))
@@ -37,7 +41,10 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	var battle := Battle.new(ours, theirs, turns, rng)
 	battle.can_flee = encounter.can_flee
 	battle.flee_chance = encounter.flee_chance
+	for i: int in party.size():
+		battle.defs[ours[i].combatant_id] = party[i]
 	for i: int in encounter.enemies.size():
+		battle.defs[theirs[i].combatant_id] = encounter.enemies[i]
 		if encounter.enemies[i].brain != null:
 			battle.brains[theirs[i].combatant_id] = encounter.enemies[i].brain
 	battle.start()

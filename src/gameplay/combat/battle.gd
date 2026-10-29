@@ -38,6 +38,9 @@ var defend_status: StatusEffect = _default_defend()
 ## The brain of each fighter nobody controls, by combatant id. `BattleSetup` fills it from the
 ## definitions; the screen asks `brain_of` to know whose turn it plays itself.
 var brains: Dictionary[StringName, BattleBrain] = {}
+## Each fighter's definition, by combatant id, for its name and command menu. `BattleSetup`
+## fills it; a fighter built by hand has none, and the screen falls back to its id.
+var defs: Dictionary[StringName, CombatantDef] = {}
 
 var _by_id: Dictionary[StringName, Combatant] = {}
 var _current: Combatant

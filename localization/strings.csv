@@ -235,3 +235,15 @@ ui.debug.console.hint,,goto <area>   flag <key>:<value>   time HH:MM   give <id>
 object.dummy.courtyard.label,,Training Dummy,[~~Training Dummy~~]
 object.dummy.courtyard.struck,,"Thwack. {amount} damage, {left} of {max} left.","[~~Thwack. {amount} damage, {left} of {max} left.~~]"
 object.dummy.courtyard.critical,,"A clean hit! {amount} damage, {left} of {max} left.","[~~A clean hit! {amount} damage, {left} of {max} left.~~]"
+ui.battle.title,,Battle,[~~Battle~~]
+ui.battle.attack,,Attack,[~~Attack~~]
+ui.battle.defend,,Defend,[~~Defend~~]
+ui.battle.flee,,Flee,[~~Flee~~]
+ui.battle.back,,Back,[~~Back~~]
+ui.battle.pools,,{name}   HP {hp} / {max},[~~{name}   HP {hp} / {max}~~]
+ui.battle.order,,Next: {names},[~~Next: {names}~~]
+ui.battle.refused,,That cannot be done right now.,[~~That cannot be done right now.~~]
+ui.battle.continue,,Continue,[~~Continue~~]
+ui.battle.won,,Victory.,[~~Victory.~~]
+ui.battle.lost,,Defeated.,[~~Defeated.~~]
+ui.battle.fled,,You got away.,[~~You got away.~~]

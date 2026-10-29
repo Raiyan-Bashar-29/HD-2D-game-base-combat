@@ -637,3 +637,57 @@ This is the seam between the two.
 - `music` is stored but nothing plays it yet. C2.7's host does.
 - A fighter's formula cannot be chosen in data. A game sets it on the built `Combatant`. A
   content-side formula reference waits for a game that needs a non-standard one per enemy.
+
+## 2026-10-29 — C2.7 · The battle screen
+
+**Did.**
+- `src/ui/combat/battle_screen.gd`, a `MenuScreen`. It shows:
+  - every fighter's hp line, and a "Next:" line from the scheduler's `preview`;
+  - the player's menu: the definition's commands, or Attack / Defend / Flee;
+  - target select with Back, for a command that needs one target;
+  - a refusal line when a command cannot be done;
+  - the outcome, with one Continue row.
+- `battle_host.gd`. It answers `Events.encounter_requested`, builds the battle with
+  `BattleSetup` under itself, and opens the screen.
+- One `BattleHost` node in `game_root.tscn` beside `ScreenKeys`. That is one appended node and
+  one `ext_resource`.
+- `Battle.defs`, which `BattleSetup` fills, for names and menus.
+- Twelve `ui.battle.*` strings.
+- `battle_screen_test.gd` (16).
+- Combat `0.14.0`.
+
+**Why.** C2.0's decision was that a battle is a modal layer over the frozen field. This is that
+layer, and the first time a person can play a fight.
+
+**Connects.**
+- **Modal and pausing** (`pauses_world`), so `UiRoot` freezes `WorldRoot`. The capture shows the
+  courtyard dimmed and still behind the menu. Cancel cannot leave (`closes_on_cancel` false), so
+  FLEE is the only way out.
+- **The screen holds no rule.** It calls `next_turn`, `act` and `BattleAi.take_turn`, and redraws
+  from the battle after every command. So the screen and the headless battle test cannot
+  disagree.
+- **Fighters need the tree.** Their sheet and pools are wired in `_ready`. Built under an
+  unopened screen, a fighter's `Vitals` answered for the default owner, and the enemy-flag erase
+  would have erased the PLAYER's hp. The host builds them under itself, and `BattleSetup` now
+  logs an error for a holder outside the tree.
+- **Closing releases the fighters** (`_closed`, then `BattleSetup.release`), so no enemy flag
+  outlives the screen.
+
+**Verified.**
+- Red first: with the screen not playing enemy turns, the first run hung in the test's "attack
+  until it ends" loop. The loop is now bounded to 20. Rerun, 4 failed. Restored.
+- Suite `2935 passed, 0 failed`. Boot `0 warnings, 0 errors` with the host in the root, printing `combat 0.14.0`. All
+  seven checkers exit 0.
+- Windowed capture under `xvfb-run`, with a throwaway driver (not committed) that builds a 2v2
+  fight and plays one attack. The menu draws over the dimmed, paused courtyard: four hp lines,
+  the turn order and Attack / Defend / Flee.
+
+**Unblocks.** C2.8: rewards, levels, and the `Party` roster that replaces `BattleHost.party`.
+
+**Gaps.**
+- `Encounter.music` is still not played. C2.9's demo wires it, with the field's music restored
+  after.
+- Hp is text, not bars, and there is no damage pop-up or animation. Those are a game's styling,
+  or C5 hardening.
+- `UiRoot` closes a screen deferred, so the test closes through the stack after checking that
+  Continue asked to close.
