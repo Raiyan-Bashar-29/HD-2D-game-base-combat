@@ -108,3 +108,34 @@ seams have to be the base's own, or C2 to C4 inherit a second way of doing every
 **Unblocks.** C1.2.
 
 **Gaps.** None for this row.
+
+## 2026-10-29 — C1.2 · Stats and ordered modifiers
+
+**Did.**
+- `src/content/combat/stat_modifier.gd`: a `StatModifier` Resource made of a stat, an op
+  (`ADD`, `MULTIPLY` or `OVERRIDE`), a value and a source, plus `problems()`.
+- `src/systems/combat/stat_sheet.gd`: a pure `StatSheet` with `set_base`, `base`, `add`,
+  `remove_from(source)` and `value`.
+- `tests/unit/stat_sheet_test.gd`, 14 assertions.
+- Combat `0.2.0`.
+
+**Why.** Every later row reads a stat: damage reads attack and defence, vitals read `max_hp`, and
+statuses add modifiers. Nothing in the base had a modifier concept.
+
+**Connects.**
+- **The order is the formula: (base + every ADD) x every MULTIPLY, unless an OVERRIDE exists.**
+  It is fixed, so equipment load order never changes a character. MULTIPLY stacks by product.
+- **A modifier leaves by its source id, never by object identity.** That is the only kind of
+  removal that survives a save, and it is how C1.5's statuses will clean up after themselves.
+- **Stat names are free StringNames, `Attributes`' rule.** The base knows no stat names.
+- **A sheet is never saved.** It is rebuilt from what is saved, so it cannot disagree with it.
+- **Nothing upstream changed** apart from one `CASES` line.
+
+**Verified.**
+- Red first: with `value()` stubbed to return the base, 7 of the 14 failed.
+- Restored: suite `2707 passed, 0 failed`.
+- All seven checkers exit 0.
+
+**Unblocks.** C1.3, vitals, whose maximum is a sheet's `max_<pool>`.
+
+**Gaps.** No sheet is attached to a character yet. That is C1.6's `Combatant`.
