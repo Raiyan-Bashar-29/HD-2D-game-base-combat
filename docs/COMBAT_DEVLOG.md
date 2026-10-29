@@ -77,3 +77,34 @@ seams have to be the base's own, or C2 to C4 inherit a second way of doing every
 **Gaps.**
 - C1.1 is what makes this log's headings gated. Until it lands, a C row missing from the board
   is caught by nothing.
+
+## 2026-10-29 — C1.1 · Gate the combat record and give it a version
+
+**Did.** Added these:
+- `[combat] core/version="0.1.0"` in `project.godot`;
+- `src/core/util/combat_version.gd` (`CombatVersion.current()`);
+- one boot log line, `combat 0.1.0`;
+- `tests/unit/combat_record_test.gd`;
+- a Releases list in `COMBAT.md`.
+
+**Why.** C0.1 and C1.0 left two gaps open:
+- a C row missing from the board was caught by nothing;
+- the fork had no version of its own, so there was nothing to bump once code arrived.
+
+**Connects.**
+- **A sibling, not a widening.** The plan said to parameterise `TemplateVersion` and widen
+  `record_shape_test.gd` and `version_test.gd`. All three are upstream files, and every line
+  changed in one is a line a `git merge template/main` can conflict on. So the fork's gates live
+  in files upstream does not have, and they ask upstream's questions of this fork's documents.
+- **The banner is a separate line.** Upstream's banner stays byte-identical. The only upstream
+  files touched are `log.gd` (three lines appended after the banner), `project.godot` (a new
+  section after `[template]`) and `tests/test_runner.gd` (one `CASES` line).
+
+**Verified.**
+- Red first: the new case failed 4 times, on the undeclared version, `current()`, the missing
+  banner, and `COMBAT.md` stating no version.
+- After the fix, see the PR for the counts.
+
+**Unblocks.** C1.2.
+
+**Gaps.** None for this row.
