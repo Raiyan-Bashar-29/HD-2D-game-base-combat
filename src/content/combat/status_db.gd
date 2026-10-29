@@ -41,5 +41,8 @@ static func _ensure_loaded() -> void:
 	if _loaded:
 		return
 	_loaded = true
+	# No directory is no content, not an error: the stripped template has none.
+	if not DirAccess.dir_exists_absolute(content_dir):
+		return
 	_problems = ContentScan.into(
 		content_dir, ID_PREFIX, StatusEffect, "a StatusEffect", "status", _by_id)
