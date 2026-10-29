@@ -11916,3 +11916,50 @@ once per wandering NPC every 4–6 s.
 
 **Gaps.** Only wander invents targets today. Anything later that invents one, such as a flee
 point, a crowd shuffle or a patrol jitter, should call `reachable_point` too. Nothing enforces that.
+
+## 2026-10-29 — T7.0 · A script for the owner's playtest
+
+**Did.**
+- New `docs/PLAYTEST.md`, a step-by-step play-through of the demo:
+  - first run;
+  - movement and camera;
+  - every interactable;
+  - the keeper's schedule, talk and path actions;
+  - the errand;
+  - both areas;
+  - rest, time and weather;
+  - save and load, including the overwrite confirm;
+  - settings, rebinding and focus loss;
+  - pseudo-locale and script rendering;
+  - the debug keys.
+- A controls table, read from `src/systems/input/actions.gd`, and the shape a finding is
+  reported in.
+- Phase T7 is opened in `ROADMAP.md`, with a T7.0 row on the board and `5.16.3`, a PATCH.
+- `CONTEXT.md` notes that the combat fork exists downstream.
+
+**Why.**
+- Phase T6 closed waiting on the owner's playtest, and #8, first-run defaults, waits on it too.
+- The owner asked for the next phases, and a script makes a playtest cover the base rather
+  than whatever the player happens to try.
+- Combat went to a separate repository, `HD-2D-game-base-combat`, because no combat is a
+  TEMPLATE RULE here (ADR-0007). The fork's own ADR-0008 records the decision, and nothing in
+  this repository changes because of it.
+
+**Connects.**
+- Every name in the script was checked against what ships:
+  - the `strings.csv` labels for objects, items, the quest and dialogue choices;
+  - `Settings.DEFAULTS` for the first-run values;
+  - the input map.
+- The cloud capture route is the xvfb command in `.claude/agent-notes.md`, plus
+  `dev_capture.gd`'s flags.
+
+**Verified.** Import is clean. Boot, the suite and all seven checkers were run before the
+commit; see the PR. `version_test` holds the bump, and `record_shape_test` finds T7.0 on the
+board and in the roadmap.
+
+**Unblocks.** The owner's playtest, and so the T7.n rows.
+
+**Gaps.**
+- The script cannot judge feel. The *(feel)* steps need the owner.
+- The demo ships no Bengali or CJK translation, so script rendering stays a capture step, as in
+  T6.6.
