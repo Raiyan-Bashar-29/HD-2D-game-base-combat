@@ -461,3 +461,47 @@ proves that claim.
 **Gaps.** A speed change mid-wait keeps the running wait, and only the next wait uses the new
 speed. A haste that should take effect at once can use `delay_by` with a negative number; a
 rescale-on-change rule waits until a game asks for one.
+
+## 2026-10-29 — C2.3 · Skills and commands as data
+
+**Did.**
+- `src/content/combat/skill.gd`, `ContentEntry` content: a cost pool and amount, a
+  `FactionTable.Target` filter, a ONE or ALL scope, power, an element, statuses and their
+  chance, and a CTB `delay`. Its `problems()` catches:
+  - no name;
+  - a negative cost, or a cost with no pool;
+  - a skill that does nothing;
+  - a heal aimed at enemies;
+  - an empty status slot.
+- `battle_command.gd`: ATTACK, SKILL, ITEM, DEFEND or FLEE. SKILL and ITEM carry a `Skill`, and
+  ITEM also carries an `item_id`.
+- `skill_db.gd`, the shape of `StatusDb`.
+- `skill_test.gd` (14).
+- Combat `0.10.0`.
+
+**Why.** C2.0's rule is that skills are data. The battle (C2.4) is the only code that runs them,
+so a fire spell, a heal and a poison dart differ only in numbers.
+
+**Connects.**
+- **Content only.** `Skill` reads `FactionTable` and `StatusEffect`, both content, so the layer
+  rule holds. The formula is named by the user's `Combatant`, not by the skill.
+- **An item is a skill plus what it spends.** A potion and a heal spell share every field, and
+  `Inventory` (upstream) stays the item's owner.
+- **`delay` feeds C2.2's `CtbScheduler.delay_by`.** A round scheduler ignores it.
+- **The content check without touching upstream.** `skill_test.gd` asserts that `SkillDb` and
+  `StatusDb` report nothing over the real `data/`. That closes C1.5's "`check_content` does not
+  scan statuses" gap, and passes trivially in the stripped run.
+
+**Verified.**
+- Red first: with both `problems()` stubbed, 8 failed. Restored.
+- Suite `2868 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.10.0`. All
+  seven checkers exit 0.
+
+**Unblocks.** C2.4, the battle runtime, which reads these.
+
+**Gaps.**
+- A skill's `name_key` is checked for presence only, not against the CSV. Upstream's checker
+  does that for its own content. The combat equivalent arrives with the first shipped skill
+  (C2.9), as a CSV-key assertion in `skill_test.gd`.
+- Commands have no catalogue. They live inline in a combatant definition (C2.6), and their
+  problems are reported through it.
