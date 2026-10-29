@@ -19,6 +19,27 @@ the exact rot this discipline exists to prevent.
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
 ---
+## 5.16.3
+
+*2026-10-29 — T7.0: a script for the owner's playtest.*
+
+**A consuming game does: nothing.** `src/`, `tools/` and `tests/` are byte-identical; only
+documents changed. A game may copy `docs/PLAYTEST.md` as its own playtest script and replace the
+demo's names with its own.
+
+**What changed.** New `docs/PLAYTEST.md`:
+- a step-by-step play-through of every player-facing system in the demo;
+- the first-run defaults question (#8) asked before settings are opened;
+- the default controls table;
+- the shape a finding is reported in, each finding becoming a `T7.n` row.
+
+`CONTEXT.md` also records that a combat fork exists downstream and that this changes nothing
+here.
+
+**Why.** Phase T6 closed waiting on the owner's playtest. A playtest without a script finds what
+the player happens to try, and a script is what makes it cover the base.
+
+---
 ## 5.16.2
 
 *2026-10-16 — T6.15: a wandering NPC never picks a spot it cannot walk to.*

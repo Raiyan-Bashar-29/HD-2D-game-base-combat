@@ -102,7 +102,7 @@ G=/c/Rai/softwares/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_conso
 "$G" --headless --check-only --script <file>   # type gate; filter "Identifier not found: <Autoload>"
 "$G" --headless --import                       # scenes and resources
 "$G" --headless --quit-after 30                # must end "0 warnings, 0 errors"
-"$G" --headless res://tests/test_runner.tscn --quit-after 400   # 2,678 assertions, exit 1 on fail
+"$G" --headless res://tests/test_runner.tscn --quit-after 400   # 2,681 assertions, exit 1 on fail
 "$G" --headless --script tools/check_budgets.gd
 "$G" --headless --script tools/check_content.gd    # ids, duplicate object_ids, CSV keys
 "$G" --headless --script tools/check_boundary.gd   # no file under src/ or tests/ names demo content
