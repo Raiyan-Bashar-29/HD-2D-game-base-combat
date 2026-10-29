@@ -264,3 +264,45 @@ real-time formula share the same status file.
 - Statuses have no `name_key` yet. Nothing shows one until C2's battle UI, which adds it.
 - `check_content.gd` does not scan `data/statuses/`. Widening it means editing an upstream
   tool; until then `StatusDb.problems()` holds the errors, and `StatusSet.apply` refuses a broken status.
+
+## 2026-10-29 — C1.6 · Factions, targeting and `Combatant`
+
+**Did.**
+- `src/content/combat/faction_table.gd`: `FactionTable`, with `is_hostile`, `allows(filter, …)`
+  and the `Target` enum (SELF, ALLY, ENEMY, ANY).
+- `src/gameplay/combat/combatant.gd`: a `Combatant` component with `combatant_id`, `faction`,
+  `formula`, `factions`, `damage_pool`, a shared `sheet`, `of`, `can_target`, `hit` and
+  `receive`.
+- `Events.combatant_damaged(who, by, amount, critical)`.
+- `tests/unit/combatant_test.gd`, 24 assertions.
+- Merged upstream `5.16.4` (T7.1, CI actions off Node 20). No conflict.
+- Combat `0.6.0`.
+
+**Why.** C1.2 to C1.5 built the parts; this row is what makes an actor combat-capable. Every
+formula from C2 on talks to a `Combatant`, not to its parts.
+
+**Connects.**
+- **One sheet.** `Combatant._ready` hands its sheet and id to its `Vitals` and `StatusSet`
+  siblings. A status that raises `max_hp` then raises the maximum `Vitals` clamps to, and every
+  signal names the same `who`. This closes C1.3's and C1.5's "until C1.6" gaps.
+- **The attacker's formula resolves; the defender only applies.** A skill's formula belongs to
+  the one using it, and a preview resolved with the same seed shows exactly what lands.
+- **Factions need no table for the common case:** the same faction is allied and different
+  factions are hostile. A table lists exceptions, so a game with three factions at war needs
+  nothing authored at all.
+- **ALLY includes the user, ENEMY never does.** A party-wide heal reaches its caster, and
+  "hit every enemy" can never hit yourself, even in a faction that fights itself.
+
+**Verified.**
+- Red first: with the sheet unshared and `receive` applying nothing, 5 failed. Restored.
+- Suite `2808 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.6.0`. All seven
+  checkers exit 0.
+
+**Unblocks.** C1.7, the training dummy, which closes phase C1.
+
+**Gaps.**
+- A status tick is still a raw pool change. Routing it through a formula would need a
+  `Combatant` for the tick's source, which a poison applied by a trap does not have. That is a
+  C2/C3 decision, made when a formula needs it.
+- `Combatant` sets its siblings' ids but not `StatusSet.save_id`. An author still gives each
+  combatant's `StatusSet` its own, Inventory's rule.

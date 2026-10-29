@@ -280,3 +280,6 @@ signal combatant_revived(who: StringName)
 signal status_applied(who: StringName, status_id: StringName, stacks: int)
 ## A status ran out or was cured. Emitted by `StatusSet`; never on a new game or a load.
 signal status_expired(who: StringName, status_id: StringName)
+## A combatant received a resolved hit. Emitted by `Combatant.receive`; the amount is the hit's
+## total, negative for an absorbed one, and a defeated combatant receives nothing.
+signal combatant_damaged(who: StringName, by: StringName, amount: int, critical: bool)
