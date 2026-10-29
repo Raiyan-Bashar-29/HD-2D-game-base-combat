@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PathAction" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/npc/path_action.gd" id="1_act"]
+
+[resource]
+script = ExtResource("1_act")
+verb = 14
+label_key = "action.keeper.barter.label"
+required_standing = 1
+success_standing = 2
+success_flag = &"story/keeper_bartered"
+standing_on_success = 1
+standing_on_failure = -1
+success_key = "action.keeper.barter.success"
+failure_key = "action.keeper.barter.failure"
+refusal_key = "action.keeper.barter.refused"
+once = true

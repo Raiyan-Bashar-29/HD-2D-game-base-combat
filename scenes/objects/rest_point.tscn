@@ -1,0 +1,38 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/interactables/rest_point.gd" id="1_rest"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/wood.png" id="2_wood"]
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_texture = ExtResource("2_wood")
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="bench_mesh"]
+size = Vector3(2.2, 0.45, 0.7)
+
+[sub_resource type="BoxShape3D" id="bench_shape"]
+size = Vector3(2.2, 0.45, 0.7)
+
+[sub_resource type="SphereShape3D" id="reach"]
+radius = 1.9
+
+[node name="RestPoint" type="Area3D"]
+script = ExtResource("1_rest")
+verb = 7
+
+[node name="Reach" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("reach")
+
+[node name="Seat" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Seat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0)
+mesh = SubResource("bench_mesh")
+surface_material_override/0 = SubResource("mat")
+
+[node name="Shape" type="CollisionShape3D" parent="Seat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.225, 0)
+shape = SubResource("bench_shape")

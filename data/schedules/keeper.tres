@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="NpcSchedule" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/content/npc/npc_schedule.gd" id="1_sched"]
+[ext_resource type="Script" path="res://src/content/npc/schedule_entry.gd" id="2_entry"]
+
+[sub_resource type="Resource" id="morning"]
+script = ExtResource("2_entry")
+from_hour = 6
+waypoint = &"gate_post"
+activity = 1
+
+[sub_resource type="Resource" id="midday"]
+script = ExtResource("2_entry")
+from_hour = 11
+waypoint = &"dais"
+activity = 1
+
+[sub_resource type="Resource" id="night"]
+script = ExtResource("2_entry")
+from_hour = 20
+waypoint = &"bench"
+activity = 2
+
+[resource]
+script = ExtResource("1_sched")
+id = &"schedule/keeper"
+entries = Array[ScheduleEntry]([SubResource("morning"), SubResource("midday"), SubResource("night")])

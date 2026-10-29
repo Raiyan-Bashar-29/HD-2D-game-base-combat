@@ -1,0 +1,37 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3]
+
+; A SHARED AREA MATERIAL. The first one, and for now the only one — see the argument below for
+; why this is a library of one rather than a palette of five.
+;
+; WHY THIS FILE EXISTS (T3.2). Until it did, every area declared its own StandardMaterial3D
+; sub-resources inline, so a game re-tuning its look edited every area scene — and the two demo
+; areas had already grown a byte-identical copy of this exact material, in courtyard.tscn as
+; `m_wood` and in lantern_hall.tscn as `m_wood`. Two copies of one value eventually disagree; the
+; question is only which package finds out. Both areas now point here with an ExtResource, so one
+; edit to this file changes what BOTH render, and that claim was demonstrated with four windowed
+; captures rather than asserted.
+;
+; WHY ONLY WOOD, AND WHY THAT IS NOT HALF A JOB. The other five materials in the two areas are
+; NOT duplicates: the courtyard tiles stone at uv1_scale (3,3) and the hall floors it at (8,8) and
+; walls it at (6,2), because a tiling rate is a property of the surface it is stretched over, not
+; of the substance. Hoisting those into a shared file would mean a shared file with a per-area
+; override on every user, which is the duplication with an extra indirection. A material is shared
+; when two areas genuinely want the SAME thing, and exactly one of the six does.
+;
+; WHAT A CONSUMING GAME DOES. Drop your own .tres in this folder and point your areas' meshes at
+; it, or replace the texture this one names. Nothing in src/ knows this file exists — a shared
+; material is a scene-authoring convention, not a system, which is why there is no registry, no
+; id and no directory scan here. docs/ART_CONTRACT.md is the consumer-facing form of this note.
+;
+; ONE THING THAT MAKES SHARING SAFE, and it was already true before this file: SurfaceWetness
+; DUPLICATES every material it touches before it darkens it (see its header). Without that, rain
+; in the courtyard would have left the hall's plinth wet on the far side of an area change, which
+; is precisely the failure a shared sub-resource invites.
+
+[ext_resource type="Texture2D" path="res://assets/placeholder/wood.png" id="1_wood"]
+
+[resource]
+resource_name = "wood"
+albedo_texture = ExtResource("1_wood")
+texture_filter = 0
+uv1_scale = Vector3(2, 2, 1)

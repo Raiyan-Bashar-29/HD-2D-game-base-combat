@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PathAction" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/npc/path_action.gd" id="1_act"]
+
+[resource]
+script = ExtResource("1_act")
+verb = 12
+label_key = "action.keeper.scrutinise.label"
+required_standing = -3
+success_standing = -3
+success_flag = &"story/keeper_read"
+standing_on_success = 1
+success_key = "action.keeper.scrutinise.success"
+once = true

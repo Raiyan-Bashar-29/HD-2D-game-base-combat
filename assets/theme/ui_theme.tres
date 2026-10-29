@@ -1,0 +1,101 @@
+[gd_resource type="Theme" format=3]
+
+; THE PROJECT UI THEME. Set as `gui/theme/custom` in project.godot, so it is the default theme
+; for every Control in the game and no screen has to be handed it.
+;
+; WHY THIS FILE EXISTS. Until T2.1 the UI look lived as constants inside five screen files —
+; menu_screen.gd, dialogue_screen.gd, inventory_screen.gd, hud_clock.gd, loading_indicator.gd —
+; with the same font size and the same accent colour written out three and four times over. So
+; restyling was five edits that would drift, and a game built on this template had nowhere to put
+; its own look but a fork of the screens. Now every size, colour and inset in the UI is here.
+;
+; THE SHAPE, AND WHY IT IS SPLIT IN THREE:
+;
+;   Type variations (TitleText, MenuRow, ...) carry ONLY font_size, because size is the one thing
+;   that genuinely differs by ROLE. A screen sets `theme_type_variation` and asks for nothing.
+;
+;   UiPalette carries the colours, once each. Deliberately NOT copied into the variations: a
+;   theme resource has no variables, so a colour repeated into nine variations is nine places to
+;   change and the "one Theme change restyles every screen" claim would be false. Screens read
+;   these three by name.
+;
+;   UiMetrics carries the insets and separations. Same reasoning.
+;
+; SO A RESTYLE IS AN EDIT TO THIS FILE AND NOTHING ELSE. That is the exit criterion, and it was
+; demonstrated with captures before and after rather than argued for — see docs/DEVLOG.md.
+;
+; A CONSUMING GAME REPLACES THIS FILE, or points `gui/theme/custom` at its own. Adding a `fonts/`
+; entry here is how real type arrives when art stops being deferred; nothing in src/ changes.
+;
+; OWNS: every font size, colour and inset the UI draws with.
+; MUST NOT: hold a size that only one screen could ever want (that is a screen's business), or a
+; localization key (this is a look, not text).
+
+[resource]
+
+; --- Labels, by role. Sizes only; the colour comes from UiPalette. ---
+TitleText/base_type = &"Label"
+TitleText/font_sizes/font_size = 40
+NoteText/base_type = &"Label"
+NoteText/font_sizes/font_size = 20
+HintText/base_type = &"Label"
+HintText/font_sizes/font_size = 18
+SpeakerText/base_type = &"Label"
+SpeakerText/font_sizes/font_size = 24
+DialogueText/base_type = &"Label"
+DialogueText/font_sizes/font_size = 26
+HudText/base_type = &"Label"
+HudText/font_sizes/font_size = 22
+LoadingText/base_type = &"Label"
+LoadingText/font_sizes/font_size = 20
+
+; --- Buttons. A row in a menu, and a reply in a conversation. ---
+MenuRow/base_type = &"Button"
+MenuRow/font_sizes/font_size = 24
+ChoiceRow/base_type = &"Button"
+ChoiceRow/font_sizes/font_size = 22
+
+; --- The palette. Five entries, and every screen reads these and no others. ---
+UiPalette/colors/text = Color(1, 1, 1, 1)
+UiPalette/colors/accent = Color(0.86, 0.74, 0.52, 1)
+; Translucent, for a panel over a live or frozen world that should stay visible behind it.
+UiPalette/colors/dim = Color(0.04, 0.03, 0.06, 0.78)
+; Opaque, for a panel with no world behind it. It also has to cover the HUD, which is drawn
+; UNDER UiRoot and would otherwise show a clock through the main menu of a game not started.
+UiPalette/colors/solid = Color(0.04, 0.03, 0.06, 1)
+; Present but lesser: something the player can see and has not yet earned. Added for the world
+; map's undiscovered markers, which have to be VISIBLE against `solid` and clearly not `accent`
+; -- `dim` is a translucent black and would have drawn nothing at all. First entry added to this
+; palette since T2.1 wrote it, which is the seam working: one file, one line, every screen.
+UiPalette/colors/muted = Color(0.42, 0.4, 0.38, 1)
+
+; --- Metrics. The design resolution is 1920 wide and `canvas_items` stretch keeps the logical
+; size there whatever the window does, so these are stable numbers rather than guesses. ---
+; Top and bottom inset on a full-screen menu.
+UiMetrics/constants/margin = 64
+; Side inset on a full-screen menu. Much larger: a row stretched across 1920 is unreadable and
+; reads as a table. Equal side insets are a centred fixed-width column.
+UiMetrics/constants/side_margin = 560
+; Inset on a box that sits inside the screen rather than filling it, like the dialogue box.
+UiMetrics/constants/box_margin = 36
+UiMetrics/constants/separation = 14
+UiMetrics/constants/row_separation = 8
+UiMetrics/constants/tight_separation = 6
+; The face of a pressable row at rest, and the ONLY colour a button state is designed from.
+; Added by T5.15, the first entry here that needed a SURFACE rather than a mark on one: `dim` and
+; `solid` are the panel BEHIND a row, so a row drawn in either vanishes into it, and `muted`
+; already means "present but lesser" — a whole menu drawn in it would say every row is
+; half-earned. The other four states are derived from this one, from `text` and from `accent` at
+; runtime rather than authored here, because a theme resource has no variables and five
+; hand-picked surfaces are five things a consuming game must re-pick instead of one. The
+; derivation, and what happens when this entry is missing, are in src/ui/root/ui_row_styles.gd.
+UiPalette/colors/surface = Color(0.15, 0.14, 0.19, 1)
+
+; Side inset INSIDE a pressable row, between its border and its text. A row whose text starts at
+; its own edge reads as a label that happens to have a box round it. The top and bottom inset is
+; `tight_separation` and is deliberately not a fourth number: a row is wider than it is tall.
+UiMetrics/constants/row_padding = 18
+; The width of the ring drawn round the row holding keyboard or gamepad focus. Its own constant
+; rather than shared with anything, because it is the one measurement in this file that a player
+; navigating without a mouse depends on being able to see.
+UiMetrics/constants/focus_border = 2

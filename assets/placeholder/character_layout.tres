@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="SpriteSheetLayout" load_steps=2 format=3]
+
+; The layout of character_placeholder.png: 8 facings across, FOUR 4-frame cycles down, 32x48
+; cells. The rows run idle.0-3, walk.0-3, run.0-3, break.0-3.
+;
+; IT HAD ONE BLOCK UNTIL T5.2, and not because one was enough: `animation_for` took a BOOLEAN, so
+; there was nowhere to name a third row and a running character replayed the walk cycle faster.
+; The controller had known the difference since WP-01 - `GameEnums.MoveState` has ten values - and
+; the art contract could not express it.
+;
+; sneak_row and climb_row are deliberately left at -1, which means "replay the walk block". That
+; is what every gait did before T5.2, so a sheet that names nothing behaves exactly as it did, and
+; a game adds a sneak cycle by drawing one and naming its row. No code, here or anywhere.
+;
+; THE FOURTH BLOCK IS NOT A GAIT. idle_break_row names a SECOND IDLE and idle_break_after is the
+; chooser: three seconds of unbroken standing, then that block plays once and hands back to
+; idle_row. Three rather than something more lifelike because this sheet's job is to be
+; PHOTOGRAPHED - a fifteen-second fidget is better design and would need a fifteen-second capture,
+; and a game retunes one number. character_alt_layout.tres deliberately names NEITHER field, so
+; the repository holds a sheet with a break and a sheet without, and the -1 default is exercised
+; on a layout that names all five gaits.
+
+[ext_resource type="Script" path="res://src/content/art/sprite_sheet_layout.gd" id="1_layout"]
+
+[resource]
+script = ExtResource("1_layout")
+facings = 8
+frames = 4
+animations = 4
+cell_size = Vector2i(32, 48)
+idle_row = 0
+walk_row = 1
+run_row = 2
+sneak_row = -1
+climb_row = -1
+idle_break_row = 3
+idle_break_after = 3.0

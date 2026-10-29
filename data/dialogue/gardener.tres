@@ -1,0 +1,72 @@
+[gd_resource type="Resource" script_class="Conversation" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://src/content/dialogue/conversation.gd" id="1_talk"]
+[ext_resource type="Script" path="res://src/content/dialogue/dialogue_node.gd" id="2_node"]
+[ext_resource type="Script" path="res://src/content/dialogue/dialogue_choice.gd" id="3_choice"]
+
+[sub_resource type="Resource" id="choice_who"]
+script = ExtResource("3_choice")
+text_key = "talk.gardener.choice.who"
+target_node = &"who"
+
+[sub_resource type="Resource" id="choice_gate"]
+script = ExtResource("3_choice")
+text_key = "talk.gardener.choice.gate"
+target_node = &"gate"
+
+[sub_resource type="Resource" id="choice_leave"]
+script = ExtResource("3_choice")
+text_key = "talk.gardener.choice.leave"
+target_node = &""
+
+[sub_resource type="Resource" id="choice_again"]
+script = ExtResource("3_choice")
+text_key = "talk.gardener.choice.again"
+target_node = &"menu"
+
+[sub_resource type="Resource" id="node_greet_again"]
+script = ExtResource("2_node")
+node_id = &"greet_again"
+speaker_key = "talk.gardener.name"
+text_key = "talk.gardener.greet_again"
+next_node = &"menu"
+condition_flag = &"met/gardener"
+condition_test = 1
+effect_flag = &"count/gardener_talks"
+effect_write = 4
+effect_value = 1
+
+[sub_resource type="Resource" id="node_greet_first"]
+script = ExtResource("2_node")
+node_id = &"greet_first"
+speaker_key = "talk.gardener.name"
+text_key = "talk.gardener.greet_first"
+next_node = &"menu"
+effect_flag = &"met/gardener"
+effect_write = 1
+
+[sub_resource type="Resource" id="node_menu"]
+script = ExtResource("2_node")
+node_id = &"menu"
+speaker_key = "talk.gardener.name"
+text_key = "talk.gardener.menu"
+choices = Array[DialogueChoice]([SubResource("choice_who"), SubResource("choice_gate"), SubResource("choice_leave")])
+
+[sub_resource type="Resource" id="node_who"]
+script = ExtResource("2_node")
+node_id = &"who"
+speaker_key = "talk.gardener.name"
+text_key = "talk.gardener.who"
+choices = Array[DialogueChoice]([SubResource("choice_again"), SubResource("choice_leave")])
+
+[sub_resource type="Resource" id="node_gate"]
+script = ExtResource("2_node")
+node_id = &"gate"
+speaker_key = "talk.gardener.name"
+text_key = "talk.gardener.gate"
+choices = Array[DialogueChoice]([SubResource("choice_again"), SubResource("choice_leave")])
+
+[resource]
+script = ExtResource("1_talk")
+id = &"talk/gardener"
+nodes = Array[DialogueNode]([SubResource("node_greet_again"), SubResource("node_greet_first"), SubResource("node_menu"), SubResource("node_who"), SubResource("node_gate")])

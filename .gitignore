@@ -1,0 +1,36 @@
+# Godot 4 generated engine cache. Never commit — it is machine-specific and huge.
+.godot/
+/android/
+
+# Export output
+/build/
+/export/
+*.exe
+*.pck
+*.zip
+
+# Generated translation binaries (source .csv IS committed)
+*.translation
+
+# Ladder logs. The workflow writes import.log, boot.log, tests.log and one check_<name>.log
+# per checker; T5.27 added the seven checker logs, and running the ladder locally the way CI does
+# leaves all ten in the working tree. Nothing here is tracked and nothing should be.
+*.log
+
+# OS / editor noise
+Thumbs.db
+desktop.ini
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# Local-only overrides
+override.cfg
+/local/
+
+# NOTE — things that look generated but MUST be committed:
+#   *.uid      Godot 4.4+ stable resource identity. Losing these breaks every reference.
+#   *.import   asset import settings. Losing these re-imports with wrong defaults.
+#   *.tres     text resources are our content data.

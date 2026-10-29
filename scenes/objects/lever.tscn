@@ -1,0 +1,31 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/interactables/lever.gd" id="1_lever"]
+[ext_resource type="Script" path="res://src/gameplay/objects/persistent_state.gd" id="2_state"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/stone.png" id="3_stone"]
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_texture = ExtResource("3_stone")
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="post"]
+size = Vector3(0.32, 1.1, 0.32)
+
+[sub_resource type="SphereShape3D" id="reach"]
+radius = 1.5
+
+[node name="Lever" type="Area3D"]
+script = ExtResource("1_lever")
+verb = 4
+
+[node name="Reach" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("reach")
+
+[node name="Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+mesh = SubResource("post")
+surface_material_override/0 = SubResource("mat")
+
+[node name="PersistentState" type="Node" parent="."]
+script = ExtResource("2_state")

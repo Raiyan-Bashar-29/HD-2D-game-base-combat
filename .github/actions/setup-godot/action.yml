@@ -1,0 +1,74 @@
+name: Set up Godot
+description: >
+  Download, VERIFY and install the exact engine this project is built with, and prove the
+  binary runs before any rung depends on it.
+
+# WHY THIS IS A COMPOSITE ACTION AND NOT TEN LINES IN EACH JOB
+# The version is pinned in FOUR places below (tag, archive name, digest, expected --version
+# string). Two jobs each carrying their own copy is two copies that drift, and a stripped-run
+# job silently testing a different engine than the full run is the kind of gap this project
+# exists to prevent. One file, one pin.
+#
+# NOTE ON THE BINARY: there is no separate "console" executable on Linux. That is a Windows-only
+# split, and the reason CLAUDE.md insists on the console one locally (the plain Windows build
+# detaches from the terminal and prints nothing). The Linux build always prints.
+#
+# STANDARD BUILD, NOT .NET. `Godot_v..._linux.x86_64.zip`, never `..._mono_linux_x86_64.zip`.
+# C# is not available in this project and a mono build would happily run the ladder, hiding the
+# fact that CI and the developers are no longer on the same engine.
+
+runs:
+  using: composite
+  steps:
+    # The engine archive is IMMUTABLE and the cache key names its exact version, so this cache
+    # cannot go stale - the class of risk that keeps `.godot/` OUT of the cache (see ladder.yml).
+    - name: Cache the engine archive
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: /tmp/godot-download
+        key: godot-4.7.2-stable-linux-x86_64
+
+    - name: Download the engine
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p /tmp/godot-download
+        curl -fsSL --retry 3 --retry-delay 5 \
+          -o /tmp/godot-download/godot.zip \
+          "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+
+    # VERIFY WHAT WAS DOWNLOADED, do not trust the URL. The digest is pinned here as a literal,
+    # copied from the release's own SHA512-SUMS.txt, rather than fetched alongside the archive:
+    # a checksum file served from the same host as the artefact verifies transport, not identity.
+    # A re-tagged or substituted release fails HERE, loudly, instead of quietly running a
+    # different engine for a year.
+    - name: Verify the archive digest
+      shell: bash
+      run: |
+        set -euo pipefail
+        cd /tmp/godot-download
+        echo "9aa00f7a605200940bce3027a567b782f49bd8e940dd06ae9e987bd65aee1b1467edd56ed84fcdcbdd44354bf613bdbb4e5d2913e925850368e150c59ed54c65  godot.zip" > godot.zip.sha512
+        sha512sum -c godot.zip.sha512
+
+    - name: Install the engine
+      shell: bash
+      run: |
+        set -euo pipefail
+        cd /tmp/godot-download
+        unzip -o -q godot.zip
+        install -m 0755 Godot_v4.7.2-stable_linux.x86_64 /usr/local/bin/godot
+
+    # RUN IT, and assert the exact build. Two failures this catches that nothing downstream
+    # would name clearly:
+    #   - a missing shared library, which would otherwise surface as an unexplained failure
+    #     inside the import rung rather than as "the engine does not start";
+    #   - the right version number from a different build. The trailing commit hash is part of
+    #     the release's identity, so it is pinned too.
+    - name: Verify the engine runs and is the pinned build
+      shell: bash
+      run: |
+        set -euo pipefail
+        godot --version | tee /tmp/godot-version.txt
+        grep -Fxq '4.7.2.stable.official.ed1daf0bf' /tmp/godot-version.txt

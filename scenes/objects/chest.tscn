@@ -1,0 +1,30 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/interactables/item_container.gd" id="1_chest"]
+[ext_resource type="Script" path="res://src/gameplay/objects/persistent_state.gd" id="2_state"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/wood.png" id="3_wood"]
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_texture = ExtResource("3_wood")
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="body"]
+size = Vector3(0.9, 0.6, 0.6)
+
+[sub_resource type="SphereShape3D" id="reach"]
+radius = 1.6
+
+[node name="Chest" type="Area3D"]
+script = ExtResource("1_chest")
+
+[node name="Reach" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("reach")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("body")
+surface_material_override/0 = SubResource("mat")
+
+[node name="PersistentState" type="Node" parent="."]
+script = ExtResource("2_state")

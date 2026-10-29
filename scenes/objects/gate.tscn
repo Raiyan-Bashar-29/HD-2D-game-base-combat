@@ -1,0 +1,43 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/interactables/gate.gd" id="1_gate"]
+[ext_resource type="Script" path="res://src/gameplay/objects/persistent_state.gd" id="2_state"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/stone.png" id="3_stone"]
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_texture = ExtResource("3_stone")
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="leaf"]
+size = Vector3(3.2, 3.0, 0.35)
+
+[sub_resource type="BoxShape3D" id="solid"]
+size = Vector3(3.2, 3.0, 0.35)
+
+[sub_resource type="SphereShape3D" id="reach"]
+radius = 2.2
+
+[node name="Gate" type="Area3D" node_paths=PackedStringArray("blocker")]
+script = ExtResource("1_gate")
+verb = 2
+blocker = NodePath("Blocker")
+
+[node name="Reach" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("reach")
+
+[node name="Blocker" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Blocker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+mesh = SubResource("leaf")
+surface_material_override/0 = SubResource("mat")
+
+[node name="Shape" type="CollisionShape3D" parent="Blocker"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("solid")
+
+[node name="PersistentState" type="Node" parent="."]
+script = ExtResource("2_state")

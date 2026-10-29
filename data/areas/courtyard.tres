@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AreaDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/world/area_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"courtyard"
+name_key = "area.courtyard.name"
+map_position = Vector2(0.42, 0.68)
+arrival_spawn = &"default"
+known_from_start = true

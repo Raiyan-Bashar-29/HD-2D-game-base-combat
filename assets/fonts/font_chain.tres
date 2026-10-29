@@ -1,0 +1,39 @@
+[gd_resource type="FontVariation" load_steps=4 format=3]
+
+; THE FONT FALLBACK CHAIN (T6.6). A FontVariation with NO base font, so Latin is still drawn by
+; the engine's own default font exactly as before, and a glyph that font lacks is looked up in
+; `fallbacks` IN ORDER: Bengali first, then the CJK subset. Before this chain the only thing
+; standing between a Bengali or Chinese string and a row of boxes was whatever fonts the PLAYER'S
+; OS happened to carry: a Windows machine has Nirmala UI and YaHei and hides the tofu, and a
+; machine without them shows it. The look now travels with the game.
+;
+; WHY THIS IS ITS OWN FILE AND NOT A LINE IN ui_theme.tres, MEASURED RATHER THAN PREFERRED. The
+; project theme is loaded at engine start, BEFORE the first filesystem scan imports anything. On a
+; fresh clone the fonts are not imported yet, so a theme naming them prints `Parse Error:
+; [ext_resource] referenced non-existent resource` — which CI's rung 2 greps for, and which every
+; consumer would meet on their first open. So the theme names no font, and UiRoot installs this
+; chain into the project theme at boot (`UiRoot.install_font_chain`), by which time it is imported.
+;
+; A GAME THAT ADDS A SCRIPT appends its font to `fallbacks`. Order matters where two fonts share a
+; code point, and tests/unit/font_chain_test.gd asserts it. Sources, licences and the recipe that
+; cut the CJK subset: docs/ART_CONTRACT.md § Fonts.
+;
+; OWNS: which bundled fonts back the UI font, and in what order.
+; MUST NOT: carry a size or a colour (those are ui_theme.tres), or a base font (that would replace
+; the engine's Latin rather than extend it).
+
+[ext_resource type="FontFile" path="res://assets/fonts/NotoSansBengali-Variable.ttf" id="1_bengali"]
+[ext_resource type="FontFile" path="res://assets/fonts/NotoSansSC-SemiBold-subset.ttf" id="2_cjk"]
+
+; SEMIBOLD, TO MATCH. The engine's default Latin is Open Sans SemiBold, so a Regular fallback drew
+; every Bengali line visibly lighter than the Latin beside it in the first capture. The Bengali
+; font is variable and is asked for weight 600 here (`wght`, 2003265652 as a tag); the CJK subset
+; has no axis left, so it was cut at 600.
+[sub_resource type="FontVariation" id="FontVariation_bengali"]
+base_font = ExtResource("1_bengali")
+variation_opentype = {
+2003265652: 600.0
+}
+
+[resource]
+fallbacks = Array[Font]([SubResource("FontVariation_bengali"), ExtResource("2_cjk")])

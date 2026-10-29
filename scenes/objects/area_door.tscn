@@ -1,0 +1,27 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/interactables/area_door.gd" id="1_door"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/wood.png" id="2_wood"]
+
+[sub_resource type="StandardMaterial3D" id="mat"]
+albedo_texture = ExtResource("2_wood")
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="leaf"]
+size = Vector3(2.2, 3.0, 0.3)
+
+[sub_resource type="SphereShape3D" id="reach"]
+radius = 2.2
+
+[node name="AreaDoor" type="Area3D"]
+script = ExtResource("1_door")
+verb = 9
+
+[node name="Reach" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+shape = SubResource("reach")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+mesh = SubResource("leaf")
+surface_material_override/0 = SubResource("mat")

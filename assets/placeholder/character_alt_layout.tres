@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="SpriteSheetLayout" load_steps=2 format=3]
+
+; The layout of character_alt.png, and it disagrees with character_layout.tres on EVERY number:
+; 4 facings not 8, a 24x40 cell not 32x48, and 3 frames in each of five animation blocks rather
+; than 4 in each of three. It exists so T2.1's headline claim can be demonstrated rather than
+; asserted: point a CharacterVisual's `layout` and `texture` at this pair, run the windowed
+; capture, and read the pip tallies on the drawn cell. No code changes for either sheet.
+;
+; IT NAMED ONLY idle AND walk UNTIL T5.6. The default sheet gained run at T5.2 and the alt sheet
+; did not, so the repository held a sheet with a different GRID and a sheet with GAITS and never
+; one with both - which is exactly the swap Phase T5 claims a consuming game performs. This is
+; the only layout in the project that names all five: nothing here is left at -1, so no gait
+; falls back to the walk block and every one of them is drawn from a row of its own.
+
+[ext_resource type="Script" path="res://src/content/art/sprite_sheet_layout.gd" id="1_layout"]
+
+[resource]
+script = ExtResource("1_layout")
+facings = 4
+frames = 3
+animations = 5
+cell_size = Vector2i(24, 40)
+idle_row = 0
+walk_row = 1
+run_row = 2
+sneak_row = 3
+climb_row = 4

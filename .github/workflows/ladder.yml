@@ -1,0 +1,588 @@
+# THE VERIFICATION LADDER, RUN BY A MACHINE.
+#
+# WHY THIS FILE EXISTS
+# The ladder was seven commands a human types, in order, remembering to grep rung 2 for
+# `SCRIPT ERROR`. Every completion claim in docs/DEVLOG.md was a human having run it honestly.
+# That held, and it is not a system. This project exists because a previous one had 409 passing
+# static checks and had never rendered a frame; a ladder nothing enforces is the same shape of
+# reassurance one level up.
+#
+# WHY IT COULD NOT BE WRITTEN BEFORE T1.3
+# Until T1.3, rung 4 reported success on a case that CRASHED - a GDScript runtime error aborts
+# only the innermost frame (gotcha 24), so the runner saw a case that returned normally. A green
+# badge over a suite that cannot fail is worth less than no badge, because it is believed. T1.3
+# planted four silent-pass modes and each exited 1. That is what made this worth automating.
+#
+# THE ONE RUNG THAT IS NOT HERE, SAID OUT LOUD
+# The windowed capture:
+#     godot --resolution 960x540 --quit-after 55 -- --shot=<path> --time=18:40 --freeze-time
+# It CANNOT run here and is not silently dropped. `--headless` uses a dummy rasteriser and
+# shades NOTHING (gotcha 2) - a day/night system once ran headless, logged correct times,
+# reported no errors and lit nothing at all, because one `@export` was unwired in the scene. A
+# runner has no GPU, so any capture it produced would be exactly the evidence that gotcha warns
+# is worthless. Anything with a visual consequence still needs a human to run it windowed and
+# LOOK at the PNG. CI covers the six rungs a machine can honestly judge, and claims nothing
+# about the seventh.
+
+name: Ladder
+
+on:
+  push:
+  pull_request:
+  # A HUMAN CAN RUN THE LADDER ON DEMAND, against any branch. Two reasons it is here and not
+  # left to push events alone: re-running the ladder after a flake should not need an empty
+  # commit, and push-event delivery is not something this repo controls - during T1.4 three
+  # consecutive pushes created no run at all while the workflow was registered and active, and
+  # a gate with exactly one way to be invoked is a gate with a single point of failure.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Superseding a push on the same ref is the point: nobody needs the ladder for a commit that has
+# already been replaced. A MANUAL run is deliberately given a group of its own, keyed on its run
+# id, so it can never be cancelled by a push that lands while it is running - a human who asked
+# for the ladder asked for an answer, and a cancelled run reports neither pass nor fail. Measured:
+# a dispatch mid-verification was cancelled by the very push it was verifying.
+concurrency:
+  group: ladder-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'auto' }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------------------------
+  # The full checkout: demo content present, exactly what a developer runs locally.
+  # ---------------------------------------------------------------------------------------------
+  ladder:
+    name: Ladder (full checkout)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-godot
+
+      # WHY `.godot/` IS DELIBERATELY NOT CACHED.
+      # It is tempting: it is the exact artefact whose absence makes every script fail to parse
+      # on a fresh clone, and caching it would cut a chunk off each run.
+      #
+      # It is refused because a build cache that can go stale is a gate that can lie. `.godot/`
+      # holds the `class_name` global map, the resource UID table and every import result - so a
+      # restored cache can resolve a `class_name` this commit deleted, or hand a `.tres` an
+      # importer for a file that changed shape. The failure mode is not "CI is slow", it is
+      # "CI is green and a fresh clone is broken", which is the failure this package exists to
+      # make impossible. There is no correctness-preserving key for it either: the honest key
+      # would be the whole tree, at which point it never hits.
+      #
+      # A FRESH CLONE IS ALSO THE STATE A CONSUMER ARRIVES IN. This is a template. Importing
+      # from nothing on every run means the "on a fresh clone, run --import FIRST" instruction
+      # in CLAUDE.md is exercised on every push instead of trusted.
+      #
+      # What IS cached is the engine archive - immutable, keyed by its exact version, incapable
+      # of going stale. Cache the fixed thing, never the derived one.
+
+      # === RUNG 2 - THE REAL COMPILE CHECK.
+      # Rung 1 (`--check-only`) is not automatable: autoload identifiers (Log, Events, Flags)
+      # do not resolve under it and the resulting error is EXPECTED (gotcha 1), so a machine
+      # cannot tell that expected error from a real one. Rung 2 is where compilation is judged.
+      #
+      # THIS IS THE STEP THE PACKAGE IS BUILT AROUND. `0 warnings, 0 errors` on the boot rung
+      # counts `Log.warn`/`Log.error` CALLS; an engine-level `Parse Error` is neither, so a file
+      # that fails to load prints `SCRIPT ERROR` on stderr and the boot rung still reports a
+      # clean session (gotcha 22). `dev_capture.gd` was dead for an entire package that way -
+      # F12, `--shot`, `--time` and `--weather` all broken while every rung stayed green.
+      # ZERO TOLERANCE. Not a threshold, not a warning: a single match fails the run.
+      - name: Rung 2 - import, zero SCRIPT ERROR / Parse Error
+        run: |
+          # GitHub runs every run: block as `bash -e {0}`, so errexit is ON no matter what is
+          # set here - the first attempt at this step printed nothing but "exit code 1" for that
+          # reason. A command on the left of `||` is exempt from errexit, which is why the status
+          # is captured that way and not with a bare `$?`.
+          set -uo pipefail
+          status=0
+          godot --headless --import > import.log 2>&1 || status=$?
+          echo "--- last 20 lines of import.log ---"
+          tail -n 20 import.log
+          echo "--- godot --headless --import exited ${status} ---"
+          if grep -nE 'SCRIPT ERROR|Parse Error' import.log; then
+            echo "::error::A script failed to compile. The lines above are the whole problem."
+            exit 1
+          fi
+          echo "No SCRIPT ERROR / Parse Error lines: every script compiled."
+          exit "${status}"
+
+      # === RUNG 3 - BOOT.
+      # Asserts the LAST `Session ended` line reports a clean session, which is what a human
+      # reads, AND that the log carries no `Parse Error` at all.
+      #
+      # THE SECOND HALF IS NEW IN WP-14, AND IT IS THE POINT OF THAT ROW. This rung used to read
+      # only the last line, and the comment here said why: quitting mid-load tore down the
+      # threaded area loader inside the text parser, which printed `Parse Error` for files that
+      # parse perfectly, so "a whole-log grep here would be a flake generator" (gotcha 13). That
+      # was true, and it meant a real defect had bought itself a permanently weakened gate -
+      # the one grep the project treats as its compile check, disabled on the boot rung because
+      # the engine lied on the way out. `Director._exit_tree()` now drains its own loader
+      # thread, so the grep is safe and is therefore switched on. Rung 2 keeps the same grep
+      # over `--import`; this is not a duplicate, because a mid-shutdown parse error is a thing
+      # only a RUN can produce.
+      #
+      # FRAME COUNT: still 300, and deliberately not reduced. The old comment justified the
+      # margin by the threaded load, which is now both fixed and beside the point - gotcha 31
+      # says a plain boot never enters an area at all, so it was never racing a load. The margin
+      # is kept for the reason that does apply: a headless frame costs milliseconds, and a rung
+      # that quits before the boot has finished would report clean about work it never did.
+      - name: Rung 3 - boot, 0 warnings 0 errors
+        run: |
+          # Status captured via `||` for the same errexit reason as rung 2: a boot that dies must
+          # still get as far as printing the tail of its own log.
+          set -uo pipefail
+          status=0
+          godot --headless --quit-after 300 > boot.log 2>&1 || status=$?
+          echo "--- last 10 lines of boot.log (engine exited ${status}) ---"
+          tail -n 10 boot.log
+          ended="$(grep 'Session ended' boot.log | tail -n 1 || true)"
+          if [ -z "${ended}" ]; then
+            echo "::error::The boot never reached 'Session ended' - it died before shutdown."
+            exit 1
+          fi
+          echo "${ended}"
+          case "${ended}" in
+            *"0 warnings, 0 errors"*) echo "Clean session." ;;
+            *) echo "::error::The boot logged warnings or errors."; exit 1 ;;
+          esac
+          if [ "${status}" -ne 0 ]; then
+            echo "::error::The boot reported a clean session and then exited ${status}."
+            exit 1
+          fi
+          # The half WP-14 switched on. Counted rather than grepped for a message, so the number
+          # appears in the log even when it is zero - a gate whose output is silence on success
+          # is a gate nobody can tell is running.
+          parse_errors="$(grep -c 'Parse Error' boot.log || true)"
+          echo "Parse Error lines in boot.log: ${parse_errors}"
+          if [ "${parse_errors}" -ne 0 ]; then
+            echo "::error::The boot printed ${parse_errors} Parse Error line(s)."
+            grep -n 'Parse Error' boot.log
+            exit 1
+          fi
+
+      # === RUNG 4 - THE SUITE.
+      # The exit code is the gate, and it is trustworthy for a specific reason: the runner ARMS
+      # it to failure on its first line and only clears it at the end, because `quit()` sets the
+      # code at end of frame and a later call overwrites it. So a crash that aborts `_ready()`
+      # itself still exits 1.
+      #
+      # DO NOT ADD A `0 errors` CHECK HERE. This run legitimately logs warnings and errors: the
+      # negative-path cases raise them deliberately. The summary line and the exit code are the
+      # only things that mean anything.
+      #
+      # THE STATUS IS CAPTURED RATHER THAN LEFT TO `set -e`, and the reason was measured: the
+      # first red run of this workflow reported nothing but `Process completed with exit code 1`,
+      # because `set -e` aborted the step before the line that prints the summary. The artefact
+      # had the answer and the step did not, which is a step that fails without saying why.
+      - name: Rung 4 - test suite
+        run: |
+          # GitHub runs every run: block as `bash -e {0}`, so errexit is ON no matter what is
+          # set here - the first attempt at this step printed nothing but "exit code 1" for that
+          # reason. A command on the left of `||` is exempt from errexit, which is why the status
+          # is captured that way and not with a bare `$?`.
+          set -uo pipefail
+          status=0
+          godot --headless res://tests/test_runner.tscn --quit-after 400 > tests.log 2>&1 || status=$?
+          grep -E '=== [0-9]+ passed' tests.log || echo "no summary line: the suite died before reporting"
+          grep -E 'FAILED:' tests.log || true
+          if [ "${status}" -ne 0 ]; then
+            echo "::error::The suite failed. The FAILED lines above name the assertions."
+            exit 1
+          fi
+
+      - name: Rung 5 - check_budgets
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_budgets.gd > check_budgets.log 2>&1 || status=$?
+          cat check_budgets.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_budgets.log; then
+            echo "::error::check_budgets printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      - name: Rung 6 - check_content
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_content.gd > check_content.log 2>&1 || status=$?
+          cat check_content.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_content.log; then
+            echo "::error::check_content printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      - name: Rung 7 - check_boundary
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_boundary.gd > check_boundary.log 2>&1 || status=$?
+          cat check_boundary.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_boundary.log; then
+            echo "::error::check_boundary printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      # RUNG 8, added by WP-14. Not a duplicate of rung 6: check_content validates the keys
+      # AUTHORED in .tres content, and nothing checked the ~70 `*_KEY` consts declared in code
+      # until now. A typo in one renders the raw key on screen, and that was measured to pass
+      # check_content, check_boundary AND all 1,517 assertions of the day.
+      - name: Rung 8 - check_strings
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_strings.gd > check_strings.log 2>&1 || status=$?
+          cat check_strings.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_strings.log; then
+            echo "::error::check_strings printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      # RUNGS 9 AND 10, added by T5.4, AND THEY ARE SEPARATE STEPS FOR ONE REASON: a failure
+      # must name itself. "The ladder failed" sends a reader to six commands; "Rung 9 -
+      # check_layers" sends them to one rule.
+      #
+      # WHAT THESE TWO ADD THAT THE OTHER FOUR NEVER ASKED. Content, budgets, strings and the
+      # demo boundary all validate a thing that EXISTS. None of them asked whether a declared
+      # thing has a CONSUMER, which is why "correct code with no consumer" has been found seven
+      # times through a fully green ladder. Rung 10 asks it of every signal in the registry;
+      # rung 9 enforces the one architectural rule that had no gate at all, and found a real
+      # upward reference the day it was written.
+      - name: Rung 9 - check_layers
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_layers.gd > check_layers.log 2>&1 || status=$?
+          cat check_layers.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_layers.log; then
+            echo "::error::check_layers printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      - name: Rung 10 - check_signals
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_signals.gd > check_signals.log 2>&1 || status=$?
+          cat check_signals.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_signals.log; then
+            echo "::error::check_signals printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      # Rung 11 is the fourth consumer question and the last of the four: a PUBLIC METHOD was
+      # still declarable-and-dead with nothing saying so, which is how `AudioDirector.duck()`
+      # survived three phases uncalled and turned out to be wrong as well as unused. Proved
+      # against that case: at the commit before T5.11 it would have failed on all three of
+      # `duck`, `unduck` and `stop_music`.
+      - name: Rung 11 - check_methods
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_methods.gd > check_methods.log 2>&1 || status=$?
+          cat check_methods.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_methods.log; then
+            echo "::error::check_methods printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      # A failing rung prints its own tail, but the full logs are what a diagnosis needs, and
+      # the interesting ones are exactly the runs that failed. Hence `always()`.
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ladder-logs
+          path: |
+            import.log
+            boot.log
+            tests.log
+            check_budgets.log
+            check_content.log
+            check_boundary.log
+            check_strings.log
+            check_layers.log
+            check_signals.log
+            check_methods.log
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------------------------------
+  # The stripped template: `data/` and `scenes/areas/` DELETED, which is step one of NEW_GAME.md.
+  #
+  # WHY THIS IS A JOB AND NOT A SENTENCE IN A DOCUMENT
+  # T1.3 proved by hand that the suite survives the strip - `861 passed, 0 failed, 12 skipped`,
+  # exit 0. That claim starts decaying the moment someone writes a test that names demo content,
+  # and the decay is invisible: the full run stays green. A job that performs the strip
+  # mechanically is the only thing that keeps the claim true rather than historical.
+  #
+  # WHY A SEPARATE JOB RATHER THAN A MATRIX LEG: it runs a DIFFERENT set of rungs. A matrix
+  # would need a conditional on nearly every step, which is a matrix pretending to be an if.
+  # ---------------------------------------------------------------------------------------------
+  stripped:
+    name: Ladder (stripped template)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-godot
+
+      # DELETED, not moved aside. This is literally what NEW_GAME.md tells a consuming game to
+      # do, and a checkout is disposable. Moved-aside content inside the project folder would
+      # still be importable, which would make this job prove less than it appears to.
+      - name: Strip the demo content
+        run: |
+          set -euo pipefail
+          rm -rf data scenes/areas
+          echo "data/ and scenes/areas/ deleted."
+
+      # THE CSV IS NOW PRUNED HERE TOO, AND THE OLD COMMENT SAYING IT SHOULD NOT BE WAS WRONG.
+      # It reasoned that "a mechanical prune here would only be this job testing its own regex",
+      # which was true while nothing could judge the result. T5.4 gave check_boundary.gd a gate
+      # that reads localization/ and fails on an ORPHAN row — a translation for content that is
+      # not there — so the prune is no longer self-referential: the command below is
+      # NEW_GAME.md's, verbatim, and rung 7 independently derives what content exists from the
+      # tree. One is the document's list of namespaces; the other is the actual data/ directory.
+      #
+      # THIS IS THE T4.3 DEFECT, CLOSED END TO END. That prune list was written at WP-08's
+      # birth, never learned the word `quest.`, and a real fork that followed it shipped
+      # "The Keeper's Errand" inside its own game with all four checkers green. If a namespace
+      # ever goes missing from the awk below again, rung 7 in THIS job goes red.
+      # Measured while writing it: strip alone, exit 1; strip then prune, exit 0 with
+      # "167 rows, of which 0 are content namespace".
+      - name: Prune the demo half of the CSV, exactly as NEW_GAME.md says
+        run: |
+          set -euo pipefail
+          awk '!/^(area|talk|action|object|quest)\./ && (!/^item\./ || /^item\.category\./)' \
+            localization/strings.csv > pruned.csv
+          mv pruned.csv localization/strings.csv
+          echo "rows kept: $(wc -l < localization/strings.csv)"
+
+      - name: Rung 2 - import, zero SCRIPT ERROR / Parse Error
+        run: |
+          # GitHub runs every run: block as `bash -e {0}`, so errexit is ON no matter what is
+          # set here - the first attempt at this step printed nothing but "exit code 1" for that
+          # reason. A command on the left of `||` is exempt from errexit, which is why the status
+          # is captured that way and not with a bare `$?`.
+          set -uo pipefail
+          status=0
+          godot --headless --import > import.log 2>&1 || status=$?
+          echo "--- last 20 lines of import.log ---"
+          tail -n 20 import.log
+          if grep -nE 'SCRIPT ERROR|Parse Error' import.log; then
+            echo "::error::A script failed to compile with the demo content deleted."
+            exit 1
+          fi
+          exit "${status}"
+
+      # RUNG 3 IS ABSENT ON PURPOSE. A stripped template is NOT bootable, by design:
+      # `project.godot`'s `[game] world/first_area` names the starting area, and that is the one
+      # place in the repo where a demo id legitimately lives (TEMPLATE.md). Pointing it at your
+      # own area is a step in NEW_GAME.md, so a stripped checkout has nothing to boot into.
+      # Asserting a clean boot here would be asserting that the template ships a game.
+
+      # The skip accounting is asserted, not just the pass count. If a future change made this
+      # run report zero skips, a stripped run would look IDENTICAL to a full one while covering
+      # a third less - the exact confusion `TestCase.skip()` was added to prevent.
+      - name: Rung 4 - test suite, and the skips are named
+        run: |
+          # GitHub runs every run: block as `bash -e {0}`, so errexit is ON no matter what is
+          # set here - the first attempt at this step printed nothing but "exit code 1" for that
+          # reason. A command on the left of `||` is exempt from errexit, which is why the status
+          # is captured that way and not with a bare `$?`.
+          set -uo pipefail
+          status=0
+          godot --headless res://tests/test_runner.tscn --quit-after 400 > tests.log 2>&1 || status=$?
+          grep -E '=== [0-9]+ passed' tests.log || echo "no summary line: the suite died before reporting"
+          grep -E 'FAILED:' tests.log || true
+          if [ "${status}" -ne 0 ]; then
+            echo "::error::The suite failed with the demo content deleted. The FAILED lines above name the assertions."
+            exit 1
+          fi
+          named="$(grep -c 'SKIPPED:' tests.log || true)"
+          echo "named skips: ${named}"
+          if [ "${named}" -eq 0 ]; then
+            echo "::error::A stripped run reported no skips, so it cannot be told from a full one."
+            exit 1
+          fi
+          grep 'SKIPPED:' tests.log
+
+      - name: Rung 5 - check_budgets
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_budgets.gd > check_budgets.log 2>&1 || status=$?
+          cat check_budgets.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_budgets.log; then
+            echo "::error::check_budgets printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      # Both gates must survive the strip, and one once did not: check_content failed on a
+      # stripped template at step one of NEW_GAME.md, because the three content registries
+      # reported an empty folder as a problem (fixed in T1.2). check_boundary is pure text
+      # precisely so it keeps working when the content it scans FOR has been deleted - which is
+      # the one moment it most needs to run, and is this job.
+      - name: Rung 6 - check_content
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_content.gd > check_content.log 2>&1 || status=$?
+          cat check_content.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_content.log; then
+            echo "::error::check_content printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      - name: Rung 7 - check_boundary
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_boundary.gd > check_boundary.log 2>&1 || status=$?
+          cat check_boundary.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_boundary.log; then
+            echo "::error::check_boundary printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      # Rung 8 runs here too, and it is the interesting half: the sink rule and the key rule are
+      # both about `src/` and `localization/`, neither of which the strip touches, so a stripped
+      # template is EXPECTED to report the same numbers. If it ever does not, an engine string has
+      # come to depend on a game being present.
+      #
+      # THAT EXPECTATION IS NOT ENFORCED, AND SAYING SO IS THE POINT. This comment used to read
+      # "must report exactly the same numbers", which claimed a check nothing performs: the two
+      # jobs are independent and nothing compares their output. What IS enforced is stronger than
+      # it sounds and weaker than the old wording - the checker must EXIT 0 in both jobs, so the
+      # failure mode that matters (an engine string that stops resolving once the game is gone)
+      # is caught here as a failure, not as a difference. A genuine cross-job count comparison
+      # needs each job to publish its counts and a third job to diff them; that is a candidate
+      # row, recorded in ROADMAP.md rather than implied by a comment.
+      - name: Rung 8 - check_strings
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_strings.gd > check_strings.log 2>&1 || status=$?
+          cat check_strings.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_strings.log; then
+            echo "::error::check_strings printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      # Both new rungs read src/ and tests/ only, which the strip does not touch, so they are
+      # EXPECTED to report the same numbers here as in the full job. If they ever do not, the
+      # layer map or the signal registry has come to depend on a game being present — which is
+      # the one thing a template must never do. As above, the expectation is not compared across
+      # jobs by anything; the enforced part is that both must exit 0.
+      - name: Rung 9 - check_layers
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_layers.gd > check_layers.log 2>&1 || status=$?
+          cat check_layers.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_layers.log; then
+            echo "::error::check_layers printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      - name: Rung 10 - check_signals
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_signals.gd > check_signals.log 2>&1 || status=$?
+          cat check_signals.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_signals.log; then
+            echo "::error::check_signals printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      # Rung 11 is the fourth consumer question and the last of the four: a PUBLIC METHOD was
+      # still declarable-and-dead with nothing saying so, which is how `AudioDirector.duck()`
+      # survived three phases uncalled and turned out to be wrong as well as unused. Proved
+      # against that case: at the commit before T5.11 it would have failed on all three of
+      # `duck`, `unduck` and `stop_music`.
+      - name: Rung 11 - check_methods
+        run: |
+          set -uo pipefail
+          status=0
+          godot --headless --script tools/check_methods.gd > check_methods.log 2>&1 || status=$?
+          cat check_methods.log
+          # GOTCHA 24: a GDScript runtime error aborts the INNERMOST FRAME ONLY, so an error
+          # inside a per-file loop lets the loop finish and still reach print("PASS"); quit(0).
+          # The exit code alone therefore cannot say the scan was complete. This can.
+          if grep -qE 'SCRIPT ERROR|Parse Error' check_methods.log; then
+            echo "::error::check_methods printed a script error, so its scan is incomplete even if it reported PASS."
+            status=1
+          fi
+          exit "${status}"
+
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stripped-logs
+          path: |
+            import.log
+            tests.log
+            check_budgets.log
+            check_content.log
+            check_boundary.log
+            check_strings.log
+            check_layers.log
+            check_signals.log
+            check_methods.log
+          if-no-files-found: warn

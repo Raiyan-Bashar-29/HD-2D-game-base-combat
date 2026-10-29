@@ -1,0 +1,30 @@
+# Normalise line endings so Windows/Linux diffs stay clean.
+* text=auto eol=lf
+
+# Godot text formats — always diffable text.
+*.gd        text eol=lf
+*.tscn      text eol=lf
+*.tres      text eol=lf
+*.godot     text eol=lf
+*.cfg       text eol=lf
+*.import    text eol=lf
+*.uid       text eol=lf
+*.json      text eol=lf
+*.csv       text eol=lf
+*.md        text eol=lf
+
+# Binary — never try to merge these.
+*.png       binary
+*.jpg       binary
+*.webp      binary
+*.ogg       binary
+*.wav       binary
+*.mp3       binary
+*.ttf       binary
+*.otf       binary
+*.glb       binary
+*.blend     binary
+
+# Git LFS is deliberately OFF while art is deferred, and the reason -- including what else has to
+# change when you turn it on -- is stated once, in docs/ART_CONTRACT.md. Do not restate it here.
+# *.png filter=lfs diff=lfs merge=lfs -text

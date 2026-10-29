@@ -1,0 +1,224 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/world/area_root.gd" id="1_area"]
+[ext_resource type="Script" path="res://src/gameplay/world/environment_driver.gd" id="2_env"]
+[ext_resource type="Script" path="res://src/gameplay/world/weather_visuals.gd" id="10_weather"]
+[ext_resource type="Script" path="res://src/gameplay/camera/hd2d_camera_rig.gd" id="3_cam"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/stone.png" id="4_stone"]
+[ext_resource type="Material" path="res://assets/materials/wood.tres" id="5_wood"]
+[ext_resource type="PackedScene" path="res://scenes/objects/area_door.tscn" id="6_door"]
+[ext_resource type="PackedScene" path="res://scenes/objects/sign.tscn" id="7_sign"]
+[ext_resource type="PackedScene" path="res://scenes/objects/chest.tscn" id="8_chest"]
+[ext_resource type="Resource" path="res://data/items/stone_chip.tres" id="9_chip"]
+
+[sub_resource type="StandardMaterial3D" id="m_floor"]
+albedo_texture = ExtResource("4_stone")
+texture_filter = 0
+uv1_scale = Vector3(8, 8, 1)
+
+[sub_resource type="StandardMaterial3D" id="m_wall"]
+albedo_texture = ExtResource("4_stone")
+texture_filter = 0
+uv1_scale = Vector3(6, 2, 1)
+
+[sub_resource type="BoxMesh" id="mesh_floor"]
+size = Vector3(20, 1, 14)
+
+[sub_resource type="BoxShape3D" id="shape_floor"]
+size = Vector3(20, 1, 14)
+
+[sub_resource type="BoxMesh" id="mesh_wall"]
+size = Vector3(20, 6, 0.6)
+
+[sub_resource type="BoxShape3D" id="shape_wall"]
+size = Vector3(20, 6, 0.6)
+
+[sub_resource type="NavigationMesh" id="navmesh"]
+agent_radius = 0.4
+agent_height = 1.7
+agent_max_climb = 0.2
+cell_size = 0.2
+cell_height = 0.1
+geometry_parsed_geometry_type = 1
+geometry_source_geometry_mode = 1
+geometry_source_group_name = &"navmesh_source"
+filter_walkable_low_height_spans = true
+
+[node name="LanternHall" type="Node3D"]
+script = ExtResource("1_area")
+area_id = &"lantern_hall"
+display_name_key = "area.lantern_hall.name"
+sheltered = true
+flag_prefix = "area/lantern_hall"
+
+[node name="Environment" type="Node3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Environment"]
+
+[node name="Sun" type="DirectionalLight3D" parent="Environment"]
+transform = Transform3D(1, 0, 0, 0, 0.34, 0.94, 0, -0.94, 0.34, 0, 9, 0)
+light_color = Color(1, 0.87, 0.66, 1)
+light_energy = 0.35
+shadow_enabled = true
+directional_shadow_mode = 1
+directional_shadow_max_distance = 40.0
+shadow_bias = 0.04
+shadow_normal_bias = 1.5
+
+[node name="EnvironmentDriver" type="Node" parent="Environment" node_paths=PackedStringArray("world_environment", "sun")]
+script = ExtResource("2_env")
+world_environment = NodePath("../WorldEnvironment")
+sun = NodePath("../Sun")
+follow_clock = false
+
+[node name="WeatherVisuals" type="Node3D" parent="Environment"]
+script = ExtResource("10_weather")
+announce_changes = false
+
+[node name="Terrain" type="Node3D" parent="." groups=["navmesh_source"]]
+metadata/surface = &"wood"
+
+[node name="Floor" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Floor"]
+mesh = SubResource("mesh_floor")
+surface_material_override/0 = SubResource("m_floor")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/Floor"]
+shape = SubResource("shape_floor")
+
+[node name="WallNorth" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -7)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/WallNorth"]
+mesh = SubResource("mesh_wall")
+surface_material_override/0 = SubResource("m_wall")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/WallNorth"]
+shape = SubResource("shape_wall")
+
+[node name="WallWest" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -10, 3, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/WallWest"]
+transform = Transform3D(0.7, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("mesh_wall")
+surface_material_override/0 = SubResource("m_wall")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/WallWest"]
+transform = Transform3D(0.7, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("shape_wall")
+
+[node name="WallEast" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 10, 3, 0)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/WallEast"]
+transform = Transform3D(0.7, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("mesh_wall")
+surface_material_override/0 = SubResource("m_wall")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/WallEast"]
+transform = Transform3D(0.7, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+shape = SubResource("shape_wall")
+
+[node name="Plinth" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.35, -2)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Plinth"]
+transform = Transform3D(0.16, 0, 0, 0, 0.22, 0, 0, 0, 0.16, 0, 0, 0)
+mesh = SubResource("mesh_floor")
+surface_material_override/0 = ExtResource("5_wood")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/Plinth"]
+transform = Transform3D(0.16, 0, 0, 0, 0.22, 0, 0, 0, 0.16, 0, 0, 0)
+shape = SubResource("shape_floor")
+
+[node name="Props" type="Node3D" parent="."]
+
+[node name="LanternA" type="OmniLight3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 3.4, -4)
+light_color = Color(1, 0.72, 0.38, 1)
+light_energy = 6.0
+omni_range = 11.0
+shadow_enabled = true
+
+[node name="LanternB" type="OmniLight3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.4, -4)
+light_color = Color(1, 0.72, 0.38, 1)
+light_energy = 6.0
+omni_range = 11.0
+shadow_enabled = true
+
+[node name="LanternC" type="OmniLight3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6, 3.5)
+light_color = Color(1, 0.66, 0.34, 1)
+light_energy = 5.0
+omni_range = 12.0
+shadow_enabled = true
+
+[node name="Interactables" type="Node3D" parent="."]
+
+[node name="Actors" type="Node3D" parent="."]
+
+[node name="Spawns" type="Node3D" parent="."]
+
+[node name="default" type="Marker3D" parent="Spawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 1.0)
+
+[node name="from_courtyard" type="Marker3D" parent="Spawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -4.2)
+
+[node name="Navigation" type="Node3D" parent="."]
+
+[node name="Region" type="NavigationRegion3D" parent="Navigation"]
+navigation_mesh = SubResource("navmesh")
+
+[node name="Waypoints" type="Node3D" parent="."]
+
+[node name="plinth" type="Marker3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 0, -2)
+
+[node name="hearth" type="Marker3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 0, -2)
+
+[node name="Triggers" type="Node3D" parent="."]
+
+[node name="Camera" type="Node3D" parent="."]
+
+[node name="CameraRig" type="Node3D" parent="Camera"]
+script = ExtResource("3_cam")
+distance = 9.5
+fov = 36.0
+height_offset = 0.95
+
+[node name="Camera3D" type="Camera3D" parent="Camera/CameraRig"]
+
+[node name="HallDoor" parent="Interactables" instance=ExtResource("6_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6.4)
+object_id = &"hall_door_out"
+label_key = "object.door.hall_out.label"
+target_area = &"courtyard"
+target_spawn = &"north_arch"
+
+[node name="HallPlaque" parent="Interactables" instance=ExtResource("7_sign")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.9, -2)
+object_id = &"hall_plaque"
+label_key = "object.sign.hall.label"
+text_key = "object.sign.hall.text"
+
+[node name="HallChest" parent="Interactables" instance=ExtResource("8_chest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0, -2)
+object_id = &"hall_chest"
+label_key = "object.chest.hall.label"
+contents = Array[ItemDefinition]([ExtResource("9_chip"), ExtResource("9_chip")])

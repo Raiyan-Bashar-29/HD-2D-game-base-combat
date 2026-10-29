@@ -1,0 +1,205 @@
+; Project Gulistan — engine configuration
+;
+; Hand-authored and kept readable on purpose. If you change something here, say why in
+; docs/DEVLOG.md, and if it is a structural choice, add a record in docs/decisions/.
+;
+; Engine: Godot 4.7.2 stable (standard build — GDScript only, no .NET).
+; Input actions are NOT defined here; they live in src/systems/input/actions.gd.
+; See docs/decisions/ADR-0003-input-map-in-code.md for why.
+
+config_version=5
+
+[application]
+
+config/name="Project Gulistan"
+config/description="An HD-2D semi-open-world exploration and narrative game. No combat."
+config/version="0.0.1"
+run/main_scene="res://scenes/boot/game_root.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+config/icon="res://icon.svg"
+boot_splash/show_image=false
+
+[autoload]
+
+; ORDER MATTERS — these initialise top to bottom.
+; Log and Events come first because everything else reports through them.
+; Rules for this list live in docs/ARCHITECTURE.md ("Autoload policy").
+; Adding an entry requires an ADR. Each one must stay under 200 lines and own ONE concern.
+; SaveSystem sits above every system that registers itself as a save participant,
+; because registration happens in their _ready() and autoloads initialise in this order.
+Log="*res://src/core/log/log.gd"
+Events="*res://src/core/events/events.gd"
+Actions="*res://src/systems/input/actions.gd"
+Settings="*res://src/core/state/settings.gd"
+SaveSystem="*res://src/core/save/save_system.gd"
+Flags="*res://src/core/state/flags.gd"
+Clock="*res://src/systems/world_clock/clock.gd"
+Weather="*res://src/systems/weather/weather.gd"
+Audio="*res://src/systems/audio/audio_director.gd"
+Director="*res://src/systems/scene_director/director.gd"
+
+
+[game]
+
+; THE DEMO'S CONTENT IDS LIVE HERE, NOT IN src/. No file under src/ may name demo content —
+; docs/TEMPLATE.md states the rule and tools/check_content.gd enforces it — but the engine
+; still has to be told where a new game begins. This section is that answer, and it is the
+; one place tools/check_content.gd deliberately does not scan.
+; Read through GameConfig (src/core/util/game_config.gd). See docs/NEW_GAME.md.
+world/first_area="courtyard"
+world/first_spawn="default"
+
+; THE PLAYER PREFAB. Engine code used to name this path in a const under src/core/, which made
+; replacing the protagonist a src/ edit — a template RULE wearing a template DEFAULT's clothes,
+; per ADR-0007. Point it at your own scene; delete the key and the template's own prefab is used.
+world/player_scene="res://scenes/characters/player.tscn"
+
+[template]
+
+; WHAT THE BASE SAYS ABOUT ITSELF, and the reason it is not application/config/version: that
+; field is the GAME's version, and docs/NEW_GAME.md tells a fork to reset it to 0.0.1 on day one.
+; After one fork it no longer records which base the game came from, and "which base am I on" is
+; the first question docs/UPGRADING.md has to answer. So the template states its own version in
+; its own section, a fork LEAVES THIS LINE ALONE, and a merge that changes it is the base
+; announcing a new release in the diff.
+;
+; Three integers, no suffix. The major changes when a game's own files must change, the minor
+; when the base gains something a game may ignore, the patch when nothing a game wrote is
+; affected. That promise is stated in full in docs/UPGRADING.md and encoded in
+; src/core/util/template_version.gd, which reads this setting and is what the boot banner prints.
+base/version="5.16.3"
+
+[debug]
+
+; Static enforcement. This is deliberate and load-bearing: it makes GDScript behave like a
+; statically typed language so that mistakes fail at parse time instead of at runtime, and
+; `--headless --check-only` becomes a real build gate.
+; 0 = ignore, 1 = warn, 2 = error.
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/unsafe_call_argument=2
+gdscript/warnings/unsafe_method_access=2
+gdscript/warnings/unsafe_property_access=2
+gdscript/warnings/unsafe_void_return=2
+gdscript/warnings/standalone_expression=2
+gdscript/warnings/unassigned_variable=2
+gdscript/warnings/unreachable_code=2
+gdscript/warnings/unsafe_cast=1
+gdscript/warnings/shadowed_variable=1
+gdscript/warnings/shadowed_variable_base_class=1
+gdscript/warnings/integer_division=1
+gdscript/warnings/unused_variable=1
+gdscript/warnings/unused_parameter=1
+gdscript/warnings/unused_signal=1
+gdscript/warnings/return_value_discarded=0
+gdscript/warnings/inferred_declaration=0
+
+[display]
+
+; 1920x1080 is the design resolution; the window opens smaller for comfort while developing.
+; canvas_items stretch keeps UI crisp and correctly scaled at any window size while the 3D
+; viewport renders at native resolution.
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/vsync/vsync_mode=1
+
+[gui]
+
+; THE ART CONTRACT SEAM FOR THE UI (T2.1). Every font size, colour and inset the UI draws with
+; lives in this one resource, so a consuming game restyles the whole interface by editing it or by
+; pointing this setting at its own. Before T2.1 the look was constants inside five screen files.
+; The theme's own header explains its shape and why the palette is not copied into the variations.
+theme/custom="res://assets/theme/ui_theme.tres"
+
+[importer_defaults]
+
+; THE ART CONTRACT SEAM FOR TEXTURE IMPORT (T3.2). A consuming game drops a PNG in and gets these
+; settings without touching a .import file. Exactly ONE value is set, because exactly one was
+; wrong by default, and a default nobody needs is a default nobody maintains.
+;
+; detect_3d/compress_to=0 disables the editor's "this texture was used in 3D, so switch it to VRAM
+; compression" rewrite. Every character sheet in an HD-2D game IS used in 3D, through Sprite3D, so
+; at the stock value of 1 a re-import puts block artefacts through pixel art — silently, and only
+; in the picture. The committed .import files all carry 0 too, so the hazard is closed for the
+; placeholders as well as for whatever a game imports next.
+;
+; THIS SECTION IS UNDOCUMENTED AND ABSENT FROM --doctool, so the project rule "check every name
+; against the API dump" cannot be satisfied for it — docs/CONTEXT.md gotcha 30, which T2.1 stopped
+; on and gotcha 39 now corrects. It is written on a MEASUREMENT instead, which is the stronger
+; evidence and is non-negotiable #1: a throwaway texture was imported with stock defaults, this
+; section was added, its .import was deleted, and --headless --import regenerated it carrying these
+; values. The key is the IMPORTER's name ("texture"); the value is a Dictionary of param paths; and
+; ProjectSettings.get_setting("importer_defaults/texture") reads it back at runtime — which is what
+; tests/unit/area_look_test.gd asserts, so an editor session that clears it fails rung 4.
+texture={
+"detect_3d/compress_to": 0
+}
+
+[rendering]
+
+; Forward+ is required: the HD-2D look depends on real-time shadows, volumetric fog,
+; glow and depth of field, none of which the Compatibility renderer does well.
+renderer/rendering_method="forward_plus"
+
+; MSAA 4x cleans up 3D geometry edges. TAA is deliberately OFF — it smears billboarded
+; sprites and makes pixel art crawl. Debanding helps the smooth sky and fog gradients.
+anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/screen_space_aa=0
+anti_aliasing/quality/use_taa=false
+anti_aliasing/quality/use_debanding=true
+
+occlusion_culling/use_occlusion_culling=true
+
+[physics]
+
+; Higher than real-world gravity. Exploration platforming feels floaty at 9.8.
+3d/default_gravity=24.0
+
+[layer_names]
+
+; The single source of truth for collision layers. Never use a bare number in code —
+; use the Layers constants in src/core/util/layers.gd, which mirror these names.
+3d_physics/layer_1="world"
+3d_physics/layer_2="player"
+3d_physics/layer_3="npc"
+3d_physics/layer_4="interactable"
+3d_physics/layer_5="trigger"
+3d_physics/layer_6="prop_dynamic"
+3d_physics/layer_7="water"
+3d_physics/layer_8="camera_occluder"
+3d_physics/layer_9="ledge"
+3d_physics/layer_10="sight_blocker"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=false
+
+[file_customization]
+
+; Editor folder colours, so the project tree is readable at a glance.
+folder_colors={
+"res://assets/": "orange",
+"res://data/": "yellow",
+"res://docs/": "gray",
+"res://localization/": "teal",
+"res://scenes/": "green",
+"res://src/": "blue",
+"res://tests/": "red",
+"res://tools/": "purple"
+}
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://localization/strings.en.translation", "res://localization/strings.en_XA.translation")
+
+[navigation]
+
+; Must match the cell_size and cell_height on every NavigationMesh in the project. The engine
+; rasterises the navigation MAP at these values and each REGION at its own, and a mismatch is a
+; runtime warning plus real rasterisation error along region edges. Two numbers in two places
+; that have to agree, so they are written down here and in scenes/areas/*/navmesh.
+3d/default_cell_size=0.2
+3d/default_cell_height=0.1

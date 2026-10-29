@@ -1,0 +1,113 @@
+[gd_scene load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://src/core/boot/game_root.gd" id="1_root"]
+[ext_resource type="Script" path="res://src/ui/hud/screen_fade.gd" id="2_fade"]
+[ext_resource type="Script" path="res://src/systems/debug/dev_capture.gd" id="3_dev"]
+[ext_resource type="Script" path="res://src/ui/prompt/interact_prompt.gd" id="4_prompt"]
+[ext_resource type="Script" path="res://src/ui/hud/notification_toast.gd" id="5_toast"]
+[ext_resource type="Script" path="res://src/ui/root/ui_root.gd" id="6_ui"]
+[ext_resource type="Script" path="res://src/ui/hud/hud_clock.gd" id="7_clock"]
+[ext_resource type="Script" path="res://src/ui/root/screen_keys.gd" id="8_keys"]
+[ext_resource type="Script" path="res://src/ui/hud/loading_indicator.gd" id="9_load"]
+[ext_resource type="Script" path="res://src/systems/debug/dev_probes.gd" id="10_probes"]
+[ext_resource type="Script" path="res://src/systems/debug/dev_stage.gd" id="11_stage"]
+[ext_resource type="Script" path="res://src/systems/debug/catalogue_report.gd" id="12_catalogue"]
+[ext_resource type="Script" path="res://src/systems/quest/quest_tracker.gd" id="13_quests"]
+[ext_resource type="Script" path="res://src/systems/world_map/world_map.gd" id="14_map"]
+[ext_resource type="Script" path="res://src/ui/hud/perf_overlay.gd" id="15_perf"]
+[ext_resource type="Script" path="res://src/ui/root/ui_accessibility.gd" id="16_access"]
+[ext_resource type="Script" path="res://src/systems/debug/dev_gait_shots.gd" id="17_gait"]
+[ext_resource type="Script" path="res://src/systems/autosave/autosave.gd" id="18_autosave"]
+[ext_resource type="Script" path="res://src/systems/audio/dialogue_duck.gd" id="19_duck"]
+[ext_resource type="Script" path="res://src/systems/debug/dev_scenario_shots.gd" id="20_scenario"]
+[ext_resource type="Script" path="res://src/ui/root/ui_row_styles.gd" id="21_rows"]
+[ext_resource type="Script" path="res://src/systems/debug/dev_screens.gd" id="22_screens"]
+[ext_resource type="Script" path="res://src/systems/debug/dev_saves.gd" id="23_saves"]
+
+[node name="GameRoot" type="Node"]
+script = ExtResource("1_root")
+
+[node name="WorldRoot" type="Node3D" parent="."]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="InteractPrompt" type="Label" parent="UILayer"]
+script = ExtResource("4_prompt")
+
+[node name="NotificationToast" type="Label" parent="UILayer"]
+script = ExtResource("5_toast")
+
+[node name="HudClock" type="Label" parent="UILayer"]
+script = ExtResource("7_clock")
+
+[node name="UiRoot" type="Control" parent="UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_ui")
+
+[node name="ScreenKeys" type="Node" parent="UILayer"]
+script = ExtResource("8_keys")
+
+[node name="UiAccessibility" type="Node" parent="UILayer"]
+script = ExtResource("16_access")
+
+[node name="UiRowStyles" type="Node" parent="UILayer"]
+script = ExtResource("21_rows")
+
+[node name="ScreenFade" type="ColorRect" parent="UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+script = ExtResource("2_fade")
+
+[node name="LoadingIndicator" type="Label" parent="UILayer"]
+script = ExtResource("9_load")
+
+[node name="DevSaves" type="Node" parent="."]
+script = ExtResource("23_saves")
+
+[node name="DevCapture" type="Node" parent="."]
+script = ExtResource("3_dev")
+
+[node name="DevProbes" type="Node" parent="."]
+script = ExtResource("10_probes")
+
+[node name="DevStage" type="Node" parent="."]
+script = ExtResource("11_stage")
+
+[node name="DevScreens" type="Node" parent="."]
+script = ExtResource("22_screens")
+
+[node name="CatalogueReport" type="Node" parent="."]
+script = ExtResource("12_catalogue")
+
+[node name="QuestTracker" type="Node" parent="."]
+script = ExtResource("13_quests")
+
+[node name="WorldMap" type="Node" parent="."]
+script = ExtResource("14_map")
+
+[node name="PerfOverlay" type="CanvasLayer" parent="."]
+layer = 101
+script = ExtResource("15_perf")
+
+[node name="DevGaitShots" type="Node" parent="."]
+script = ExtResource("17_gait")
+
+[node name="Autosave" type="Node" parent="."]
+script = ExtResource("18_autosave")
+
+[node name="DialogueDuck" type="Node" parent="."]
+script = ExtResource("19_duck")
+
+[node name="DevScenarioShots" type="Node" parent="."]
+script = ExtResource("20_scenario")

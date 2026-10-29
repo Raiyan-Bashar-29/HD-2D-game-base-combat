@@ -1,0 +1,371 @@
+[gd_scene load_steps=35 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/world/area_root.gd" id="1_area"]
+[ext_resource type="Script" path="res://src/gameplay/world/environment_driver.gd" id="2_env"]
+[ext_resource type="Script" path="res://src/gameplay/world/weather_visuals.gd" id="20_weather"]
+[ext_resource type="Script" path="res://src/gameplay/world/surface_wetness.gd" id="21_wetness"]
+[ext_resource type="Script" path="res://src/gameplay/camera/hd2d_camera_rig.gd" id="3_cam"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="4_grass"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/stone.png" id="5_stone"]
+[ext_resource type="Material" path="res://assets/materials/wood.tres" id="6_wood"]
+[ext_resource type="PackedScene" path="res://scenes/objects/sign.tscn" id="7_sign"]
+[ext_resource type="PackedScene" path="res://scenes/objects/lever.tscn" id="8_lever"]
+[ext_resource type="PackedScene" path="res://scenes/objects/gate.tscn" id="9_gate"]
+[ext_resource type="PackedScene" path="res://scenes/objects/pickup.tscn" id="10_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/objects/chest.tscn" id="11_chest"]
+[ext_resource type="Resource" path="res://data/items/rose_key.tres" id="12_key"]
+[ext_resource type="Resource" path="res://data/items/rose_petal.tres" id="13_petal"]
+[ext_resource type="Resource" path="res://data/items/stone_chip.tres" id="14_chip"]
+[ext_resource type="Resource" path="res://data/items/brass_lantern.tres" id="23_lantern"]
+[ext_resource type="PackedScene" path="res://scenes/objects/trigger_volume.tscn" id="15_trigger"]
+[ext_resource type="PackedScene" path="res://scenes/objects/rest_point.tscn" id="16_rest"]
+[ext_resource type="PackedScene" path="res://scenes/objects/climb_point.tscn" id="17_climb"]
+[ext_resource type="PackedScene" path="res://scenes/objects/area_door.tscn" id="18_door"]
+[ext_resource type="PackedScene" path="res://scenes/characters/npc.tscn" id="19_npc"]
+[ext_resource type="PackedScene" path="res://scenes/objects/path_action.tscn" id="20_pap"]
+[ext_resource type="Resource" path="res://data/actions/keeper_scrutinise.tres" id="21_scrut"]
+[ext_resource type="Resource" path="res://data/actions/keeper_barter.tres" id="22_barter"]
+
+[sub_resource type="StandardMaterial3D" id="m_ground"]
+albedo_texture = ExtResource("4_grass")
+texture_filter = 0
+uv1_scale = Vector3(20, 20, 1)
+
+[sub_resource type="StandardMaterial3D" id="m_stone"]
+albedo_texture = ExtResource("5_stone")
+texture_filter = 0
+uv1_scale = Vector3(3, 3, 1)
+
+[sub_resource type="BoxMesh" id="mesh_ground"]
+size = Vector3(48, 1, 48)
+
+[sub_resource type="BoxShape3D" id="shape_ground"]
+size = Vector3(48, 1, 48)
+
+[sub_resource type="BoxMesh" id="mesh_pillar"]
+size = Vector3(1.2, 4.5, 1.2)
+
+[sub_resource type="BoxShape3D" id="shape_pillar"]
+size = Vector3(1.2, 4.5, 1.2)
+
+[sub_resource type="BoxMesh" id="mesh_terrace"]
+size = Vector3(5, 3.2, 5)
+
+[sub_resource type="BoxShape3D" id="shape_terrace"]
+size = Vector3(5, 3.2, 5)
+
+[sub_resource type="NavigationMesh" id="navmesh"]
+agent_radius = 0.4
+agent_height = 1.7
+agent_max_climb = 0.2
+cell_size = 0.2
+cell_height = 0.1
+geometry_parsed_geometry_type = 1
+geometry_source_geometry_mode = 1
+geometry_source_group_name = &"navmesh_source"
+filter_walkable_low_height_spans = true
+
+[node name="Courtyard" type="Node3D"]
+script = ExtResource("1_area")
+area_id = &"courtyard"
+display_name_key = "area.courtyard.name"
+sheltered = false
+
+[node name="Environment" type="Node3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Environment"]
+
+[node name="Sun" type="DirectionalLight3D" parent="Environment"]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866, 0, -0.866, 0.5, 0, 12, 0)
+shadow_enabled = true
+directional_shadow_mode = 1
+directional_shadow_max_distance = 60.0
+shadow_bias = 0.04
+shadow_normal_bias = 1.5
+
+[node name="Moon" type="DirectionalLight3D" parent="Environment"]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866, 0, -0.866, 0.5, 0, 12, 0)
+light_color = Color(0.62, 0.71, 0.95, 1)
+light_energy = 0.18
+shadow_enabled = true
+visible = false
+
+[node name="EnvironmentDriver" type="Node" parent="Environment" node_paths=PackedStringArray("world_environment", "sun", "moon")]
+script = ExtResource("2_env")
+world_environment = NodePath("../WorldEnvironment")
+sun = NodePath("../Sun")
+moon = NodePath("../Moon")
+follow_clock = true
+
+[node name="WeatherVisuals" type="Node3D" parent="Environment"]
+script = ExtResource("20_weather")
+extents = Vector3(9, 5, 9)
+height_offset = 5.0
+surfaces = NodePath("../../Terrain/SurfaceWetness")
+announce_changes = true
+
+[node name="Terrain" type="Node3D" parent="." groups=["navmesh_source"]]
+metadata/surface = &"stone"
+
+[node name="SurfaceWetness" type="Node3D" parent="Terrain"]
+script = ExtResource("21_wetness")
+
+[node name="Ground" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+collision_layer = 1
+collision_mask = 0
+metadata/surface = &"grass"
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Ground"]
+mesh = SubResource("mesh_ground")
+surface_material_override/0 = SubResource("m_ground")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/Ground"]
+shape = SubResource("shape_ground")
+
+[node name="PillarNW" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2.25, -6)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/PillarNW"]
+mesh = SubResource("mesh_pillar")
+surface_material_override/0 = SubResource("m_stone")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/PillarNW"]
+shape = SubResource("shape_pillar")
+
+[node name="PillarNE" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.25, -6)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/PillarNE"]
+mesh = SubResource("mesh_pillar")
+surface_material_override/0 = SubResource("m_stone")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/PillarNE"]
+shape = SubResource("shape_pillar")
+
+[node name="PillarSW" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 2.25, 4)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/PillarSW"]
+mesh = SubResource("mesh_pillar")
+surface_material_override/0 = SubResource("m_stone")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/PillarSW"]
+shape = SubResource("shape_pillar")
+
+[node name="PillarSE" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.25, 4)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/PillarSE"]
+mesh = SubResource("mesh_pillar")
+surface_material_override/0 = SubResource("m_stone")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/PillarSE"]
+shape = SubResource("shape_pillar")
+
+[node name="BackWall" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -11)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/BackWall"]
+mesh = SubResource("mesh_ground")
+transform = Transform3D(0.5, 0, 0, 0, 3, 0, 0, 0, 0.02, 0, 0, 0)
+surface_material_override/0 = SubResource("m_stone")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/BackWall"]
+transform = Transform3D(0.5, 0, 0, 0, 3, 0, 0, 0, 0.02, 0, 0, 0)
+shape = SubResource("shape_ground")
+
+[node name="Dais" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, -2)
+collision_layer = 1
+collision_mask = 0
+metadata/surface = &"wood"
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Dais"]
+mesh = SubResource("mesh_pillar")
+transform = Transform3D(5, 0, 0, 0, 0.09, 0, 0, 0, 5, 0, 0, 0)
+surface_material_override/0 = ExtResource("6_wood")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/Dais"]
+transform = Transform3D(5, 0, 0, 0, 0.09, 0, 0, 0, 5, 0, 0, 0)
+shape = SubResource("shape_pillar")
+
+[node name="Terrace" type="StaticBody3D" parent="Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 1.6, -2.5)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Mesh" type="MeshInstance3D" parent="Terrain/Terrace"]
+mesh = SubResource("mesh_terrace")
+surface_material_override/0 = SubResource("m_stone")
+
+[node name="Shape" type="CollisionShape3D" parent="Terrain/Terrace"]
+shape = SubResource("shape_terrace")
+
+[node name="Props" type="Node3D" parent="."]
+
+[node name="LanternWest" type="OmniLight3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 3.2, 4)
+light_color = Color(1, 0.76, 0.44, 1)
+light_energy = 3.5
+omni_range = 9.0
+shadow_enabled = true
+
+[node name="LanternEast" type="OmniLight3D" parent="Props"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 3.2, 4)
+light_color = Color(1, 0.76, 0.44, 1)
+light_energy = 3.5
+omni_range = 9.0
+shadow_enabled = true
+
+[node name="Interactables" type="Node3D" parent="."]
+
+[node name="Actors" type="Node3D" parent="."]
+
+[node name="Spawns" type="Node3D" parent="."]
+
+[node name="default" type="Marker3D" parent="Spawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 3)
+
+[node name="north_arch" type="Marker3D" parent="Spawns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -9)
+
+[node name="Navigation" type="Node3D" parent="."]
+
+[node name="Region" type="NavigationRegion3D" parent="Navigation"]
+navigation_mesh = SubResource("navmesh")
+
+[node name="Waypoints" type="Node3D" parent="."]
+
+[node name="gate_post" type="Marker3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 4.2)
+
+[node name="bench" type="Marker3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6, 0, 2.6)
+
+[node name="dais" type="Marker3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 0, 1.6)
+
+[node name="Triggers" type="Node3D" parent="."]
+
+[node name="Camera" type="Node3D" parent="."]
+
+[node name="CameraRig" type="Node3D" parent="Camera"]
+script = ExtResource("3_cam")
+
+[node name="Camera3D" type="Camera3D" parent="Camera/CameraRig"]
+
+[node name="GateNotice" parent="Interactables" instance=ExtResource("7_sign")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0, 2.5)
+object_id = &"gate_notice"
+label_key = "object.sign.gate.label"
+text_key = "object.sign.gate.text"
+
+[node name="GateLever" parent="Interactables" instance=ExtResource("8_lever")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 2.5)
+object_id = &"gate_lever"
+label_key = "object.lever.gate.label"
+world_flag = &"area/courtyard/gate_unlocked"
+notify_on_key = "object.lever.gate.on"
+notify_off_key = "object.lever.gate.off"
+
+[node name="NorthGate" parent="Interactables" instance=ExtResource("9_gate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -9.4)
+object_id = &"north_gate"
+label_key = "object.gate.north.label"
+requires_flag = &"area/courtyard/gate_unlocked"
+opened_key = "object.gate.north.opened"
+open_shake = 0.7
+
+[node name="RoseKey" parent="Interactables" instance=ExtResource("10_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.6, 0, 1.6)
+object_id = &"rose_key_pickup"
+item = ExtResource("12_key")
+
+[node name="WickerChest" parent="Interactables" instance=ExtResource("11_chest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 0, 1.2)
+object_id = &"wicker_chest"
+label_key = "object.chest.courtyard.label"
+contents = Array[ItemDefinition]([ExtResource("13_petal"), ExtResource("13_petal"), ExtResource("13_petal"), ExtResource("14_chip")])
+
+[node name="EastGate" parent="Interactables" instance=ExtResource("9_gate")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9.5, 0, 0)
+object_id = &"east_gate"
+label_key = "object.gate.east.label"
+requires_item = &"item/rose_key"
+opened_key = "object.gate.east.opened"
+
+[node name="StoneBench" parent="Interactables" instance=ExtResource("16_rest")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6, 0, 1.2)
+object_id = &"stone_bench"
+label_key = "object.bench.courtyard.label"
+target_hour = 20
+rested_key = "object.bench.courtyard.rested"
+
+[node name="TerraceLadder" parent="Interactables" instance=ExtResource("17_climb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0, 0.12)
+object_id = &"terrace_ladder"
+label_key = "object.ladder.courtyard.label"
+
+[node name="DaisTrigger" parent="Triggers" instance=ExtResource("15_trigger")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -2)
+object_id = &"dais_trigger"
+world_flag = &"area/courtyard/dais_entered"
+notify_key = "object.trigger.dais.text"
+
+[node name="HallDoor" parent="Interactables" instance=ExtResource("18_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 0, -10.6)
+object_id = &"courtyard_hall_door"
+label_key = "object.door.hall_in.label"
+target_area = &"lantern_hall"
+target_spawn = &"from_courtyard"
+
+[node name="Keeper" parent="Actors" instance=ExtResource("19_npc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.7, 0, 4.2)
+schedule_id = &"schedule/keeper"
+
+[node name="PersistentState" parent="Actors/Keeper" index="4"]
+object_id = &"keeper"
+
+[node name="Talk" parent="Actors/Keeper" index="5"]
+object_id = &"keeper_talk"
+label_key = "object.gardener.label"
+conversation_id = &"talk/gardener"
+
+[node name="KeeperScrutinise" parent="Actors/Keeper" index="6" instance=ExtResource("20_pap")]
+object_id = &"keeper_scrutinise"
+action = ExtResource("21_scrut")
+standing_id = &"keeper"
+interact_priority = 1
+
+[node name="KeeperBarter" parent="Actors/Keeper" index="7" instance=ExtResource("20_pap")]
+object_id = &"keeper_barter"
+action = ExtResource("22_barter")
+standing_id = &"keeper"
+interact_priority = 1
+
+
+[node name="BrassLantern" parent="Interactables" instance=ExtResource("10_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6, 0, 4.4)
+object_id = &"brass_lantern_pickup"
+item = ExtResource("23_lantern")
+
+[node name="ShadowedArch" parent="Interactables" instance=ExtResource("9_gate")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -9.5, 0, 6)
+object_id = &"shadowed_arch"
+label_key = "object.gate.arch.label"
+requires_flag = &"equip/player/item/brass_lantern"
+locked_key = "object.gate.arch.locked"
+opened_key = "object.gate.arch.opened"
+
+[editable path="Actors/Keeper"]
