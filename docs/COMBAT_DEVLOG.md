@@ -175,3 +175,43 @@ statuses add modifiers. Nothing in the base had a modifier concept.
 - Each `Vitals` holds its own sheet until C1.6's `Combatant` supplies a shared one.
 - The signals are appended to an upstream file, so a later upstream append at the same place
   would conflict. Resolving it means keeping both blocks.
+
+## 2026-10-29 — C1.4 · Damage pipeline
+
+**Did.**
+- In `src/systems/combat/`: `DamageRequest` (two sheets, a power, an element), `DamageResult`
+  (amount, critical, element, the stages that ran, `total()`), `DamageStage` (the base) and
+  `DamageFormula` (an ordered `stages` list, `resolve(request, rng)` and `standard()`).
+- Four shipped stages: `AttackDefenceStage`, `ElementStage`, `CritStage`, `VarianceStage`.
+- `tests/unit/damage_formula_test.gd`, 23 assertions.
+- Combat `0.4.0`.
+
+**Why.** Every formula, turn-based, action and hybrid, resolves a hit. If each one did its own
+arithmetic, "a fire sword does more to ice enemies" would be written three times.
+
+**Connects.**
+- **The formula is data.** A `DamageFormula` is a resource whose stages are a list, so a game
+  swaps the formula in a `.tres` and never edits `src/`. That is the swap point C1 promised.
+- **No separate `DamageResolver`.** The plan had one, but a resolver with no state of its own
+  is just the formula's own method. One class fewer, and the same seam.
+- **Pure and seeded.** Stages draw only from the `rng` they are handed, and crit and variance
+  always draw exactly once. So whether a hit was critical never shifts later numbers, and a
+  seeded fight replays exactly. That is what C2's headless battles will rely on.
+- **Diminishing defence by default:** `softness / (softness + defence)`, so defence never makes
+  a hit zero and nothing needs a "minimum 1" patch.
+- **Resistance is a stat** (`resist_<element>`), so C1.5's statuses change it as modifiers.
+  Above 1 it absorbs: the result goes negative, and the pipeline does not clamp it away.
+- **In systems, not content,** because a stage reads a `StatSheet`, and content may not depend
+  on systems.
+
+**Verified.**
+- Red first: with `resolve` skipping its stages, 11 failed.
+- Restored: suite `2752 passed, 0 failed`, boot `0 warnings, 0 errors` printing `combat 0.4.0`,
+  all seven checkers exit 0. `git merge template/main`: already up to date.
+
+**Unblocks.** C1.5, status effects. Their modifiers feed the sheets this pipeline reads.
+
+**Gaps.**
+- Nothing applies a result to a `Vitals` yet. That is C1.6's `Combatant.receive`.
+- Ten code files, over the board's "about 8". Eight of them are one-class files under 40 lines,
+  and splitting the row would have shipped a formula with no stages.
