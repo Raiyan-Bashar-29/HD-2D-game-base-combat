@@ -1,5 +1,9 @@
 # Context — read this first, it takes one minute
 
+> **In the combat fork, read [`COMBAT.md`](COMBAT.md) first.** Everything below is the upstream
+> non-combat base's situation. It is still true for every system inherited from it, and still
+> says "no combat", which is upstream's rule and not this repository's ([ADR-0008](decisions/ADR-0008-combat-is-in-scope.md)).
+
 A state snapshot for a new session. `CLAUDE.md` has the *rules*; this file has the *situation*.
 Keep it short. When it drifts from reality, fix it in the same commit as the change.
 

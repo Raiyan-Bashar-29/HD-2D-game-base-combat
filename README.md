@@ -5,8 +5,9 @@ lighting, billboarded 2D sprite characters, a long-lens diorama camera, day/nigh
 
 Visual reference: Octopath Traveler I / II / 0, and The Adventures of Elliot.
 
-**There is no combat.** The game is about moving through a world, interacting with its objects
-and people, watching it change with the hour and the weather, and following a plot.
+**This is the combat fork of the base.** Combat (turn-based, action, and a semi-real-time hybrid)
+is in scope here; the non-combat base is upstream. Start at [`docs/COMBAT.md`](docs/COMBAT.md) and
+[ADR-0008](docs/decisions/ADR-0008-combat-is-in-scope.md).
 
 - **Engine:** Godot 4.7.2 stable, standard build. GDScript only — the installed engine is not
   the .NET build, so C# is not available.

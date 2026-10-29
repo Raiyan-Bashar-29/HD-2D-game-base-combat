@@ -38,9 +38,12 @@ wrong way. One directory is exempt from both,
 content it needs from `tests/framework/fixtures.gd`, and the suite passes with the demo deleted.
 **[`docs/NEW_GAME.md`](docs/NEW_GAME.md)** is the strip-and-start checklist.
 
-**There is no combat.** No battles, no enemies, no damage, no encounters. This was an explicit
-retraction by the owner, not an oversight. If a task seems to need combat, it does not — redirect
-the effort into traversal, interaction, world state or environment simulation.
+**THIS IS THE COMBAT FORK.** Combat is in scope here, and only here
+([ADR-0008](docs/decisions/ADR-0008-combat-is-in-scope.md)). Upstream, the non-combat base at the
+`template` remote, keeps no combat as a rule, and its fixes arrive by `git merge template/main`.
+**Combat code never goes upstream.** This repository's state, phases and board are in
+**[`docs/COMBAT.md`](docs/COMBAT.md)**, and its log is `docs/COMBAT_DEVLOG.md`. Read those before
+upstream's `CONTEXT.md`. Every rule below still applies.
 
 **Art is deferred.** Do not generate or request art. Every system must work on the procedural
 placeholders in `assets/placeholder/`, indefinitely. `tools/gen_placeholders.gd` regenerates them.
