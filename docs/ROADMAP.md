@@ -1603,6 +1603,26 @@ was classified, including the ones refused.
 - [x] Every "Commonly forgotten" item is marked DONE or CLOSED (game's) with a package id, and a
   text-scan assertion fails if one is not. — T6.8
 
+## Phase T7 — Playtest and harden · **OPEN, 2026-10-29**
+
+*Goal: the owner plays the base through a script that covers every player-facing system, and
+every finding is fixed or closed with a reason. Nothing is planned beyond the script, because a
+phase that fixes what playing finds cannot list its rows in advance.*
+
+- **T7.0 A script for the owner's playtest — DONE, 2026-10-29, `5.16.3`.** `docs/PLAYTEST.md`:
+  - eleven sections, from the first run to the debug tools;
+  - each step is "do this, expect that", using only names the demo ships;
+  - steps that need a human's judgement are marked *(feel)*, and the rest can be photographed
+    from a cloud session;
+  - #8's first-run question is asked before settings are opened;
+  - findings are reported in one shape, and each becomes a `T7.n` row.
+
+**Exit criteria for the phase:**
+
+- [ ] The owner has played through `PLAYTEST.md`, and every finding is a row that is DONE, or is
+  CLOSED with a reason.
+- [ ] #8, first-run defaults, has the owner's verdict.
+
 ## Sequencing rules
 
 1. **Breadth of systems, one shallow proof each.** This *replaces* "depth before breadth", which
