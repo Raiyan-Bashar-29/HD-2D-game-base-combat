@@ -232,3 +232,6 @@ ui.map.here,,{area}  ·  you are here,[~~{area}  ·  you are here~~]
 notify.map.discovered,,{area} is added to your map,[~~{area} is added to your map~~]
 ui.debug.console.title,,Debug console,[~~Debug console~~]
 ui.debug.console.hint,,goto <area>   flag <key>:<value>   time HH:MM   give <id>[:n],[~~goto <area>   flag <key>:<value>   time HH:MM   give <id>[:n]~~]
+object.dummy.courtyard.label,,Training Dummy,[~~Training Dummy~~]
+object.dummy.courtyard.struck,,"Thwack. {amount} damage, {left} of {max} left.","[~~Thwack. {amount} damage, {left} of {max} left.~~]"
+object.dummy.courtyard.critical,,"A clean hit! {amount} damage, {left} of {max} left.","[~~A clean hit! {amount} damage, {left} of {max} left.~~]"

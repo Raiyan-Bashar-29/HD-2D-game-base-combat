@@ -1239,6 +1239,33 @@ nothing at all, because one `@export` was unwired.
 `Log.warn` / `Log.error` calls; an engine-level `Parse Error` is neither. The import rung is the
 compile check — grep its output for `SCRIPT ERROR` and `Parse Error` and require zero.
 
+## Make something you can hit (combat fork only)
+
+**The combat core in one object.** `scenes/objects/strike_target.tscn` is an interactable with a
+`Vitals` and a `Combatant` child. Interacting resolves one hit through the combat core and toasts
+the result. The courtyard's training dummy is an instance of it. Its fields are:
+
+- on the root (`StrikeTarget`):
+  - `label_key`;
+  - `power`, and `element` if any;
+  - `struck_key` and an optional `critical_key`, each filled with `{amount}`, `{left}` and
+    `{max}`;
+  - `revive_when_defeated`, so that a dummy stands back up.
+- on the `Combatant` child:
+  - a unique `combatant_id`, which namespaces the `vital/<id>/hp` flag;
+  - a `faction`;
+  - `base_stats`, for example `max_hp`, `defence` and `crit_chance`.
+
+  Override it with an `[editable path=...]` line, the same as an NPC (§ The editable trap).
+
+**Whoever interacts hits.** If they have a `Combatant`, its sheet and formula resolve the hit.
+The template's player has none, so `power` alone decides, through the target's own formula. A
+target with no `Combatant` child is not offered at all. The formulas themselves, turn-based,
+action and hybrid, are phases C2 to C4 in [`COMBAT.md`](COMBAT.md).
+
+**Seeing it:** walk to the dummy and press Interact. The toast reads, for example, "Thwack. 7
+damage, 23 of 30 left."
+
 ## Read next
 
 [`ART_CONTRACT.md`](ART_CONTRACT.md) — what art has to satisfy to drop in ·

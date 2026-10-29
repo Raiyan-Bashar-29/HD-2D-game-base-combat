@@ -306,3 +306,51 @@ formula from C2 on talks to a `Combatant`, not to its parts.
   C2/C3 decision, made when a formula needs it.
 - `Combatant` sets its siblings' ids but not `StatusSet.save_id`. An author still gives each
   combatant's `StatusSet` its own, Inventory's rule.
+
+## 2026-10-29 — C1.7 · A training dummy you can hit
+
+**Did.**
+- `StrikeTarget` (`src/gameplay/interactables/strike_target.gd`): an `Interactable` whose
+  `Combatant` child takes one resolved hit when used. It toasts the result by key, with
+  `{amount}`, `{left}` and `{max}`, uses a separate key on a critical, refuses a defeated target,
+  or revives it when `revive_when_defeated` is set.
+- `Combatant.base_stats`, which copies the authored base values into the sheet on ready, and
+  `Combatant.resolving_formula()`, now shared by `hit` and the strike.
+- `scenes/objects/strike_target.tscn`, a generic prefab: a wooden post, a reach sphere, a body,
+  `Vitals` and `Combatant`.
+- The courtyard's `TrainingDummy`, an instance of the prefab with 30 hp and 20 defence. It
+  revives, and has three strings.
+- `strike_target_test.gd` (14). § Make something you can hit in `AUTHORING.md`.
+- Combat `0.7.0`.
+
+**Why.** C1.1 to C1.6 were proven only by fixtures. This row runs the core inside the game: an
+area, the interaction sensor, the toast.
+
+**Connects.**
+- **The interactor's `Combatant` resolves**, the same as `Combatant.hit`. One with none, like
+  the template's player, strikes with an empty sheet through the target's own formula. So the
+  dummy works now, and C2/C3 only have to give the player a `Combatant`.
+- **The dummy's HP is a flag**, `vital/training_dummy/hp`, so it is saved and reset like any
+  other.
+
+**Verified.**
+- Red first: with `perform` stubbed, 9 failed. Restored.
+- Suite `2823 passed, 0 failed`. Boot `0 warnings, 0 errors`. All seven checkers exit 0.
+- Stripped run, done locally exactly as CI does: `2745 passed, 0 failed, 25 skipped`, and all
+  six checkers it runs exit 0.
+- Windowed capture under `xvfb-run`: the post renders in the courtyard, and after one strike the
+  toast reads "Thwack. 7 damage, 23 of 30 left." That is 8 power against 20 defence (6.67), then
+  crit and variance.
+
+**Unblocks.** Phase C2, starting with its planning row C2.0. **Phase C1 is closed.**
+
+**Gaps.**
+- **One change from the plan.** The row said "data and a scene only", but no existing
+  interactable could hit anything, so one `src/` class was added. It is generic, and nothing
+  under `src/` names the dummy, so the boundary rule holds.
+- The prompt verb is `USE`. A `STRIKE` verb would edit upstream's `GameEnums`, which this fork
+  avoids, so a game that wants one adds it.
+- The dummy's body is not in `navmesh_source`. It stands clear of the keeper's routes; an author
+  placing a target on a walked path adds the group.
+- The courtyard edit is one appended instance plus one `ext_resource`. It is the fork's only
+  change to an upstream scene, and a merge that touches the courtyard may conflict there.
