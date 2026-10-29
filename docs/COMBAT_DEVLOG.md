@@ -389,3 +389,38 @@ are rows that get renumbered.
   is C2.7's call, made against a capture.
 - The CTB delay formula's constants (C2.2) are a template default, to be tuned in C2.9's
   playtest.
+
+## 2026-10-29 — C2.1 · `TurnScheduler` and speed-sorted rounds
+
+**Did.**
+- `src/systems/combat/turn_scheduler.gd`:
+  - the base class holds the roster (`join`, `leave`, `has`, `speed_of`);
+  - its subclass gives the order through `next()` and `preview(n)`.
+- `round_scheduler.gd`, the template default: rounds run fastest first, with ties going to
+  whoever joined first, and `round_number()` counts them.
+- `turn_scheduler_test.gd` (12).
+- Combat `0.8.0`.
+
+**Why.** The scheduler is the swap point C2.0 named. Rounds against CTB is the main way
+turn-based games differ, so it is built first and kept apart from everything else.
+
+**Connects.**
+- **It orders ids by a number and nothing else.** That keeps it in systems: it holds no
+  `Combatant`, so the layer rule holds when C2.4's battle (gameplay) feeds it speeds.
+- **It is a `Resource`, as `DamageFormula` is.** So C2.6's encounter can choose one in data.
+  Its roster is runtime state, and the battle takes a `duplicate()`.
+- **The order needs no randomness.** Ties are settled by join order. A game wanting random tie
+  breaks jitters the speed it passes in.
+- **A round is ordered when it starts.** A newcomer, or a speed changed by a status, counts
+  from the next round. Anyone who leaves is skipped. `preview` walks the same queue, so the
+  turn-order strip (C2.7) can never disagree with the battle.
+
+**Verified.**
+- Red first: with `next` stubbed, 11 failed. Restored.
+- Suite `2837 passed, 0 failed`. Boot `0 warnings, 0 errors`, printing `combat 0.8.0`. All seven checkers exit 0.
+
+**Unblocks.** C2.2, the CTB queue. It reuses the base's roster and must pass the same order
+contract.
+
+**Gaps.** `preview` in a round scheduler assumes nobody joins or leaves before the previewed
+turns happen. That is fine for a strip that is redrawn on every turn.
