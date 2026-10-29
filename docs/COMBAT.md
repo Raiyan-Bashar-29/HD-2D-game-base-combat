@@ -7,8 +7,8 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-10-29 · **C2.6 complete. Combat version 0.13.0** (`[combat] core/version`; the boot log prints it). Seeded from upstream `aaf281b` (base `5.16.2`),
-full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, and C2.6 builds a battle from an encounter. The next row is C2.7, the battle screen.**
+**Last updated:** 2026-10-29 · **C2.7 complete. Combat version 0.14.0** (`[combat] core/version`; the boot log prints it). Seeded from upstream `aaf281b` (base `5.16.2`),
+full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, C2.6 builds a battle from an encounter, and C2.7 draws it as a screen over the frozen field. The next row is C2.8, rewards, levels and the party.**
 
 ## How the two repositories relate
 
@@ -155,7 +155,22 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.13.0** — C2.6. Encounters.
+- **0.14.0** — C2.7. The battle screen.
+  - `BattleScreen` (ui), a modal `MenuScreen` over the frozen field, shows:
+    - each fighter's hp, and the turn order from `preview`;
+    - the player's menu: the definition's commands, or Attack / Defend / Flee;
+    - target select, with Back;
+    - a line when a command is refused.
+
+    Enemies play through `BattleAi` between the player's turns. Cancel cannot leave; the
+    outcome screen has one Continue row. Closing it releases the fighters.
+  - `BattleHost` (ui, added under `UILayer` in `game_root.tscn`) answers
+    `encounter_requested`. Fighters are built under it, because they need the tree.
+  - `Battle.defs`.
+  - Twelve `ui.battle.*` strings.
+
+  A game does: nothing; it may fill `BattleHost.party` until C2.8.
+- `0.13.0` — C2.6. Encounters.
   - `CombatantDef`: one shape for party and enemies, with an id, name, faction, base stats,
     commands and a brain.
   - `Encounter` (`data/encounters/`, id `encounter/<name>`): enemies, ROUNDS or CTB, and flee
@@ -256,8 +271,8 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C2.4 | The battle runtime | **DONE**, combat `0.11.0`. `src/gameplay/combat/battle.gd`, `Events.battle_started` / `battle_ended`, `battle_test.gd` (20). An illegal command changes nothing and keeps the turn. ATTACK is a power-0 hit, so the attack stat decides it. A heal is not resolved through defence. DEFEND is a code-built one-turn status, +100 defence by default and replaceable through `defend_status`. A failed flee spends the turn. The battle holds combatants without owning them. Red first: with `act` stubbed, 12 failed. Was planned as: `src/gameplay/combat/battle.gd`: sides of `Combatant`s, a scheduler, `current()`, and `act(command, targets) -> bool`, which checks the target filter, spends the cost, resolves through the actor's formula and applies statuses. DEFEND is a one-turn status, and `tick_turn` runs on each actor's own turn. Outcomes: WON, LOST, FLED. `Events.battle_started` / `battle_ended(outcome)`. Test: a whole fixture battle, start to WON, with a seeded rng and no frames |
 | C2.5 | `BattleBrain`, the enemy AI | **DONE**, combat `0.12.0`. `src/content/combat/brain_entry.gd`, `battle_brain.gd`, `src/gameplay/combat/battle_ai.gd`, `battle_ai_test.gd` (10). Evaluation is gameplay, because the pool test reads `Vitals`; the brain itself is content, authored inline like commands. An entry it cannot afford, or with no legal target, is ruled out before the draw. Red first: with the weighted choice disabled, 3 failed. Was planned as: `src/content/combat/battle_brain.gd`: weighted entries, each with a command, a target rule (lowest hp, random, self) and an optional condition. Conditions use `FlagQuery`'s closed set, plus one test on the actor's own pool fraction. The pick is seeded. Tests: a weight of zero never fires, a condition gates, seeded determinism |
 | C2.6 | Encounters and the field trigger | **DONE**, combat `0.13.0`. `src/content/combat/combatant_def.gd`, `encounter.gd`, `encounter_db.gd`, `src/gameplay/combat/battle_setup.gd`, `src/gameplay/interactables/encounter_point.gd`, `Events.encounter_requested`, `Battle.brains` / `brain_of`, `encounter_test.gd` (17). The turn order is an enum on the encounter, because content may not name a systems scheduler. A definition carries no formula, for the same reason; a built fighter uses the standard one. **The trigger is a small `Interactable` subclass, not a reuse of `TriggerVolume`.** A volume sets a flag, and turning a flag into a request would need a watcher with no other job. The combat data catalogues now skip a missing directory, which removes four engine errors the suite logged from C1.5 on. Red first: with the enemy flag reset stubbed, 2 failed; with the duplicate suffix stubbed, 1 failed. Was planned as: `src/content/combat/encounter.gd`: an enemy group (definitions plus count), `can_flee`, a music id, and rewards. `encounter_db.gd`. A `combatant_def.gd` holds an id, faction, base stats, skills and brain, and is used by both party and enemies. A field trigger raises `Events.encounter_requested(id)` through an existing `TriggerVolume` / interactable flag seam where one fits, with no new trigger class if possible. Tests: a request builds the right sides |
-| C2.7 | The battle screen | TODO, next. `src/ui/screens/battle_screen.gd`, a modal `UiScreen`: a command menu, target select, a turn-order strip from `preview`, and hp bars from `Events.vitals_changed`. All strings keyed, with T6 input prompts. Closing it returns to the frozen field. Windowed capture. Tests: open pauses the world, and a scripted battle through the screen ends and closes it |
-| C2.8 | Rewards, levels and the party | `Party` roster (active and reserve ids, its own save section, `Inventory`'s pattern), a `LevelCurve` resource (exp to level, with stat growth as base-stat deltas), exp on WON, and loot through `Inventory.of(player).add`. Tests: the curve, level-up applied to base stats, loot landing, and a save round trip |
+| C2.7 | The battle screen | **DONE**, combat `0.14.0`. `src/ui/combat/battle_screen.gd`, `battle_host.gd`, `Battle.defs`, the twelve `ui.battle.*` strings, one `BattleHost` node in `game_root.tscn`, `battle_screen_test.gd` (16). The windowed capture shows the menu over the dimmed, paused courtyard. **Two changes from the plan:** hp bars are text lines (`{name} HP {hp} / {max}`), the template's placeholder look, so a game styles them; and the screen redraws from the battle after each command rather than listening to `vitals_changed`, because one source of truth cannot disagree with itself. Fighters must be built under a node in the tree; `BattleSetup` now says so, and logs an error otherwise. Red first: with the screen not driving enemy turns, 4 failed (the first try hung in an unbounded test loop, which is now bounded). Was planned as: `src/ui/screens/battle_screen.gd`, a modal `UiScreen`: a command menu, target select, a turn-order strip from `preview`, and hp bars from `Events.vitals_changed`. All strings keyed, with T6 input prompts. Closing it returns to the frozen field. Windowed capture. Tests: open pauses the world, and a scripted battle through the screen ends and closes it |
+| C2.8 | Rewards, levels and the party | TODO, next. `Party` roster (active and reserve ids, its own save section, `Inventory`'s pattern), a `LevelCurve` resource (exp to level, with stat growth as base-stat deltas), exp on WON, and loot through `Inventory.of(player).add`. Tests: the curve, level-up applied to base stats, loot landing, and a save round trip |
 | C2.9 | Demo proof: one turn-based encounter | Data and scenes: a fixture-free encounter in the courtyard and a two-member demo party. A full fight from the field and back, as a windowed capture. The stripped run passes. `AUTHORING.md` § Add an encounter. **Closes phase C2**, and C3.0 plans the action formula |
 
 **Rules for the rows:** the same as upstream's board (`WORK_PACKAGES.md` § The rules), unchanged:

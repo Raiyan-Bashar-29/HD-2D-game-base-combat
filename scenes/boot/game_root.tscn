@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://src/ui/root/ui_root.gd" id="6_ui"]
 [ext_resource type="Script" path="res://src/ui/hud/hud_clock.gd" id="7_clock"]
 [ext_resource type="Script" path="res://src/ui/root/screen_keys.gd" id="8_keys"]
+[ext_resource type="Script" path="res://src/ui/combat/battle_host.gd" id="40_battle"]
 [ext_resource type="Script" path="res://src/ui/hud/loading_indicator.gd" id="9_load"]
 [ext_resource type="Script" path="res://src/systems/debug/dev_probes.gd" id="10_probes"]
 [ext_resource type="Script" path="res://src/systems/debug/dev_stage.gd" id="11_stage"]
@@ -52,6 +53,9 @@ script = ExtResource("6_ui")
 
 [node name="ScreenKeys" type="Node" parent="UILayer"]
 script = ExtResource("8_keys")
+
+[node name="BattleHost" type="Node" parent="UILayer"]
+script = ExtResource("40_battle")
 
 [node name="UiAccessibility" type="Node" parent="UILayer"]
 script = ExtResource("16_access")
