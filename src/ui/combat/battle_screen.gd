@@ -15,6 +15,10 @@ extends MenuScreen
 ## is greyed out with the reason beside it (`BattleMenu.refusal`). A fighter with Boost points
 ## gets a Boost row that cycles the level the next action spends.
 ##
+## IT TELLS THE PLAYER WHAT IS GOING ON (C2.19). Each fighter's line shows hp, every other pool
+## it has (MP, BP, a limit gauge, its shield), its statuses by name, and the weaknesses already
+## revealed. Under the turn order, `battle_log` shows the newest few things that happened.
+##
 ## CANCEL CANNOT LEAVE A BATTLE. `closes_on_cancel` is false: FLEE is the way out, when allowed.
 ## When it ends, the outcome is shown with one row that closes the screen, and closing releases
 ## the fighters (`BattleSetup.release`), which erases every enemy flag.
@@ -51,6 +55,9 @@ const UNAVAILABLE_KEY: String = "ui.battle.unavailable"
 const STANCE_ON_KEY: String = "ui.battle.stance_on"
 const STANCE_OFF_KEY: String = "ui.battle.stance_off"
 const BOOST_KEY: String = "ui.battle.boost"
+const POOL_KEY: String = "ui.battle.pool"
+const STATUSES_KEY: String = "ui.battle.statuses"
+const WEAK_KEY: String = "ui.battle.weak"
 ## How many upcoming turns the order line shows.
 const ORDER_LENGTH: int = 5
 
@@ -64,6 +71,8 @@ var _category: String = ""
 var _boost: int = 0
 ## What the win gave, asked for once when the screen first sees the outcome.
 var rewards: Rewards
+## The running commentary, listening on the bus while the screen is open (C2.19).
+var battle_log: BattleLog
 
 
 func _init() -> void:
@@ -83,6 +92,9 @@ static func for_battle(running: Battle) -> BattleScreen:
 
 func _ready() -> void:
 	super()
+	if battle != null:
+		battle_log = BattleLog.new(battle, name_of)
+		battle_log.start()
 	advance()
 
 
@@ -117,6 +129,9 @@ func _fill() -> void:
 		add_row(tr(CONTINUE_KEY), request_close)
 		return
 	add_note(tr(ORDER_KEY).format({"names": ", ".join(_upcoming())}))
+	if battle_log != null:
+		for line: String in battle_log.lines:
+			add_note(line)
 	if _refused:
 		add_note(tr(REFUSED_KEY))
 	if battle.current() == null:
@@ -144,6 +159,8 @@ func _fill() -> void:
 
 # Leaving the screen frees the fighter nodes and forgets the enemies' HP.
 func _closed() -> void:
+	if battle_log != null:
+		battle_log.stop()
 	if battle != null:
 		BattleSetup.release(battle)
 
@@ -265,10 +282,30 @@ func _act(command: BattleCommand, targets: Array[Combatant]) -> void:
 	advance()
 
 
+# One fighter's line: hp, then every other pool it has, its statuses, and the weaknesses the
+# player has already found. Parts it has none of are left out.
 func _pools_line(fighter: Combatant) -> String:
 	var vitals: Vitals = Vitals.of(fighter.get_parent())
-	return tr(POOLS_KEY).format({"name": name_of(fighter),
-			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})
+	var parts: Array[String] = [tr(POOLS_KEY).format({"name": name_of(fighter),
+			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})]
+	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
+		var pool: StringName = StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
+		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
+			parts.append(tr(POOL_KEY).format({"pool": String(pool).to_upper(),
+					"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	var names: Array[String] = []
+	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
+	for effect: StatusEffect in statuses.held() if statuses != null else []:
+		names.append(battle_log.status_name(fighter.combatant_id, effect.id) if battle_log != null else String(effect.id))
+	if not names.is_empty():
+		parts.append(tr(STATUSES_KEY).format({"list": ", ".join(names)}))
+	var found: Array[String] = []
+	for key: StringName in fighter.weak_to:
+		if Weakness.revealed(fighter, key):
+			found.append(tr(String(key)))
+	if not found.is_empty():
+		parts.append(tr(WEAK_KEY).format({"list": ", ".join(found)}))
+	return "   ".join(parts)
 
 
 func _upcoming() -> Array[String]:
