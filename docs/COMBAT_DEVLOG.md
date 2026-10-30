@@ -1622,3 +1622,78 @@ time lands through these two nodes. They reuse the turn-based pieces (the formul
 - The skill path reports no per-hit misses, so a skill that misses still pushes the target.
 - Physics overlap is not exercised by a test, because tests emit `area_entered` by hand. The
   C3.9 capture is the first real-physics proof.
+
+## 2026-10-30 — C3.4 · The player fights
+
+**Did.**
+- New `ActionLoadout` (content): a `CombatantDef` plus a `MoveSet`.
+- New project setting `[combat] action/loadout`, empty by default.
+- `ActionHost` now listens on `player_spawned`. After a deferred call, `equip` adds to the player:
+  - `Vitals` and `StatusSet`;
+  - a `Combatant` built from the definition;
+  - a `Hurtbox` with a capsule;
+  - a `Hitbox` and an `ActionFighter`.
+- New `ActionFighter`. Each frame, `drive(delta, attack, dodge)` does this, in order:
+  1. Ticks statuses in seconds.
+  2. Stops a fallen fighter. A stunned one can start no moves.
+  3. Starts a dodge or presses the chain, unless something else holds the player.
+  4. Steps the `MoveTimeline`.
+  5. Fits, turns and sweeps the hitbox.
+  6. While busy, holds the `&"action"` lock token and sets the horizontal velocity.
+- `MoveTimeline.press` now leads from a dodge's or skill's recovery into the chain.
+- New `tests/unit/action_fighter_test.gd` (23), and one more assertion in
+  `move_timeline_test.gd`.
+- Combat `0.29.0`.
+
+**Why.** It is the first row where real-time combat is something the player does, not
+something a test does. The probe below is the proof.
+
+**Decisions.**
+- **`player.tscn` is not edited.** The fighting parts are added as children at spawn, so a game
+  without a loadout has a player byte-for-byte upstream's. Upstream's player file never
+  conflicts on a merge.
+- **The fighter owns the horizontal velocity while busy.**
+  - The controller already moves the body, and a child processes after its parent, so the
+    velocity set here is what the controller moves by on the next frame.
+  - Holding the lock makes the controller stop reading movement.
+  - Setting zero rather than leaving the controller's friction in charge stops a roll sliding
+    on through its recovery, and makes a swing plant the feet.
+- **Another system's lock beats the buttons.** Dialogue, a menu or a climb holding the player
+  means attack and dodge do nothing. The fighter recognises its own token and ignores it.
+- **The dodge rolls the way the body is moving**, and the way it faces when standing still. That
+  matches what a player expects from a stick.
+- **A knockback interrupts the swing and is the hit-stun.** The push lasts `stun_time`, and the
+  fighter can start nothing until it ends.
+- **Only a SKIP_TURN status counted in SECONDS stuns in the field.** One counted in TURNS would
+  never end there, because nothing counts turns in real time. It is ignored rather than
+  trapping the player forever. BROKEN is such a status, so a field Break needs a seconds version
+  (C4.4).
+- **`drive` takes the buttons as arguments.** `_physics_process` passes the real
+  `Input.is_action_just_pressed`, and tests pass booleans, so no test fakes `Input`.
+
+**Verified.**
+- Suite: `3195 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with the moves stubbed, 8 assertions failed.
+- **A headless probe of the real game.** A throwaway driver set the loadout setting to a
+  temporary `.tres`, started a new game, and pressed the real combat actions through `Input`:
+  - "Player fitted for field combat" was logged;
+  - a dodge rolled at -6 m/s and covered about 1.6 m (one frame of lag against 1.8);
+  - the `&"action"` lock was held while busy and released after.
+  - It also found a gap: an attack pressed during the roll's recovery was dropped. It was fixed
+    in `MoveTimeline.press` and proven by a new assertion. Run again, the attack started the
+    first swing.
+- The probe was deleted afterwards.
+- No windowed capture: nothing new draws until the C3.9 demo.
+
+**Unblocks.** C3.5 (lock-on turns `facing`), C3.6 (enemies reuse `ActionFighter`'s ideas on an
+AI body), and C3.8 (the HUD reads the player's pools).
+
+**Gaps.**
+- A defeated player just stands there. What defeat means is C3.7.
+- Skill slots are not on any button yet. The hybrid menu (C4.3) and a skill button come later,
+  and so do skill costs paid in the field.
+- The player's facing is not shown, because the sprite's direction is upstream's. The hitbox
+  turns, the picture does not.
+- No sound or flash on a hit. That waits for art and audio, and the HUD (C3.8) shows numbers.

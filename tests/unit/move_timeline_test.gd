@@ -12,7 +12,7 @@ const P := MoveTimeline.Phase
 
 
 func run() -> void:
-	plan(22)
+	plan(23)
 	_a_chain_plays_in_order()
 	_early_presses()
 	_dodge_and_iframes()
@@ -92,6 +92,9 @@ func _dodge_and_iframes() -> void:
 	equal("a dodge is untouchable only inside its i-frames", [before, during, clock.invulnerable()],
 		[false, true, false])
 	equal("and a roll strikes nothing", clock.is_hitting(), false)
+	clock.step(0.1)
+	equal("a press in the roll's recovery leads into the chain's first swing",
+		[clock.press(chain), clock.chain_index, clock.move == chain[0]], [true, 0, true])
 
 
 func _problems() -> void:

@@ -11,7 +11,8 @@ extends RefCounted
 ## once the current one is in its chain window. A press that comes a little early, up to
 ## `buffer_window` seconds before the window opens, is remembered and plays the moment the
 ## window opens, so a player who mashes is not punished. A press earlier than that is dropped.
-## After the last move of a chain, pressing again waits until the fighter is idle.
+## After the last move of a chain, pressing again waits until the fighter is idle. A dodge or a
+## skill leads into the chain's first swing the same way, from its own chain window.
 ##
 ## A DODGE (`start` with the dodge move) is allowed when idle or during recovery
 ## (`can_dodge`): it cancels the follow-through, never a wind-up or a live swing.
@@ -55,7 +56,11 @@ func press(chain: Array[ActionMove]) -> bool:
 		chain_index = 0
 		_begin(chain[0], 0.0)
 		return true
-	if chain_index < 0 or chain_index + 1 >= _chain.size():
+	# A dodge or a skill is no chain, but its recovery leads into the chain's first swing, just
+	# as a swing's recovery leads into the next one.
+	if chain_index < 0:
+		_chain = chain
+	if chain_index + 1 >= _chain.size():
 		return false
 	if phase == Phase.RECOVERY and elapsed >= _window_opens():
 		_next_in_chain(elapsed - _window_opens())
