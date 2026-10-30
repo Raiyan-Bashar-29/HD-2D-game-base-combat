@@ -44,6 +44,11 @@ enum Scope { ONE, ALL }
 @export var hits: int = 1
 ## What the skill does beyond `power`, in order, on every hit.
 @export var effects: Array[SkillEffect] = []
+## Free labels other systems match on (C2.15): `magic` is what a REFLECT status bounces by
+## default; later, `sword` or `fire` can be what a weakness names.
+@export var tags: Array[StringName] = []
+## True when the skill cannot miss: its hits skip the accuracy roll.
+@export var sure_hit: bool = false
 
 
 ## True when the skill brings the fallen back: it is aimed at defeated combatants only.

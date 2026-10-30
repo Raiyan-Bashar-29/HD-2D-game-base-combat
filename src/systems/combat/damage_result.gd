@@ -6,11 +6,13 @@ extends RefCounted
 ## around, and the pipeline does not clamp it away: absorbing is a formula decision, so a game
 ## that wants a floor of zero lists a stage that clamps.
 ##
-## OWNS: the running amount, whether it was critical, and the stages that ran, in order.
+## OWNS: the running amount, whether it was critical or missed, and the stages that ran, in order.
 ## MUST NOT: apply itself to anybody. That is the caller's, through `Vitals.change`.
 
 var amount: float = 0.0
 var critical: bool = false
+## True when the hit did not land at all (C2.15). The amount is then 0, and nothing is applied.
+var missed: bool = false
 var element: StringName = &""
 ## Each stage's class name, in the order it ran, so a test or a combat log can show the working.
 var stages_run: Array[StringName] = []

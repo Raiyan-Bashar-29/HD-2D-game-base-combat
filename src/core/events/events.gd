@@ -288,6 +288,14 @@ signal turn_skipped(who: StringName, status_id: StringName)
 ## A combatant received a resolved hit. Emitted by `Combatant.receive`; the amount is the hit's
 ## total, negative for an absorbed one, and a defeated combatant receives nothing.
 signal combatant_damaged(who: StringName, by: StringName, amount: int, critical: bool)
+## A hit on `who` from `by` missed: evasion beat accuracy, and nothing was applied. Emitted by
+## `Combatant.receive` INSTEAD of `combatant_damaged`, so a log says "Missed" and not "0" (C2.15).
+signal attack_missed(who: StringName, by: StringName)
+## `who` struck back at `against` through a COUNTER status. Emitted by `SkillUse.counter` (C2.15).
+signal countered(who: StringName, against: StringName)
+## A skill aimed at `who` bounced back to `back_to` through a REFLECT status. Emitted by
+## `SkillUse.apply` (C2.15).
+signal skill_reflected(who: StringName, back_to: StringName, skill_id: StringName)
 ## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
 signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,

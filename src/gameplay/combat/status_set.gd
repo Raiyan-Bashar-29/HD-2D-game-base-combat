@@ -123,6 +123,14 @@ func blocker(block: StatusEffect.Block) -> StringName:
 	return &""
 
 
+## The first held status carrying `reaction` (a counter stance, a reflect), or null (C2.15).
+func reactor(reaction: StatusEffect.Reaction) -> StatusEffect:
+	for status_id: StringName in _held:
+		if _held[status_id].effect.has_reaction(reaction):
+			return _held[status_id].effect
+	return null
+
+
 ## Ends every held status that breaks on a hit (a sleep). `Combatant.receive` calls it when a
 ## hit really took something. Returns how many ended.
 func wake() -> int:

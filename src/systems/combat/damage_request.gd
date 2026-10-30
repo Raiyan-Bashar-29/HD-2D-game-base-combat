@@ -19,6 +19,8 @@ var defender: StatSheet
 var power: float = 0.0
 ## Free StringName, like stat names. Empty means no element, and the element stage skips it.
 var element: StringName = &""
+## True for a hit that cannot miss: `AccuracyStage` lets it through whatever the evasion (C2.15).
+var sure_hit: bool = false
 
 
 static func of(from: StatSheet, to: StatSheet, amount: float, kind: StringName = &"") -> DamageRequest:

@@ -70,11 +70,14 @@ func resolving_formula() -> DamageFormula:
 
 
 ## Resolves one hit on `target` and applies it. Null when there is nobody to hit.
+## `sure_hit` skips the accuracy roll, for a skill that cannot miss (C2.15).
 func hit(target: Combatant, power: float, element: StringName,
-		rng: RandomNumberGenerator) -> DamageResult:
+		rng: RandomNumberGenerator, sure_hit: bool = false) -> DamageResult:
 	if target == null:
 		return null
-	var result: DamageResult = resolving_formula().resolve(DamageRequest.of(sheet, target.sheet, power, element), rng)
+	var request := DamageRequest.of(sheet, target.sheet, power, element)
+	request.sure_hit = sure_hit
+	var result: DamageResult = resolving_formula().resolve(request, rng)
 	target.receive(result, combatant_id)
 	return result
 
@@ -84,6 +87,10 @@ func hit(target: Combatant, power: float, element: StringName,
 func receive(result: DamageResult, from: StringName) -> int:
 	var vitals: Vitals = Vitals.of(get_parent())
 	if result == null or vitals == null or vitals.is_defeated():
+		return 0
+	# A miss changes nothing and wakes nobody; it is announced as a miss, not as 0 damage.
+	if result.missed:
+		Events.attack_missed.emit(combatant_id, from)
 		return 0
 	var before: int = vitals.current(damage_pool)
 	var after: int = vitals.change(damage_pool, -result.total())
