@@ -2451,3 +2451,37 @@ brain.
 - A follower targets the nearest foe and ignores the player's lock-on.
 - A follower has no dodge, and no swing animation beyond walking (art is deferred).
 - `wander_radius` on a field brain is ignored: a follower with no fight keeps its place.
+
+## 2026-10-30 — C4.10 · Variants with no new system
+
+**Did.**
+- **An ATB battle.** New `CtbScheduler.advance(ticks)`:
+  - it lowers every wait, never below 0;
+  - it names who is ready, consuming nothing; the turn is still taken with `next()`, which, with
+    that wait at 0, moves nobody else on.
+  - Fed `CombatClock.scaled(delta) * ticks_per_second`, it is the classic FF gauge. The clock at
+    0 is wait mode.
+- **Pause-and-play** needed no code. The test shows a foe frozen at clock 0 while a field command
+  lands at once, and the foe walking again at full speed.
+- **Timed hits.** New `src/systems/combat/timed_window.gd` (`TimedWindow`):
+  - `opens`, `closes` and `bonus` (1.5), and an optional `perfect` centre worth `perfect_bonus`;
+  - `multiplier(pressed_at)` and `problems()`.
+- New `tests/unit/variants_test.gd` (11). Combat `0.45.0`.
+
+**Why.** It is the board row: it proves the hybrid's parts compose into the styles a game might
+want, without a new system each.
+
+**Verified.**
+- **Red first:** with `advance` and `multiplier` stubbed, 3 failed.
+- **Suite:** `3421 passed, 0 failed`. **Boot:** `0 warnings, 0 errors`. **Checkers:** all seven
+  exit 0.
+- **The stripped run:** `3324 passed, 0 failed, 25 skipped`; boot clean; the checkers pass.
+- No probe or capture: nothing is wired into the demo or drawn.
+
+**Unblocks.** C4.11, the hybrid demo.
+
+**Gaps.**
+- No screen feeds `advance` yet: `BattleScreen` runs plain CTB. An ATB battle screen is a game's
+  choice, or a later row.
+- `TimedWindow` is not wired to any move or input. A move or skill field that carries one, and a
+  press read during the move, are later work.
