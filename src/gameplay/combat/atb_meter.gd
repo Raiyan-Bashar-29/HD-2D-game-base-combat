@@ -12,7 +12,7 @@ extends Node
 ## HUD redraws a few times a second, not every frame.
 ##
 ## OWNS: this fighter's `AtbGauge`, and when it fills.
-## MUST NOT: open a menu or use a command. The hybrid's menu (C4.3) calls `spend`.
+## MUST NOT: open a menu or use a command. `FieldCommands.use` (C4.3) calls `spend`.
 
 var gauge: AtbGauge = AtbGauge.new()
 var _told_value: int = -1

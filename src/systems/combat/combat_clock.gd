@@ -3,7 +3,7 @@ extends RefCounted
 ## How fast the fight runs (C4.1): one number every real-time combat part multiplies its frame
 ## time by. 1 is normal speed, 0.5 is half speed, and 0 stops the fight dead.
 ##
-## IN PLAIN WORDS: the hybrid's command menu (C4.3) slows or stops the fight while the player
+## IN PLAIN WORDS: the hybrid's command menu (C4.4) slows or stops the fight while the player
 ## chooses, the way FF7 Remake does. The game's own pause cannot do that, because it stops
 ## everything, menus included, and `Engine.time_scale` would also slow the day clock, the weather
 ## and the UI. So the fight keeps its own scale here, and only the fight reads it:

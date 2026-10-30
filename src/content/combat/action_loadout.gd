@@ -18,6 +18,10 @@ extends Resource
 ## How the fighter's ATB gauge fills, for the hybrid formula (C4.2). Null means no gauge: a pure
 ## action game has none.
 @export var atb: AtbRules
+## What the hybrid's field menu offers (C4.3): SKILL and ITEM commands, filed into categories as
+## in a turn-based battle. Attack is a button and the field has no fleeing, so other kinds are
+## reported as problems.
+@export var commands: Array[BattleCommand] = []
 
 
 func problems(context: String) -> PackedStringArray:
@@ -32,4 +36,12 @@ func problems(context: String) -> PackedStringArray:
 		found.append_array(moves.problems("%s moves" % context))
 	if atb != null:
 		found.append_array(atb.problems("%s atb" % context))
+	for i: int in commands.size():
+		var command: BattleCommand = commands[i]
+		if command == null:
+			found.append("%s has an empty command slot %d" % [context, i])
+			continue
+		found.append_array(command.problems("%s command %d" % [context, i]))
+		if command.kind != BattleCommand.Kind.SKILL and command.kind != BattleCommand.Kind.ITEM:
+			found.append("%s command %d is not a SKILL or an ITEM, which the field cannot use" % [context, i])
 	return found
