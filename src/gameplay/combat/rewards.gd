@@ -6,6 +6,9 @@ extends RefCounted
 ## GIVEN ONCE, ON WON ONLY. A loss or a flight gives nothing; the battle screen asks once, when
 ## it first sees the outcome.
 ##
+## A FIELD KILL (C3.8) rewards through `give`, which needs no battle: the real-time formula has
+## none, and the rule is the same one.
+##
 ## OWNS: the template's reward rule, and the summary of one grant.
 ## MUST NOT: choose the encounter, draw anything, or decide what losing means.
 
@@ -19,17 +22,26 @@ var left_behind: Array[StringName] = []
 
 
 static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) -> Rewards:
-	var given := Rewards.new()
 	if battle.outcome() != Battle.Outcome.WON or encounter == null:
-		return given
-	given.experience = encounter.experience
+		return Rewards.new()
+	var standing: Array[CombatantDef] = []
 	for fighter: Combatant in battle.party:
 		var def: CombatantDef = battle.defs.get(fighter.combatant_id, null)
-		if def == null or Vitals.of(fighter.get_parent()).is_defeated():
-			continue
-		if Party.gain(def, encounter.experience) > 0:
-			given.levelled.append(fighter.combatant_id)
-	for item_id: StringName in encounter.loot:
+		if def != null and not Vitals.of(fighter.get_parent()).is_defeated():
+			standing.append(def)
+	return give(encounter.experience, encounter.loot, standing, inventory)
+
+
+## The reward itself, with no battle (C3.8): `experience` to each of `members` (the caller
+## leaves out the fallen), and each of `loot` into `inventory`. A field kill calls this.
+static func give(experience: int, loot: Array[StringName], members: Array[CombatantDef],
+		inventory: Inventory) -> Rewards:
+	var given := Rewards.new()
+	given.experience = experience
+	for def: CombatantDef in members:
+		if Party.gain(def, experience) > 0:
+			given.levelled.append(def.combatant_id)
+	for item_id: StringName in loot:
 		if inventory != null and inventory.add(item_id, 1):
 			given.items.append(item_id)
 		else:

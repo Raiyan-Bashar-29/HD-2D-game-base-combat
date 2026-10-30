@@ -12,7 +12,9 @@ extends Node
 ## IT IS A NODE IN THE COMPOSITION ROOT, NOT AN AUTOLOAD. Adding an autoload needs an ADR
 ## (CLAUDE.md), and nothing here must outlive the game root.
 ##
-## OWNS: installing the combat actions, and fitting the player with a fighter.
+## AND IT GRANTS A FIELD KILL'S REWARD (C3.8), when an `ActionEnemy` announces its defeat.
+##
+## OWNS: installing the combat actions, fitting the player with a fighter, and field rewards.
 ## MUST NOT: read input itself, or run a fight. `ActionFighter` does that.
 
 const LOADOUT_SETTING: String = "combat/action/loadout"
@@ -22,6 +24,7 @@ func _ready() -> void:
 	CombatActions.install()
 	Log.info("combat", "Action inputs ready: %d" % CombatActions.ALL.size())
 	Events.player_spawned.connect(_on_player_spawned)
+	Events.field_enemy_defeated.connect(_on_field_enemy_defeated)
 
 
 ## The loadout `project.godot` names, or null when field combat is off or it fails to load.
@@ -36,7 +39,7 @@ static func configured() -> ActionLoadout:
 
 
 ## Adds what fighting needs under `body`: `Vitals`, `StatusSet`, `Combatant`, a `Hurtbox` with
-## a shape, a `Hitbox`, a `LockOn` and an `ActionFighter`. A body that already has a `Combatant` is left
+## a shape, a `Hitbox`, a `LockOn`, an `ActionFighter` and a `FieldDefeat`. A body that already has a `Combatant` is left
 ## alone and gets nothing, so equipping twice is harmless. Returns the fighter, or null.
 static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	if body == null or loadout == null or loadout.fighter == null or Combatant.of(body) != null:
@@ -67,7 +70,21 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	var fighter := ActionFighter.new()
 	fighter.moves = loadout.moves
 	body.add_child(fighter)
+	var defeat := FieldDefeat.new()
+	if loadout.defeat_rule != null:
+		defeat.rule = loadout.defeat_rule
+	body.add_child(defeat)
 	return fighter
+
+
+## A field kill's reward for `player` (C3.8): its experience to the loadout's fighter, unless the
+## player is down, and its loot into the player's `Inventory`.
+static func reward(experience: int, loot: Array[StringName], player: Node, loadout: ActionLoadout) -> Rewards:
+	var members: Array[CombatantDef] = []
+	var vitals: Vitals = Vitals.of(player) if player != null else null
+	if loadout != null and loadout.fighter != null and vitals != null and not vitals.is_defeated():
+		members.append(loadout.fighter)
+	return Rewards.give(experience, loot, members, Inventory.of(player) if player != null else null)
 
 
 func _on_player_spawned(player: Node3D) -> void:
@@ -76,6 +93,11 @@ func _on_player_spawned(player: Node3D) -> void:
 		return
 	# Deferred: the player is still inside its own `_ready` when it announces itself.
 	_equip_later.call_deferred(player, loadout)
+
+
+func _on_field_enemy_defeated(_who: StringName, experience: int, loot: Array[StringName]) -> void:
+	var given: Rewards = reward(experience, loot, Director.player, configured())
+	Log.info("combat", "Field victory: %d experience, %d item(s)" % [given.experience, given.items.size()])
 
 
 func _equip_later(player: Node3D, loadout: ActionLoadout) -> void:

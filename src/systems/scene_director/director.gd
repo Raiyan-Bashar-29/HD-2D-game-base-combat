@@ -102,10 +102,10 @@ func start_new_game() -> void:
 	Events.area_change_requested.emit(first, GameConfig.first_spawn())
 
 
-## Reload the area in place. NO CALLER — the debug tools drive the Director through
-## `Events.area_change_requested` like everything else, and no shipped screen offers a reload.
-## It stays because it names an occasion rather than duplicating a spelling: it is the only
-## caller that has to read `current_area_id` off the Director to know where "here" is.
+## Reload the area in place. It names an occasion rather than duplicating a spelling: it is the
+## only caller that has to read `current_area_id` off the Director to know where "here" is. A
+## fork's respawn rule calls it (the combat fork's `FieldDefeat`); the debug tools drive the
+## Director through `Events.area_change_requested` like everything else.
 func reload_current_area() -> void:
 	if current_area_id != &"":
 		_begin_transition(current_area_id, &"")

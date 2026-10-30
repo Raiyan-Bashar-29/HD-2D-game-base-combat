@@ -1872,3 +1872,74 @@ target the player locks), and C3.10 (two enemies in the demo).
 - There is no line-of-sight check, carried from C3.6.
 - A fallen enemy stands where it fell. Removing it, the rewards and its respawn are C3.8.
 - An enemy pushed off the navmesh walks straight until it is back on it.
+
+## 2026-10-30 — C3.8 · Defeat, rewards and respawn
+
+**Did.**
+- `Rewards.give(experience, loot, members, inventory)` needs no `Battle`. `Rewards.grant`
+  collects the standing members and calls it.
+- `ActionHost.reward(...)` holds the field rule: experience to the loadout's fighter unless the
+  player is down, and loot to the player's bag. It is granted on the new
+  `Events.field_enemy_defeated`.
+- `ActionEnemy` gains `experience`, `loot`, `linger` and `remember_defeat`. It announces its
+  defeat once, lies `linger` seconds, then is removed. A `remember_defeat` one sets a flag and
+  never comes back.
+- New `DefeatRule` (content) and `ActionLoadout.defeat_rule`.
+- New `FieldDefeat` (gameplay), fitted to the player by `ActionHost.equip`. It holds the player
+  on the ground for `delay` seconds, then carries out the rule.
+- **Upstream file touched:** `src/systems/scene_director/director.gd`, a comment only. Its
+  `NO CALLER` note on `reload_current_area` was stale now that `FieldDefeat` calls it, and
+  `check_methods` failed the build on that. Upstream may want the same wording when it next
+  merges; this is the only line that differs.
+- New `tests/unit/field_defeat_test.gd` (12).
+- Combat `0.33.0`.
+
+**Why.** Without it, fights in the field had no end: a beaten enemy stood there forever, and a
+beaten player stood there too, with nothing to show for either.
+
+**Decisions.**
+- **"Gone until re-entry" needs no flag.** Enemies are children of the area scene, which is
+  rebuilt on every entry, so removing a fallen one is enough. The flag exists only for
+  `remember_defeat`: a boss, a one-off ambush.
+- **The reward is granted by `ActionHost`, not the enemy.** The enemy announces, and the host
+  knows the loadout and the player. A game that wants party-wide field experience changes one
+  static function.
+- **A fallen player gets no experience, but the loot still lands.** That is the turn-based rule
+  for the fallen, and loot dropping on the floor for nobody would be stranger.
+- **The default rule is RESPAWN_AT_ENTRY.** It is forgiving but not free: the area's enemies
+  come back, and so does its entrance. RELOAD_SAVE is the classic game over, and it falls back
+  to re-entry when there is no save, so a player can never be stuck on the ground.
+- **For a re-entry or a reload, the player gets up only on `area_entered`.** The probe below
+  found that getting up first left the player among the same enemies for the whole fade.
+
+**Verified.**
+- Suite: `3258 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0, after the `director.gd` comment fix.
+- Red first: with `give`, `_fall` and `_carry_out` stubbed, 12 failed. That is 8 new
+  assertions plus 4 in `party_rewards_test`, which proves `grant` now goes through `give`.
+- **A headless probe of the running game,** with a temporary loadout and real `Input` presses:
+  1. A weak enemy placed in front of the player died to one real swing. "Field victory: 9
+     experience" was logged, and the enemy was removed.
+  2. A strong enemy, placed inside the area scene, felled the player. "The player fell:
+     RESPAWN_AT_ENTRY" was logged, then the area was re-entered, and the player stood again at
+     15 of 30 hp with the enemy gone.
+  - The first version of step 2 fell, got up and fell again every 2 s: the defect above. It was
+    fixed, and the probe was run again.
+  - The probe also showed something worth writing down: **the player node lives under
+    `WorldRoot` and survives an area reload,** so anything a game parents beside the player
+    survives too. Enemies must be placed inside the area.
+- The probe was deleted.
+
+**Unblocks.** C3.9 (the HUD shows what is at stake) and C3.10 (a demo fight that can be won and
+lost).
+
+**Gaps.**
+- The RESPAWN and RELOAD paths are proven by the probe, not by an assertion. The suite runs
+  with no area loaded, and a real transition there would take the test runner with it.
+- A remembered defeat is keyed by the node's name. Renaming an enemy in its area brings a beaten
+  boss back.
+- No death animation or fade. The fallen enemy just stands for `linger` seconds; that waits on
+  art.
+- Field experience goes to the loadout's one fighter, not the party. The hybrid (C4.5) brings
+  the party into the field and should revisit this.
