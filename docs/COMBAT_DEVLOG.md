@@ -1807,3 +1807,68 @@ a body, navigation or physics. Each situation is one line of numbers in the test
   ray test before it reports a target distance.
 - There is no group behaviour (surrounding, taking turns to attack). Each enemy decides alone.
 - A RETREAT has no end condition beyond the facts changing. The body decides how far "away" is.
+
+## 2026-10-30 — C3.7 · The enemy's body
+
+**Did.**
+- New `ActionEnemy` (a CharacterBody3D on layer NPC) and the prefab
+  `scenes/objects/action_enemy.tscn`: a capsule, the placeholder sprite and a
+  `NavigationAgent3D`.
+- On ready it builds its fighting parts from `fighter`, with every pool full.
+- Each frame, `act(delta)`:
+  - ticks statuses;
+  - senses `nearest_hostile()`, how far it is from home, and its own hp;
+  - asks its `ActionDecider` (C3.6);
+  - sets its horizontal velocity for the state it gets back;
+  - steps its move and sweeps its hitbox.
+- `_physics_process` adds gravity, moves the body and animates the sprite.
+- New `tests/unit/action_enemy_test.gd` (13).
+- Combat `0.32.0`.
+
+**Why.** The action formula needs something to fight. This is the first real-time opponent, and
+every part of it is data: a `CombatantDef` for who it is and an `ActionBrain` for how it behaves.
+
+**Decisions.**
+- **`act` sets velocity, `_physics_process` moves.** Tests call `act` and read the velocity,
+  with no physics frame. The running game adds gravity and `move_and_slide`.
+- **Navigation when the area has a navmesh, straight lines when not.** The agent is asked only
+  when the map has been built (`map_get_iteration_id > 0`). A test, or an area with no navmesh,
+  still has enemies that walk.
+- **The combatant id is `<definition id>/<node name>`,** so two copies of one enemy never share
+  hp flags or knockback events. `kind` stays the definition id, so a weakness revealed on one is
+  revealed on all.
+- **Pools start full every time it is built,** the rule `BattleSetup` uses for battle enemies.
+  Whether it comes back at all is C3.8's rule.
+- **It stands at 0.9 of its attack range.** It walks in until just inside range, then holds and
+  faces the target while the cooldown runs, rather than pressing into the player.
+- **It reuses the player's parts:** `Hurtbox`, `Hitbox`, `MoveTimeline`, the faction table and
+  `Hurtbox.GROUP`. An enemy's hit and the player's hit are the same code.
+
+**Verified.**
+- Suite: `3245 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with the acting stubbed, 6 failed. Then one wrong test expectation: the first
+  `act` already steps the move into ACTIVE.
+- **A headless probe of the running game.** A throwaway driver fitted the player with a
+  temporary loadout and placed an enemy 4 m away in the courtyard:
+  - it went from IDLE to CHASE, closing about 0.6 m every 15 frames;
+  - it went to ATTACK at 1.58 m;
+  - **its hitbox overlapped the player's hurtbox through real physics.** The player's hp went
+    30, 25, 20, 15: 3 power + 2 attack per swing, one swing every ~1.6 s (move plus cooldown).
+  - This is the first real-physics proof of C3.3's areas, which until now were tested by
+    emitting `area_entered` by hand.
+- **A windowed capture** (`xvfb-run`) shows the enemy at the player's side in the courtyard.
+  The probe was deleted afterwards.
+
+**Unblocks.** C3.8 (what an enemy's and the player's defeat mean), C3.9 (the HUD shows the
+target the player locks), and C3.10 (two enemies in the demo).
+
+**Gaps.**
+- **The enemy looks like any villager.** `CharacterVisual` sets up its own sprite, so a
+  `modulate` on the prefab's Sprite3D is overwritten. Telling enemies apart needs either a tint
+  seam on `CharacterVisual` (upstream) or its own texture. Art is deferred, so C3.10 will choose
+  between them.
+- There is no line-of-sight check, carried from C3.6.
+- A fallen enemy stands where it fell. Removing it, the rewards and its respawn are C3.8.
+- An enemy pushed off the navmesh walks straight until it is back on it.
