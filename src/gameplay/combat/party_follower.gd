@@ -10,9 +10,16 @@ extends CharacterBody3D
 ## follower stands still.
 ##
 ## It can be hit: it has a `Hurtbox`, so a real-time enemy that finds it nearest attacks it.
-## It does not fight back yet. Allies that think for themselves are C4.8.
 ##
-## OWNS: walking after the leader, and this member's loadout while it is not the one controlled.
+## IT THINKS (C4.8). Every `think_every` seconds of fight time, while a foe stands within
+## `FieldCommands.REACH`, it asks its member's `BattleBrain` (the `brain` on the loadout's
+## fighter, the same data a turn-based battle reads) what to do, through a `FieldBrainContext`:
+## each entry it can pay for, in ATB and mp, competes by weight, so it heals the most hurt ally
+## or casts at a foe as the data says. With an empty gauge, no brain or no foe near, it only
+## walks. Walking up to foes and swinging at them is C4.9.
+##
+## OWNS: walking after the leader, thinking for its member, and this member's loadout while it
+## is not the one controlled.
 ## MUST NOT: read input, or swap itself with the player (`FieldParty.switch` does both bodies).
 
 const GROUP: StringName = &"party_follower"
@@ -29,9 +36,15 @@ var slot: int = 1
 @export var speed: float = 4.5
 ## Further than this from the leader, it is set down on the leader's feet at once.
 @export var catch_up: float = 12.0
+## Seconds of fight time between two choices of its brain (C4.8).
+@export var think_every: float = 1.0
+
+## Its brain's draws. Randomised when it joins the world; a test may seed it.
+var rng := RandomNumberGenerator.new()
 
 var _agent: NavigationAgent3D
 var _gravity: float = 24.0
+var _think_left: float = 0.0
 
 
 func _ready() -> void:
@@ -42,6 +55,8 @@ func _ready() -> void:
 	var configured: float = ProjectSettings.get_setting("physics/3d/default_gravity", 24.0)
 	_gravity = configured
 	_agent = get_node_or_null(^"Agent") as NavigationAgent3D
+	rng.randomize()
+	_think_left = think_every
 	if loadout != null and Combatant.of(self) == null:
 		ActionHost.fit_identity(self, loadout)
 
@@ -57,8 +72,8 @@ func _physics_process(delta: float) -> void:
 			GameEnums.MoveState.WALK if moving else GameEnums.MoveState.IDLE)
 
 
-## One frame of following: ticks statuses, then sets the horizontal velocity towards `place()`.
-## It does not move the body; `_physics_process` does.
+## One frame of following: ticks statuses, thinks when its time comes, then sets the horizontal
+## velocity towards `place()`. It does not move the body; `_physics_process` does.
 func follow(delta: float) -> void:
 	# Fight time, as every fighter: the hybrid's menu slows the party too (C4.1).
 	var dt: float = CombatClock.scaled(delta)
@@ -71,6 +86,11 @@ func follow(delta: float) -> void:
 	var wish: Vector3 = Vector3.ZERO
 	var vitals: Vitals = Vitals.of(self)
 	var still: bool = (vitals != null and vitals.is_defeated()) or (statuses != null and statuses.halts())
+	if not still:
+		_think_left -= dt
+		if _think_left <= 0.0:
+			_think_left = think_every
+			think()
 	if leader != null and is_instance_valid(leader) and not still:
 		var spot: Vector3 = place()
 		var gap: float = _flat(spot - global_position).length()
@@ -84,6 +104,19 @@ func follow(delta: float) -> void:
 			wish = _towards(spot) * speed
 	velocity.x = wish.x * CombatClock.scale
 	velocity.z = wish.z * CombatClock.scale
+
+
+## One choice of its member's brain, now: a skill or an item drawn by weight from what it can
+## pay for and aim. False when it did nothing: no fighter, no foe within reach, or nothing on
+## the brain allowed. `follow` calls it every `think_every` seconds.
+func think() -> bool:
+	var me: Combatant = Combatant.of(self)
+	if me == null or loadout == null or loadout.fighter == null:
+		return false
+	var context := FieldBrainContext.new(me, rng)
+	if not context.fighting():
+		return false
+	return BattleAi.decide(context, loadout.fighter.brain)
 
 
 ## Where it should stand: on the line from the leader towards itself, `spacing * slot` metres

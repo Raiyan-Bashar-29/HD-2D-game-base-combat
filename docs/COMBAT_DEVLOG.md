@@ -2359,3 +2359,47 @@ Moving the member's nodes rather than the camera keeps upstream's `PlayerControl
 - The lead falling runs the defeat rule even when a member still stands; FF7R would switch.
 - Sprites stay with the bodies, so a switch does not change the controlled character's look.
 - The ATB gauge of a follower fills on time and hits only.
+
+## 2026-10-30 — C4.8 · Allies think in real time
+
+**Did.**
+- New `BrainContext` (gameplay): the four questions a brain asks anywhere: may I use this
+  command now (`allows`), whom could it land on (`targets_for`), do it (`act`), and what if
+  nothing is allowed (`fallback`). The base answers "no" to each.
+- New `BattleBrainContext`, over a `Battle`: its status blocks, DEFEND always, FLEE when the
+  battle allows it, a skill when `SkillUse.affordable`; the fallback attacks the first foe or
+  defends, as before.
+- New `FieldBrainContext`, over `FieldCommands`: only SKILL and ITEM, allowed when `refusal` is
+  NONE, no fallback, and `fighting()`, true while a standing foe is within `REACH`.
+- `BattleAi.decide(context, brain)` holds the weighted draw and the target rules. An ALL skill
+  takes every candidate. `take_turn(battle, brain)` now wraps it, so its callers are untouched.
+- `FieldCommands.candidates` (everyone in reach the skill may aim at, nearest first, which
+  `targets` now picks from) and `use(..., aim)`, which refuses an aim outside the candidates.
+- `PartyFollower.think()` reads the member's `CombatantDef.brain` through a `FieldBrainContext`.
+  `follow` calls it every `think_every` (1 s) of `CombatClock` time, never while the follower is
+  fallen or staggered, so at clock 0 it never thinks.
+- The board row was split: thinking here, moving and swinging by `ActionBrain` as the new C4.9.
+- Combat `0.43.0`.
+
+**Why.** The board row, and the plan's research: `BattleAi` was welded to `Battle`, so a field
+ally could not reuse the brain data a battle already reads. Splitting the row keeps each package
+under the size guide: a follower that chases and swings needs the decider, a hitbox and the move
+timeline on a second body.
+
+**Verified.**
+- **Red first:** with `think` stubbed, 5 of the 14 new assertions failed.
+- **Suite:** `3395 passed, 0 failed`; `battle_ai_test` and every turn-based test unchanged.
+- **Boot:** `0 warnings, 0 errors`. **Checkers:** all seven exit 0.
+- **The stripped run:** `3299 passed, 0 failed, 25 skipped`; boot clean; the checkers pass.
+- **A real-game probe** in the lantern hall: a one-entry brain (Salve, LOWEST_HP) on the Keeper,
+  the Wanderer hurt to 21 hp. About a second later the Keeper healed him to 39, spending 3 mp
+  and one ATB bar, then refilled slowly. No windowed capture: nothing new is drawn.
+
+**Unblocks.** C4.9, followers that chase and swing.
+
+**Gaps.**
+- Followers do not chase or swing yet (C4.9).
+- The demo Keeper has no brain; the hybrid demo (C4.11) gives it one.
+- The player's own field menu still aims a one-target ally skill at the user; only a thinking
+  ally picks among allies.
+- A follower's brain ignores the player's lock-on; FIRST means the nearest foe.

@@ -1492,12 +1492,20 @@ spent, and the fight runs at full speed again. Salve heals you the same way.
 2. **Following:** each member is a `PartyFollower` (`scenes/objects/party_follower.tscn`, which
    you may restyle) that walks `spacing` metres behind the leader for each place in the line, at
    `speed`, and is set down on the leader's feet when more than `catch_up` metres away. It can be
-   hit. It does not attack until C4.8.
+   hit. It does not swing at foes until C4.9.
 3. **Switching:** C (pad `PADDLE1`) hands the player's body to the next standing member. Their
    hp, statuses, gauge, moves and commands come with them, the two swap places, and the one
    handed over goes to the back of the line. A fallen member is passed over, and the key does
    nothing mid-swing or while a menu is open.
 4. **Rewards:** a field kill gives its experience to every standing member.
+5. **Thinking (C4.8):** give a member's `fighter` (its `CombatantDef`) a `brain`, the same
+   `BattleBrain` a turn-based battle reads. While a foe stands within 8 m, the follower draws
+   from it every `think_every` seconds (1, on the prefab) of fight time. Only SKILL and ITEM
+   entries count in the field, and only those it can pay for now in ATB bars (`Skill.atb_cost`)
+   and mp. Aim with the entry's `target_rule`: LOWEST_HP on an ALLY skill heals the most hurt
+   member, FIRST on an ENEMY skill casts at the nearest foe, and an ALL skill takes everyone in
+   reach. `below_fraction` tests the follower's own pool, as in battle. With no brain it only
+   walks. The member you control never thinks; its brain waits until you switch away.
 
 **Seeing it:** the Keeper (`data/action/keeper_loadout.tres`) follows the Wanderer into the
 lantern hall. Press C and you are the Keeper, with a staff, Salve and Bulwark on F; press it
