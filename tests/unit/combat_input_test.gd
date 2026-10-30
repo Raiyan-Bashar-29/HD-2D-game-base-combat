@@ -1,5 +1,5 @@
 extends TestCase
-## Combat input and layers (C3.1): the four action-combat actions exist after `install()`, on
+## Combat input and layers (C3.1, C4.4): the five action-combat actions exist after `install()`, on
 ## keys and pad buttons no other action already uses, installing twice changes nothing, the
 ## prompt text resolves, and the two new physics layers are named in `project.godot` exactly where
 ## `CombatLayers` says they are.
@@ -8,7 +8,7 @@ extends TestCase
 ## MUST NOT: rebind anything the player chose; it only reads the InputMap after installing.
 
 func run() -> void:
-	plan(12)
+	plan(14)
 	CombatActions.install()
 	_the_actions()
 	_the_layers()
@@ -18,10 +18,12 @@ func _the_actions() -> void:
 	var all_there: bool = true
 	for action: StringName in CombatActions.ALL:
 		all_there = all_there and InputMap.has_action(action)
-	equal("all four combat actions exist after install", all_there, true)
+	equal("all five combat actions exist after install", all_there, true)
 	equal("attack is on K", _has_key(CombatActions.ATTACK, KEY_K), true)
 	equal("and on the pad's west button", _has_pad(CombatActions.ATTACK, JOY_BUTTON_X), true)
 	equal("dodge is on the right trigger", _has_axis(CombatActions.DODGE, JOY_AXIS_TRIGGER_RIGHT), true)
+	equal("the command menu is on F", _has_key(CombatActions.COMMAND, KEY_F), true)
+	equal("and on the pad's extra centre button", _has_pad(CombatActions.COMMAND, JOY_BUTTON_MISC1), true)
 	equal("no combat key or button is already another action's", _clashes(), [])
 	var before: int = InputMap.action_get_events(CombatActions.ATTACK).size()
 	CombatActions.install()

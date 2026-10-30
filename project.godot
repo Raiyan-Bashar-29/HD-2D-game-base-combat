@@ -74,13 +74,16 @@ base/version="5.16.4"
 ; THE COMBAT FORK'S OWN RELEASE, beside [template] base/version, which is the base this fork has
 ; merged up to and is upstream's to bump. This one is bumped by combat packages, under the same
 ; major / minor / patch promise. Read by src/core/util/combat_version.gd; ADR-0008.
-core/version="0.38.0"
+core/version="0.39.0"
 ; The PartyRoster BattleHost builds the party from. A game names its own; a stripped template has
 ; none, and then no battle starts.
 party/roster="res://data/party/roster.tres"
 ; The ActionLoadout ActionHost fits the player with for field combat (C3.4). Empty means none:
 ; the player cannot fight in the field, and nothing about them changes.
 action/loadout="res://data/action/wanderer_loadout.tres"
+; How fast the fight runs while the hybrid's command menu is open (C4.4), as a fraction of full
+; speed. 0 is "wait mode": the fight stops until the menu closes. Read by CommandOverlay.
+hybrid/slow=0.1
 
 [debug]
 

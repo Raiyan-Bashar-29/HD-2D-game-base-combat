@@ -9,10 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C4.3, field commands, the logic: who a skill or an item used
-  mid-fight lands on, why it would be refused, and using it (ATB bars, then the cost, then the
-  shared skill path). The old command-overlay row was split three ways: logic (done), screen
-  (C4.4) and demo (C4.5).
+- **Last finished package:** C4.4, the command overlay's screen: F opens a menu over the
+  running fight, slows the fight to `[combat] hybrid/slow`, and uses the chosen skill or item
+  through `FieldCommands`. The HUD shows the ATB bars.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -27,11 +26,10 @@ between them, written in plain words.
   - C3, the action formula (complete): real-time moves as data, hitboxes, the player's
     chain and roll, lock-on, enemies that chase and lunge, field defeat and rewards, and a HUD.
     `AUTHORING.md` § Action combat lists every field.
-- **Next package:** **C4.4**, the command overlay's screen: a menu that opens over the running
-  field with F, slows the fight, and uses a command through `FieldCommands`; and the HUD's ATB
-  line.
+- **Next package:** **C4.5**, the field-command demo: the Wanderer's loadout gets ATB rules and
+  commands (Ember, a heal), with captures, the stripped run, and `AUTHORING.md` § Hybrid.
 - **Then, in order:**
-  1. **The rest of C4, the FF7-Remake-style hybrid (C4.5–C4.10).**
+  1. **The rest of C4, the FF7-Remake-style hybrid (C4.6–C4.10).**
   2. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
 
   Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,
@@ -106,7 +104,7 @@ anything to its left and nothing to its right.
 | `src/systems/combat/` | **Pure maths, no nodes:** the combat clock (how fast the fight runs), the ATB gauge, the move timeline (which phase a real-time move is in), the action decider (what a real-time enemy does next), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
 | `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits), `ActionFighter` (a body that swings and dodges), `LockOn`, `ActionEnemy` (a real-time enemy's body) and `ActionHost` (fits the player out as a fighter, and grants field rewards), `FieldDefeat` (what the player's fall means), `AtbMeter` (the ATB gauge on a field fighter), `FieldCommands` (using a skill or item mid-fight), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
-| `src/ui/combat/` | `CombatHud` (the field readout), `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary) and `BattleHost` (opens the screen when an encounter is requested). |
+| `src/ui/combat/` | `CombatHud` (the field readout), `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary), `BattleHost` (opens the screen when an encounter is requested), `CommandOverlay` (the hybrid's command menu over the running fight) and `CommandHost` (opens it on the command key). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |
 | `tests/unit/*_test.gd` | One test file per system. They build their own made-up content, so they pass with the demo deleted. |
 | `data/` | Demo content: skills, statuses, encounters, the party roster, and the action loadout and enemies in `data/action/`. |

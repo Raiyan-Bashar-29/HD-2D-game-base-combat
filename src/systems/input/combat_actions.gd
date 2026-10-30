@@ -1,6 +1,7 @@
 class_name CombatActions
 extends RefCounted
-## The action-combat inputs (C3.1): attack, dodge, lock on, and cycle the locked target.
+## The action-combat inputs (C3.1): attack, dodge, lock on, cycle the locked target, and open the
+## hybrid's command menu (C4.4).
 ##
 ## IN PLAIN WORDS: upstream's `Actions` autoload defines every other input at boot, and this
 ## fork may not edit it (ADR-0008), so the combat actions live here and `ActionHost` calls
@@ -13,6 +14,11 @@ extends RefCounted
 ## field fighter ignores input while a menu holds the input lock. `combat_input_test.gd` fails
 ## if a later binding anywhere collides with one of these.
 ##
+## THE COMMAND MENU HAS NO STANDARD PAD BUTTON LEFT (C4.4). A, B, X, Y, both shoulders, both
+## stick clicks, both triggers, Back and Start are all someone's by then, so it sits on F and on
+## the pad's extra centre button (`JOY_BUTTON_MISC1`: Share, Capture or the like, depending on
+## the pad). A game wanting it elsewhere rebinds it once the C5.3 seam exists.
+##
 ## NOT YET REBINDABLE. `KeyBindings.rebind` accepts only `Actions.REBINDABLE`, an upstream list;
 ## the seam that lets a game add to it is C5.3.
 ##
@@ -23,7 +29,9 @@ const ATTACK: StringName = &"combat_attack"
 const DODGE: StringName = &"combat_dodge"
 const LOCK_ON: StringName = &"combat_lock_on"
 const LOCK_CYCLE: StringName = &"combat_lock_cycle"
-const ALL: Array[StringName] = [ATTACK, DODGE, LOCK_ON, LOCK_CYCLE]
+## Opens the hybrid's command menu mid-fight (C4.4).
+const COMMAND: StringName = &"combat_command"
+const ALL: Array[StringName] = [ATTACK, DODGE, LOCK_ON, LOCK_CYCLE, COMMAND]
 ## A trigger is an axis from 0 to 1; half-way down counts as pressed.
 const TRIGGER_DEADZONE: float = 0.5
 
@@ -35,6 +43,7 @@ static func install() -> void:
 	_define(DODGE, [_key(KEY_SPACE), _trigger(JOY_AXIS_TRIGGER_RIGHT)])
 	_define(LOCK_ON, [_key(KEY_Q), _trigger(JOY_AXIS_TRIGGER_LEFT)])
 	_define(LOCK_CYCLE, [_key(KEY_R), _pad(JOY_BUTTON_RIGHT_STICK)])
+	_define(COMMAND, [_key(KEY_F), _pad(JOY_BUTTON_MISC1)])
 
 
 static func _define(action: StringName, events: Array[InputEvent]) -> void:

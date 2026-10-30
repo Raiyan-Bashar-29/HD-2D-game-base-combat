@@ -1,7 +1,7 @@
 extends TestCase
 ## The field HUD (C3.9): hidden for a body that is not a fighter; for a fighter, its hp, every
 ## other pool and its statuses; redrawn by events, never polled; and a second line for the
-## locked target, gone when the lock is let go.
+## locked target, gone when the lock is let go; and a fighter's ATB bars (C4.4).
 ##
 ## OWNS: assertions about `CombatHud`.
 ## MUST NOT: name a game's fighters or statuses, or depend on a live player: `subject` is set.
@@ -10,7 +10,7 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(8)
+	plan(9)
 	SaveFixture.activate()
 	Flags.clear_all()
 	var hud := CombatHud.new()
@@ -32,6 +32,7 @@ func run() -> void:
 	sting.id = &"status/fixture_sting"
 	StatusSet.of(hero).apply(sting)
 	equal("a status starting shows it", hud.text.contains("fixture_sting"), true)
+	_shows_atb(hud, hero)
 	var foe := _actor(&"fixture_brute/one", {&"max_hp": 20.0})
 	Combatant.of(foe).kind = &"fixture_brute"
 	Vitals.of(foe).change(&"hp", -8)
@@ -47,6 +48,16 @@ func run() -> void:
 	for actor: Node in _actors:
 		actor.free()
 	Flags.clear_all()
+
+
+## A fighter with an ATB gauge shows it, redrawn when the gauge announces a change.
+func _shows_atb(hud: CombatHud, hero: Node3D) -> void:
+	var meter := AtbMeter.new()
+	hero.add_child(meter)
+	meter.gauge.gain(150.0)
+	Events.atb_changed.emit(&"fixture_hero", 150.0, 1)
+	equal("a fighter with a gauge shows its bars and how full the next is",
+		hud.text.contains(tr(CombatHud.ATB_KEY).format({"bars": 1, "max": 2, "part": 50})), true)
 
 
 func _actor(id: StringName, stats: Dictionary[StringName, float]) -> Node3D:
