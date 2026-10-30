@@ -11,7 +11,7 @@ extends RefCounted
 ## and a test steps it by hand.
 ##
 ## OWNS: the fill and the arithmetic of bars.
-## MUST NOT: decide what a bar buys. The command menu (C4.3) does.
+## MUST NOT: decide what a bar buys. The field command rules (C4.3) and their menu (C4.4) do.
 
 var rules: AtbRules
 ## Points held, from 0 to `capacity()`.

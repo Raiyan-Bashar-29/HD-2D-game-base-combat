@@ -2129,3 +2129,53 @@ menu spends them.
 - One swing that hits two enemies counts as two hits. That is FF7R-like, but a game may want a
   per-swing reward.
 - Enemies have no gauge. That is C4.6.
+
+## 2026-10-30 — C4.3 · Field commands: the logic
+
+**Did.**
+- **The board change:** the old C4.3, the command overlay, was split along the layers:
+  - C4.3, the logic;
+  - C4.4, the screen;
+  - C4.5, the demo.
+
+  The later C4 rows moved down by two (C4.6–C4.10).
+- **New `FieldCommands` (gameplay, static):**
+  - `targets`: who a field skill or item lands on;
+  - `refusal`: why it cannot be used now, as a `Reason`;
+  - `use`: spends the ATB bars, pays the cost or takes the item, and resolves through
+    `SkillUse.apply`.
+- `Skill.atb_cost` and `ActionLoadout.commands`.
+- **Fixed:** `AUTHORING.md` § Action combat named the wrong keys.
+
+**Why.** FF7 Remake's command menu needs three answers about each row: who it hits, whether it is
+usable and why not, and what happens when chosen. Kept apart from the screen, the rules are
+tested with no UI, and an AI ally (C4.8) can use the same rules later.
+
+**Decisions.**
+- **Aiming:** the lock-on wins, else the nearest foe in 8 m. "All" means every foe in reach.
+  Self and ally skills go to the user until a field party exists (C4.7).
+- **The refusal order matches what a player wants to know first:**
+  1. a status forbids it;
+  2. no ATB;
+  3. no item, or not enough mp;
+  4. nobody to aim at.
+- **`refusal` returns an enum, not a localization key.** The first draft returned
+  `BattleMenu`'s keys. `check_layers` failed it: gameplay may not name a `ui` class. The screen
+  maps reasons to words.
+- **A spell that lands counts as a landed hit** for the ATB gauge, as any hit does. Ember on two
+  moths refilled 24 points.
+- **The default cost is one bar,** so every existing skill works in the field unedited.
+
+**Verified.**
+- Suite: `3323 passed, 0 failed`. Boot: `0 warnings, 0 errors`. All seven checkers exit 0.
+- Red first: with `use` stubbed, 3 failed.
+- **A real-game probe:** the Wanderer was given ATB rules and Ember in the lantern hall, locked
+  on, and filled a bar. `FieldCommands.use` hit both moths (23 and 15), mp went from 12 to 9,
+  and the bar was spent.
+
+**Unblocks.** C4.4: the screen only has to draw rows, show reasons and call `use`.
+
+**Gaps.**
+- No screen yet; that is C4.4.
+- Boost is not offered in the field. `use` passes no boost level.
+- Ally targeting is the user alone until C4.7.

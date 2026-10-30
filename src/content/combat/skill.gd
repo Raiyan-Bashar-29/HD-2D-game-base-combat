@@ -57,6 +57,9 @@ enum Scope { ONE, ALL }
 ## +50% a level) and it lands `boost_hits` more times. Zero for both means boosting does nothing.
 @export var boost_power: float = 0.0
 @export var boost_hits: int = 0
+## The ATB bars it costs as a field command in the hybrid formula (C4.3). A turn-based battle
+## ignores it.
+@export var atb_cost: int = 1
 
 
 ## True when the skill brings the fallen back: it is aimed at defeated combatants only.
@@ -81,6 +84,8 @@ func problems() -> PackedStringArray:
 		found.append("%s (%s) has a negative boost" % [resource_path, id])
 	if hits < 1:
 		found.append("%s (%s) has hits below 1" % [resource_path, id])
+	if atb_cost < 0:
+		found.append("%s (%s) has a negative atb_cost" % [resource_path, id])
 	if toggle_status != null:
 		if not is_zero_approx(power) or not statuses.is_empty() or not effects.is_empty():
 			found.append("%s (%s) is a stance and does something else too" % [resource_path, id])

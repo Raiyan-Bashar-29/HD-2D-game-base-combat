@@ -4,7 +4,7 @@ extends Resource
 ##
 ## IN PLAIN WORDS: the gauge has `segments` bars of `segment_size` points each. It fills a
 ## little every second on its own, and faster when the fighter fights well: each hit it lands
-## and each attack it dodges adds points. A command in the hybrid's menu (C4.3) costs whole
+## and each attack it dodges adds points. A command in the hybrid's menu (C4.4) costs whole
 ## bars. Raise `per_second` for a calmer game, raise `on_hit_dealt` for an aggressive one.
 ##
 ## OWNS: the numbers.

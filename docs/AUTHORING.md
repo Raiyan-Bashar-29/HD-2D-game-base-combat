@@ -1368,8 +1368,8 @@ is the lantern hall: the loadout `data/action/wanderer_loadout.tres`, and two Em
 (`data/action/ember_moth.tres` with the brain `data/action/ember_moth_brain.tres`) placed under the
 hall's `Actors`.
 
-**Controls:** attack is K (pad X), dodge is the right trigger, lock on is L (pad left trigger), and
-the next target is `;` (pad R3). `combat_actions.gd` installs them at boot. They cannot be rebound
+**Controls:** attack is K (pad X), dodge is Space (pad right trigger), lock on is Q (pad left
+trigger), and the next target is R (pad R3). `combat_actions.gd` installs them at boot. They cannot be rebound
 in the menu yet: that waits for C5.3.
 
 1. **The player's loadout:** an `ActionLoadout` file, named in `project.godot` by
