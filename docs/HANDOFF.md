@@ -9,9 +9,8 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C2.20, the demo that closes C2b. The courtyard fight now uses
-  magic and special menus, a stance, Boost, a limit gauge, sleep, buffs and debuffs, and wisps
-  that break.
+- **Last finished package:** C3.1, the first row of the action formula: the attack, dodge and
+  lock-on inputs, and the hitbox and hurtbox physics layers.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -23,10 +22,10 @@ between them, written in plain words.
     multi-hit), sleep, stun and silence, resistance, misses, counters, reflect, meters,
     stances, Boost, weakness, Break, a battle menu with categories, and a readout with a
     battle log. `AUTHORING.md` § Skills, statuses and combat depth lists every field.
-- **Next package:** **C3.1**, combat input and layers, the first row of the action formula:
-  attack, dodge and lock-on actions, and the hitbox and hurtbox physics layers.
+- **Next package:** **C3.2**, moves as data and timing as pure code: an `ActionMove` with
+  startup, active and recovery times, a `MoveSet`, and a `MoveTimeline` stepped by `dt`.
 - **Then, in order:**
-  1. **C3, action combat (C3.1–C3.9):** hitboxes, the player's attack chain and dodge, lock-on,
+  1. **The rest of C3, action combat (C3.2–C3.9):** hitboxes, the player's attack chain and dodge, lock-on,
      enemies that chase, and a field HUD.
   2. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
   3. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
@@ -99,6 +98,7 @@ anything to its left and nothing to its right.
 | Folder | What is in it, in plain words |
 |---|---|
 | `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
+| `src/systems/input/combat_actions.gd` | The action-combat inputs (attack, dodge, lock on), installed at boot by `ActionHost` because upstream's `Actions` may not be edited. |
 | `src/systems/combat/` | **Pure maths, no nodes:** the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
 | `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
