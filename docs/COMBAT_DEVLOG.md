@@ -2074,7 +2074,7 @@ clock, the weather and the UI.
   slow still restores it.
 
 **Verified.**
-- Suite: `3285 passed, 0 failed`. Boot: `0 warnings, 0 errors`. All seven checkers exit 0.
+- Suite: `3286 passed, 0 failed`. Boot: `0 warnings, 0 errors`. All seven checkers exit 0.
 - Red first: with `scaled` ignoring the scale, 5 failed.
 - **A real-game probe** froze the lantern-hall fight for 400 frames. The moth stood at the
   same position throughout and nobody was hit. Back at 1, both moths closed in and struck.
