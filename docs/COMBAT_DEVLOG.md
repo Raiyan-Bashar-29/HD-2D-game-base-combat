@@ -1731,7 +1731,7 @@ every roll face the chosen enemy.
   fighter's job, so the hitbox and the dodge both follow it.
 
 **Verified.**
-- Suite: `3208 passed, 0 failed`.
+- Suite: `3209 passed, 0 failed`.
 - Boot: `0 warnings, 0 errors`.
 - All seven checkers exit 0.
 - Red first: with the search stubbed, 11 failed. One stray engine error came first: a method
