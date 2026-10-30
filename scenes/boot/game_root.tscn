@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://src/core/boot/game_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://src/ui/hud/screen_fade.gd" id="2_fade"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://src/ui/combat/battle_host.gd" id="40_battle"]
 [ext_resource type="Script" path="res://src/gameplay/combat/action_host.gd" id="41_action"]
 [ext_resource type="Script" path="res://src/ui/combat/combat_hud.gd" id="42_hud"]
+[ext_resource type="Script" path="res://src/ui/combat/command_host.gd" id="43_command"]
 [ext_resource type="Script" path="res://src/ui/hud/loading_indicator.gd" id="9_load"]
 [ext_resource type="Script" path="res://src/systems/debug/dev_probes.gd" id="10_probes"]
 [ext_resource type="Script" path="res://src/systems/debug/dev_stage.gd" id="11_stage"]
@@ -61,6 +62,9 @@ script = ExtResource("8_keys")
 
 [node name="BattleHost" type="Node" parent="UILayer"]
 script = ExtResource("40_battle")
+
+[node name="CommandHost" type="Node" parent="UILayer"]
+script = ExtResource("43_command")
 
 [node name="UiAccessibility" type="Node" parent="UILayer"]
 script = ExtResource("16_access")

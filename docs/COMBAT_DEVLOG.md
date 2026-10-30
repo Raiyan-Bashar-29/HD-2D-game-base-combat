@@ -2179,3 +2179,56 @@ tested with no UI, and an AI ally (C4.8) can use the same rules later.
 - No screen yet; that is C4.4.
 - Boost is not offered in the field. `use` passes no boost level.
 - Ally targeting is the user alone until C4.7.
+
+## 2026-10-30 — C4.4 · The command overlay: the screen
+
+**Did.**
+- **The `combat_command` action:** F, and the pad's `JOY_BUTTON_MISC1`.
+- **New `CommandOverlay` (ui):** the hybrid's command menu.
+  - It opens over the running field, in the battle menu's categories.
+  - Each row shows its ATB and mp cost. A refused row is greyed out with the reason in words.
+  - Choosing a row calls `FieldCommands.use`, then the menu closes.
+  - The fight slows to `[combat] hybrid/slow` (0.1) while it is open.
+- **New `CommandHost`** under UILayer: the key opens and closes the menu.
+- **The HUD's ATB part:** `ATB 1 / 2  40%`.
+
+**Why.** C4.3 gave the rules; this is what the player touches. With it, the hybrid is playable:
+fight in real time, fill the bars, open the menu, and cast.
+
+**Decisions.**
+- **F and `MISC1`.** No standard pad button is left: A, B, X, Y, the shoulders, the stick clicks,
+  the triggers, Back and Start are all bound. Rebinding is C5.3.
+- **The screen is a `MenuScreen`.** It gets rows, focus and gamepad navigation for free, as
+  `BattleScreen` does.
+- **Reasons reuse the battle menu's words** (blocked, not enough mp, none left, nothing to aim
+  at). One new phrase covers ATB, so a player reads one sentence for one problem in either kind
+  of fight.
+- **The clock is reset in `_closed`.** Every way out (a choice, cancel, the key again, an area
+  change unwinding the stack) runs through it. `ActionHost` also resets the clock on each area
+  entry, so a freed menu never leaves a room frozen.
+- **The menu redraws only when the bar count changes.** A redraw puts focus back on the first
+  row, so redrawing every frame would make the menu unusable.
+- **A fighter who falls while the menu is up uses nothing;** the choice just closes the menu.
+- **The ATB text lives on `CombatHud.atb_text`** and the menu's top line calls it, so the two
+  never disagree.
+
+**Verified.**
+- Suite: `3337 passed`. The one failure was the version line until these docs were written; after
+  the docs: `3339 passed, 0 failed` (one more from the release-record test). Boot: `0 warnings, 0 errors`. All seven checkers exit 0.
+- **Red first:** with the clock slow and the use stubbed, 2 failed.
+- **Stripped run:** the suite passes (the same docs line aside) and all seven checkers exit 0.
+- **A real-game probe** in the lantern hall, with a temporary Ember (Magic) and Salve on the
+  Wanderer's loadout, and the gauge filled:
+  - F opened `field_command`, and the clock read 0.1;
+  - the rows were `ATB 2 / 2  100%`, `Magic` and `Salve   1 ATB   3 MP`;
+  - Magic opened `Ember   1 ATB   3 MP` and `Back`;
+  - Ember hit both moths (40 to 25 and 27), the menu closed, and the clock read 1.0.
+- **A windowed capture** shows the menu over the dimmed, running hall, and the HUD's ATB part.
+
+**Unblocks.** C4.5: the demo loadout gets the ATB rules and commands, with captures and AUTHORING.
+
+**Gaps.**
+- The demo loadout has no ATB or commands until C4.5, so the key does nothing in the demo yet.
+- Boost is not offered in the field.
+- No target picker: a one-target command goes to the lock-on, else the nearest foe.
+- The pad binding is a non-standard button until rebinding (C5.3).

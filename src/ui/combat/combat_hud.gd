@@ -6,9 +6,10 @@ extends Label
 ##
 ## IN PLAIN WORDS: it shows nothing until the player is a fighter (the loadout fitted them,
 ## C3.4). Then it reads, at the bottom left:
-##     HP 25 / 30   MP 8 / 10   [Poisoned]
+##     HP 25 / 30   MP 8 / 10   ATB 1 / 2  40%   [Poisoned]
 ##     Thorn Wisp   HP 12 / 20
-## the second line only while something is locked on. It redraws whenever a pool moves, a
+## the ATB part only for a fighter with an ATB gauge (C4.4): whole bars ready out of all of them,
+## then how full the next bar is. The second line only while something is locked on. It redraws whenever a pool moves, a
 ## status starts or ends, or the lock changes, and never polls.
 ##
 ## OWNS: the rendering of the player's and the locked target's combat state.
@@ -16,6 +17,7 @@ extends Label
 
 const HP_KEY: String = "ui.combat_hud.hp"
 const TARGET_KEY: String = "ui.combat_hud.target"
+const ATB_KEY: String = "ui.combat_hud.atb"
 const POOL_KEY: String = "ui.battle.pool"
 const STATUSES_KEY: String = "ui.battle.statuses"
 const VARIATION: StringName = &"HudText"
@@ -39,6 +41,7 @@ func _ready() -> void:
 	Events.status_applied.connect(func(_w: StringName, _s: StringName, _n: int) -> void: refresh())
 	Events.status_expired.connect(func(_w: StringName, _s: StringName) -> void: refresh())
 	Events.lock_on_changed.connect(_on_lock_on_changed)
+	Events.atb_changed.connect(func(_w: StringName, _v: float, _s: int) -> void: refresh())
 	# The fighter's parts are fitted a frame after the player spawns (C3.4), so look then.
 	Events.player_spawned.connect(func(_p: Node3D) -> void: refresh.call_deferred())
 	Events.player_despawned.connect(refresh)
@@ -70,6 +73,9 @@ func _fighter_line(fighter: Combatant) -> String:
 		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
 			parts.append(tr(POOL_KEY).format({"pool": String(pool).to_upper(),
 				"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	var meter: AtbMeter = AtbMeter.of(fighter.get_parent())
+	if meter != null:
+		parts.append(atb_text(meter.gauge))
 	var names: Array[String] = []
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
 	for effect: StatusEffect in statuses.held() if statuses != null else []:
@@ -77,6 +83,15 @@ func _fighter_line(fighter: Combatant) -> String:
 	if not names.is_empty():
 		parts.append(tr(STATUSES_KEY).format({"list": ", ".join(names)}))
 	return "   ".join(parts)
+
+
+## The ATB readout: whole bars ready out of all of them, and how full the next one is (100 when
+## every bar is full). The command menu's top line is the same text.
+static func atb_text(gauge: AtbGauge) -> String:
+	var bars: int = gauge.full_segments()
+	var size: float = gauge.rules.segment_size
+	var part: int = 100 if bars >= gauge.rules.segments else floori((gauge.value - bars * size) / size * 100.0)
+	return TranslationServer.translate(ATB_KEY).format({"bars": bars, "max": gauge.rules.segments, "part": part})
 
 
 ## The locked target's combatant, found among the hurtboxes; null when nothing is locked.

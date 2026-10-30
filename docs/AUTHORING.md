@@ -1369,7 +1369,9 @@ is the lantern hall: the loadout `data/action/wanderer_loadout.tres`, and two Em
 hall's `Actors`.
 
 **Controls:** attack is K (pad X), dodge is Space (pad right trigger), lock on is Q (pad left
-trigger), and the next target is R (pad R3). `combat_actions.gd` installs them at boot. They cannot be rebound
+trigger), the next target is R (pad R3), and the hybrid's command menu is F (the pad's extra
+centre button, `MISC1`; it opens only for a loadout with `atb` rules and `commands`).
+`combat_actions.gd` installs them at boot. They cannot be rebound
 in the menu yet: that waits for C5.3.
 
 1. **The player's loadout:** an `ActionLoadout` file, named in `project.godot` by
