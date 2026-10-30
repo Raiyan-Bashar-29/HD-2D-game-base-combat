@@ -126,21 +126,7 @@ func act(delta: float) -> ActionDecider.State:
 
 ## The nearest standing hurtbox this enemy may attack, or null.
 func nearest_hostile() -> Hurtbox:
-	var me: Combatant = Combatant.of(self)
-	if me == null or not is_inside_tree():
-		return null
-	var best: Hurtbox = null
-	var best_distance: float = INF
-	for node: Node in get_tree().get_nodes_in_group(Hurtbox.GROUP):
-		var hurtbox: Hurtbox = node as Hurtbox
-		if hurtbox == null or not me.can_target(hurtbox.fighter(), FactionTable.Target.ENEMY):
-			continue
-		var vitals: Vitals = Vitals.of(hurtbox.get_parent())
-		var distance: float = global_position.distance_to(hurtbox.global_position)
-		if (vitals == null or not vitals.is_defeated()) and distance < best_distance:
-			best = hurtbox
-			best_distance = distance
-	return best
+	return Hurtbox.nearest_hostile(self)
 
 
 func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:

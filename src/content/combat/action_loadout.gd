@@ -29,6 +29,11 @@ extends Resource
 ## Typed `Resource`, not `ActionLoadout`: a script whose exported array names its own class
 ## keeps itself alive and leaks at exit (seen at boot). `problems()` reports a non-loadout.
 @export var companions: Array[Resource] = []
+## How this member fights while walking as a party follower (C4.9): when it notices a foe, how
+## far it strays from its place in the line, and which moves it opens with. A move that is the
+## first of `moves.attack_chain` plays the whole chain. Null means it never swings: it keeps its
+## place, and only its `BattleBrain` acts (C4.8). Unused while the player controls this member.
+@export var field_brain: ActionBrain
 
 
 func problems(context: String) -> PackedStringArray:
@@ -51,6 +56,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append_array(command.problems("%s command %d" % [context, i]))
 		if command.kind != BattleCommand.Kind.SKILL and command.kind != BattleCommand.Kind.ITEM:
 			found.append("%s command %d is not a SKILL or an ITEM, which the field cannot use" % [context, i])
+	if field_brain != null:
+		found.append_array(field_brain.problems("%s field_brain" % context))
 	for i: int in companions.size():
 		var mate: ActionLoadout = companions[i] as ActionLoadout
 		if mate == null or mate == self:

@@ -2403,3 +2403,51 @@ timeline on a second body.
 - The player's own field menu still aims a one-target ally skill at the user; only a thinking
   ally picks among allies.
 - A follower's brain ignores the player's lock-on; FIRST means the nearest foe.
+
+## 2026-10-30 — C4.9 · Allies fight in the field
+
+**Did.**
+- New `ActionLoadout.field_brain`: an `ActionBrain`, the same data a real-time enemy reads, for
+  how a member fights while it is a follower. Its problems are the loadout's.
+- `PartyFollower` runs an `ActionDecider` on it every frame. Its **home is its place in the
+  line**, so the leash is measured from there and RETURN walks back to the leader wherever the
+  leader went.
+  - CHASE walks in to `attack_range`.
+  - ATTACK plays the chosen move. A move that is the member's `attack_chain[0]` presses the whole
+    chain, swing after swing, as the player would. Any other move plays alone.
+  - RETREAT backs off, and IDLE, WANDER and RETURN keep its place.
+- The follower has its own `Hitbox` and move clock. The hitbox stays with the body and strikes as
+  whoever the member is now, so a party switch needs no extra wiring. A new brain (after a
+  switch) means a fresh decider and no old swing.
+- A knockback cancels its swing and pushes it for `stun_time`. A stagger or a fall drops the
+  swing.
+- `ActionEnemy.nearest_hostile` moved into `Hurtbox.nearest_hostile(body)`, shared by enemies and
+  followers.
+- New `tests/unit/ally_fight_test.gd` (13). Combat `0.44.0`.
+
+**Why.** It is the second half of the old "allies think in real time" row: C4.8 gave followers
+commands, and this gives them a body that fights. It reuses the enemies' decider unchanged, so
+one set of rules (aggro, give-up, leash, cooldown, retreat) drives both sides.
+
+**Verified.**
+- **Red first:** with `_fight` stubbed, 7 of the 13 new assertions failed.
+- **Suite:** `3409 passed, 0 failed`. **Boot:** `0 warnings, 0 errors`. **Checkers:** all seven
+  exit 0, after `_fight`'s hitbox steps moved into `_aim_hitbox` for the 40-line budget.
+- **The stripped run:** `3312 passed, 0 failed, 25 skipped`; boot clean; the checkers pass.
+- **A real-game probe** in the lantern hall. The Keeper got a temporary field brain (its staff
+  opener, aggro 8 m):
+  - it chased both moths, swung its two-hit chain (8 to 17 a hit), and took their hits;
+  - it was staggered once;
+  - it felled both, giving two field victories;
+  - then it went IDLE and walked back into line.
+
+  No windowed capture: nothing new is drawn (the follower uses the walking sprite it had).
+
+**Unblocks.** C4.10 (variants), and C4.11's hybrid demo, which can now give the Keeper a field
+brain.
+
+**Gaps.**
+- The demo Keeper still has neither brain; C4.11 gives it both.
+- A follower targets the nearest foe and ignores the player's lock-on.
+- A follower has no dodge, and no swing animation beyond walking (art is deferred).
+- `wander_radius` on a field brain is ignored: a follower with no fight keeps its place.
