@@ -2086,3 +2086,46 @@ clock, the weather and the UI.
   would be at full speed. Nothing walks at 0, and the menu holds the player, so this is
   harmless now. C4.3 should confirm it with the menu open.
 - No HUD sign shows that the fight is slowed. The hybrid menu will be on screen when it is.
+
+## 2026-10-30 — C4.2 · The ATB gauge
+
+**Did.**
+- **`AtbRules` (content):** how many bars the gauge has and how big each is, plus points per
+  second, per hit landed and per attack dodged.
+- **`AtbGauge` (systems, pure):**
+  - it fills and gains, capped between empty and full;
+  - it counts whole bars;
+  - it spends whole bars and keeps the part-filled one.
+- **`AtbMeter` (gameplay):** the gauge on a field fighter.
+  - It fills on `CombatClock` time, and gains on `combatant_damaged` and `attack_dodged`.
+  - It emits the new `Events.atb_changed`.
+  - `ActionHost.equip` fits it when `ActionLoadout.atb` is set.
+
+**Why.** In the hybrid, a command costs ATB bars that fill faster when you fight well. C4.3's
+menu spends them.
+
+**Decisions.**
+- **Whole bars, with the partial kept.** FF7 Remake's rule. A command costs 1 or 2 bars, never
+  a fraction.
+- **The meter listens to events that already exist.** No new hook in `Hurtbox` or `Combatant`:
+  a landed hit already announces `combatant_damaged` with its attacker, and a dodge announces
+  `attack_dodged`.
+- **It announces only a whole-point or whole-bar change,** so a HUD redraws a few times a
+  second, not every frame.
+- **A null `atb` means no gauge,** so a pure action game carries none of this.
+
+**Verified.**
+- Suite: `3306 passed, 0 failed`. Boot: `0 warnings, 0 errors`. All seven checkers exit 0.
+- Red first: with `gain` stubbed, 14 failed.
+- **A real-game probe:** default rules on the Wanderer in the lantern hall. The gauge rose about
+  4 a second, gained 10 for a dodged lunge and 12 for each of four hits, and reached 81 points
+  in six seconds.
+
+**Unblocks.** C4.3, the command overlay that spends the bars.
+
+**Gaps.**
+- No HUD line yet, and the demo loadout has no rules. Both arrive with C4.3's menu.
+- No guard move exists, so there is no guard fill. A row when guarding exists.
+- One swing that hits two enemies counts as two hits. That is FF7R-like, but a game may want a
+  per-swing reward.
+- Enemies have no gauge. That is C4.6.

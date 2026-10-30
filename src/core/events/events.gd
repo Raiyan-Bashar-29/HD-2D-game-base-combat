@@ -314,6 +314,9 @@ signal lock_on_changed(who: StringName, target: StringName)
 ## A real-time enemy `who` fell, carrying `experience` and `loot` for whoever beat it. Emitted by
 ## `ActionEnemy` (C3.8), once per defeat; `ActionHost` grants it through `Rewards.give`.
 signal field_enemy_defeated(who: StringName, experience: int, loot: Array[StringName])
+## `who`'s ATB gauge now holds `value` points, `segments` whole bars of them. Emitted by
+## `AtbMeter` (C4.2) when a whole point or a whole bar changes, not every frame.
+signal atb_changed(who: StringName, value: float, segments: int)
 ## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
 signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,

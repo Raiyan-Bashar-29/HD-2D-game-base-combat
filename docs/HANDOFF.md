@@ -9,9 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C4.1, `CombatClock`: the fight's own time scale, which the
-  hybrid's menu will slow or stop. C3.10 before it closed C3 with a playable action demo: walk
-  into the lantern hall, where two Ember Moths come for you.
+- **Last finished package:** C4.2, the ATB gauge: bars that fill over fight time and faster on
+  hits landed and attacks dodged, with the rules as data. C4.1 before it gave the fight its own
+  time scale, `CombatClock`.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -26,10 +26,11 @@ between them, written in plain words.
   - C3, the action formula (complete): real-time moves as data, hitboxes, the player's
     chain and roll, lock-on, enemies that chase and lunge, field defeat and rewards, and a HUD.
     `AUTHORING.md` § Action combat lists every field.
-- **Next package:** **C4.2**, the ATB gauge: segments that fill over time and on hits, guards
-  and dodges, with the rules as data.
+- **Next package:** **C4.3**, the command overlay: a menu that opens over the running field,
+  slows the fight, and spends ATB bars on skills and items. It also adds the HUD's ATB line and
+  gives the demo loadout its ATB rules.
 - **Then, in order:**
-  1. **The rest of C4, the FF7-Remake-style hybrid (C4.3–C4.8).**
+  1. **The rest of C4, the FF7-Remake-style hybrid (C4.4–C4.8).**
   2. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
 
   Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,
@@ -99,10 +100,10 @@ anything to its left and nothing to its right.
 
 | Folder | What is in it, in plain words |
 |---|---|
-| `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, a real-time move, move set and loadout, an enemy's action brain, a defeat rule, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
+| `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, a real-time move, move set and loadout, the ATB rules, an enemy's action brain, a defeat rule, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
 | `src/systems/input/combat_actions.gd` | The action-combat inputs (attack, dodge, lock on), installed at boot by `ActionHost` because upstream's `Actions` may not be edited. |
-| `src/systems/combat/` | **Pure maths, no nodes:** the combat clock (how fast the fight runs), the move timeline (which phase a real-time move is in), the action decider (what a real-time enemy does next), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
-| `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits), `ActionFighter` (a body that swings and dodges), `LockOn`, `ActionEnemy` (a real-time enemy's body) and `ActionHost` (fits the player out as a fighter, and grants field rewards), `FieldDefeat` (what the player's fall means), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
+| `src/systems/combat/` | **Pure maths, no nodes:** the combat clock (how fast the fight runs), the ATB gauge, the move timeline (which phase a real-time move is in), the action decider (what a real-time enemy does next), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
+| `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits), `ActionFighter` (a body that swings and dodges), `LockOn`, `ActionEnemy` (a real-time enemy's body) and `ActionHost` (fits the player out as a fighter, and grants field rewards), `FieldDefeat` (what the player's fall means), `AtbMeter` (the ATB gauge on a field fighter), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
 | `src/ui/combat/` | `CombatHud` (the field readout), `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary) and `BattleHost` (opens the screen when an encounter is requested). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |
