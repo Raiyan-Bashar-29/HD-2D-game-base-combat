@@ -74,7 +74,7 @@ base/version="5.16.4"
 ; THE COMBAT FORK'S OWN RELEASE, beside [template] base/version, which is the base this fork has
 ; merged up to and is upstream's to bump. This one is bumped by combat packages, under the same
 ; major / minor / patch promise. Read by src/core/util/combat_version.gd; ADR-0008.
-core/version="0.33.0"
+core/version="0.34.0"
 ; The PartyRoster BattleHost builds the party from. A game names its own; a stripped template has
 ; none, and then no battle starts.
 party/roster="res://data/party/roster.tres"

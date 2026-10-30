@@ -9,10 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C3.8, defeat, rewards and respawn: a field kill grants
-  experience and loot, a fallen enemy is removed and comes back on re-entry, and a fallen
-  player gets up by the loadout's `DefeatRule` (in place, at the area entry, or from the last
-  save). C3.7 before it gave enemies a body.
+- **Last finished package:** C3.9, the field HUD: the player's hp, pools and statuses, and the
+  locked target's name and hp, at the bottom left, redrawn by events. C3.8 before it made
+  defeat, rewards and respawn work.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -24,10 +23,11 @@ between them, written in plain words.
     multi-hit), sleep, stun and silence, resistance, misses, counters, reflect, meters,
     stances, Boost, weakness, Break, a battle menu with categories, and a readout with a
     battle log. `AUTHORING.md` § Skills, statuses and combat depth lists every field.
-- **Next package:** **C3.9**, the field HUD: a `CombatHud` under UILayer showing the player's
-  pools and statuses and the locked target's hp, hidden when there is no fighter.
+- **Next package:** **C3.10**, the demo that closes C3: a loadout for the field character,
+  action enemies in the demo area, captures of a swing, a hit, a dodge and lock-on, the
+  stripped run, and `AUTHORING.md` § Action combat.
 - **Then, in order:**
-  1. **The rest of C3, action combat (C3.9–C3.10):** a field HUD, and a playable demo.
+  1. **The rest of C3, action combat (C3.10):** a playable demo, and its authoring guide.
   2. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
   3. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
 
@@ -103,7 +103,7 @@ anything to its left and nothing to its right.
 | `src/systems/combat/` | **Pure maths, no nodes:** the move timeline (which phase a real-time move is in), the action decider (what a real-time enemy does next), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
 | `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits), `ActionFighter` (a body that swings and dodges), `LockOn`, `ActionEnemy` (a real-time enemy's body) and `ActionHost` (fits the player out as a fighter, and grants field rewards), `FieldDefeat` (what the player's fall means), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
-| `src/ui/combat/` | `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary) and `BattleHost` (opens the screen when an encounter is requested). |
+| `src/ui/combat/` | `CombatHud` (the field readout), `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary) and `BattleHost` (opens the screen when an encounter is requested). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |
 | `tests/unit/*_test.gd` | One test file per system. They build their own made-up content, so they pass with the demo deleted. |
 | `data/` | Demo content: skills, statuses, encounters and the party roster. |
