@@ -9,10 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C3.3, the hitbox and hurtbox: a swing's area that strikes each
-  fighter once per swing, and a fighter's area that refuses allies, dodges in i-frames, and
-  lands hits, skills, weakness chips, poise and knockback. C3.2 before it made moves data and
-  their timing a pure clock.
+- **Last finished package:** C3.4, the player fights: set `[combat] action/loadout` to an
+  `ActionLoadout` and the player swings a chain, dodges with i-frames, is knocked back and
+  stunned, and ticks statuses in seconds. C3.3 before it added the hitbox and hurtbox.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -24,12 +23,11 @@ between them, written in plain words.
     multi-hit), sleep, stun and silence, resistance, misses, counters, reflect, meters,
     stances, Boost, weakness, Break, a battle menu with categories, and a readout with a
     battle log. `AUTHORING.md` § Skills, statuses and combat depth lists every field.
-- **Next package:** **C3.4**, the player fights: `ActionHost` fits the player with `Vitals`,
-  `StatusSet`, `Combatant`, `Hurtbox`, a `Hitbox` and an `ActionFighter` from an `ActionLoadout`
-  (a `CombatantDef` plus a `MoveSet`); the fighter reads `CombatActions`, runs a
-  `MoveTimeline`, and moves the body for a dodge and a knockback.
+- **Next package:** **C3.5**, lock-on: `LockOn` picks the nearest hostile hurtbox in range and
+  in front, cycles targets, drops on range or defeat, turns the fighter's `facing` to it, and
+  announces `Events.lock_on_changed`.
 - **Then, in order:**
-  1. **The rest of C3, action combat (C3.4–C3.9):** the player's attack chain and dodge, lock-on,
+  1. **The rest of C3, action combat (C3.5–C3.9):** lock-on,
      enemies that chase, and a field HUD.
   2. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
   3. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
@@ -101,10 +99,10 @@ anything to its left and nothing to its right.
 
 | Folder | What is in it, in plain words |
 |---|---|
-| `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, a real-time move and move set, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
+| `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, a real-time move, move set and loadout, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
 | `src/systems/input/combat_actions.gd` | The action-combat inputs (attack, dodge, lock on), installed at boot by `ActionHost` because upstream's `Actions` may not be edited. |
 | `src/systems/combat/` | **Pure maths, no nodes:** the move timeline (which phase a real-time move is in), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
-| `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
+| `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits), `ActionFighter` (a body that swings and dodges) and `ActionHost` (fits the player with one), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
 | `src/ui/combat/` | `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary) and `BattleHost` (opens the screen when an encounter is requested). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |
