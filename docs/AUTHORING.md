@@ -1483,6 +1483,26 @@ the first menu.
 then press F. The fight crawls. Choose Magic, then Ember: both moths burn, 3 mp and one bar are
 spent, and the fight runs at full speed again. Salve heals you the same way.
 
+### A party in the field (C4.7)
+
+1. **Who comes along:** list each member's own `ActionLoadout` in the lead loadout's
+   `companions`. Each is a whole loadout (fighter, moves, `atb`, `commands`), because the player
+   can take control of it. Once `Party.arrange` has set a line-up, only the active members come;
+   before that, all of them.
+2. **Following:** each member is a `PartyFollower` (`scenes/objects/party_follower.tscn`, which
+   you may restyle) that walks `spacing` metres behind the leader for each place in the line, at
+   `speed`, and is set down on the leader's feet when more than `catch_up` metres away. It can be
+   hit. It does not attack until C4.8.
+3. **Switching:** C (pad `PADDLE1`) hands the player's body to the next standing member. Their
+   hp, statuses, gauge, moves and commands come with them, the two swap places, and the one
+   handed over goes to the back of the line. A fallen member is passed over, and the key does
+   nothing mid-swing or while a menu is open.
+4. **Rewards:** a field kill gives its experience to every standing member.
+
+**Seeing it:** the Keeper (`data/action/keeper_loadout.tres`) follows the Wanderer into the
+lantern hall. Press C and you are the Keeper, with a staff, Salve and Bulwark on F; press it
+again to take the Wanderer back.
+
 ## Read next
 
 [`ART_CONTRACT.md`](ART_CONTRACT.md) — what art has to satisfy to drop in ·

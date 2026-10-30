@@ -28,6 +28,8 @@ extends Node
 
 const LOCK: StringName = &"action"
 
+## Who this fighter is, as the loadout that fitted them. A party switch changes it (C4.7).
+var loadout: ActionLoadout
 ## What this fighter can do. Null means it cannot act, only be hit.
 var moves: MoveSet
 var timeline: MoveTimeline = MoveTimeline.new()
@@ -59,6 +61,11 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	# The switch key hands the body to the next party member (C4.7), but not mid-swing, while
+	# knocked back, or while anything else holds the body (a menu, dialogue).
+	if Input.is_action_just_pressed(CombatActions.SWITCH) and not timeline.busy() and not stunned() \
+			and not _held_by_others() and _body != null:
+		FieldParty.switch(_body)
 	drive(delta, Input.is_action_just_pressed(CombatActions.ATTACK),
 		Input.is_action_just_pressed(CombatActions.DODGE))
 

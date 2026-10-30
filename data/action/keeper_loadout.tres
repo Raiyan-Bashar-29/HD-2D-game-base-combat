@@ -1,0 +1,85 @@
+[gd_resource type="Resource" script_class="ActionLoadout" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="1_cmd"]
+[ext_resource type="Script" path="res://src/content/combat/level_curve.gd" id="2_curve"]
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="3_def"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="4_move"]
+[ext_resource type="Script" path="res://src/content/combat/move_set.gd" id="5_set"]
+[ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="6_loadout"]
+[ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="7_atb"]
+[ext_resource type="Resource" path="res://data/skills/salve.tres" id="8_salve"]
+[ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="9_bulwark"]
+
+[sub_resource type="Resource" id="curve"]
+script = ExtResource("2_curve")
+growth = Dictionary[StringName, float]({
+&"attack": 2.0,
+&"max_hp": 6.0
+})
+
+[sub_resource type="Resource" id="keeper"]
+script = ExtResource("3_def")
+combatant_id = &"keeper_ally"
+name_key = "combat.member.keeper.name"
+faction = &"player"
+base_stats = Dictionary[StringName, float]({
+&"attack": 6.0,
+&"defence": 16.0,
+&"max_hp": 38.0,
+&"max_mp": 14.0
+})
+level_curve = SubResource("curve")
+
+[sub_resource type="Resource" id="staff_one"]
+script = ExtResource("4_move")
+startup = 0.12
+active = 0.14
+recovery = 0.3
+chain_after = 0.05
+power = 3.0
+hitbox_size = Vector3(1.4, 1.2, 1.6)
+hitbox_offset = Vector3(0, 0.8, -1.0)
+
+[sub_resource type="Resource" id="staff_two"]
+script = ExtResource("4_move")
+startup = 0.18
+active = 0.14
+recovery = 0.4
+power = 5.0
+poise = 1
+knockback = 2.5
+hitbox_size = Vector3(1.8, 1.2, 1.8)
+hitbox_offset = Vector3(0, 0.8, -1.1)
+
+[sub_resource type="Resource" id="roll"]
+script = ExtResource("4_move")
+startup = 0.0
+active = 0.3
+recovery = 0.2
+iframes_to = 0.3
+travel_speed = 5.0
+
+[sub_resource type="Resource" id="moves"]
+script = ExtResource("5_set")
+attack_chain = Array[ExtResource("4_move")]([SubResource("staff_one"), SubResource("staff_two")])
+dodge = SubResource("roll")
+
+[sub_resource type="Resource" id="atb"]
+script = ExtResource("7_atb")
+
+[sub_resource type="Resource" id="salve"]
+script = ExtResource("1_cmd")
+kind = 1
+skill = ExtResource("8_salve")
+
+[sub_resource type="Resource" id="bulwark"]
+script = ExtResource("1_cmd")
+kind = 1
+skill = ExtResource("9_bulwark")
+
+[resource]
+script = ExtResource("6_loadout")
+fighter = SubResource("keeper")
+moves = SubResource("moves")
+atb = SubResource("atb")
+commands = Array[ExtResource("1_cmd")]([SubResource("salve"), SubResource("bulwark")])

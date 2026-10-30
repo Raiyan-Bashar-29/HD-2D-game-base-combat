@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="7_atbru"]
 [ext_resource type="Resource" path="res://data/skills/ember.tres" id="8_ember"]
 [ext_resource type="Resource" path="res://data/skills/salve.tres" id="9_salve"]
+[ext_resource type="Resource" path="res://data/action/keeper_loadout.tres" id="10_keeper"]
 
 [sub_resource type="Resource" id="Resource_fovq0"]
 script = ExtResource("2_8bigs")
@@ -95,3 +96,4 @@ fighter = SubResource("Resource_l1p37")
 moves = SubResource("Resource_3d047")
 atb = SubResource("Resource_atb01")
 commands = Array[ExtResource("1_p5tgy")]([SubResource("Resource_cmd01"), SubResource("Resource_cmd02")])
+companions = Array[Resource]([ExtResource("10_keeper")])

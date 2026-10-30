@@ -22,6 +22,13 @@ extends Resource
 ## in a turn-based battle. Attack is a button and the field has no fleeing, so other kinds are
 ## reported as problems.
 @export var commands: Array[BattleCommand] = []
+## The party members who walk with this fighter in the field (C4.7), each a loadout of its own.
+## When `Party`'s line-up has been set, only the active ones come along. Switching hands the
+## player's body to one of them: their moves, gauge and commands come from their own loadout.
+## A companion's own `companions` are ignored: only the lead's list counts.
+## Typed `Resource`, not `ActionLoadout`: a script whose exported array names its own class
+## keeps itself alive and leaks at exit (seen at boot). `problems()` reports a non-loadout.
+@export var companions: Array[Resource] = []
 
 
 func problems(context: String) -> PackedStringArray:
@@ -44,4 +51,10 @@ func problems(context: String) -> PackedStringArray:
 		found.append_array(command.problems("%s command %d" % [context, i]))
 		if command.kind != BattleCommand.Kind.SKILL and command.kind != BattleCommand.Kind.ITEM:
 			found.append("%s command %d is not a SKILL or an ITEM, which the field cannot use" % [context, i])
+	for i: int in companions.size():
+		var mate: ActionLoadout = companions[i] as ActionLoadout
+		if mate == null or mate == self:
+			found.append("%s has an empty, self-naming or non-loadout companion %d" % [context, i])
+		else:
+			found.append_array(mate.problems("%s companion %d" % [context, i]))
 	return found
