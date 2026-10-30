@@ -48,6 +48,9 @@ func _enemy() -> ActionEnemy:
 	made.fighter = def
 	made.brain = brain
 	attach(made)
+	# A fixed formula: the standard one rolls crits and variance, and this test counts hp exactly.
+	Combatant.of(made).formula = DamageFormula.new()
+	Combatant.of(made).formula.stages = [AttackDefenceStage.new()]
 	return made
 
 
