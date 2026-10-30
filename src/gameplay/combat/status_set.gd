@@ -50,9 +50,12 @@ var sheet: StatSheet
 var _held: Dictionary[StringName, Held] = {}
 
 
-func _ready() -> void:
+## Registered on entering the tree, not on ready, so a set that moves to another body (a party
+## switch hands the controlled member's set to the player's body, C4.7) keeps being saved.
+func _enter_tree() -> void:
 	SaveSystem.register(save_id, _collect_save, _apply_save, SAVE_VERSION)
-	Events.game_started.connect(_on_game_started)
+	if not Events.game_started.is_connected(_on_game_started):
+		Events.game_started.connect(_on_game_started)
 
 
 func _exit_tree() -> void:

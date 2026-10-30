@@ -12,7 +12,8 @@ extends Node
 ## IT IS A NODE IN THE COMPOSITION ROOT, NOT AN AUTOLOAD. Adding an autoload needs an ADR
 ## (CLAUDE.md), and nothing here must outlive the game root.
 ##
-## AND IT GRANTS A FIELD KILL'S REWARD (C3.8), when an `ActionEnemy` announces its defeat.
+## AND IT GRANTS A FIELD KILL'S REWARD (C3.8), when an `ActionEnemy` announces its defeat, and
+## brings the loadout's companions along as followers (C4.7, `FieldParty`).
 ##
 ## OWNS: installing the combat actions, fitting the player with a fighter, and field rewards.
 ## MUST NOT: read input itself, or run a fight. `ActionFighter` does that.
@@ -46,13 +47,32 @@ static func configured() -> ActionLoadout:
 	return loaded
 
 
-## Adds what fighting needs under `body`: `Vitals`, `StatusSet`, `Combatant`, a `Hurtbox` with
-## a shape, a `Hitbox`, a `LockOn`, an `ActionFighter`, a `FieldDefeat`, and an `AtbMeter` when the
-## loadout has ATB rules. A body that already has a `Combatant` is left
-## alone and gets nothing, so equipping twice is harmless. Returns the fighter, or null.
+## Adds what fighting needs under `body`: who the fighter is (`fit_identity`), then a `Hitbox`, a
+## `LockOn`, an `ActionFighter` holding the loadout, and a `FieldDefeat`. A body that already has
+## a `Combatant` is left alone and gets nothing, so equipping twice is harmless. Returns the
+## fighter, or null.
 static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	if body == null or loadout == null or loadout.fighter == null or Combatant.of(body) != null:
 		return null
+	fit_identity(body, loadout)
+	body.add_child(Hitbox.new())
+	body.add_child(LockOn.new())
+	var fighter := ActionFighter.new()
+	fighter.loadout = loadout
+	fighter.moves = loadout.moves
+	body.add_child(fighter)
+	var defeat := FieldDefeat.new()
+	if loadout.defeat_rule != null:
+		defeat.rule = loadout.defeat_rule
+	body.add_child(defeat)
+	return fighter
+
+
+## Adds who `loadout`'s fighter is under `body`: `Vitals`, `StatusSet`, `Combatant`, an `AtbMeter`
+## when the loadout has ATB rules, and a `Hurtbox` with a shape. The player's body gets this from
+## `equip`, and a party follower's from itself (C4.7). Every node but the hurtbox is the member
+## and moves with them on a party switch (`FieldParty`). Returns the combatant.
+static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 	var def: CombatantDef = loadout.fighter
 	body.add_child(Vitals.new())
 	body.add_child(StatusSet.new())
@@ -66,6 +86,11 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	# The field counts in seconds, so a break here is a stagger (C4.6).
 	combatant.real_time = true
 	body.add_child(combatant)
+	# The hybrid's ATB gauge (C4.2), only when the loadout asks for one.
+	if loadout.atb != null:
+		var meter := AtbMeter.new()
+		meter.gauge = AtbGauge.new(loadout.atb)
+		body.add_child(meter)
 	var hurtbox := Hurtbox.new()
 	var shape := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
@@ -76,30 +101,20 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	shape.position = Vector3(0.0, 0.8, 0.0)
 	hurtbox.add_child(shape)
 	body.add_child(hurtbox)
-	body.add_child(Hitbox.new())
-	body.add_child(LockOn.new())
-	var fighter := ActionFighter.new()
-	fighter.moves = loadout.moves
-	body.add_child(fighter)
-	var defeat := FieldDefeat.new()
-	if loadout.defeat_rule != null:
-		defeat.rule = loadout.defeat_rule
-	body.add_child(defeat)
-	# The hybrid's ATB gauge (C4.2), only when the loadout asks for one.
-	if loadout.atb != null:
-		var meter := AtbMeter.new()
-		meter.gauge = AtbGauge.new(loadout.atb)
-		body.add_child(meter)
-	return fighter
+	return combatant
 
 
 ## A field kill's reward for `player` (C3.8): its experience to the loadout's fighter, unless the
-## player is down, and its loot into the player's `Inventory`.
+## player is down, and to every standing follower (C4.7); its loot into the player's `Inventory`.
 static func reward(experience: int, loot: Array[StringName], player: Node, loadout: ActionLoadout) -> Rewards:
 	var members: Array[CombatantDef] = []
 	var vitals: Vitals = Vitals.of(player) if player != null else null
 	if loadout != null and loadout.fighter != null and vitals != null and not vitals.is_defeated():
 		members.append(loadout.fighter)
+	for follower: PartyFollower in FieldParty.followers(player as Node3D):
+		var theirs: Vitals = Vitals.of(follower)
+		if follower.loadout != null and theirs != null and not theirs.is_defeated():
+			members.append(follower.loadout.fighter)
 	return Rewards.give(experience, loot, members, Inventory.of(player) if player != null else null)
 
 
@@ -112,10 +127,13 @@ func _on_player_spawned(player: Node3D) -> void:
 
 
 func _on_field_enemy_defeated(_who: StringName, experience: int, loot: Array[StringName]) -> void:
-	var given: Rewards = reward(experience, loot, Director.player, configured())
+	# Whoever is controlled now, which a party switch changes (C4.7).
+	var lead: ActionLoadout = FieldParty.lead(Director.player)
+	var given: Rewards = reward(experience, loot, Director.player, lead if lead != null else configured())
 	Log.info("combat", "Field victory: %d experience, %d item(s)" % [given.experience, given.items.size()])
 
 
 func _equip_later(player: Node3D, loadout: ActionLoadout) -> void:
 	if is_instance_valid(player) and equip(player, loadout) != null:
-		Log.info("combat", "Player fitted for field combat")
+		var party: Array[PartyFollower] = FieldParty.spawn(player, loadout)
+		Log.info("combat", "Player fitted for field combat, with %d follower(s)" % party.size())

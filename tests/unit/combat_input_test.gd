@@ -8,7 +8,7 @@ extends TestCase
 ## MUST NOT: rebind anything the player chose; it only reads the InputMap after installing.
 
 func run() -> void:
-	plan(14)
+	plan(16)
 	CombatActions.install()
 	_the_actions()
 	_the_layers()
@@ -24,6 +24,8 @@ func _the_actions() -> void:
 	equal("dodge is on the right trigger", _has_axis(CombatActions.DODGE, JOY_AXIS_TRIGGER_RIGHT), true)
 	equal("the command menu is on F", _has_key(CombatActions.COMMAND, KEY_F), true)
 	equal("and on the pad's extra centre button", _has_pad(CombatActions.COMMAND, JOY_BUTTON_MISC1), true)
+	equal("the party switch is on C (C4.7)", _has_key(CombatActions.SWITCH, KEY_C), true)
+	equal("and on the pad's first paddle", _has_pad(CombatActions.SWITCH, JOY_BUTTON_PADDLE1), true)
 	equal("no combat key or button is already another action's", _clashes(), [])
 	var before: int = InputMap.action_get_events(CombatActions.ATTACK).size()
 	CombatActions.install()

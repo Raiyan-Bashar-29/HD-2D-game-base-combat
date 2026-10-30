@@ -14,8 +14,8 @@ extends Node
 ## OWNS: turning the command key into an open or closed command menu.
 ## MUST NOT: decide what the menu offers or does, or open over another screen.
 
-## The loadout whose commands the menu offers. Null means the one `project.godot` names, looked
-## up on the first press; a test sets its own.
+## The loadout whose commands the menu offers. Null means the controlled member's; a test sets
+## its own.
 var loadout: ActionLoadout
 
 
@@ -40,7 +40,7 @@ func toggle(stack: UiRoot, player: Node) -> bool:
 		return stack.close_top()
 	if not stack.is_gameplay_input_allowed() or not can_open(player):
 		return false
-	return stack.open(CommandOverlay.for_fighter(Combatant.of(player), _loadout().commands))
+	return stack.open(CommandOverlay.for_fighter(Combatant.of(player), _loadout(player).commands))
 
 
 ## Whether `player` may open the menu now: a standing fighter with a gauge and something to use.
@@ -49,12 +49,15 @@ func can_open(player: Node) -> bool:
 		return false
 	var fighter: Combatant = Combatant.of(player)
 	var vitals: Vitals = Vitals.of(player)
-	var offered: ActionLoadout = _loadout()
+	var offered: ActionLoadout = _loadout(player)
 	return fighter != null and vitals != null and not vitals.is_defeated() \
 			and AtbMeter.of(player) != null and offered != null and not offered.commands.is_empty()
 
 
-func _loadout() -> ActionLoadout:
-	if loadout == null:
-		loadout = ActionHost.configured()
-	return loadout
+## The set loadout, else the controlled member's (a party switch changes it, C4.7), else the
+## one `project.godot` names.
+func _loadout(player: Node) -> ActionLoadout:
+	if loadout != null:
+		return loadout
+	var lead: ActionLoadout = FieldParty.lead(player)
+	return lead if lead != null else ActionHost.configured()

@@ -2308,3 +2308,54 @@ offered in the field.
 - Moths have no stagger-specific animation.
 - A lock-on does not re-acquire a target behind the player (it is a forward cone, by design in
   C3.5).
+
+## 2026-10-30 — C4.7 · A party in the field
+
+**Did.**
+- `ActionLoadout.companions`: the loadouts of the members who walk with the lead. It is typed
+  `Array[Resource]`, because an exported array naming its own class kept the script alive and
+  leaked at exit (boot showed it). `problems()` reports an empty, self-naming or non-loadout one.
+- New `FieldParty` (static):
+  - `members` keeps the companions `Party.active` allows;
+  - `spawn` puts a `PartyFollower` on the leader's spot for each;
+  - `switch` hands the player's body to the first standing follower. It moves the four nodes
+    that are a member (`Vitals`, `StatusSet`, `Combatant`, `AtbMeter`) between the two bodies,
+    swaps their places, gives the fighter the new loadout and moves, re-aims the hitbox, drops
+    the lock (which also redraws the HUD), and sends the one handed over to the back of the line.
+- New `PartyFollower` and its prefab. It ticks statuses and stagger, walks to its place behind
+  the leader, stands still when fallen, staggered or stopped, and is set down on the leader's
+  feet when more than 12 m away in 3D.
+- `ActionHost`: `fit_identity` split out of `equip` and shared with followers; followers spawned
+  after the player is fitted; a field kill rewards every standing member.
+- `ActionFighter.loadout`, and the `combat_switch` action (C, pad `PADDLE1`), read by the fighter
+  when it is not mid-move, stunned or held by a menu.
+- `CommandHost` offers the controlled member's commands.
+- `StatusSet` registers its save in `_enter_tree`, so a set moved to another body keeps saving.
+- Demo: the Keeper's loadout (`data/action/keeper_loadout.tres`) as the Wanderer's companion.
+- Combat `0.42.0`.
+
+**Why.** The board row: FF7 Remake's party, built so C4.8's allies can drive the same bodies.
+Moving the member's nodes rather than the camera keeps upstream's `PlayerController`, camera and
+`player.tscn` untouched.
+
+**Verified.**
+- **Red first:** with `switch` stubbed, 8 of the new assertions failed.
+- **Suite:** `3379 passed, 0 failed`. Boot: `0 warnings, 0 errors`, one follower fitted.
+- **Checkers:** all seven exit 0.
+- **The stripped run:** `3283 passed, 0 failed, 25 skipped`; the checkers pass.
+- **A real-game probe** in the lantern hall found a real bug. The follower was spawned off the
+  floor and fell for ever, and a flat catch-up distance never noticed. It is now spawned on the
+  leader's spot and caught up in 3D, with an assertion for each. After the fix:
+  - the Keeper trailed the walking Wanderer at about 1.5 m;
+  - a C press switched, and the Wanderer kept his 41 of 46 hp as the follower;
+  - the moths then attacked the Keeper.
+- **A windowed capture** shows the party and the HUD at the Keeper's `HP 38 / 38  MP 14 / 14`.
+
+**Unblocks.** C4.8, followers that fight by `ActionBrain` and spend ATB.
+
+**Gaps.**
+- Followers do not fight yet (C4.8).
+- A heal from the field menu still targets only the user; picking an ally comes with C4.8.
+- The lead falling runs the defeat rule even when a member still stands; FF7R would switch.
+- Sprites stay with the bodies, so a switch does not change the controlled character's look.
+- The ATB gauge of a follower fills on time and hits only.
