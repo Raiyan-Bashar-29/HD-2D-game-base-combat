@@ -40,7 +40,7 @@ static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
 			continue
 		for status: StatusEffect in skill.statuses:
 			if rng.randf() < skill.status_chance:
-				statuses.apply(status)
+				statuses.apply(status, rng)
 
 
 ## One landing of the skill on one target: the plain power first, then each effect in order.

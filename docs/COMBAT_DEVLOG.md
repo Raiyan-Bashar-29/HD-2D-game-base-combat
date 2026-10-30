@@ -1005,3 +1005,57 @@ wrap a skill.
   special way. That is C2.18.
 - No demo skill uses an effect yet. That is C2.19.
 - `AUTHORING.md` gains its skills and statuses section in C2.19, with every field at once.
+
+## 2026-10-30 — C2.14 · Statuses that change behaviour
+
+**Did.**
+- `StatusEffect` gains:
+  - `Block`: SKIP_TURN, NO_SKILLS, NO_ITEMS and NO_FLEE;
+  - `blocks`;
+  - `breaks_on_hit`;
+  - `has_block`.
+
+  `problems()` refuses a turn-skipping status with no duration and no wake-on-hit, which could
+  never end.
+- `StatusSet` gains:
+  - `blocker(block)`, which returns the first held status carrying that block;
+  - `wake()`, which ends every status that breaks on a hit;
+  - resistance inside `apply(effect, rng = null)`. The holder's sheet is read for
+    `resist_<tag>` across the status's tags. The strongest one counts: 1 or more is immune,
+    and a fraction rolls.
+- `Combatant.receive` calls `wake()` when a hit actually lowered the pool.
+- `Battle`:
+  - `allows(command)` refuses SKILL, ITEM or FLEE while a status blocks it, and `act` checks it;
+  - `next_turn` makes a sleeper lose the turn, with a cap on consecutive lost turns.
+- `BattleAi` never picks a blocked command, so a silenced caster falls back to attacking.
+- `SkillUse` hands its seeded rng to the resistance roll, so seeded fights replay exactly.
+- New bus signals: `status_resisted` and `turn_skipped`. Both have emitters, and both are meant
+  for C2.18's battle log.
+- Combat `0.19.0`.
+
+**Decisions.**
+- **A sleep is checked before its tick.** A sleep of duration N therefore costs exactly N turns:
+  the tick on the last lost turn is the one that wears it off. Checking after the tick would
+  make a 1-turn sleep cost nothing.
+- **ATTACK and DEFEND are never blocked**, so a fighter always has something legal to do and the
+  AI's fallback always works.
+- **Consecutive lost turns are capped at 64 times the number of fighters.** A field where
+  everyone sleeps "until hit" ends `next_turn` with null instead of hanging the game.
+- **Resistance is per tag, not per status.** A game gives a boss `resist_ailment = 1`, and it is
+  immune to every ailment at once.
+
+**Verified.**
+- Suite: `3010 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with `blocker` and the resistance stubbed, 10 assertions failed.
+
+**Unblocks.** C2.15, then C2.18, whose menu greys out what `allows` refuses and whose log reads
+the two new signals.
+
+**Gaps.**
+- A sleep is not broken by a status tick (a poison), only by a hit. Most games agree; a game that
+  disagrees can call `wake()` from its own listener.
+- A capped battle (everyone asleep for good) returns null from `next_turn` while the outcome is
+  still ONGOING. The screen shows no menu then. Validation makes this unreachable with sound
+  data.

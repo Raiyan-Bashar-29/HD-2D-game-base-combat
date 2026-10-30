@@ -46,6 +46,9 @@ static func _allowed(battle: Battle, actor: Combatant, entry: BrainEntry) -> boo
 		if ceiling <= 0 or float(vitals.current(entry.below_pool)) >= entry.below_fraction * ceiling:
 			return false
 	var command: BattleCommand = entry.command
+	# A silenced or otherwise blocked command is never picked (C2.14).
+	if not battle.allows(command):
+		return false
 	match command.kind:
 		BattleCommand.Kind.DEFEND:
 			return true

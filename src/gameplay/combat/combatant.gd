@@ -87,5 +87,9 @@ func receive(result: DamageResult, from: StringName) -> int:
 		return 0
 	var before: int = vitals.current(damage_pool)
 	var after: int = vitals.change(damage_pool, -result.total())
+	# A hit that really hurt wakes a sleeper (a status with breaks_on_hit) (C2.14).
+	var statuses: StatusSet = StatusSet.of(get_parent())
+	if statuses != null and after < before:
+		statuses.wake()
 	Events.combatant_damaged.emit(combatant_id, from, result.total(), result.critical)
 	return after - before
