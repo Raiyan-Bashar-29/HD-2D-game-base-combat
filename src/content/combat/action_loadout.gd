@@ -15,6 +15,9 @@ extends Resource
 @export var moves: MoveSet
 ## What happens when the player falls (C3.8). Null means `DefeatRule.Kind.RESPAWN_AT_ENTRY`.
 @export var defeat_rule: DefeatRule
+## How the fighter's ATB gauge fills, for the hybrid formula (C4.2). Null means no gauge: a pure
+## action game has none.
+@export var atb: AtbRules
 
 
 func problems(context: String) -> PackedStringArray:
@@ -27,4 +30,6 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has no moves" % context)
 	else:
 		found.append_array(moves.problems("%s moves" % context))
+	if atb != null:
+		found.append_array(atb.problems("%s atb" % context))
 	return found

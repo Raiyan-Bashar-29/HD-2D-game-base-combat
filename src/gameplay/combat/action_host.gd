@@ -47,7 +47,8 @@ static func configured() -> ActionLoadout:
 
 
 ## Adds what fighting needs under `body`: `Vitals`, `StatusSet`, `Combatant`, a `Hurtbox` with
-## a shape, a `Hitbox`, a `LockOn`, an `ActionFighter` and a `FieldDefeat`. A body that already has a `Combatant` is left
+## a shape, a `Hitbox`, a `LockOn`, an `ActionFighter`, a `FieldDefeat`, and an `AtbMeter` when the
+## loadout has ATB rules. A body that already has a `Combatant` is left
 ## alone and gets nothing, so equipping twice is harmless. Returns the fighter, or null.
 static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	if body == null or loadout == null or loadout.fighter == null or Combatant.of(body) != null:
@@ -82,6 +83,11 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	if loadout.defeat_rule != null:
 		defeat.rule = loadout.defeat_rule
 	body.add_child(defeat)
+	# The hybrid's ATB gauge (C4.2), only when the loadout asks for one.
+	if loadout.atb != null:
+		var meter := AtbMeter.new()
+		meter.gauge = AtbGauge.new(loadout.atb)
+		body.add_child(meter)
 	return fighter
 
 
