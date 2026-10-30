@@ -9,8 +9,8 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C2.15, hit or miss: accuracy against evasion, sure-hit skills,
-  counters and reflect.
+- **Last finished package:** C2.16, meters: pools that regenerate each turn or fill when hit
+  (MP regen, Boost points, a limit gauge), stances that toggle on and off, and Boost.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -19,15 +19,11 @@ between them, written in plain words.
   - the whole turn-based formula (C2): a courtyard encounter you can walk up to and fight, with
     rewards and levels at the end;
   - C2b so far: one shared skill path (cure, dispel, revive, drain, multi-hit), sleep, stun and
-    silence, resistance, misses, counters and reflect.
-- **Next package:** **C2.16**, meters:
-  - pools that regenerate or fill when hit;
-  - toggled stances;
-  - Boost;
-  - limit specials.
+    silence, resistance, misses, counters, reflect, meters, stances and Boost.
+- **Next package:** **C2.17**, weakness and Break: a shield that breaks when hit by a weakness,
+  a turn lost, and extra damage taken.
 - **Then, in order:**
-  1. **The rest of C2b, combat depth (C2.16–C2.19):**
-     - stances, Boost and limit specials;
+  1. **The rest of C2b, combat depth (C2.17–C2.19):**
      - weakness and Break;
      - a battle menu with categories.
   2. **C3, action combat (C3.1–C3.9):** hitboxes, the player's attack chain and dodge, lock-on,
@@ -104,7 +100,7 @@ anything to its left and nothing to its right.
 |---|---|
 | `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
 | `src/systems/combat/` | **Pure maths, no nodes:** the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
-| `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
+| `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
 | `src/ui/combat/` | `BattleScreen` (the battle menu) and `BattleHost` (opens the screen when an encounter is requested). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |

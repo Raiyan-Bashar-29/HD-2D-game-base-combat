@@ -49,6 +49,14 @@ enum Scope { ONE, ALL }
 @export var tags: Array[StringName] = []
 ## True when the skill cannot miss: its hits skip the accuracy roll.
 @export var sure_hit: bool = false
+## A STANCE (C2.16): using the skill puts this status on its user, and using it again takes it
+## off. Turning it on pays the cost; turning it off is free. A stance does nothing else, so it
+## has no power, effects or statuses; what it changes is the status's modifiers and regen.
+@export var toggle_status: StatusEffect
+## BOOST (C2.16): per Boost level spent, the skill's own power grows by this fraction (0.5 is
+## +50% a level) and it lands `boost_hits` more times. Zero for both means boosting does nothing.
+@export var boost_power: float = 0.0
+@export var boost_hits: int = 0
 
 
 ## True when the skill brings the fallen back: it is aimed at defeated combatants only.
@@ -69,9 +77,14 @@ func problems() -> PackedStringArray:
 		found.append("%s (%s) has a negative cost" % [resource_path, id])
 	if cost > 0 and cost_pool == &"":
 		found.append("%s (%s) costs %d but names no cost_pool" % [resource_path, id, cost])
+	if boost_power < 0.0 or boost_hits < 0:
+		found.append("%s (%s) has a negative boost" % [resource_path, id])
 	if hits < 1:
 		found.append("%s (%s) has hits below 1" % [resource_path, id])
-	if is_zero_approx(power) and statuses.is_empty() and effects.is_empty():
+	if toggle_status != null:
+		if not is_zero_approx(power) or not statuses.is_empty() or not effects.is_empty():
+			found.append("%s (%s) is a stance and does something else too" % [resource_path, id])
+	elif is_zero_approx(power) and statuses.is_empty() and effects.is_empty():
 		found.append("%s (%s) does nothing: no power and no statuses" % [resource_path, id])
 	if power < 0.0 and target == FactionTable.Target.ENEMY:
 		found.append("%s (%s) heals its enemies" % [resource_path, id])

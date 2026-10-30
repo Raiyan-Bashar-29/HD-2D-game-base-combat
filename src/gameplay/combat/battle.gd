@@ -24,6 +24,10 @@ extends RefCounted
 ## - A status that blocks turns (sleep, stun) makes its holder lose the turn after that tick, and
 ##   one that blocks SKILL, ITEM or FLEE refuses that command (C2.14). ATTACK and DEFEND are
 ##   never blocked, so `allows` always leaves something to do.
+## - As a fighter's turn begins, after its statuses tick, each `regen_<pool>` stat refills or
+##   drains that pool (`Meters`, C2.16).
+## - BOOST: `act` may spend up to `boost_max` points of `boost_pool` on an ATTACK (more swings)
+##   or a SKILL (its `boost_power` and `boost_hits`). Points are spent only if the action happens.
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
 ##
 ## IN PLAIN WORDS: this is the referee of a turn-based fight. Hand it two lists of fighters,
@@ -44,6 +48,12 @@ var inventory: Inventory
 var can_flee: bool = true
 var flee_chance: float = 1.0
 var defend_status: StatusEffect = _default_defend()
+## BOOST (C2.16): the pool Boost levels are spent from, the most levels one action may spend,
+## and how many extra hits each level gives a plain ATTACK. A skill's own `boost_power` and
+## `boost_hits` say what boosting it does. A fighter with no `max_bp` simply cannot boost.
+var boost_pool: StringName = &"bp"
+var boost_max: int = 3
+var attack_boost_hits: int = 1
 ## The brain of each fighter nobody controls, by combatant id. `BattleSetup` fills it from the
 ## definitions; the screen asks `brain_of` to know whose turn it plays itself.
 var brains: Dictionary[StringName, BattleBrain] = {}
@@ -101,8 +111,12 @@ func next_turn() -> Combatant:
 		var sleeper: StringName = statuses.blocker(StatusEffect.Block.SKIP_TURN) if statuses != null else &""
 		if statuses != null:
 			statuses.tick_turn()
+		# Each `regen_<pool>` stat refills (or drains) its pool once a turn, asleep or not
+		# (C2.16). It runs before the defeat check, so a drain that empties hp counts too.
+		Meters.regen_turn(actor)
 		if _vitals(actor).is_defeated():
-			# The tick knocked them out: take them out of the queue and look for the next actor.
+			# The tick or the drain knocked them out: take them out of the queue and look for
+			# the next actor.
 			_settle()
 			continue
 		if sleeper != &"":
@@ -171,24 +185,31 @@ func allows(command: BattleCommand) -> bool:
 	return true
 
 
-## The current actor does `command` to `targets`. False, changing nothing, when it is illegal:
-## no turn, a bad target, a cost it cannot pay, a flee it may not make, or a status forbids it.
-func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
+## The current actor does `command` to `targets`, spending `boost` Boost levels on it. False,
+## changing nothing, when it is illegal: no turn, a bad target, a cost it cannot pay, a flee it
+## may not make, a status forbids it, or a boost it may not spend.
+func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> bool:
 	if _current == null or command == null or not command.problems("act").is_empty():
 		return false
-	if not allows(command):
+	if not allows(command) or not can_boost(command, boost):
 		return false
 	var actor: Combatant = _current
 	match command.kind:
 		# A basic hit with no extra power: the attacker's attack stat against the target's defence.
+		# Each Boost level adds `attack_boost_hits` more swings.
 		BattleCommand.Kind.ATTACK:
 			if not _legal(command, targets, true):
 				return false
-			var landed: DamageResult = actor.hit(targets[0], 0.0, &"", rng)
-			# Only a plain attack is countered; a skill is answered by REFLECT instead (C2.15).
+			var landed: DamageResult = null
+			for i: int in 1 + attack_boost_hits * boost:
+				var swing: DamageResult = actor.hit(targets[0], 0.0, &"", rng)
+				if swing != null and not swing.missed:
+					landed = swing
+			# Only a plain attack is countered, once however many swings landed; a skill is
+			# answered by REFLECT instead (C2.15).
 			SkillUse.counter(actor, targets[0], landed, rng)
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
-			if not _use(actor, command, targets):
+			if not _use(actor, command, targets, boost):
 				return false
 		# Guard: a one-turn defence bonus that wears off when this fighter's next turn starts.
 		BattleCommand.Kind.DEFEND:
@@ -199,13 +220,28 @@ func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
 				return false
 			if rng.randf() < flee_chance:
 				_end(Outcome.FLED)
+	# The action happened, so the Boost points it was promised are spent now.
+	if boost > 0:
+		_vitals(actor).change(boost_pool, -boost)
 	# The turn is spent: clear it, then remove the fallen and check for a winner.
 	_current = null
 	_settle()
 	return true
 
 
-func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant]) -> bool:
+## True when the current actor may spend `boost` levels on `command`: zero always may; more
+## needs an ATTACK or SKILL, no more than `boost_max`, and that many points in `boost_pool`.
+func can_boost(command: BattleCommand, boost: int) -> bool:
+	if boost == 0:
+		return true
+	if _current == null or command == null or boost < 0 or boost > boost_max:
+		return false
+	if command.kind != BattleCommand.Kind.ATTACK and command.kind != BattleCommand.Kind.SKILL:
+		return false
+	return _vitals(_current).current(boost_pool) >= boost
+
+
+func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant], boost: int) -> bool:
 	var skill: Skill = command.skill
 	var single: bool = skill.scope == Skill.Scope.ONE
 	if not _legal(command, targets, single):
@@ -220,7 +256,7 @@ func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant]) -
 	SkillUse.pay(actor, skill)
 	# One-target skills hit the chosen target; ALL skills hit everyone they are allowed to.
 	# What the skill then does is `SkillUse`'s, shared with the field and the hybrid (C2.13).
-	SkillUse.apply(actor, skill, targets if single else targets_for(command), rng)
+	SkillUse.apply(actor, skill, targets if single else targets_for(command), rng, boost)
 	# Heavy skills push the user back in a CTB queue; in round-based battles this does nothing.
 	if skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
