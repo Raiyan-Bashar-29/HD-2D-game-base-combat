@@ -9,8 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C2.19, the battle readout: each fighter's pools, statuses and
-  revealed weaknesses on its line, and a short battle log.
+- **Last finished package:** C2.20, the demo that closes C2b. The courtyard fight now uses
+  magic and special menus, a stance, Boost, a limit gauge, sleep, buffs and debuffs, and wisps
+  that break.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -18,18 +19,17 @@ between them, written in plain words.
     factions;
   - the whole turn-based formula (C2): a courtyard encounter you can walk up to and fight, with
     rewards and levels at the end;
-  - C2b so far: one shared skill path (cure, dispel, revive, drain, multi-hit), sleep, stun and
-    silence, resistance, misses, counters, reflect, meters, stances, Boost, weakness, Break,
-    a battle menu with categories, and a readout with a battle log.
-- **Next package:** **C2.20**, the demo that closes C2b. Demo data uses everything: Fire,
-  Heal, Cure, Raise, a buff, a debuff, Sleep, a stance, a limit special, Boost, and a wisp weak
-  to fire. Plus captures, the stripped run, and `AUTHORING.md` § Skills and statuses.
+  - C2b, combat depth (complete): one shared skill path (cure, dispel, revive, drain,
+    multi-hit), sleep, stun and silence, resistance, misses, counters, reflect, meters,
+    stances, Boost, weakness, Break, a battle menu with categories, and a readout with a
+    battle log. `AUTHORING.md` § Skills, statuses and combat depth lists every field.
+- **Next package:** **C3.1**, combat input and layers, the first row of the action formula:
+  attack, dodge and lock-on actions, and the hitbox and hurtbox physics layers.
 - **Then, in order:**
-  1. **C2.20**, the demo that closes C2b.
-  2. **C3, action combat (C3.1–C3.9):** hitboxes, the player's attack chain and dodge, lock-on,
+  1. **C3, action combat (C3.1–C3.9):** hitboxes, the player's attack chain and dodge, lock-on,
      enemies that chase, and a field HUD.
-  3. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
-  4. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
+  2. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
+  3. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
 
   Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,
   "Settled by C2.11".

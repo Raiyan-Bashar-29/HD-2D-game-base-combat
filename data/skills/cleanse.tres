@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="1_skill"]
+[ext_resource type="Script" path="res://src/content/combat/skill_effect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="dispel"]
+script = ExtResource("2_effect")
+kind = 5
+tag = &"ailment"
+
+[resource]
+script = ExtResource("1_skill")
+id = &"skill/cleanse"
+name_key = "combat.skill.cleanse.name"
+cost_pool = &"mp"
+cost = 2
+target = 1
+effects = Array[ExtResource("2_effect")]([SubResource("dispel")])
+tags = Array[StringName]([&"magic"])

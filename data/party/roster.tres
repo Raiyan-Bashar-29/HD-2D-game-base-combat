@@ -1,10 +1,18 @@
-[gd_resource type="Resource" script_class="PartyRoster" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="PartyRoster" load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://src/content/combat/party_roster.gd" id="1_roster"]
 [ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="2_def"]
 [ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="3_cmd"]
 [ext_resource type="Script" path="res://src/content/combat/level_curve.gd" id="4_curve"]
 [ext_resource type="Resource" path="res://data/skills/ember.tres" id="5_ember"]
+[ext_resource type="Resource" path="res://data/skills/lull.tres" id="6_lull"]
+[ext_resource type="Resource" path="res://data/skills/blight.tres" id="7_hex"]
+[ext_resource type="Resource" path="res://data/skills/skyfall.tres" id="8_skyfall"]
+[ext_resource type="Resource" path="res://data/skills/keen_edge.tres" id="9_edge"]
+[ext_resource type="Resource" path="res://data/skills/salve.tres" id="10_salve"]
+[ext_resource type="Resource" path="res://data/skills/cleanse.tres" id="11_cleanse"]
+[ext_resource type="Resource" path="res://data/skills/rekindle.tres" id="12_raise"]
+[ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="13_bulwark"]
 
 [sub_resource type="Resource" id="attack"]
 script = ExtResource("3_cmd")
@@ -13,6 +21,54 @@ script = ExtResource("3_cmd")
 script = ExtResource("3_cmd")
 kind = 1
 skill = ExtResource("5_ember")
+category = "combat.category.magic"
+
+[sub_resource type="Resource" id="lull"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("6_lull")
+category = "combat.category.magic"
+
+[sub_resource type="Resource" id="hex"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("7_hex")
+category = "combat.category.magic"
+
+[sub_resource type="Resource" id="skyfall"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("8_skyfall")
+category = "combat.category.special"
+
+[sub_resource type="Resource" id="keen_edge"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("9_edge")
+
+[sub_resource type="Resource" id="salve"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("10_salve")
+category = "combat.category.magic"
+
+[sub_resource type="Resource" id="cleanse"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("11_cleanse")
+category = "combat.category.magic"
+
+[sub_resource type="Resource" id="raise"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("12_raise")
+category = "combat.category.magic"
+
+[sub_resource type="Resource" id="bulwark"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("13_bulwark")
+category = "combat.category.magic"
 
 [sub_resource type="Resource" id="defend"]
 script = ExtResource("3_cmd")
@@ -37,11 +93,18 @@ faction = &"player"
 base_stats = Dictionary[StringName, float]({
 &"attack": 9.0,
 &"defence": 10.0,
+&"fill_on_hit_limit": 2.0,
+&"max_bp": 5.0,
 &"max_hp": 46.0,
-&"max_mp": 9.0,
-&"speed": 8.0
+&"max_limit": 100.0,
+&"max_mp": 12.0,
+&"regen_bp": 1.0,
+&"speed": 8.0,
+&"start_bp": 0.2,
+&"start_limit": 0.0
 })
-commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("ember"), SubResource("defend"), SubResource("flee")])
+attack_tags = Array[StringName]([&"blade"])
+commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("ember"), SubResource("lull"), SubResource("hex"), SubResource("skyfall"), SubResource("keen_edge"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
 
 [sub_resource type="Resource" id="keeper"]
@@ -53,8 +116,11 @@ base_stats = Dictionary[StringName, float]({
 &"attack": 6.0,
 &"defence": 16.0,
 &"max_hp": 38.0,
+&"max_mp": 14.0,
+&"regen_mp": 1.0,
 &"speed": 5.0
 })
+commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("salve"), SubResource("cleanse"), SubResource("raise"), SubResource("bulwark"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
 
 [resource]

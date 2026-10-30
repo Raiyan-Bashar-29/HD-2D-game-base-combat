@@ -1310,6 +1310,56 @@ Win, and the screen lists the experience, each level gained and the loot; Contin
 field exactly where it was. `skill_test.gd` and `encounter_test.gd` fail on any authoring problem
 in `data/skills/`, `data/statuses/` or `data/encounters/`.
 
+## Skills, statuses and combat depth (combat fork only)
+
+**Everything below is data.** The demo party in `data/party/roster.tres` uses every piece of it,
+and a game copies from there. Each file's own `##` header says the same thing at more length.
+
+**A skill** (`data/skills/<name>.tres`, a `Skill`, id `skill/<name>`), beyond the fields in the
+section above:
+
+| Field | What it does |
+|---|---|
+| `hits` | The strike lands this many times on each target, for a flurry. Statuses still roll once per target. |
+| `effects` | A list of `SkillEffect`s run on every hit: DAMAGE, HEAL, RESTORE (any pool, such as `mp`), DRAIN (`fraction` of the damage back to the user), CURE (one `status_id`), DISPEL (every status with `tag`, such as `debuff` or `ailment`) and REVIVE (`amount` is the fraction of max hp; the skill then aims only at the fallen). |
+| `tags` | Free labels. `magic` is what a reflect bounces by default; a tag can also be a weakness, such as `blade`. |
+| `sure_hit` | It cannot miss. |
+| `toggle_status` | Makes it a **stance**: using it puts this status on the user, and using it again takes it off. On costs; off is free. A stance has no power, effects or statuses of its own. |
+| `boost_power`, `boost_hits` | Per Boost level spent: the skill's power grows by this fraction, and it lands this many more times. |
+
+**A status** (`data/statuses/<name>.tres`, a `StatusEffect`, id `status/<name>`):
+
+| Field | What it does |
+|---|---|
+| `name_key` | Its name in the battle readout and log. |
+| `unit`, `duration` | Turns or seconds. A duration of 0 or less lasts until cured. |
+| `stacking`, `max_stacks` | REFRESH, STACK (adds its modifiers again) or IGNORE. |
+| `modifiers` | Stat changes while held: a buff (`defence` +30) or a debuff (`attack` ×0.6). |
+| `tick_pool`, `tick_change` | Poison or regen: a pool change each turn, or each `tick_interval` seconds. |
+| `tags` | `buff`, `debuff`, `ailment` or your own. A DISPEL clears by tag, and a fighter's `resist_<tag>` stat resists by tag (1 is immune). |
+| `blocks` | SKIP_TURN (sleep, stun), NO_SKILLS (silence), NO_ITEMS, NO_FLEE. ATTACK and DEFEND are never blocked. |
+| `breaks_on_hit` | Ends at the first hit that does damage, as a sleep does. |
+| `reactions`, `reaction_chance`, `reflect_tag` | COUNTER strikes back at a plain attack that landed; REFLECT bounces a skill with `reflect_tag` back to its user. |
+
+**A fighter** (`CombatantDef`) gets its depth from stats and three lists:
+- **Pools** are any `max_<pool>` stat: `max_mp`, `max_bp`, `max_limit`, `max_shield`. Each starts
+  full, unless `start_<pool>` gives a fraction: a limit gauge has `start_limit` 0.
+- **Meters:** `regen_<pool>` refills a pool each turn, and a negative value drains it.
+  `fill_on_hit_<pool>` fills a pool by that fraction of damage taken.
+- **Accuracy and evasion:** the `accuracy` and `evasion` stats. With neither, nothing ever misses.
+- **Weakness and Break:** `weak_to` lists elements or skill tags. Each landed hit on one takes a
+  `shield` point, and the last one breaks the fighter: it loses a turn and takes +50% damage.
+  `attack_tags` is what its plain attack counts as. Give it `max_shield`, or nothing breaks.
+- **Boost:** any fighter with `max_bp` gets a Boost row; `regen_bp` 1 is Octopath's rule.
+- **Menus:** a command's `category` (a localization key) files it under a submenu, such as
+  Magic or Special. Commands without one stay on the first menu.
+
+**Seeing it:** fight the courtyard thicket. The Wanderer has Magic (Ember, Lull, Blight), Special
+(Skyfall, which needs a full limit gauge), the Keen Edge stance and Boost. The Keeper has Salve,
+Cleanse, Rekindle and Bulwark. The wisps are weak to fire and to blades, one may sing the party
+to sleep, and two Embers break a wisp. `combat_content_test.gd` fails on a missing string or an
+unsound skill or status.
+
 ## Read next
 
 [`ART_CONTRACT.md`](ART_CONTRACT.md) — what art has to satisfy to drop in ·

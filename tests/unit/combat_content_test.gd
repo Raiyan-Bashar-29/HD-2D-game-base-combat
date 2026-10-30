@@ -1,6 +1,7 @@
 extends TestCase
 ## The combat data a game ships, checked the way upstream's `check_content.gd` checks its own:
-## every name a player will read has a row in `strings.csv`, and every encounter is sound.
+## every name a player will read has a row in `strings.csv`, and every encounter, skill and
+## status is sound. Since C2.20 that includes status names and command categories.
 ##
 ## WHY A TEST AND NOT A CHECKER. The fork keeps upstream's tools untouched (ADR-0008), so the
 ## combat equivalent lives here. It reads `data/` directly, so the stripped template, which has
@@ -16,6 +17,7 @@ const CSV: String = "res://localization/strings.csv"
 const SKILL_DIR: String = "res://data/skills"
 const ENCOUNTER_DIR: String = "res://data/encounters"
 const PARTY_DIR: String = "res://data/party"
+const STATUS_DIR: String = "res://data/statuses"
 
 var _csv: Dictionary[String, bool] = {}
 
@@ -24,18 +26,26 @@ func run() -> void:
 	_csv = _csv_keys()
 	# Every key the data names, with where it was found, so a failure says which file to fix.
 	var named: Dictionary[String, String] = {}
+	# Everything `problems()` says is wrong with a skill or status, with where it came from.
+	var wrong: PackedStringArray = PackedStringArray()
 	for skill: Resource in _load_all(SKILL_DIR):
 		_from_skill(skill as Skill, named)
+		wrong.append_array((skill as Skill).problems())
+	for status: Resource in _load_all(STATUS_DIR):
+		_from_status(status as StatusEffect, named)
+		wrong.append_array((status as StatusEffect).problems())
 	for encounter: Resource in _load_all(ENCOUNTER_DIR):
 		for def: CombatantDef in (encounter as Encounter).enemies:
 			_from_def(def, named)
 	for roster: Resource in _load_all(PARTY_DIR):
 		for def: CombatantDef in (roster as PartyRoster).members:
 			_from_def(def, named)
-	plan(3 + named.size())
+	plan(5 + named.size())
 	equal("the CSV was read", _csv.size() > 0, true)
 	equal("a key nobody wrote is not found", _known("fixture.never_written"), false)
 	equal("every encounter under data/ is sound", EncounterDb.problems(), PackedStringArray())
+	equal("every skill and status under data/ is sound", wrong, PackedStringArray())
+	equal("the status catalogue is sound", StatusDb.problems(), PackedStringArray())
 	for key: String in named:
 		equal("%s names '%s', which is in strings.csv" % [named[key], key], _known(key), true)
 
@@ -68,9 +78,20 @@ func _load_all(directory: String) -> Array[Resource]:
 	return found
 
 
+## A skill's name, and the names of the statuses it leaves or toggles.
 func _from_skill(skill: Skill, named: Dictionary[String, String]) -> void:
-	if skill != null and skill.name_key != "":
+	if skill == null:
+		return
+	if skill.name_key != "":
 		named[skill.name_key] = String(skill.id)
+	for status: StatusEffect in skill.statuses:
+		_from_status(status, named)
+	_from_status(skill.toggle_status, named)
+
+
+func _from_status(status: StatusEffect, named: Dictionary[String, String]) -> void:
+	if status != null and status.name_key != "":
+		named[status.name_key] = String(status.id)
 
 
 ## A fighter's own name, its commands' labels, and the names of the skills those commands use.
@@ -84,4 +105,6 @@ func _from_def(def: CombatantDef, named: Dictionary[String, String]) -> void:
 			continue
 		if command.label_key != "":
 			named[command.label_key] = String(def.combatant_id)
+		if command.category != "":
+			named[command.category] = String(def.combatant_id)
 		_from_skill(command.skill, named)
