@@ -1300,3 +1300,62 @@ in a Magic menu, a limit special under Special, a stance you can see is on, and 
 - No keyboard shortcut steps the Boost level. It is a row, reached like any other.
 - A category has no icon or ordering beyond the order of its first command.
 - The Next line lists the order after the current actor, unchanged from C2.7.
+
+## 2026-10-30 — C2.19 · The battle readout
+
+**Did.**
+- `StatusEffect.name_key`, and `StatusSet.held()`, which lists the held statuses in the order
+  they were applied.
+- Each fighter's line in `BattleScreen` now shows:
+  - hp;
+  - every other pool the fighter has a `max_*` for: MP, BP, a limit gauge, its shield;
+  - its statuses by name, in brackets;
+  - "Weak:" with only the weaknesses the player has already revealed.
+- New `src/ui/combat/battle_log.gd`. While the screen is open it listens on ten bus signals:
+  `combatant_damaged` (damage, a critical, or a heal when negative), `attack_missed`,
+  `status_resisted`, `turn_skipped`, `countered`, `skill_reflected`, `weakness_revealed`,
+  `combatant_broken`, `combatant_defeated` and `status_applied`.
+  - It keeps the newest 4 lines, and the screen draws them under the turn order.
+  - `start()` runs when the screen opens and `stop()` when it closes; `stop()` disconnects
+    every handler.
+  - `status_name` reads a status's `name_key`, from the fighter's held copy or from `StatusDb`,
+    and otherwise shows the last part of its id.
+- Fifteen new `ui.battle.*` strings.
+- New `tests/unit/battle_readout_test.gd` (13).
+- Combat `0.24.0`.
+
+**Why.** It finishes the C2b player-facing loop. The menu (C2.18) says what you can do; the
+readout says what is happening: who is poisoned, how close the wisp is to breaking, what you
+have learned about it, and what the last few actions did.
+
+**Decisions.**
+- **The log only listens.** Every line comes from a signal some system already emits, so it
+  cannot disagree with the rules. It needs no new signal, only the ones C2.14 to C2.17 added.
+- **Only revealed weaknesses are shown.** The weakness list is hidden until the player finds it,
+  which is the point of `Weakness.revealed` and its flags.
+- **Pools are found by name**, through C2.16's `StatSheet.mentioned("max_")`, so a game's own
+  pool appears on the line with no code.
+- **A poison tick is not logged.** It is a pool change, not a hit (C1.5), and has no signal of
+  its own. The hp on the line shows it.
+- **The log is a RefCounted owned by the screen, not a node**, and the screen stops it on
+  close, so a later battle's signals never reach an old log.
+
+**Verified.**
+- Suite: `3097 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with `start()` not connecting, the 6 log assertions failed. The line assertions
+  passed from the start, because the screen work was written before the stub went in.
+- Windowed capture under `xvfb-run`, with a throwaway driver (not committed): a Fire that also
+  poisons, cast on a wisp weak to fire with 2 shield points.
+  - The lines read "Hero HP 58 / 60 MP 9 / 12 BP 3 / 3" and "Wisp HP 28 / 40 SHIELD 1 / 2
+    [Poison] Weak: fire".
+  - The log reads "Wisp takes 10.", "Wisp is weak to fire!", "Wisp: Poison." and "Hero takes 2.".
+
+**Unblocks.** C2.20, the demo, which can now be played and read.
+
+**Gaps.**
+- A pool's name is its id in capitals. A per-pool name key can come when a game needs it.
+- An element or skill tag in "Weak:" is translated only if the game adds a string for that
+  exact key, such as `fire`.
+- The log does not say who acted or with what; it says what happened to whom.

@@ -32,6 +32,9 @@ enum Block { SKIP_TURN, NO_SKILLS, NO_ITEMS, NO_FLEE }
 ## by default) bounces back to whoever used it. Each fires at `reaction_chance`.
 enum Reaction { COUNTER, REFLECT }
 
+## Localization key for the status's name in the battle readout and log (C2.19). Empty shows
+## the last part of its id.
+@export var name_key: String = ""
 @export var unit: Unit = Unit.TURNS
 @export var duration: float = 3.0
 @export var stacking: Stacking = Stacking.REFRESH

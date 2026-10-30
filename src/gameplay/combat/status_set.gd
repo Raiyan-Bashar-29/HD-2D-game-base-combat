@@ -123,6 +123,14 @@ func blocker(block: StatusEffect.Block) -> StringName:
 	return &""
 
 
+## Every status held now, in the order they were applied. The battle readout lists them (C2.19).
+func held() -> Array[StatusEffect]:
+	var out: Array[StatusEffect] = []
+	for status_id: StringName in _held:
+		out.append(_held[status_id].effect)
+	return out
+
+
 ## The first held status carrying `reaction` (a counter stance, a reflect), or null (C2.15).
 func reactor(reaction: StatusEffect.Reaction) -> StatusEffect:
 	for status_id: StringName in _held:
