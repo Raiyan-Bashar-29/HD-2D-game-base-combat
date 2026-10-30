@@ -95,14 +95,22 @@ func act(delta: float) -> ActionDecider.State:
 	var statuses: StatusSet = StatusSet.of(self)
 	if statuses != null:
 		statuses.tick_seconds(dt)
+	# A stagger that has just worn off refills the shield (C4.6).
+	var me: Combatant = Combatant.of(self)
+	if me != null:
+		Weakness.recover(me)
 	_stun_left = maxf(0.0, _stun_left - dt)
+	# Staggered, it stands still and drops the swing it was in, as under a knockback.
+	var halted: bool = statuses != null and statuses.halts()
+	if halted:
+		timeline.cancel()
 	_target = nearest_hostile()
 	var to_target: Vector3 = _flat(_target.global_position - global_position) if _target != null else Vector3.INF
 	var vitals: Vitals = Vitals.of(self)
 	var defeated: bool = vitals != null and vitals.is_defeated()
 	var hp: float = float(vitals.current(&"hp")) / maxf(1.0, float(vitals.maximum(&"hp"))) if vitals != null else 1.0
 	var state: ActionDecider.State = decider.think(dt, to_target.length() if _target != null else INF,
-		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0, defeated, rng)
+		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0 or halted, defeated, rng)
 	_carry_out(state, to_target)
 	if _fallen:
 		_gone_in -= dt
@@ -236,6 +244,7 @@ func _build() -> void:
 	combatant.weak_to = fighter.weak_to
 	combatant.attack_tags = fighter.attack_tags
 	combatant.kind = fighter.combatant_id
+	combatant.real_time = true
 	add_child(combatant)
 	var vitals: Vitals = Vitals.of(self)
 	for stat: StringName in fighter.base_stats:

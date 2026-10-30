@@ -35,6 +35,10 @@ extends Node
 ## revealed weakness shows on all of them. Empty means the combatant id.
 @export var kind: StringName = &""
 
+## True when this fighter lives in real time, so its statuses count in seconds (C4.6). Set by
+## whoever builds a field fighter (`ActionHost.equip`, `ActionEnemy`); a battle builds fresh
+## combatants, which stay false. `Weakness` reads it to choose a break in turns or in seconds.
+var real_time: bool = false
 var sheet: StatSheet = StatSheet.new()
 
 

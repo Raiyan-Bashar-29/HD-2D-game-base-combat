@@ -63,6 +63,8 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	combatant.weak_to = def.weak_to
 	combatant.attack_tags = def.attack_tags
 	combatant.kind = def.combatant_id
+	# The field counts in seconds, so a break here is a stagger (C4.6).
+	combatant.real_time = true
 	body.add_child(combatant)
 	var hurtbox := Hurtbox.new()
 	var shape := CollisionShape3D.new()
