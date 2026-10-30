@@ -15,7 +15,7 @@ var _fighter: ActionFighter
 
 
 func run() -> void:
-	plan(23)
+	plan(24)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_player = build("res://scenes/characters/player.tscn") as PlayerController
@@ -82,7 +82,13 @@ func _holds() -> bool:
 
 func _equipping() -> void:
 	equal("an empty loadout has no fighter and no moves", ActionLoadout.new().problems("fixture").size(), 2)
+	# The setting is the game's, so the test sets it and puts it back afterwards.
+	var kept: Variant = ProjectSettings.get_setting(ActionHost.LOADOUT_SETTING, "")
+	ProjectSettings.set_setting(ActionHost.LOADOUT_SETTING, "")
 	equal("with no loadout configured, nobody is fitted", ActionHost.configured(), null)
+	ProjectSettings.set_setting(ActionHost.LOADOUT_SETTING, "res://fixture/no_such_loadout.tres")
+	equal("a loadout file that is gone means no field combat, quietly", ActionHost.configured(), null)
+	ProjectSettings.set_setting(ActionHost.LOADOUT_SETTING, kept)
 	_fighter = ActionHost.equip(_player, _loadout())
 	var combatant: Combatant = Combatant.of(_player)
 	equal("equip fits a fighter with the definition's id and hp",

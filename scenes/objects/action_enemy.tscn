@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" path="res://src/gameplay/combat/action_enemy.gd" id="1_enemy"]
 [ext_resource type="Script" path="res://src/gameplay/character/character_visual.gd" id="2_vis"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/character_placeholder.png" id="3_tex"]
-[ext_resource type="Resource" path="res://assets/placeholder/character_layout.tres" id="4_layout"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/character_alt.png" id="3_tex"]
+[ext_resource type="Resource" path="res://assets/placeholder/character_alt_layout.tres" id="4_layout"]
 
 [sub_resource type="CapsuleShape3D" id="body"]
 radius = 0.3

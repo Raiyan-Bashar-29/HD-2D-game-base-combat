@@ -27,12 +27,18 @@ func _ready() -> void:
 	Events.field_enemy_defeated.connect(_on_field_enemy_defeated)
 
 
-## The loadout `project.godot` names, or null when field combat is off or it fails to load.
+## The loadout `project.godot` names, or null when field combat is off, the file is gone, or it
+## is not a loadout. Only the last is an error.
 static func configured() -> ActionLoadout:
 	var path: String = str(ProjectSettings.get_setting(LOADOUT_SETTING, ""))
 	if path == "":
 		return null
-	var loaded: ActionLoadout = load(path) as ActionLoadout if ResourceLoader.exists(path) else null
+	# A missing file is not an error: a game that deleted its demo content (NEW_GAME.md) keeps
+	# the setting but no loadout, and simply has no field combat until it names its own.
+	if not ResourceLoader.exists(path):
+		Log.info("combat", "%s names '%s', which does not exist: no field combat" % [LOADOUT_SETTING, path])
+		return null
+	var loaded: ActionLoadout = load(path) as ActionLoadout
 	if loaded == null:
 		Log.error("combat", "%s names '%s', which is not an ActionLoadout" % [LOADOUT_SETTING, path])
 	return loaded

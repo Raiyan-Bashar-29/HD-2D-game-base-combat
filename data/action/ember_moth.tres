@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatantDef" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="1_jj4v2"]
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="2_m175y"]
+
+[resource]
+script = ExtResource("2_m175y")
+combatant_id = &"ember_moth"
+name_key = "combat.enemy.ember_moth.name"
+base_stats = Dictionary[StringName, float]({
+&"attack": 4.0,
+&"defence": 2.0,
+&"max_hp": 40.0,
+&"max_shield": 3.0
+})
+weak_to = Array[StringName]([&"blade"])
