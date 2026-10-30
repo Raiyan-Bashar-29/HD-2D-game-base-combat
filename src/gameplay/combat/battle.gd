@@ -20,6 +20,9 @@ extends RefCounted
 ##   the standard softness of 100.
 ## - FLEE succeeds at `flee_chance` when `can_flee`; a failed flee still spends the turn.
 ## - Each actor's TURNS statuses tick at the start of its own turn, so DEFEND lasts until then.
+## - A status that blocks turns (sleep, stun) makes its holder lose the turn after that tick, and
+##   one that blocks SKILL, ITEM or FLEE refuses that command (C2.14). ATTACK and DEFEND are
+##   never blocked, so `allows` always leaves something to do.
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
 ##
 ## IN PLAIN WORDS: this is the referee of a turn-based fight. Hand it two lists of fighters,
@@ -82,6 +85,8 @@ func start() -> void:
 ## statuses tick first, and one that falls to a tick is skipped.
 func next_turn() -> Combatant:
 	_current = null
+	# A cap on lost turns in a row, so a whole field asleep can never loop forever.
+	var skips_left: int = 64 * maxi(1, party.size() + enemies.size())
 	# Loop because a fighter may fall to poison at the start of their turn; then try the next one.
 	while _outcome == Outcome.ONGOING:
 		var id: StringName = scheduler.next()
@@ -90,11 +95,20 @@ func next_turn() -> Combatant:
 		var actor: Combatant = _by_id[id]
 		# Turn-counted statuses (poison, DEFEND) tick when their holder's own turn begins.
 		var statuses: StatusSet = StatusSet.of(actor.get_parent())
+		# Asleep or stunned is decided BEFORE the tick, so a sleep lasting N turns costs exactly
+		# N turns: the tick on the last lost turn is the one that wears it off.
+		var sleeper: StringName = statuses.blocker(StatusEffect.Block.SKIP_TURN) if statuses != null else &""
 		if statuses != null:
 			statuses.tick_turn()
 		if _vitals(actor).is_defeated():
 			# The tick knocked them out: take them out of the queue and look for the next actor.
 			_settle()
+			continue
+		if sleeper != &"":
+			Events.turn_skipped.emit(actor.combatant_id, sleeper)
+			skips_left -= 1
+			if skips_left <= 0:
+				return null
 			continue
 		_current = actor
 		return actor
@@ -138,10 +152,30 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 	return out
 
 
+## True when no status on the current actor forbids `command`'s kind: silence stops SKILL,
+## and so on. The screen greys out what this refuses, and the AI never picks it.
+func allows(command: BattleCommand) -> bool:
+	if _current == null or command == null:
+		return false
+	var statuses: StatusSet = StatusSet.of(_current.get_parent())
+	if statuses == null:
+		return true
+	match command.kind:
+		BattleCommand.Kind.SKILL:
+			return statuses.blocker(StatusEffect.Block.NO_SKILLS) == &""
+		BattleCommand.Kind.ITEM:
+			return statuses.blocker(StatusEffect.Block.NO_ITEMS) == &""
+		BattleCommand.Kind.FLEE:
+			return statuses.blocker(StatusEffect.Block.NO_FLEE) == &""
+	return true
+
+
 ## The current actor does `command` to `targets`. False, changing nothing, when it is illegal:
-## no turn, a bad target, a cost it cannot pay, a flee it may not make.
+## no turn, a bad target, a cost it cannot pay, a flee it may not make, or a status forbids it.
 func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
 	if _current == null or command == null or not command.problems("act").is_empty():
+		return false
+	if not allows(command):
 		return false
 	var actor: Combatant = _current
 	match command.kind:

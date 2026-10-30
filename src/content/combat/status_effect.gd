@@ -23,6 +23,10 @@ enum Unit { TURNS, SECONDS }
 ## REFRESH resets the duration; STACK resets it and adds a stack, up to `max_stacks`, each stack
 ## adding the modifiers and the tick again; IGNORE refuses while it is already held.
 enum Stacking { REFRESH, STACK, IGNORE }
+## What a status stops its holder doing (C2.14). SKIP_TURN: they lose every turn while it is held
+## (sleep, stun, freeze). NO_SKILLS: no SKILL commands (silence). NO_ITEMS and NO_FLEE: the same
+## for ITEM and FLEE. A plain ATTACK and DEFEND are never blocked, so nobody is ever stuck.
+enum Block { SKIP_TURN, NO_SKILLS, NO_ITEMS, NO_FLEE }
 
 @export var unit: Unit = Unit.TURNS
 @export var duration: float = 3.0
@@ -37,6 +41,15 @@ enum Stacking { REFRESH, STACK, IGNORE }
 ## Free labels a skill can match: `buff`, `debuff`, `ailment`, or any name a game uses. A
 ## DISPEL effect clears every held status carrying its tag (C2.13).
 @export var tags: Array[StringName] = []
+## What the holder cannot do while this is held.
+@export var blocks: Array[Block] = []
+## True for a sleep: the first hit that does damage ends it.
+@export var breaks_on_hit: bool = false
+
+
+## True when this status carries `block`.
+func has_block(block: Block) -> bool:
+	return blocks.has(block)
 
 
 func problems() -> PackedStringArray:
@@ -49,6 +62,9 @@ func problems() -> PackedStringArray:
 		found.append("%s (%s) ticks but names no tick_pool" % [resource_path, id])
 	if unit == Unit.SECONDS and tick_change != 0 and tick_interval <= 0.0:
 		found.append("%s (%s) ticks in seconds with no tick_interval" % [resource_path, id])
+	if blocks.has(Block.SKIP_TURN) and duration <= 0.0 and not breaks_on_hit:
+		# Nothing would ever end it short of a cure, and a whole side asleep forever would stall.
+		found.append("%s (%s) skips turns forever: give it a duration or breaks_on_hit" % [resource_path, id])
 	for modifier: StatModifier in modifiers:
 		if modifier == null or modifier.stat == &"":
 			found.append("%s (%s) has a modifier with no stat" % [resource_path, id])

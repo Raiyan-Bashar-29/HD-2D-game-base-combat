@@ -9,8 +9,8 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C2.13: one shared skill path, `SkillUse`, plus cure, dispel, revive,
-  restore, drain and multi-hit effects.
+- **Last finished package:** C2.14, statuses that change behaviour: sleep and stun skip turns,
+  silence blocks skills, sleep breaks on a hit, and there is resistance and immunity.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -18,13 +18,12 @@ between them, written in plain words.
     factions;
   - the whole turn-based formula (C2): a courtyard encounter you can walk up to and fight, with
     rewards and levels at the end.
-- **Next package:** **C2.14**: statuses that change behaviour:
-  - skip a turn (stun, sleep);
-  - silence, no items, no fleeing;
-  - wake on hit;
-  - resistance.
+- **Next package:** **C2.15**:
+  - hit or miss (accuracy against evasion);
+  - counters;
+  - reflect.
 - **Then, in order:**
-  1. **C2b, combat depth (C2.15–C2.19, after C2.14):**
+  1. **C2b, combat depth (C2.16–C2.19, after C2.15):**
      - one shared skill path, with cure, dispel, revive, drain and multi-hit;
      - sleep, stun and silence;
      - misses, counters and reflect;

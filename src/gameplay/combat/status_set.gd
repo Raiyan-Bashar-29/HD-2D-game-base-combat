@@ -81,9 +81,13 @@ static func of(who: Node) -> StatusSet:
 	return null
 
 
-## Applies a status, by its stacking rule. False when refused: a broken status, or IGNORE held.
-func apply(effect: StatusEffect) -> bool:
+## Applies a status, by its stacking rule. False when refused: a broken status, IGNORE held, or
+## shrugged off by resistance. `rng` decides a partial resistance; null uses the global one.
+func apply(effect: StatusEffect, rng: RandomNumberGenerator = null) -> bool:
 	if effect == null or not effect.problems().is_empty():
+		return false
+	if _resists(effect, rng):
+		Events.status_resisted.emit(owner_id, effect.id)
 		return false
 	# First time this status lands: start its timer and put its stat changes on the sheet.
 	if not _held.has(effect.id):
@@ -108,6 +112,43 @@ func apply(effect: StatusEffect) -> bool:
 					_add_modifiers(effect)
 	Events.status_applied.emit(owner_id, effect.id, stacks(effect.id))
 	return true
+
+
+## The first held status that carries `block`, or an empty id when none does. In plain words:
+## "is anything stopping this fighter from doing X, and if so, what?"
+func blocker(block: StatusEffect.Block) -> StringName:
+	for status_id: StringName in _held:
+		if _held[status_id].effect.has_block(block):
+			return status_id
+	return &""
+
+
+## Ends every held status that breaks on a hit (a sleep). `Combatant.receive` calls it when a
+## hit really took something. Returns how many ended.
+func wake() -> int:
+	var ended: int = 0
+	for status_id: StringName in _ids():
+		if _held[status_id].effect.breaks_on_hit:
+			_expire(status_id)
+			ended += 1
+	return ended
+
+
+## Resistance is a stat on the holder's sheet: `resist_<tag>` for each of the status's tags, from
+## 0 (none) to 1 (immune). The strongest one counts. Partial resistance rolls.
+func _resists(effect: StatusEffect, rng: RandomNumberGenerator) -> bool:
+	var target: StatSheet = _sheet()
+	if target == null:
+		return false
+	var best: float = 0.0
+	for tag: StringName in effect.tags:
+		best = maxf(best, target.value(StringName("resist_" + String(tag))))
+	if best >= 1.0:
+		return true
+	if best <= 0.0:
+		return false
+	var roll: float = rng.randf() if rng != null else randf()
+	return roll < best
 
 
 ## Zero when not held.
