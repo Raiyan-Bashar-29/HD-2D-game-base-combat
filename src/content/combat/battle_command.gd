@@ -21,6 +21,9 @@ enum Kind { ATTACK, SKILL, ITEM, DEFEND, FLEE }
 ## Localization key for the menu label. Empty means the battle screen's default for the kind,
 ## or the skill's own `name_key`.
 @export var label_key: String = ""
+## Localization key of the submenu this command is filed under, such as "Magic" or "Special"
+## (C2.18). Empty puts it on the first menu. Commands sharing a key share one submenu.
+@export var category: String = ""
 
 
 ## Everything wrong with this entry. `context` names where it was authored, since a command has

@@ -1242,3 +1242,61 @@ demo wisp weak to fire. C3.3 and C4.4 reuse `strike` and `recover`.
 - An enemy broken on its own turn (by a counter or a reflected skill) skips its next turn and
   recovers then. That is consistent, but Octopath differs in detail.
 - `BattleAi` does not aim for weaknesses.
+
+## 2026-10-30 — C2.18 · A battle menu with depth
+
+**Did.**
+- `BattleCommand.category`: the localization key of the submenu a command is filed under.
+- New `src/ui/combat/battle_menu.gd`:
+  - `top_level`: commands and category rows, in authored order;
+  - `in_category`;
+  - `refusal(battle, command, boost)`. It asks `Battle.allows`, `Battle.can_boost`,
+    `SkillUse.affordable`, the inventory and `Battle.targets_for`, which are the same checks
+    `Battle.act` makes. It returns the reason's key, or empty.
+- `BattleScreen`:
+  - a submenu per category, with Back;
+  - every skill row shows its cost;
+  - a refused row is disabled, has no action, and shows its reason in brackets;
+  - a stance reads On or Off and acts on its user at once;
+  - a fighter with a Boost pool gets a Boost row that steps 0 → the most it can spend → 0.
+    `Battle.act` receives the level.
+  - After an action, the level and the open submenu reset.
+- Eleven new `ui.battle.*` strings.
+- New `tests/unit/battle_menu_test.gd` (15). `battle_screen_test.gd` changed where the
+  behaviour changed: the unaffordable skill is now greyed out with its reason, not refused
+  after a press.
+- Combat `0.23.0`.
+
+**Why.** Everything C2.13 to C2.17 built has to be reachable and readable by a player: spells
+in a Magic menu, a limit special under Special, a stance you can see is on, and Boost.
+
+**Decisions.**
+- **The menu decides nothing.** `refusal` asks the battle the same questions `act` does, so a
+  row offered is a row accepted. The old "That cannot be done" line stays, for the rare refusal
+  only `act` can see.
+- **Greyed rows stay visible with a reason**, rather than being hidden, so a player learns why.
+- **The pool name in a cost is the pool id in capitals** ("MP", "BP"). A pool has no name key
+  yet; that can come with C2.19's readout if needed.
+- **Split from the plan.** The readout (statuses and weaknesses on each fighter's line, and the
+  battle log) is now its own row, **C2.19**, so this one fits one package. **The demo row is now
+  C2.20**: entries written before this one call it C2.19.
+
+**Verified.**
+- Suite: `3083 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0. The budget check first failed on a 60-line test function, which was
+  split into setup and three parts.
+- Red first: with `refusal` stubbed to refuse everything, 16 assertions failed.
+- Windowed capture under `xvfb-run`, with a throwaway driver (not committed) that builds a
+  fighter with Magic and Special categories:
+  - the first menu reads "Boost 1 / 3", Attack, Magic, "Fury Stance [Off] 2 MP" and Special,
+    with Defend and Flee greyed "(cannot be boosted)";
+  - the Magic submenu reads "Fire 4 MP", then "Meteor 40 MP (not enough MP)" greyed, then Back.
+
+**Unblocks.** C2.19 (the readout), C2.20 (the demo), and C4.3's command overlay, which reuses
+`BattleMenu`.
+
+**Gaps.**
+- No keyboard shortcut steps the Boost level. It is a row, reached like any other.
+- A category has no icon or ordering beyond the order of its first command.
+- The Next line lists the order after the current actor, unchanged from C2.7.
