@@ -13,7 +13,7 @@ extends Area3D
 ## Then, if anything landed, its `poise` wears the shield (`Weakness.wear`) and its `knockback`
 ## asks for a push away from where the hit came from (`Events.knockback_requested`).
 ##
-## `timeline` is set by whoever runs this fighter's moves (C3.4's fighter, C3.6's enemy), so a
+## `timeline` is set by whoever runs this fighter's moves (C3.4's fighter, C3.7's enemy), so a
 ## dodge's i-frames are read from the same clock that plays the dodge.
 ##
 ## OWNS: whether one real-time hit counts, and resolving it on this fighter.

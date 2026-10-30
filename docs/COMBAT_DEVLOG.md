@@ -1749,3 +1749,61 @@ locked target's hp from `lock_on_changed`).
   C5.3 question.
 - With both checks true at once, the larger is kept: a target past the leash is dropped even
   while the player looks at it.
+
+## 2026-10-30 — C3.6 · An enemy's brain: chase, attack and retreat as pure decisions
+
+**Did.**
+- New `ActionBrain` (content): the numbers of one kind of enemy, in metres and seconds:
+  - aggro, give-up and leash radii;
+  - attack range, attack cooldown and speed;
+  - wandering, and retreating when hurt;
+  - a list of weighted moves.
+- New `ActionBrainEntry`, one weighted move with three conditions:
+  - its reach (0 means the brain's range);
+  - its minimum reach;
+  - an hp fraction it is used at or below.
+- New `ActionDecider` (systems, pure). `think(...)` takes plain numbers and returns one of eight
+  states. `pick(...)` draws a move by weight.
+- New `tests/unit/action_decider_test.gd` (21).
+- The board row was split. This row is the brain and the decider, and the new C3.7 is the body.
+  Defeat, the HUD and the demo moved to C3.8, C3.9 and C3.10. Earlier entries in this log that
+  name C3.7 to C3.9 meant those rows before the move.
+- Combat `0.31.0`.
+
+**Why.** The board says tests never await frames, so an enemy's mind has to be testable without
+a body, navigation or physics. Each situation is one line of numbers in the test.
+
+**Decisions.**
+- **A priority list, not a state graph.** Each think checks, in order: defeated, stunned, a move
+  still playing, walking home, retreating, attacking, chasing, then idling. Every situation
+  therefore has exactly one answer, which is easy to read and to test. The previous state
+  matters in only three places:
+  - chasing keeps a target out to give-up range;
+  - walking home holds until home;
+  - an attack holds while its move plays.
+- **The cooldown starts when a move ends**, so a long move is not followed at once by another.
+- **Any move that reaches may attack.** A lunge with reach 4 is used from 3 m, so enemies close
+  distance with moves and not only by walking. `attack_range` is the default reach and how near
+  the body walks in.
+- **Walking home ignores everyone until home.** That is the classic leash. It stops a player
+  dragging an enemy across the map, and it stops the enemy flip-flopping at the edge.
+- **Defeated is final.** No later think revives it. Coming back is C3.8's respawn rule.
+- **Retreat outranks attack.** A hurt enemy with retreat set backs off rather than trading
+  blows. A game that wants it to fight to the death leaves `retreat_below` at 0.
+
+**Verified.**
+- Suite: `3231 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with the choosing stubbed, 11 assertions failed.
+- Getting green found one wrong expectation in the test, not in the code: the think that ends
+  the cooldown attacks on that same think.
+- No capture: nothing draws.
+
+**Unblocks.** C3.7: the body senses, calls `think` and acts on the answer.
+
+**Gaps.**
+- There is no line-of-sight check. An enemy notices through walls. The body (C3.7) may add a
+  ray test before it reports a target distance.
+- There is no group behaviour (surrounding, taking turns to attack). Each enemy decides alone.
+- A RETREAT has no end condition beyond the facts changing. The body decides how far "away" is.
