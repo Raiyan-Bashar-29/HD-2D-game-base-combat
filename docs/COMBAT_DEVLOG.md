@@ -1502,3 +1502,60 @@ puts its areas on these layers.
   buttons only. A pad prompt for dodge and lock-on needs that seam too.
 - `reset_bindings()` does not touch the combat actions. They were never overridden, so there is
   nothing to reset.
+
+## 2026-10-30 — C3.2 · Moves as data, timing as pure code
+
+**Did.**
+- New `ActionMove` (content): one real-time move.
+  - Three phases in seconds: startup, active and recovery.
+  - `chain_after`: when, in recovery, the next swing may start.
+  - i-frames from and to, counted from the move's start.
+  - The hit: `power`, `element`, `hits`, `poise` and `knockback`.
+  - A hitbox size and offset, a `travel_speed` for lunges and rolls, and an optional `Skill`.
+  - `strikes()`, `length()` and `problems()`.
+- New `MoveSet` (content): an attack chain, a dodge and skill slots, with `problems()`.
+- New `MoveTimeline` (systems, a pure `RefCounted`), the clock of one fighter's moves.
+  - `step(dt)` returns the phases entered during that step, in order.
+  - `press(chain)` starts or continues a chain, and buffers a slightly early press.
+  - `start(move)` plays a dodge or a skill.
+  - It also has `can_dodge()`, `invulnerable()`, `is_hitting()`, `cancel()` and a `swing` counter.
+- New `tests/unit/move_timeline_test.gd` (22).
+- Combat `0.27.0`.
+
+**Why.** Every later action row (hitboxes, the player, enemies, the hybrid) needs to know "is
+this swing live right now?" without waiting for frames. Tests never await frames, so timing
+has to be a pure clock that a test can step by hand.
+
+**Decisions.**
+- **A dodge is just a move.** It is an `ActionMove` with i-frames and a `travel_speed`. One clock
+  then times swings, rolls and spell casts, and C3.4 drives the body from `travel_speed` during
+  ACTIVE.
+- **`step` returns every phase entered, in order.** A slow frame that crosses ACTIVE still
+  switches the hitbox on and off, rather than skipping the swing.
+- **A press up to 0.25 s early is buffered, and an earlier one is dropped.** A player who mashes
+  gets a fluid chain, and one who presses once during the wind-up does not get a surprise second
+  swing. `buffer_window` is a plain var, so a game can tune it.
+- **A dodge cancels recovery only.** It never cancels a wind-up or a live swing, so committing
+  to an attack has a cost.
+- **The chain index resets when the fighter goes idle.** Stopping mid-chain starts the next
+  attack from the first swing.
+- **The `swing` counter** lets C3.3's hitbox hit each target once per swing, without keeping a
+  list of who was struck in the move itself.
+
+**Verified.**
+- Suite: `3151 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with `step` stubbed, 14 assertions failed. One failure was a real defect:
+  `problems()` reported a negative time twice, once more as "takes no time", and it was fixed.
+- No capture: nothing here draws.
+
+**Unblocks.** C3.3: a `Hitbox` reads `is_hitting()` and `swing`, and a `Hurtbox` reads
+`invulnerable()`. C3.4 then drives these from input.
+
+**Gaps.**
+- Nothing yet resolves a move's `skill`. That is C3.3's hitbox, through `SkillUse`.
+- Skill slots have no cooldown or charge yet. C3.8's HUD shows them, so cooldowns arrive with
+  the player in C3.4.
+- `hits` above 1 has no spacing in time. C3.3 decides whether a multi-hit move hits once per
+  `hits`, or re-arms during ACTIVE.
