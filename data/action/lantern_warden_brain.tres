@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ActionBrain" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/action_brain_entry.gd" id="1_entry"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="2_move"]
+[ext_resource type="Script" path="res://src/content/combat/action_brain.gd" id="3_brain"]
+
+[sub_resource type="Resource" id="slam"]
+script = ExtResource("2_move")
+startup = 0.6
+active = 0.2
+recovery = 0.6
+power = 6.0
+knockback = 3.0
+hitbox_size = Vector3(1.8, 1.2, 1.8)
+hitbox_offset = Vector3(0, 0.6, -1.0)
+
+[sub_resource type="Resource" id="slam_entry"]
+script = ExtResource("1_entry")
+move = SubResource("slam")
+
+[resource]
+script = ExtResource("3_brain")
+aggro_radius = 5.0
+give_up_radius = 9.0
+leash_radius = 8.0
+attack_range = 1.8
+attack_cooldown = 2.0
+move_speed = 1.6
+wander_radius = 1.0
+moves = Array[ExtResource("1_entry")]([SubResource("slam_entry")])

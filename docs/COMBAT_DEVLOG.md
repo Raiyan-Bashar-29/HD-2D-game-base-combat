@@ -2485,3 +2485,51 @@ want, without a new system each.
   choice, or a later row.
 - `TimedWindow` is not wired to any move or input. A move or skill field that carries one, and a
   press read during the move, are later work.
+
+## 2026-10-30 — C4.11 · Demo proof: a hybrid fight (closes C4)
+
+**Did.**
+- **The Keeper thinks and fights.** `data/action/keeper_loadout.tres`:
+  - `fighter.brain`: Salve, aimed at the most hurt member (LOWEST_HP), weight 4, only while the
+    Keeper itself is below 60% hp; Bulwark, weight 1.
+  - `field_brain`: its staff chain (`staff_one` listed, so the whole chain plays), aggro 5,
+    give-up 8, leash 7, cooldown 1.2 s.
+- **A hybrid foe.** New `data/action/lantern_warden.tres` (90 hp, 4 shield, weak to fire) and
+  `lantern_warden_brain.tres` (a 0.6 s slam, power 6, knockback 3, slow walk), placed in the
+  lantern hall's east side. New CSV row `combat.enemy.lantern_warden.name`.
+- **The hall's open edge.** The first probe saw the Keeper's finisher push the Warden off the open
+  south side of the floor; it fell for ever. The hall gains `EdgeSouth`, a collision-only wall
+  (no mesh, so the camera still sees in).
+- Combat `0.46.0`. No code changed.
+
+**Why.** It is the board row that closes C4: every hybrid part working at once in the running
+game, on the demo's own data.
+
+**Connects.** C4.8's `BattleBrain` in the field, C4.9's `field_brain`, C4.5's ATB and Ember, and
+C4.6's pressure and stagger.
+
+**Verified.**
+- **Suite:** `3423 passed, 0 failed` (two more: the new name key and the new release line). **Boot:** `0 warnings, 0
+  errors`. **Checkers:** all seven exit 0.
+- **The stripped run:** `3325 passed, 0 failed, 25 skipped`; boot clean; the checkers pass.
+- **Red first, in the running game:** before this row the Keeper had no brains and only walked.
+  After it, a headless probe in the lantern hall (no input) logged the Keeper felling both moths,
+  casting Bulwark, and Salving itself from 8 to 26 hp.
+- **The hybrid loop, windowed (`xvfb-run`, OpenGL):** with one ATB bar granted, Ember hit both
+  moths and the Warden: shield 4 → 3 and PRESSURED. The Keeper's finisher then took 2 shield, not
+  1. At 0 the Warden was STAGGERED; 4 s later the stagger ended and its shield read 4 / 4.
+- **Capture:** the HUD reads `Lantern Warden   HP 12 / 90   [Staggered]` above
+  `HP 35 / 46  MP 6 / 12  ATB 0 / 2`.
+- The probe folder was deleted; `git status` shows only the intended files.
+
+**Unblocks.** C5.1, mixed formulas.
+
+**Gaps.**
+- **A body knocked off a floor's open edge falls for ever.** Board row C5.8 adds a safety net;
+  the demo hall is walled meanwhile.
+- A follower counts as "fighting" whenever a standing foe is within 8 m, so the Keeper casts
+  Bulwark at a dormant Warden across the hall. A "foe is aggroed" test would be better.
+- A brain entry's `below_fraction` reads the caster's own pool; there is no "an ally below X"
+  condition, so the Keeper heals only once it is hurt itself.
+- The player teleport in the probe did not stick (the spawn placement ran after it); the captures
+  stand where the hall put the player.
