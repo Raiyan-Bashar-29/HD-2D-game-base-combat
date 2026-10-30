@@ -42,6 +42,27 @@ func fighter() -> Combatant:
 	return Combatant.of(get_parent())
 
 
+## The nearest standing hurtbox that `body`'s fighter may attack (the faction table calls it an
+## enemy), or null. A real-time enemy (C3.7) and a fighting party follower (C4.9) both pick
+## their target with this.
+static func nearest_hostile(body: Node3D) -> Hurtbox:
+	var me: Combatant = Combatant.of(body)
+	if me == null or not body.is_inside_tree():
+		return null
+	var best: Hurtbox = null
+	var best_distance: float = INF
+	for node: Node in body.get_tree().get_nodes_in_group(GROUP):
+		var hurtbox: Hurtbox = node as Hurtbox
+		if hurtbox == null or not me.can_target(hurtbox.fighter(), FactionTable.Target.ENEMY):
+			continue
+		var vitals: Vitals = Vitals.of(hurtbox.get_parent())
+		var distance: float = body.global_position.distance_to(hurtbox.global_position)
+		if (vitals == null or not vitals.is_defeated()) and distance < best_distance:
+			best = hurtbox
+			best_distance = distance
+	return best
+
+
 ## `attacker` struck this with `move`, from the point `from`. True when the hit counted:
 ## resolved on this fighter, whether or not it then missed. False when refused or dodged.
 func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, from: Vector3) -> bool:

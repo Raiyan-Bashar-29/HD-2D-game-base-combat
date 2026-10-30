@@ -1492,7 +1492,7 @@ spent, and the fight runs at full speed again. Salve heals you the same way.
 2. **Following:** each member is a `PartyFollower` (`scenes/objects/party_follower.tscn`, which
    you may restyle) that walks `spacing` metres behind the leader for each place in the line, at
    `speed`, and is set down on the leader's feet when more than `catch_up` metres away. It can be
-   hit. It does not swing at foes until C4.9.
+   hit. It swings at foes only with a field brain (step 6).
 3. **Switching:** C (pad `PADDLE1`) hands the player's body to the next standing member. Their
    hp, statuses, gauge, moves and commands come with them, the two swap places, and the one
    handed over goes to the back of the line. A fallen member is passed over, and the key does
@@ -1506,6 +1506,17 @@ spent, and the fight runs at full speed again. Salve heals you the same way.
    member, FIRST on an ENEMY skill casts at the nearest foe, and an ALL skill takes everyone in
    reach. `below_fraction` tests the follower's own pool, as in battle. With no brain it only
    walks. The member you control never thinks; its brain waits until you switch away.
+6. **Fighting (C4.9):** give a member's loadout a `field_brain`, the same `ActionBrain` a
+   real-time enemy uses (every field is in § Action combat). While it follows:
+   - a foe within `aggro_radius` is chased, and let go beyond `give_up_radius`;
+   - in reach it attacks with a move drawn from `moves` by weight. **List the member's
+     `attack_chain[0]` as a move and it plays the whole chain**, swing after swing; any other
+     move (a lunge) plays alone. Then it waits `attack_cooldown`;
+   - `leash_radius` is measured from its PLACE IN THE LINE, not from where it started: strayed
+     further, it gives up and walks back to the leader;
+   - `retreat_below` makes it back away when hurt; `wander_*` is ignored, it keeps its place.
+   It strikes through its own hitbox, as whoever the member is now. A knockback pushes it
+   (`stun_time` on the prefab, 0.25 s). No field brain: it never swings, as before.
 
 **Seeing it:** the Keeper (`data/action/keeper_loadout.tres`) follows the Wanderer into the
 lantern hall. Press C and you are the Keeper, with a staff, Salve and Bulwark on F; press it
