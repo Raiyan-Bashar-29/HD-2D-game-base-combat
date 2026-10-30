@@ -13,9 +13,15 @@ extends TurnScheduler
 ## wait already running; the new speed sets the wait after it acts. An actor with speed 0 never
 ## acts.
 ##
+## A CLOCK-FED ATB BATTLE (C4.10), as in the classic Final Fantasy games, is this same queue
+## with the ticks fed by time: each frame a host calls `advance(CombatClock.scaled(delta) *
+## ticks_per_second)`, and when it names someone, that fighter's gauge is full and the host
+## calls the battle's `next_turn()`. Holding the clock at 0 while a menu is open is "wait" mode:
+## nothing fills. `next()` alone, with no `advance`, is still plain CTB.
+##
 ## OWNS: each actor's remaining wait.
-## MUST NOT: know what a tick is in seconds. A tick is an ordering unit, not time; the hybrid
-## formula (C4) that fills a gauge in real time is a different scheduler.
+## MUST NOT: know what a tick is in seconds. A tick is an ordering unit, not time; whoever feeds
+## `advance` decides how many ticks a second is worth.
 
 ## The wait, in ticks, of an actor with speed 1. Only the ratios between speeds matter to the
 ## order; this sets the scale `delay_by` is measured in.
@@ -42,6 +48,19 @@ func leave(id: StringName) -> void:
 func delay_by(id: StringName, ticks: float) -> void:
 	if _wait.has(id):
 		_wait[id] = maxf(0.0, _wait[id] + ticks)
+
+
+## Lets `ticks` of time pass: every wait drops by that much, never below 0. Returns who is
+## ready to act now (the one `next()` would answer, once their wait has run out), or `&""` while
+## nobody is. Nothing is consumed: the turn itself is still taken with `next()`, which, with
+## that wait already at 0, moves nobody else on.
+func advance(ticks: float) -> StringName:
+	for id: StringName in _ids:
+		_wait[id] = maxf(0.0, _wait[id] - maxf(0.0, ticks))
+	var id: StringName = _soonest(_wait)
+	if id != &"" and _wait[id] <= _EPSILON:
+		return id
+	return &""
 
 
 ## The ticks before `id` acts. Infinite for an actor who never will.

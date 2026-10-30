@@ -1522,6 +1522,23 @@ spent, and the fight runs at full speed again. Salve heals you the same way.
 lantern hall. Press C and you are the Keeper, with a staff, Salve and Bulwark on F; press it
 again to take the Wanderer back.
 
+### Variants with no new system (C4.10)
+
+Three well-known styles come from parts that already exist.
+- **An ATB battle** (the classic Final Fantasy gauge): an encounter with `turn_order` CTB, whose
+  `CtbScheduler` is fed with time instead of jumping turn to turn. Each frame, call
+  `advance(CombatClock.scaled(delta) * ticks_per_second)` on the battle's scheduler; when it names
+  someone, call `Battle.next_turn()`. Holding `CombatClock` at 0 while a menu is open is "wait"
+  mode. Speeds and the scheduler's `delay` set how long each gauge takes. The battle screen still
+  runs plain CTB; a screen that feeds time is a game's choice.
+- **Pause-and-play:** set `[combat] hybrid/slow` to 0. The command menu then stops the fight while
+  it is open, and the chosen command lands the moment it is picked.
+- **Timed hits:** a `TimedWindow` resource. `opens` and `closes` are seconds after the move starts;
+  a press between them multiplies the power by `bonus` (1.5). `perfect` (seconds, 0 for none) is a
+  tighter centre worth `perfect_bonus` (2.0). Call `multiplier(pressed_at)` and multiply the hit's
+  power by it; `problems()` flags a window that closes before it opens, a negative bonus, or a
+  centre wider than the window.
+
 ## Read next
 
 [`ART_CONTRACT.md`](ART_CONTRACT.md) — what art has to satisfy to drop in ·
