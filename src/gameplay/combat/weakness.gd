@@ -50,13 +50,24 @@ static func strike(target: Combatant, keys: Array[StringName]) -> bool:
 		if key != &"" and target.weak_to.has(key):
 			matched = true
 			_reveal(target, key)
+	return matched and _chip(target, 1)
+
+
+## POISE (C3.3): a real-time hit that LANDED takes `points` from `target`'s shield whatever it
+## is weak to, so heavy swings stagger anything with a shield. True when that broke it.
+static func wear(target: Combatant, points: int) -> bool:
+	return points > 0 and _chip(target, points)
+
+
+## Takes `points` of shield; when that empties it, applies the break. True when it broke.
+static func _chip(target: Combatant, points: int) -> bool:
 	var vitals: Vitals = Vitals.of(target.get_parent())
-	if not matched or vitals == null or vitals.is_defeated():
+	if vitals == null or vitals.is_defeated():
 		return false
 	# A fighter with no shield, or one already at zero (already broken), loses nothing more.
 	if vitals.maximum(SHIELD_POOL) <= 0 or vitals.current(SHIELD_POOL) <= 0:
 		return false
-	if vitals.change(SHIELD_POOL, -1) > 0:
+	if vitals.change(SHIELD_POOL, -points) > 0:
 		return false
 	var statuses: StatusSet = StatusSet.of(target.get_parent())
 	if statuses != null:

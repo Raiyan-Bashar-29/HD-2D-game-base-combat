@@ -299,8 +299,15 @@ signal skill_reflected(who: StringName, back_to: StringName, skill_id: StringNam
 ## A hit matched `key` (an element or a skill tag) among `who`'s weaknesses for the first time:
 ## it is now remembered under `weakness/<kind>/<key>`. Emitted by `Weakness` (C2.17).
 signal weakness_revealed(who: StringName, key: StringName)
-## `who`'s shield reached zero and it is BROKEN. Emitted by `Weakness.strike` (C2.17).
+## `who`'s shield reached zero and it is BROKEN. Emitted by `Weakness` (C2.17), from a weakness
+## hit or, in real time, from poise (C3.3).
 signal combatant_broken(who: StringName)
+## A real-time hit from `by` passed through `who` during its i-frames: a dodge. Emitted by
+## `Hurtbox.take` (C3.3), instead of any damage.
+signal attack_dodged(who: StringName, by: StringName)
+## A real-time hit asks for `who` to be pushed by `push`: the direction times the distance in
+## metres, flat on the ground. Emitted by `Hurtbox.take` (C3.3); the fighter's body moves (C3.4).
+signal knockback_requested(who: StringName, push: Vector3)
 ## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
 signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,
