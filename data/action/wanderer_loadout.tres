@@ -6,6 +6,9 @@
 [ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="4_vtpru"]
 [ext_resource type="Script" path="res://src/content/combat/move_set.gd" id="5_ua7tc"]
 [ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="6_o56hc"]
+[ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="7_atbru"]
+[ext_resource type="Resource" path="res://data/skills/ember.tres" id="8_ember"]
+[ext_resource type="Resource" path="res://data/skills/salve.tres" id="9_salve"]
 
 [sub_resource type="Resource" id="Resource_fovq0"]
 script = ExtResource("2_8bigs")
@@ -72,7 +75,23 @@ script = ExtResource("5_ua7tc")
 attack_chain = Array[ExtResource("4_vtpru")]([SubResource("Resource_oykhv"), SubResource("Resource_p155h"), SubResource("Resource_557cg")])
 dodge = SubResource("Resource_qb1o4")
 
+[sub_resource type="Resource" id="Resource_atb01"]
+script = ExtResource("7_atbru")
+
+[sub_resource type="Resource" id="Resource_cmd01"]
+script = ExtResource("1_p5tgy")
+kind = 1
+skill = ExtResource("8_ember")
+category = "combat.category.magic"
+
+[sub_resource type="Resource" id="Resource_cmd02"]
+script = ExtResource("1_p5tgy")
+kind = 1
+skill = ExtResource("9_salve")
+
 [resource]
 script = ExtResource("6_o56hc")
 fighter = SubResource("Resource_l1p37")
 moves = SubResource("Resource_3d047")
+atb = SubResource("Resource_atb01")
+commands = Array[ExtResource("1_p5tgy")]([SubResource("Resource_cmd01"), SubResource("Resource_cmd02")])
