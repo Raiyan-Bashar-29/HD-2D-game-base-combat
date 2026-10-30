@@ -22,8 +22,9 @@ extends Node
 ## by on the next frame. Moving twice would double every step.
 ##
 ## OWNS: this fighter's move clock, facing, hit-stun and its `&"action"` lock token.
-## MUST NOT: resolve hits (the `Hurtbox` does), choose targets (C3.5's lock-on), or edit the
-## controller. It talks to a `PlayerController` only through its lock methods.
+## MUST NOT: resolve hits (the `Hurtbox` does), choose targets (a `LockOn` sibling does; the
+## fighter only faces what it holds), or edit the controller. It talks to a `PlayerController`
+## only through its lock methods.
 
 const LOCK: StringName = &"action"
 
@@ -37,6 +38,7 @@ var facing: Vector3 = Vector3.FORWARD
 
 var _body: CharacterBody3D
 var _hitbox: Hitbox
+var _lock_on: LockOn
 var _stun_left: float = 0.0
 var _push: Vector3 = Vector3.ZERO
 var _roll: Vector3 = Vector3.ZERO
@@ -51,6 +53,8 @@ func _ready() -> void:
 			_hitbox.timeline = timeline
 		elif child is Hurtbox:
 			(child as Hurtbox).timeline = timeline
+		elif child is LockOn:
+			_lock_on = child as LockOn
 	Events.knockback_requested.connect(_on_knockback)
 
 
@@ -65,6 +69,9 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	if statuses != null:
 		statuses.tick_seconds(delta)
 	_stun_left = maxf(0.0, _stun_left - delta)
+	# Locked on, the fighter always faces its target, so every swing and roll aims at it (C3.5).
+	if _lock_on != null and _lock_on.target != null and _lock_on.direction() != Vector3.ZERO:
+		facing = _lock_on.direction()
 	var vitals: Vitals = Vitals.of(get_parent())
 	if vitals != null and vitals.is_defeated():
 		timeline.cancel()
@@ -126,7 +133,7 @@ func _move_body() -> void:
 			player.release_input(LOCK)
 	if not holding:
 		var flat: Vector3 = _flat(_body.velocity)
-		if flat.length() > 0.1:
+		if flat.length() > 0.1 and (_lock_on == null or _lock_on.target == null):
 			facing = flat.normalized()
 		return
 	# While holding, the fighter owns the horizontal velocity outright: a push, a roll, a

@@ -1697,3 +1697,55 @@ AI body), and C3.8 (the HUD reads the player's pools).
 - The player's facing is not shown, because the sprite's direction is upstream's. The hitbox
   turns, the picture does not.
 - No sound or flash on a hit. That waits for art and audio, and the HUD (C3.8) shows numbers.
+
+## 2026-10-30 — C3.5 · Lock-on
+
+**Did.**
+- New `LockOn`, a node beside the fighter, fitted by `ActionHost.equip`.
+  - `toggle(facing)` locks the nearest hostile, standing target that is within `reach` and
+    within `cone` degrees of the facing, or lets go.
+  - `cycle()` walks every hostile in reach, nearest first, and wraps.
+  - `refresh()` drops a target that fell, left, or went past `reach * leash`.
+  - It also has `candidates()` and `direction()`.
+  - Its `_physics_process` reads the C3.1 actions `combat_lock_on` and `combat_lock_cycle`.
+- New `Hurtbox.GROUP`; every hurtbox joins it.
+- New signal `lock_on_changed(who, target)`.
+- `ActionFighter` faces a held target, and stops turning to its velocity while locked.
+- New `tests/unit/lock_on_test.gd` (13).
+- Combat `0.30.0`.
+
+**Why.** Real-time swings need to aim at something. With a fixed HD-2D camera and a sprite that
+faces only where it walks, aiming by movement alone is fiddly. Locking makes every swing and
+every roll face the chosen enemy.
+
+**Decisions.**
+- **The first pick is in front, cycling is anywhere.** Pressing lock-on should take what the
+  player is looking at. Cycling is how they reach the one behind them.
+- **A leash above 1.** A target is picked within 10 m and kept until 13 m, so an enemy stepping
+  back and forth across the edge does not flicker the lock.
+- **Targets come from a group, not physics.** A lock is a choice among fighters, not a
+  collision. A group needs no shapes or physics frames, and a test can place nodes and ask.
+- **Hostile means the faction table's ENEMY,** the same rule the turn-based battle and the
+  hurtbox use. A charmed or guest fighter follows whatever the table says.
+- **The fighter faces the target, and the lock-on does not turn the body.** Facing is the
+  fighter's job, so the hitbox and the dodge both follow it.
+
+**Verified.**
+- Suite: `3209 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with the search stubbed, 11 failed. One stray engine error came first: a method
+  named `_set` overrode `Object._set`. It was renamed `_hold`.
+- No capture yet: there is nothing hostile in the field to lock until C3.6. The C3.9 demo
+  capture shows it.
+
+**Unblocks.** C3.6 (enemies are hostile hurtboxes to lock), and C3.8 (the HUD shows the
+locked target's hp from `lock_on_changed`).
+
+**Gaps.**
+- Nothing marks the locked target on screen. That is the HUD's (C3.8), and the marker art is
+  deferred.
+- The camera does not frame the target. The camera rig is upstream's, and a seam for it is a
+  C5.3 question.
+- With both checks true at once, the larger is kept: a target past the leash is dropped even
+  while the player looks at it.
