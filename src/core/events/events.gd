@@ -308,6 +308,9 @@ signal attack_dodged(who: StringName, by: StringName)
 ## A real-time hit asks for `who` to be pushed by `push`: the direction times the distance in
 ## metres, flat on the ground. Emitted by `Hurtbox.take` (C3.3); the fighter's body moves (C3.4).
 signal knockback_requested(who: StringName, push: Vector3)
+## `who`'s lock-on moved to `target`, a combatant id; `&""` means it let go. Emitted by `LockOn`
+## (C3.5) when it locks, cycles, or drops a target that died or walked out of range.
+signal lock_on_changed(who: StringName, target: StringName)
 ## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
 signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,

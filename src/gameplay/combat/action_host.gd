@@ -36,7 +36,7 @@ static func configured() -> ActionLoadout:
 
 
 ## Adds what fighting needs under `body`: `Vitals`, `StatusSet`, `Combatant`, a `Hurtbox` with
-## a shape, a `Hitbox` and an `ActionFighter`. A body that already has a `Combatant` is left
+## a shape, a `Hitbox`, a `LockOn` and an `ActionFighter`. A body that already has a `Combatant` is left
 ## alone and gets nothing, so equipping twice is harmless. Returns the fighter, or null.
 static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	if body == null or loadout == null or loadout.fighter == null or Combatant.of(body) != null:
@@ -63,6 +63,7 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	hurtbox.add_child(shape)
 	body.add_child(hurtbox)
 	body.add_child(Hitbox.new())
+	body.add_child(LockOn.new())
 	var fighter := ActionFighter.new()
 	fighter.moves = loadout.moves
 	body.add_child(fighter)

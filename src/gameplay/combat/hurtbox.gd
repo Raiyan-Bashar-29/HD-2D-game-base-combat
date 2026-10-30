@@ -20,6 +20,10 @@ extends Area3D
 ## MUST NOT: move the body, decide what defeat means, or remember who struck it: once per swing
 ## is the `Hitbox`'s rule.
 
+## Every hurtbox in the tree joins this group, so a `LockOn` can find targets without
+## asking the physics engine (C3.5).
+const GROUP: StringName = &"combat_hurtboxes"
+
 ## The clock of this fighter's own moves; null means it never has i-frames.
 var timeline: MoveTimeline
 
@@ -30,6 +34,7 @@ func _ready() -> void:
 	# Hurtboxes are found by hitboxes; they do not look for anything themselves.
 	monitoring = false
 	monitorable = true
+	add_to_group(GROUP)
 
 
 ## The combatant this hurtbox belongs to: the `Combatant` beside it under the same actor.
