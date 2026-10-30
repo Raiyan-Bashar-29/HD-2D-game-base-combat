@@ -1380,7 +1380,8 @@ in the menu yet: that waits for C5.3.
    - `fighter`: a `CombatantDef`, exactly as for the turn-based party (`combatant_id`, `name_key`,
      `faction` player, `base_stats`, `attack_tags`, a `level_curve`);
    - `moves`: a `MoveSet`, with the `attack_chain` (one `ActionMove` per press, in order) and a
-     `dodge`. Its `skills` slots are data only for now: the hybrid's command menu (C4.3) spends them;
+     `dodge`. Its `skills` slots are data only for now: the hybrid's menu uses the loadout's own
+     `commands` instead (next section);
    - `defeat_rule`: what the player's fall means, after `delay` seconds on the ground.
      RESPAWN_AT_ENTRY (the default) gets up with `revive_fraction` of max hp at the area's
      entrance, with every enemy back; REVIVE_IN_PLACE gets up where they fell; RELOAD_SAVE loads
@@ -1428,6 +1429,45 @@ and roll through a lunge. The HUD at the bottom left shows your hp and the locke
 moth falls after three or four hits and gives 12 experience; the first drops a stone chip.
 `combat_content_test.gd` fails on a missing name string or an unsound loadout, fighter or brain
 under `data/action/`.
+
+## The hybrid: ATB and field commands (combat fork only)
+
+**FF7 Remake's pattern, built from the action formula's parts.** The player fights in real time.
+A gauge of ATB bars fills as they do, and F (pad `MISC1`) opens a command menu over the running
+fight, slowed almost to a stop. A spell or an item costs whole bars. The worked example is the
+same loadout as above, `data/action/wanderer_loadout.tres`: two bars, Ember under Magic, Salve on
+the first menu.
+
+1. **The gauge:** set the loadout's `atb` to an `AtbRules`. Leave it empty and the fighter has no
+   gauge and no menu: a pure action game.
+
+   | Field | Default | What it does |
+   |---|---|---|
+   | `segments` | 2 | How many bars. |
+   | `segment_size` | 100 | Points in one bar. |
+   | `per_second` | 4 | Points gained every second of fight time, doing nothing. |
+   | `on_hit_dealt` | 12 | Points for each hit the fighter lands. |
+   | `on_dodge` | 10 | Points for each attack the fighter rolls through. |
+
+   Spending removes whole bars and keeps the part-filled one. The fill follows the fight's own
+   clock, so it slows with the menu open and stops at 0.
+2. **The menu:** the loadout's `commands`, a list of `BattleCommand`s exactly like a party
+   member's in a turn-based battle, but only SKILL and ITEM: attack is a button and the field
+   cannot flee, so `combat_content_test.gd` reports any other kind. A command's `category` (such
+   as `combat.category.magic`) files it under a submenu; empty puts it on the first menu. An ITEM
+   command also spends one `item_id` from the player's inventory.
+3. **The price:** each `Skill` has `atb_cost`, the bars one field use costs (default 1, ignored in
+   turn-based battles). Its `cost` and `cost_pool` (mp) are paid too. A row the player cannot use
+   is greyed out with the reason: not enough ATB, not enough mp, no item, no target, or a status
+   that forbids it.
+4. **Targets:** a one-target attack goes to the locked-on foe, else the nearest within 8 m; an
+   all-targets one to every foe within 8 m; a heal or a buff to the player.
+5. **The slow:** `[combat] hybrid/slow` in `project.godot` is how fast the fight runs while the
+   menu is open. 0.1 is the default; 0 is a true wait mode; 1 does not slow at all.
+
+**Seeing it:** in the lantern hall, fight the moths until the HUD's `ATB` reads `1 / 2` or more,
+then press F. The fight crawls. Choose Magic, then Ember: both moths burn, 3 mp and one bar are
+spent, and the fight runs at full speed again. Salve heals you the same way.
 
 ## Read next
 

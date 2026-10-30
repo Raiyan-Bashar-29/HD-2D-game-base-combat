@@ -2232,3 +2232,31 @@ fight in real time, fill the bars, open the menu, and cast.
 - Boost is not offered in the field.
 - No target picker: a one-target command goes to the lock-on, else the nearest foe.
 - The pad binding is a non-standard button until rebinding (C5.3).
+
+## 2026-10-30 — C4.5 · Demo: field commands
+
+**Did.** The Wanderer's loadout (`data/action/wanderer_loadout.tres`) gains `atb`, a default
+`AtbRules` (two bars of 100, 4 a second, 12 a hit, 10 a dodge), and two field commands: Ember
+filed under `combat.category.magic`, and Salve on the first menu. `combat_content_test.gd` now
+reads a loadout's commands (labels, categories, skills) through one `_from_commands` shared with
+a fighter's. `AUTHORING.md` gains § The hybrid: ATB and field commands, and its line saying the
+menu spends `MoveSet.skills` is corrected: it uses the loadout's `commands`. Combat `0.40.0`.
+
+**Why.** C4.2 to C4.4 built the gauge, the rules and the menu, but the demo had no gauge, so F
+did nothing in the shipped game.
+
+**Verified.**
+- Red first: a missing category key on the loadout failed `combat_content_test`.
+- Suite: `3340 passed, 0 failed` (one more from the release-record test; the new keys were
+  already counted from the roster and the skills folder). Boot: `0 warnings, 0 errors`. All seven
+  checkers exit 0. The stripped run: `3243 passed, 0 failed, 25 skipped`, seven checkers 0.
+- **A real-game probe with the shipped loadout**, no temporary data: the meter existed and had
+  filled to 15.9 on its own; with the gauge then filled, F opened the menu and the clock read
+  0.1; Magic, then Ember, hit both moths (40 to 24 and 25), mp 12 to 9, one bar left, clock 1.0.
+- **Windowed captures:** the HUD's `ATB 2 / 2  100%`, the menu, the Magic submenu, and the hall
+  after the cast.
+
+**Unblocks.** C4.6, pressure and stagger.
+
+**Gaps.** No healing item in the demo data (Salve is a skill); no target picker; Boost not
+offered in the field.

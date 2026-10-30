@@ -62,6 +62,8 @@ func _from_action(action: Resource, named: Dictionary[String, String], wrong: Pa
 		wrong.append_array((action as ActionLoadout).problems(where))
 		if (action as ActionLoadout).fighter != null:
 			_from_def((action as ActionLoadout).fighter, named)
+		# The hybrid's field menu (C4.5): its labels, categories and skills are read too.
+		_from_commands((action as ActionLoadout).commands, where, named)
 	elif action is CombatantDef:
 		wrong.append_array((action as CombatantDef).problems(where))
 		_from_def(action as CombatantDef, named)
@@ -115,17 +117,23 @@ func _from_status(status: StatusEffect, named: Dictionary[String, String]) -> vo
 		named[status.name_key] = String(status.id)
 
 
-## A fighter's own name, its commands' labels, and the names of the skills those commands use.
+## A fighter's own name, and its commands' strings.
 func _from_def(def: CombatantDef, named: Dictionary[String, String]) -> void:
 	if def == null:
 		return
 	if def.name_key != "":
 		named[def.name_key] = String(def.combatant_id)
-	for command: BattleCommand in def.commands:
+	_from_commands(def.commands, String(def.combatant_id), named)
+
+
+## A list of menu commands, a fighter's or a field loadout's: each label, each category, and the
+## skill each one uses. `owner` is where they were found, for the failure message.
+func _from_commands(commands: Array[BattleCommand], owner: String, named: Dictionary[String, String]) -> void:
+	for command: BattleCommand in commands:
 		if command == null:
 			continue
 		if command.label_key != "":
-			named[command.label_key] = String(def.combatant_id)
+			named[command.label_key] = owner
 		if command.category != "":
-			named[command.category] = String(def.combatant_id)
+			named[command.category] = owner
 		_from_skill(command.skill, named)
