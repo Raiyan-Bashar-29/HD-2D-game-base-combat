@@ -311,6 +311,9 @@ signal knockback_requested(who: StringName, push: Vector3)
 ## `who`'s lock-on moved to `target`, a combatant id; `&""` means it let go. Emitted by `LockOn`
 ## (C3.5) when it locks, cycles, or drops a target that died or walked out of range.
 signal lock_on_changed(who: StringName, target: StringName)
+## A real-time enemy `who` fell, carrying `experience` and `loot` for whoever beat it. Emitted by
+## `ActionEnemy` (C3.8), once per defeat; `ActionHost` grants it through `Rewards.give`.
+signal field_enemy_defeated(who: StringName, experience: int, loot: Array[StringName])
 ## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
 signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,

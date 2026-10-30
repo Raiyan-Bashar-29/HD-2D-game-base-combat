@@ -20,14 +20,27 @@ extends CharacterBody3D
 ## `NavigationAgent3D` and `NpcBrain.reachable_point`, and walks straight at the point when it
 ## has none, so a test or a bare area still works.
 ##
+## WHEN IT FALLS (C3.8) it announces `field_enemy_defeated` with its `experience` and `loot`
+## once, lies there `linger` seconds, then is removed. Re-entering the area builds it afresh,
+## unless `remember_defeat` keeps it gone for good through a flag.
+##
 ## OWNS: this enemy's body: its home, facing, wander point, hit-stun and velocity.
-## MUST NOT: decide (the `ActionDecider` does), resolve hits (the `Hurtbox` does), or decide what
-## its defeat means (C3.8).
+## MUST NOT: decide (the `ActionDecider` does), resolve hits (the `Hurtbox` does), or grant its
+## own reward (`ActionHost` does, on the announcement).
 
 @export var fighter: CombatantDef
 @export var brain: ActionBrain
 ## Seconds a knockback pushes and stuns it for.
 @export var stun_time: float = 0.3
+@export_group("Defeat")
+## What beating it gives, through `Rewards.give` (C3.8).
+@export var experience: int = 0
+@export var loot: Array[StringName] = []
+## Seconds it lies fallen before it is removed.
+@export var linger: float = 1.0
+## True for a one-off foe (a boss): once beaten it never comes back, even on re-entry. False, the
+## default, means it is back whenever the area is entered again.
+@export var remember_defeat: bool = false
 
 var decider: ActionDecider
 var timeline: MoveTimeline = MoveTimeline.new()
@@ -42,9 +55,14 @@ var _wander_to: Vector3 = Vector3.ZERO
 var _stun_left: float = 0.0
 var _push: Vector3 = Vector3.ZERO
 var _gravity: float = 24.0
+var _fallen: bool = false
+var _gone_in: float = 0.0
 
 
 func _ready() -> void:
+	if remember_defeat and Flags.get_bool(defeat_flag()):
+		queue_free()
+		return
 	collision_layer = Layers.NPC
 	collision_mask = Layers.WORLD
 	var configured: float = ProjectSettings.get_setting("physics/3d/default_gravity", 24.0)
@@ -84,6 +102,10 @@ func act(delta: float) -> ActionDecider.State:
 	var state: ActionDecider.State = decider.think(delta, to_target.length() if _target != null else INF,
 		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0, defeated, rng)
 	_carry_out(state, to_target)
+	if _fallen:
+		_gone_in -= delta
+		if _gone_in <= 0.0 and not is_queued_for_deletion():
+			queue_free()
 	timeline.step(delta)
 	if _hitbox != null:
 		_hitbox.rotation.y = atan2(-facing.x, -facing.z)
@@ -142,6 +164,7 @@ func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
 			wish = _push
 		ActionDecider.State.DEFEATED:
 			timeline.cancel()
+			_fall()
 	velocity.x = wish.x
 	velocity.z = wish.z
 
@@ -166,6 +189,24 @@ func _wander_point() -> Vector3:
 	if _agent != null and _has_navmesh():
 		return NpcBrain.reachable_point(_agent.get_navigation_map(), global_position, wish, _agent.navigation_layers)
 	return wish
+
+
+## The flag that remembers a `remember_defeat` enemy was beaten: its area and its node name.
+func defeat_flag() -> StringName:
+	return StringName("field_defeated/%s/%s" % [Director.current_area_id, name])
+
+
+## The first think after it falls announces the defeat, once, and starts the `linger` clock
+## that `act` runs down before removing it.
+func _fall() -> void:
+	if _fallen:
+		return
+	_fallen = true
+	_gone_in = linger
+	var mine: Combatant = Combatant.of(self)
+	Events.field_enemy_defeated.emit(mine.combatant_id if mine != null else &"", experience, loot)
+	if remember_defeat:
+		Flags.set_flag(defeat_flag(), true)
 
 
 func _has_navmesh() -> bool:

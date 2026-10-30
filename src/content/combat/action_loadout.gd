@@ -13,6 +13,8 @@ extends Resource
 
 @export var fighter: CombatantDef
 @export var moves: MoveSet
+## What happens when the player falls (C3.8). Null means `DefeatRule.Kind.RESPAWN_AT_ENTRY`.
+@export var defeat_rule: DefeatRule
 
 
 func problems(context: String) -> PackedStringArray:
