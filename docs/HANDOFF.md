@@ -9,9 +9,10 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C3.5, lock-on: the nearest hostile in front, cycling, dropping the
-  fallen and the far, and a fighter that faces what it holds. C3.4 before it let the player
-  fight in the field.
+- **Last finished package:** C3.6, an enemy's brain: `ActionBrain` (the numbers and weighted
+  moves of one kind of enemy) and `ActionDecider`, the pure code that says whether it idles,
+  wanders, chases, attacks, retreats, walks home, staggers or stays down. C3.5 before it added
+  lock-on.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -23,12 +24,11 @@ between them, written in plain words.
     multi-hit), sleep, stun and silence, resistance, misses, counters, reflect, meters,
     stances, Boost, weakness, Break, a battle menu with categories, and a readout with a
     battle log. `AUTHORING.md` § Skills, statuses and combat depth lists every field.
-- **Next package:** **C3.6**, enemies that chase, attack and retreat: an `ActionBrain` (aggro,
-  leash, attack range, retreat, weighted moves), a pure `ActionDecider` for the state changes,
-  and an `ActionEnemy` body that paths with `NavigationAgent3D`.
+- **Next package:** **C3.7**, the enemy's body: an `ActionEnemy` CharacterBody3D and prefab
+  that senses, asks the decider, and paths, swings, backs away or walks home.
 - **Then, in order:**
-  1. **The rest of C3, action combat (C3.6–C3.9):**
-     enemies that chase, and a field HUD.
+  1. **The rest of C3, action combat (C3.7–C3.10):** the enemy's body,
+     defeat and respawn, a field HUD, and a playable demo.
   2. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
   3. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
 
@@ -99,9 +99,9 @@ anything to its left and nothing to its right.
 
 | Folder | What is in it, in plain words |
 |---|---|
-| `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, a real-time move, move set and loadout, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
+| `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, a real-time move, move set and loadout, an enemy's action brain, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
 | `src/systems/input/combat_actions.gd` | The action-combat inputs (attack, dodge, lock on), installed at boot by `ActionHost` because upstream's `Actions` may not be edited. |
-| `src/systems/combat/` | **Pure maths, no nodes:** the move timeline (which phase a real-time move is in), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
+| `src/systems/combat/` | **Pure maths, no nodes:** the move timeline (which phase a real-time move is in), the action decider (what a real-time enemy does next), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
 | `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits), `ActionFighter` (a body that swings and dodges), `LockOn` and `ActionHost` (fits the player with one), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
 | `src/ui/combat/` | `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary) and `BattleHost` (opens the screen when an encounter is requested). |
