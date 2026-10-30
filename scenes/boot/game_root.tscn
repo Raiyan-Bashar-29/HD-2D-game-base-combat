@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://src/core/boot/game_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://src/ui/hud/screen_fade.gd" id="2_fade"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://src/ui/root/screen_keys.gd" id="8_keys"]
 [ext_resource type="Script" path="res://src/ui/combat/battle_host.gd" id="40_battle"]
 [ext_resource type="Script" path="res://src/gameplay/combat/action_host.gd" id="41_action"]
+[ext_resource type="Script" path="res://src/ui/combat/combat_hud.gd" id="42_hud"]
 [ext_resource type="Script" path="res://src/ui/hud/loading_indicator.gd" id="9_load"]
 [ext_resource type="Script" path="res://src/systems/debug/dev_probes.gd" id="10_probes"]
 [ext_resource type="Script" path="res://src/systems/debug/dev_stage.gd" id="11_stage"]
@@ -42,6 +43,9 @@ script = ExtResource("5_toast")
 
 [node name="HudClock" type="Label" parent="UILayer"]
 script = ExtResource("7_clock")
+
+[node name="CombatHud" type="Label" parent="UILayer"]
+script = ExtResource("42_hud")
 
 [node name="UiRoot" type="Control" parent="UILayer"]
 anchors_preset = 15

@@ -1943,3 +1943,49 @@ lost).
   art.
 - Field experience goes to the loadout's one fighter, not the party. The hybrid (C4.5) brings
   the party into the field and should revisit this.
+
+## 2026-10-30 — C3.9 · The field HUD
+
+**Did.**
+- New `CombatHud`, a Label under `UILayer` in `game_root.tscn`.
+  - Line one: the player's hp, every other pool, and their statuses.
+  - Line two, while something is locked: its name and hp.
+  - It is hidden when the player is not a fighter. It redraws on events and never polls.
+- New strings `ui.combat_hud.hp` and `ui.combat_hud.target`. It reuses `ui.battle.pool` and
+  `ui.battle.statuses`.
+- New `tests/unit/combat_hud_test.gd` (8).
+- Combat `0.34.0`.
+
+**Why.** Real-time fights need their state on screen while you play. Until now hp and locks
+were visible only in logs.
+
+**Decisions.**
+- **One Label, beside the clock,** the template's HUD pattern (`hud_clock.gd` explains it).
+  There is no `Hud` parent to own it.
+- **`subject` decides whose state is shown,** defaulting to the live player. A test, or a later
+  party switch (C4.5), points it elsewhere without touching the drawing.
+- **The target's name comes from its definition's `name_key`,** else its kind, so two wisps
+  both read "Thorn Wisp" and not "wisp/ThornWisp2".
+- **The redraw after spawning is deferred,** because the fighter is fitted a frame after the
+  player announces itself (C3.4).
+- **No skill slots yet.** Nothing gives a skill a cooldown or a button yet. The HUD grows that
+  line when the hybrid menu (C4.3) does.
+
+**Verified.**
+- Suite: `3267 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with the drawing stubbed, 5 failed.
+- **A windowed capture of the running game** (`xvfb-run`): a temporary loadout with hp and mp,
+  a poisoned and hurt player, an enemy 3 m ahead and a real lock-on press. The HUD reads
+  `HP 26 / 30   MP 12 / 12   [probe_poison]` over `probe_wisp   HP 13 / 20`. The probe was
+  deleted.
+
+**Unblocks.** C3.10, a demo you can watch, not just read about.
+
+**Gaps.**
+- The HUD is text. Bars wait for art.
+- A status with no `name_key` shows its id's last part, as the battle log does. The demo gives
+  every status a name.
+- There is no marker over the locked enemy in the world. That waits for art, or for a camera
+  seam (C5.3).
