@@ -9,6 +9,10 @@
 [ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="7_atb"]
 [ext_resource type="Resource" path="res://data/skills/salve.tres" id="8_salve"]
 [ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="9_bulwark"]
+[ext_resource type="Script" path="res://src/content/combat/battle_brain.gd" id="10_brain"]
+[ext_resource type="Script" path="res://src/content/combat/brain_entry.gd" id="11_entry"]
+[ext_resource type="Script" path="res://src/content/combat/action_brain.gd" id="12_field"]
+[ext_resource type="Script" path="res://src/content/combat/action_brain_entry.gd" id="13_field_entry"]
 
 [sub_resource type="Resource" id="curve"]
 script = ExtResource("2_curve")
@@ -16,6 +20,32 @@ growth = Dictionary[StringName, float]({
 &"attack": 2.0,
 &"max_hp": 6.0
 })
+
+[sub_resource type="Resource" id="salve"]
+script = ExtResource("1_cmd")
+kind = 1
+skill = ExtResource("8_salve")
+
+[sub_resource type="Resource" id="bulwark"]
+script = ExtResource("1_cmd")
+kind = 1
+skill = ExtResource("9_bulwark")
+
+[sub_resource type="Resource" id="think_salve"]
+script = ExtResource("11_entry")
+command = SubResource("salve")
+weight = 4.0
+target_rule = 2
+below_fraction = 0.6
+
+[sub_resource type="Resource" id="think_bulwark"]
+script = ExtResource("11_entry")
+command = SubResource("bulwark")
+target_rule = 2
+
+[sub_resource type="Resource" id="brain"]
+script = ExtResource("10_brain")
+entries = Array[ExtResource("11_entry")]([SubResource("think_salve"), SubResource("think_bulwark")])
 
 [sub_resource type="Resource" id="keeper"]
 script = ExtResource("3_def")
@@ -29,6 +59,7 @@ base_stats = Dictionary[StringName, float]({
 &"max_mp": 14.0
 })
 level_curve = SubResource("curve")
+brain = SubResource("brain")
 
 [sub_resource type="Resource" id="staff_one"]
 script = ExtResource("4_move")
@@ -64,18 +95,22 @@ script = ExtResource("5_set")
 attack_chain = Array[ExtResource("4_move")]([SubResource("staff_one"), SubResource("staff_two")])
 dodge = SubResource("roll")
 
+[sub_resource type="Resource" id="swing"]
+script = ExtResource("13_field_entry")
+move = SubResource("staff_one")
+
+[sub_resource type="Resource" id="field_brain"]
+script = ExtResource("12_field")
+aggro_radius = 5.0
+give_up_radius = 8.0
+leash_radius = 7.0
+attack_range = 1.6
+attack_cooldown = 1.2
+move_speed = 3.5
+moves = Array[ExtResource("13_field_entry")]([SubResource("swing")])
+
 [sub_resource type="Resource" id="atb"]
 script = ExtResource("7_atb")
-
-[sub_resource type="Resource" id="salve"]
-script = ExtResource("1_cmd")
-kind = 1
-skill = ExtResource("8_salve")
-
-[sub_resource type="Resource" id="bulwark"]
-script = ExtResource("1_cmd")
-kind = 1
-skill = ExtResource("9_bulwark")
 
 [resource]
 script = ExtResource("6_loadout")
@@ -83,3 +118,4 @@ fighter = SubResource("keeper")
 moves = SubResource("moves")
 atb = SubResource("atb")
 commands = Array[ExtResource("1_cmd")]([SubResource("salve"), SubResource("bulwark")])
+field_brain = SubResource("field_brain")

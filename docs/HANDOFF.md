@@ -9,9 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C4.10, variants with no new system: a turn-based battle fed by fight
-  time (classic ATB, `CtbScheduler.advance`), pause-and-play (the fight's clock at 0), and timed
-  hits (`TimedWindow`, a power multiplier for a well-timed press).
+- **Last finished package:** C4.11, the hybrid demo, which closes C4. In the lantern hall the Keeper
+  heals and fights on its own, and a fire-weak Lantern Warden is pressured by Ember and staggered
+  by blows. Data only.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -26,11 +26,14 @@ between them, written in plain words.
   - C3, the action formula (complete): real-time moves as data, hitboxes, the player's
     chain and roll, lock-on, enemies that chase and lunge, field defeat and rewards, and a HUD.
     `AUTHORING.md` § Action combat lists every field.
-- **Next package:** **C4.11**, the hybrid demo: one hybrid encounter in the demo, the Keeper given
-  its brains, captures and AUTHORING. It closes C4.
+  - C4, the hybrid (complete): the fight's own clock, ATB, a command menu over the running
+    fight, pressure and stagger, a party in the field that thinks and fights, and three variants.
+    `AUTHORING.md` § The hybrid lists every field.
+- **Next package:** **C5.1**, mixed formulas: `Encounter.mode`, and an action foe that starts a
+  turn-based fight when touched.
 - **Then, in order:**
-  1. **The last of C4, the FF7-Remake-style hybrid demo (C4.11).**
-  2. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
+  1. **C5.2–C5.7:** saves around combat, upstream seams, accessibility, docs, a playtest, 1.0.0.
+  2. **C5.8:** a fall safety net (found in C4.11).
 
   Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,
   "Settled by C2.11".

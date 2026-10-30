@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatantDef" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+combatant_id = &"lantern_warden"
+name_key = "combat.enemy.lantern_warden.name"
+base_stats = Dictionary[StringName, float]({
+&"attack": 6.0,
+&"defence": 3.0,
+&"max_hp": 90.0,
+&"max_shield": 4.0
+})
+weak_to = Array[StringName]([&"fire"])

@@ -1522,6 +1522,25 @@ spent, and the fight runs at full speed again. Salve heals you the same way.
 lantern hall. Press C and you are the Keeper, with a staff, Salve and Bulwark on F; press it
 again to take the Wanderer back.
 
+### The whole hybrid in one room (C4.11)
+
+The lantern hall is the worked example of every part above at once.
+- **The Keeper** has both brains. Its `fighter.brain` lists Salve (LOWEST_HP, weight 4,
+  `below_fraction` 0.6: once the Keeper is under 60% hp it heals whoever is most hurt) and
+  Bulwark (weight 1). Its `field_brain` lists `staff_one`, the first of its chain, so it plays
+  both swings, and leashes it 7 m from its place in the line.
+- **The Lantern Warden** (`data/action/lantern_warden.tres`, brain
+  `lantern_warden_brain.tres`) is a foe built for the loop: 90 hp, `max_shield` 4, `weak_to`
+  fire, and a slow, heavy slam. Ember (fire) hits it on its weakness: one shield point and
+  PRESSURED for 3 s, during which every blow wears double poise. At 0 shield it is STAGGERED for
+  4 s, taking more damage and standing still; then its shield refills.
+- **Play it:** fight the moths until `ATB` reads `1 / 2`, lock onto the Warden (Q), press F and
+  cast Ember, then close in with the chain while the Keeper swings beside you. The HUD's target
+  line shows `[Pressured]`, then `[Staggered]`.
+- **An open floor edge** lets a knockback push a body off the world. The hall has `EdgeSouth`, a
+  collision-only wall on its open side; give your own arenas walls or edges on every side until
+  C5.8's safety net lands.
+
 ### Variants with no new system (C4.10)
 
 Three well-known styles come from parts that already exist.
