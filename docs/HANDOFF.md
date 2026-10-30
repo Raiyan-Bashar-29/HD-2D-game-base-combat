@@ -9,8 +9,8 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C2.17, weakness and Break: hitting a weakness wears a shield
-  down, a broken enemy loses a turn and takes more damage, and revealed weaknesses are saved.
+- **Last finished package:** C2.18, a battle menu with depth: categories with submenus,
+  costs on every row, greyed-out rows with the reason, stance On/Off, and a Boost selector.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -19,13 +19,12 @@ between them, written in plain words.
   - the whole turn-based formula (C2): a courtyard encounter you can walk up to and fight, with
     rewards and levels at the end;
   - C2b so far: one shared skill path (cure, dispel, revive, drain, multi-hit), sleep, stun and
-    silence, resistance, misses, counters, reflect, meters, stances, Boost, weakness and
-    Break.
-- **Next package:** **C2.18**, a battle menu with depth: categories with submenus, costs,
-  greyed-out choices with the reason, stance On/Off, a Boost selector, weaknesses shown, and a
-  short battle log.
+    silence, resistance, misses, counters, reflect, meters, stances, Boost, weakness, Break,
+    and a battle menu with categories.
+- **Next package:** **C2.19**, the battle readout: each fighter's statuses, shield and revealed
+  weaknesses on its line, and a short battle log ("Missed", "Broken!", "X is asleep").
 - **Then, in order:**
-  1. **The rest of C2b (C2.18–C2.19):** the battle menu, then the demo that closes C2b.
+  1. **The rest of C2b:** C2.19 (the readout), then C2.20, the demo that closes C2b.
   2. **C3, action combat (C3.1–C3.9):** hitboxes, the player's attack chain and dodge, lock-on,
      enemies that chase, and a field HUD.
   3. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
@@ -102,7 +101,7 @@ anything to its left and nothing to its right.
 | `src/systems/combat/` | **Pure maths, no nodes:** the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB). |
 | `src/gameplay/combat/` | **Things living in the game:** `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
-| `src/ui/combat/` | `BattleScreen` (the battle menu) and `BattleHost` (opens the screen when an encounter is requested). |
+| `src/ui/combat/` | `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out) and `BattleHost` (opens the screen when an encounter is requested). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |
 | `tests/unit/*_test.gd` | One test file per system. They build their own made-up content, so they pass with the demo deleted. |
 | `data/` | Demo content: skills, statuses, encounters and the party roster. |

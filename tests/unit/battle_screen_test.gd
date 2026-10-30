@@ -116,9 +116,15 @@ func _a_refusal_and_a_flight() -> void:
 	var battle := BattleSetup.build(_encounter(), [hero], _holder, _seeded())
 	var screen := BattleScreen.for_battle(battle)
 	_stack.open(screen)
-	equal("a definition's own commands make the menu", screen.row_texts().has(tr("fixture.dear")), true)
-	_press(screen, tr("fixture.dear"))
-	equal("an unaffordable skill is refused, and says so", screen.row_texts().has(tr(BattleScreen.REFUSED_KEY)), true)
+	# Since C2.18 a row carries its cost, and one the fighter cannot afford is greyed out with
+	# the reason beside it instead of being refused after a press.
+	var costed: String = tr(BattleScreen.COST_KEY).format({"label": tr("fixture.dear"), "cost": 9, "pool": "MP"})
+	var greyed: String = tr(BattleScreen.UNAVAILABLE_KEY).format({"label": costed,
+			"reason": tr(BattleMenu.COST_REASON_KEY).format({"pool": "MP"})})
+	equal("a definition's own commands make the menu, each skill with its cost",
+		screen.row_texts().has(greyed), true)
+	_press(screen, greyed)
+	equal("an unaffordable skill cannot be pressed: nothing happens", battle.outcome(), Battle.Outcome.ONGOING)
 	_press(screen, tr(BattleScreen.FLEE_KEY))
 	equal("fleeing ends the battle as FLED", screen.row_texts().has(tr(BattleScreen.FLED_KEY)), true)
 	_stack.close_top()

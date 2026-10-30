@@ -10,6 +10,11 @@ extends MenuScreen
 ## A COMMAND THAT NEEDS ONE TARGET ASKS FOR IT; an ALL skill, DEFEND and FLEE act at once. A
 ## refused command (an unaffordable skill) leaves the menu up with a line saying so.
 ##
+## THE MENU HAS DEPTH (C2.18). Commands with a `category` sit in a submenu behind one row. Every
+## skill row shows its cost, a stance shows On or Off, and a row the fighter cannot use right now
+## is greyed out with the reason beside it (`BattleMenu.refusal`). A fighter with Boost points
+## gets a Boost row that cycles the level the next action spends.
+##
 ## CANCEL CANNOT LEAVE A BATTLE. `closes_on_cancel` is false: FLEE is the way out, when allowed.
 ## When it ends, the outcome is shown with one row that closes the screen, and closing releases
 ## the fighters (`BattleSetup.release`), which erases every enemy flag.
@@ -41,6 +46,11 @@ const EXPERIENCE_KEY: String = "ui.battle.experience"
 const LEVEL_UP_KEY: String = "ui.battle.level_up"
 const FOUND_KEY: String = "ui.battle.found"
 const LEFT_KEY: String = "ui.battle.left_behind"
+const COST_KEY: String = "ui.battle.cost"
+const UNAVAILABLE_KEY: String = "ui.battle.unavailable"
+const STANCE_ON_KEY: String = "ui.battle.stance_on"
+const STANCE_OFF_KEY: String = "ui.battle.stance_off"
+const BOOST_KEY: String = "ui.battle.boost"
 ## How many upcoming turns the order line shows.
 const ORDER_LENGTH: int = 5
 
@@ -48,6 +58,10 @@ const ORDER_LENGTH: int = 5
 var battle: Battle
 var _pending: BattleCommand
 var _refused: bool = false
+## The open submenu's category key; empty on the first menu. And the Boost level chosen for the
+## next action, back to 0 after every action.
+var _category: String = ""
+var _boost: int = 0
 ## What the win gave, asked for once when the screen first sees the outcome.
 var rewards: Rewards
 
@@ -113,9 +127,19 @@ func _fill() -> void:
 			add_row(name_of(target), _aim.bind(target))
 		add_row(tr(BACK_KEY), _back)
 		return
-	# Otherwise: the current fighter's command list.
-	for command: BattleCommand in _menu():
-		add_row(_label(command), _choose.bind(command))
+	# An open submenu: its commands, plus Back.
+	if _category != "":
+		for command: BattleCommand in BattleMenu.in_category(_menu(), _category):
+			_command_row(command)
+		add_row(tr(BACK_KEY), _back)
+		return
+	# The first menu: the Boost selector, then commands and category rows in authored order.
+	_boost_row()
+	for entry: Variant in BattleMenu.top_level(_menu()):
+		if entry is BattleCommand:
+			_command_row(entry as BattleCommand)
+		else:
+			add_row(tr(entry as String), _open.bind(entry as String))
 
 
 # Leaving the screen frees the fighter nodes and forgets the enemies' HP.
@@ -147,6 +171,45 @@ func _menu() -> Array[BattleCommand]:
 	return basic
 
 
+# One command's row: its label with cost or stance state, greyed out with a reason when the
+# fighter cannot use it now. A greyed row has no action at all.
+func _command_row(command: BattleCommand) -> void:
+	var reason: String = BattleMenu.refusal(battle, command, _boost)
+	var text: String = _label(command)
+	var skill: Skill = command.skill
+	if skill != null and skill.toggle_status != null:
+		var on: bool = SkillUse.stance_on(battle.current(), skill)
+		text = tr(STANCE_ON_KEY if on else STANCE_OFF_KEY).format({"label": text})
+	if skill != null and skill.cost > 0 and not SkillUse.stance_on(battle.current(), skill):
+		text = tr(COST_KEY).format({"label": text, "cost": skill.cost, "pool": String(skill.cost_pool).to_upper()})
+	if reason != "":
+		var pool: String = String(skill.cost_pool).to_upper() if skill != null else ""
+		text = tr(UNAVAILABLE_KEY).format({"label": text, "reason": tr(reason).format({"pool": pool})})
+	var button: Button = add_row(text, _choose.bind(command) if reason == "" else Callable())
+	button.disabled = reason != ""
+
+
+# The Boost selector, for a fighter with a Boost pool: pressing it steps the level up to what
+# it can spend, then back to 0.
+func _boost_row() -> void:
+	var vitals: Vitals = Vitals.of(battle.current().get_parent())
+	if vitals.maximum(battle.boost_pool) <= 0:
+		return
+	add_row(tr(BOOST_KEY).format({"level": _boost, "max": battle.boost_max}), _step_boost)
+
+
+func _step_boost() -> void:
+	var points: int = Vitals.of(battle.current().get_parent()).current(battle.boost_pool)
+	_boost = _boost + 1 if _boost + 1 <= mini(battle.boost_max, points) else 0
+	refresh()
+
+
+func _open(category: String) -> void:
+	_category = category
+	_refused = false
+	refresh()
+
+
 func _label(command: BattleCommand) -> String:
 	if command.label_key != "":
 		return tr(command.label_key)
@@ -160,8 +223,12 @@ func _label(command: BattleCommand) -> String:
 	return tr(command.skill.name_key)
 
 
-# A one-target command asks for a target first; anything else acts immediately.
+# A one-target command asks for a target first; anything else acts immediately. A stance acts
+# at once on its user.
 func _choose(command: BattleCommand) -> void:
+	if command.skill != null and command.skill.toggle_status != null:
+		_act(command, [battle.current()])
+		return
 	var single: bool = command.kind == BattleCommand.Kind.ATTACK or (command.skill != null
 			and command.skill.scope == Skill.Scope.ONE and command.kind != BattleCommand.Kind.DEFEND
 			and command.kind != BattleCommand.Kind.FLEE)
@@ -179,14 +246,22 @@ func _aim(target: Combatant) -> void:
 	_act(command, [target])
 
 
+# Back from a target list returns to the menu it came from; back from a submenu, to the first.
 func _back() -> void:
-	_pending = null
+	if _pending != null:
+		_pending = null
+	else:
+		_category = ""
 	refresh()
 
 
 func _act(command: BattleCommand, targets: Array[Combatant]) -> void:
 	# If the battle refused (e.g. not enough MP), show a line saying so and keep the menu.
-	_refused = not battle.act(command, targets)
+	_refused = not battle.act(command, targets, _boost)
+	if not _refused:
+		# The action happened: the next turn starts on the first menu with no Boost chosen.
+		_boost = 0
+		_category = ""
 	advance()
 
 
