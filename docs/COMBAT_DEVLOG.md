@@ -1440,3 +1440,65 @@ piece C2.13 to C2.19 built is now in data a person can fight through.
   `Weakness.broken`.
 - The demo does not use counter or reflect. Both are tested with fixtures; a demo boss is a
   natural home for them later.
+
+## 2026-10-30 — C3.1 · Combat input and layers
+
+**Did.**
+- New `src/systems/input/combat_actions.gd`. Four actions:
+
+  | Action | Key | Pad |
+  |---|---|---|
+  | `combat_attack` | K | X |
+  | `combat_dodge` | Space | right trigger |
+  | `combat_lock_on` | Q | left trigger |
+  | `combat_lock_cycle` | R | right stick click |
+
+  `install()` defines each action that is not in the InputMap yet. It never overwrites one,
+  so calling it twice changes nothing. Keys are physical keycodes, as `Actions` uses.
+- New `src/systems/combat/combat_layers.gd`:
+  - `HITBOX` is layer 11 and `HURTBOX` is layer 12;
+  - a hitbox's mask is the hurtbox layer and nothing else.
+
+  `project.godot` names the layers `hitbox` and `hurtbox`.
+- New `src/gameplay/combat/action_host.gd`, a node under GameRoot in `game_root.tscn`. At boot
+  it installs the actions, and the boot log says "Action inputs ready: 4".
+- New `tests/unit/combat_input_test.gd` (12):
+  - each action and its bindings;
+  - **no combat binding is shared with any other action** (the engine's `ui_*` set aside);
+  - installing twice is harmless;
+  - a prompt can name the key;
+  - the layer names and bits agree with `project.godot`.
+- Combat `0.26.0`.
+
+**Why.** It is the first row of the action formula. Every later C3 row reads these actions and
+puts its areas on these layers.
+
+**Decisions.**
+- **K, not J, for attack.** J is the journal's key. The plan was written without checking, and
+  the clash test would have caught it. The pad inputs are the four the C2.11 research found
+  free: X, the right stick click and both triggers.
+- **The names are prefixed `combat_`**, so an upstream action added later can never take the
+  same name.
+- **`actions.gd` and `layers.gd` are not edited** (ADR-0008). The combat actions are installed
+  by a fork node, and the layers have their own constants file.
+- **`ActionHost` arrives now, in its smallest form**, because something in the composition
+  root has to call `install()`. C3.4 gives it the job of fitting the player out as a fighter.
+- **A trigger is an axis, not a button.** Its action uses a 0.5 deadzone, so half-way down
+  counts as a press.
+
+**Verified.**
+- Suite: `3129 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`, and the log prints "Action inputs ready: 4".
+- All seven checkers exit 0.
+- Red first: with `install()` stubbed, 5 assertions failed.
+- No capture: nothing here draws.
+
+**Unblocks.** C3.2 (moves and timing) and C3.3 (hitboxes and hurtboxes on these layers).
+
+**Gaps.**
+- The combat actions are not rebindable, and do not appear on the rebinding screen. That needs
+  the upstream seam in C5.3.
+- `KeyBindings.text_for(action, true)` returns nothing for a trigger, because it names pad
+  buttons only. A pad prompt for dodge and lock-on needs that seam too.
+- `reset_bindings()` does not touch the combat actions. They were never overridden, so there is
+  nothing to reset.

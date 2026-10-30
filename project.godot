@@ -74,7 +74,7 @@ base/version="5.16.4"
 ; THE COMBAT FORK'S OWN RELEASE, beside [template] base/version, which is the base this fork has
 ; merged up to and is upstream's to bump. This one is bumped by combat packages, under the same
 ; major / minor / patch promise. Read by src/core/util/combat_version.gd; ADR-0008.
-core/version="0.25.0"
+core/version="0.26.0"
 ; The PartyRoster BattleHost builds the party from. A game names its own; a stripped template has
 ; none, and then no battle starts.
 party/roster="res://data/party/roster.tres"
@@ -182,6 +182,8 @@ occlusion_culling/use_occlusion_culling=true
 3d_physics/layer_8="camera_occluder"
 3d_physics/layer_9="ledge"
 3d_physics/layer_10="sight_blocker"
+3d_physics/layer_11="hitbox"
+3d_physics/layer_12="hurtbox"
 
 [input_devices]
 
