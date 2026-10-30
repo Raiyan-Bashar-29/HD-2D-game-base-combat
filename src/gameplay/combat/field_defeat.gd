@@ -31,7 +31,9 @@ func _physics_process(delta: float) -> void:
 	tick(delta)
 
 
-## Counts down the time on the ground, and carries out the rule when it runs out.
+## Counts down the time on the ground, and carries out the rule when it runs out. It counts
+## real time, not `CombatClock` time (C4.1): with the fight stopped, a fallen player would
+## otherwise lie there forever.
 func tick(delta: float) -> void:
 	if _waiting < 0.0:
 		return

@@ -90,23 +90,25 @@ func _physics_process(delta: float) -> void:
 ## One frame of thinking and acting: senses, decides, sets the horizontal velocity, steps the
 ## move. Returns the state it acted on. It does not move the body; `_physics_process` does.
 func act(delta: float) -> ActionDecider.State:
+	# Fight time, not frame time: the hybrid's menu slows or stops the fight (C4.1).
+	var dt: float = CombatClock.scaled(delta)
 	var statuses: StatusSet = StatusSet.of(self)
 	if statuses != null:
-		statuses.tick_seconds(delta)
-	_stun_left = maxf(0.0, _stun_left - delta)
+		statuses.tick_seconds(dt)
+	_stun_left = maxf(0.0, _stun_left - dt)
 	_target = nearest_hostile()
 	var to_target: Vector3 = _flat(_target.global_position - global_position) if _target != null else Vector3.INF
 	var vitals: Vitals = Vitals.of(self)
 	var defeated: bool = vitals != null and vitals.is_defeated()
 	var hp: float = float(vitals.current(&"hp")) / maxf(1.0, float(vitals.maximum(&"hp"))) if vitals != null else 1.0
-	var state: ActionDecider.State = decider.think(delta, to_target.length() if _target != null else INF,
+	var state: ActionDecider.State = decider.think(dt, to_target.length() if _target != null else INF,
 		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0, defeated, rng)
 	_carry_out(state, to_target)
 	if _fallen:
-		_gone_in -= delta
+		_gone_in -= dt
 		if _gone_in <= 0.0 and not is_queued_for_deletion():
 			queue_free()
-	timeline.step(delta)
+	timeline.step(dt)
 	if _hitbox != null:
 		_hitbox.rotation.y = atan2(-facing.x, -facing.z)
 		if timeline.is_hitting():
@@ -165,8 +167,10 @@ func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
 		ActionDecider.State.DEFEATED:
 			timeline.cancel()
 			_fall()
-	velocity.x = wish.x
-	velocity.z = wish.z
+	# A slowed fight slows the walk with it, and a stopped one holds it still. Gravity is not
+	# scaled, so a frozen enemy still stands on the floor.
+	velocity.x = wish.x * CombatClock.scale
+	velocity.z = wish.z * CombatClock.scale
 
 
 ## The flat direction to walk to reach `point`: along the navmesh path when the area has one,

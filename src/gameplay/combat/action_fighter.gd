@@ -65,10 +65,12 @@ func _physics_process(delta: float) -> void:
 
 ## One frame of fighting: `delta` seconds pass, with these buttons just pressed.
 func drive(delta: float, attack: bool, dodge: bool) -> void:
+	# Fight time, not frame time: the hybrid's menu slows or stops the fight (C4.1).
+	var dt: float = CombatClock.scaled(delta)
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	if statuses != null:
-		statuses.tick_seconds(delta)
-	_stun_left = maxf(0.0, _stun_left - delta)
+		statuses.tick_seconds(dt)
+	_stun_left = maxf(0.0, _stun_left - dt)
 	# Locked on, the fighter always faces its target, so every swing and roll aims at it (C3.5).
 	if _lock_on != null and _lock_on.target != null and _lock_on.direction() != Vector3.ZERO:
 		facing = _lock_on.direction()
@@ -77,7 +79,7 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 		timeline.cancel()
 	elif not stunned() and not _held_by_others() and moves != null:
 		_start_moves(attack, dodge)
-	timeline.step(delta)
+	timeline.step(dt)
 	_aim_hitbox()
 	_move_body()
 
@@ -145,8 +147,9 @@ func _move_body() -> void:
 	elif timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.move.travel_speed > 0.0:
 		var way: Vector3 = _roll if timeline.move == moves.dodge else facing
 		wish = way * timeline.move.travel_speed
-	_body.velocity.x = wish.x
-	_body.velocity.z = wish.z
+	# A slowed fight slows the roll and the push with it, and a stopped one holds them still.
+	_body.velocity.x = wish.x * CombatClock.scale
+	_body.velocity.z = wish.z * CombatClock.scale
 
 
 ## True when something other than this fighter holds the body still: dialogue, a menu, a climb.

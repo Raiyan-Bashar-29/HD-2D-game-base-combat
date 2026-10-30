@@ -2047,3 +2047,42 @@ walk up to. This is the row the owner can play, and the authoring page a game co
 - The camera does not follow the lock. Facing does.
 - The combat keys cannot be rebound in the options menu until C5.3.
 - A moth's lunge has no tell beyond its startup pause. That waits for art.
+
+## 2026-10-30 — C4.1 · `CombatClock`, the fight's own time scale
+
+**Did.** New `CombatClock`, a static scale. `set_scale` never goes below 0, `scaled(delta)`
+multiplies by the scale, and `reset()` sets it back to 1. Code that obeys it:
+- `ActionFighter.drive` and `ActionEnemy.act` run on fight time. That covers statuses, hit-stun,
+  the decider, the linger clock and the move timeline.
+- Their roll, push and walk velocities are multiplied by the scale.
+- `ActionHost` resets the scale on every `area_entered`.
+
+**Why.** The hybrid's command menu (C4.3) slows or stops the fight while the player chooses.
+The tree's pause stops everything, menus included. `Engine.time_scale` would also slow the day
+clock, the weather and the UI.
+
+**Decisions.**
+- **A static variable, not an autoload,** so no ADR. It is one number.
+- **What ignores it, on purpose:**
+  - Gravity, so a frozen enemy still stands.
+  - The player's ordinary walking, which is upstream's controller. The menu holds the player
+    still anyway.
+  - `FieldDefeat`'s wait on the ground. At 0 a fallen player would otherwise lie there forever.
+- **The scale applies inside `drive` and `act`,** not in `_physics_process`, so tests that call
+  them by hand see it.
+- **A reset on every area entry** is the safety net for a menu freed mid-slow. The owner of a
+  slow still restores it.
+
+**Verified.**
+- Suite: `3286 passed, 0 failed`. Boot: `0 warnings, 0 errors`. All seven checkers exit 0.
+- Red first: with `scaled` ignoring the scale, 5 failed.
+- **A real-game probe** froze the lantern-hall fight for 400 frames. The moth stood at the
+  same position throughout and nobody was hit. Back at 1, both moths closed in and struck.
+
+**Unblocks.** C4.2's ATB gauge fills on fight time, and C4.3's menu slows the fight.
+
+**Gaps.**
+- A hitbox frozen while live still sweeps. Anything that walks into it is struck once, as it
+  would be at full speed. Nothing walks at 0, and the menu holds the player, so this is
+  harmless now. C4.3 should confirm it with the menu open.
+- No HUD sign shows that the fight is slowed. The hybrid menu will be on screen when it is.
