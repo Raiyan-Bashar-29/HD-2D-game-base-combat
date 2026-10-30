@@ -43,6 +43,19 @@ func remove_from(source: StringName) -> int:
 	return before - _modifiers.size()
 
 
+## Every stat name starting with `prefix` that this sheet has a base value or a modifier for,
+## each once. `Meters` finds `regen_*` stats this way, so a new meter needs no code (C2.16).
+func mentioned(prefix: String) -> Array[StringName]:
+	var out: Array[StringName] = []
+	for stat: StringName in _base:
+		if String(stat).begins_with(prefix) and not out.has(stat):
+			out.append(stat)
+	for modifier: StatModifier in _modifiers:
+		if String(modifier.stat).begins_with(prefix) and not out.has(modifier.stat):
+			out.append(modifier.stat)
+	return out
+
+
 ## The number every other system reads. See the header for the order.
 func value(stat: StringName) -> float:
 	var total: float = base(stat)

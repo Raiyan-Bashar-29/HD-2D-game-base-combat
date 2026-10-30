@@ -98,5 +98,7 @@ func receive(result: DamageResult, from: StringName) -> int:
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	if statuses != null and after < before:
 		statuses.wake()
+	# Damage taken feeds any `fill_on_hit_<pool>` meter, such as a limit gauge (C2.16).
+	Meters.fill_on_hit(self, before - after)
 	Events.combatant_damaged.emit(combatant_id, from, result.total(), result.critical)
 	return after - before

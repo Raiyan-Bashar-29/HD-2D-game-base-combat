@@ -1122,3 +1122,63 @@ answer the same question: what happens around a hit.
 - No demo content uses evasion, counter or reflect yet. C2.19 adds that.
 - `BattleAi` does not avoid casting magic into a reflecting target. A smarter brain can check
   `StatusSet.reactor`.
+
+## 2026-10-30 — C2.16 · Meters, stances and Boost
+
+**Did.**
+- New `src/gameplay/combat/meters.gd`:
+  - `regen_turn(fighter)` adds each `regen_<pool>` stat, rounded, to that pool;
+  - `fill_on_hit(fighter, taken)` puts the `fill_on_hit_<pool>` fraction of the damage taken
+    into that pool.
+- `StatSheet.mentioned(prefix)` lists every stat with a base or a modifier under a prefix, so a
+  new meter is data only.
+- `Battle.next_turn` regenerates the actor after its status tick and before the defeat check.
+  `Combatant.receive` fills on any hit that really took something.
+- **Stances:** `Skill.toggle_status`.
+  - Using the skill applies the status to its user; using it again cures it.
+  - Turning it on pays the cost; turning it off is free.
+  - `SkillUse.stance_on` says which way it stands.
+  - `problems()` refuses a stance that also has power, effects or statuses.
+- **Boost:**
+  - `Battle.act(command, targets, boost = 0)` and `can_boost`, with `boost_pool` (`bp`),
+    `boost_max` (3) and `attack_boost_hits` (1).
+  - An ATTACK gets one more swing per level.
+  - A SKILL grows by `boost_power` per level, which `SkillUse.apply(…, boost)` applies to its
+    power and its effect amounts, and lands `boost_hits` more times.
+  - Points are spent only once the action has happened.
+- New `tests/unit/meters_test.gd` (21).
+- Combat `0.21.0`.
+
+**Why.** The owner asked for special moves and for toggling between abilities and back to normal
+attacks. One stat rule covers MP regen, Octopath's BP and a limit gauge.
+
+**Decisions.**
+- **A limit special is data, not code.** It is a skill whose cost is the full `limit` pool, which
+  `fill_on_hit_limit` fills.
+- **A drain-per-turn stance is data too.** It is a status with a negative `regen_mp` modifier, so
+  "an aura that drains mp each turn" needs nothing new.
+- **The boost level is an argument to `act`, not a `BattleCommand` field.** A command is a menu
+  slot shared by every turn, and the level is chosen each turn. This is a change from the plan.
+- **Boost scales a skill's own power, not the attack stat added to it.** It is predictable for an
+  author: `boost_power` 0.5 means the skill's number grows by half per level.
+- **Regen runs before the defeat check**, so a drain that empties hp knocks the fighter out at the
+  start of its turn instead of letting it act at zero.
+- **A boosted attack is countered once**, after all its swings, if any landed.
+
+**Verified.**
+- Suite: `3052 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with the meters, the toggle and the boost check stubbed, 11 assertions failed.
+- One test expectation was wrong on the first green run: the target had DEFENDed, which halved
+  the skill. The test now attacks instead, and the code was not changed for it.
+
+**Unblocks.** C2.17 (weakness and Break), and C2.18's menu: stance On/Off from `stance_on`, a
+Boost selector from `can_boost`, and a SPECIAL category.
+
+**Gaps.**
+- `BattleAi` never boosts and never toggles a stance off. A brain entry can still pick a stance
+  skill.
+- Octopath's rule that a fighter who boosted gains no BP on its next turn is not built. A game can
+  add it with a one-turn status carrying `regen_bp` -1.
+- In the field (C3), nothing calls `Meters.regen_turn` yet. C3.4 decides its clock.

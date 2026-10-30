@@ -22,7 +22,7 @@ extends RefCounted
 
 ## True when `user` can pay `skill`'s cost from its own pools. A free skill is always affordable.
 static func affordable(user: Combatant, skill: Skill) -> bool:
-	if skill.cost <= 0:
+	if skill.cost <= 0 or stance_on(user, skill):
 		return true
 	var vitals: Vitals = _vitals(user)
 	return vitals != null and vitals.current(skill.cost_pool) >= skill.cost
@@ -30,18 +30,34 @@ static func affordable(user: Combatant, skill: Skill) -> bool:
 
 ## Takes the cost. Call `affordable` first: this does not check.
 static func pay(user: Combatant, skill: Skill) -> void:
-	if skill.cost > 0:
+	if skill.cost > 0 and not stance_on(user, skill):
 		_vitals(user).change(skill.cost_pool, -skill.cost)
 
 
-## Does `skill` to every one of `targets`.
+## True when `skill` is a stance and `user` has it on now, so using it would turn it off.
+## The battle menu shows such a skill as "on" (C2.18).
+static func stance_on(user: Combatant, skill: Skill) -> bool:
+	if skill.toggle_status == null:
+		return false
+	var statuses: StatusSet = StatusSet.of(user.get_parent())
+	return statuses != null and statuses.stacks(skill.toggle_status.id) > 0
+
+
+## Does `skill` to every one of `targets`. `boost` is how many Boost levels were spent on it:
+## each adds `boost_power` to its power and `boost_hits` to its hits. A stance ignores both and
+## its targets, and just switches on or off on its user.
 static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
-		rng: RandomNumberGenerator) -> void:
+		rng: RandomNumberGenerator, boost: int = 0) -> void:
+	if skill.toggle_status != null:
+		_toggle(user, skill)
+		return
+	var scale: float = 1.0 + skill.boost_power * boost
+	var hits: int = maxi(1, skill.hits) + skill.boost_hits * boost
 	for aimed: Combatant in targets:
 		# A reflecting target sends the whole skill, statuses and all, back at the user.
 		var target: Combatant = _bounce(user, skill, aimed, rng)
-		for i: int in maxi(1, skill.hits):
-			_strike(user, skill, target, rng)
+		for i: int in hits:
+			_strike(user, skill, target, rng, scale)
 		# Statuses roll once per target, not once per hit, so a flurry is not a poison machine.
 		var statuses: StatusSet = StatusSet.of(target.get_parent())
 		if statuses == null:
@@ -91,35 +107,47 @@ static func _fires(status: StatusEffect, rng: RandomNumberGenerator) -> bool:
 	return status.reaction_chance >= 1.0 or rng.randf() < status.reaction_chance
 
 
+## Switches a stance: off if the user holds its status, on if not.
+static func _toggle(user: Combatant, skill: Skill) -> void:
+	var statuses: StatusSet = StatusSet.of(user.get_parent())
+	if statuses == null:
+		return
+	if stance_on(user, skill):
+		statuses.cure(skill.toggle_status.id)
+	else:
+		statuses.apply(skill.toggle_status)
+
+
 ## One landing of the skill on one target: the plain power first, then each effect in order.
+## `scale` is the Boost multiplier on every amount; 1 when not boosted.
 static func _strike(user: Combatant, skill: Skill, target: Combatant,
-		rng: RandomNumberGenerator) -> void:
+		rng: RandomNumberGenerator, scale: float) -> void:
 	if skill.power > 0.0:
-		user.hit(target, skill.power, skill.element, rng, skill.sure_hit)
+		user.hit(target, skill.power * scale, skill.element, rng, skill.sure_hit)
 	elif skill.power < 0.0:
 		# Negative power is the original way to write a heal: straight to the pool, no defence.
-		_vitals(target).change(target.damage_pool, roundi(-skill.power))
+		_vitals(target).change(target.damage_pool, roundi(-skill.power * scale))
 	for effect: SkillEffect in skill.effects:
 		if effect != null:
-			_effect(user, skill, target, effect, rng)
+			_effect(user, skill, target, effect, rng, scale)
 
 
 static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: SkillEffect,
-		rng: RandomNumberGenerator) -> void:
+		rng: RandomNumberGenerator, scale: float) -> void:
 	var vitals: Vitals = _vitals(target)
 	var statuses: StatusSet = StatusSet.of(target.get_parent())
 	match effect.kind:
 		SkillEffect.Kind.DAMAGE:
-			user.hit(target, effect.amount, skill.element, rng, skill.sure_hit)
+			user.hit(target, effect.amount * scale, skill.element, rng, skill.sure_hit)
 		SkillEffect.Kind.HEAL:
-			vitals.change(target.damage_pool, roundi(effect.amount))
+			vitals.change(target.damage_pool, roundi(effect.amount * scale))
 		SkillEffect.Kind.RESTORE:
-			vitals.change(effect.pool, roundi(effect.amount))
+			vitals.change(effect.pool, roundi(effect.amount * scale))
 		SkillEffect.Kind.DRAIN:
 			# Measure what the target really lost (a nearly-dead target gives back less), then
 			# hand the user its share.
 			var before: int = vitals.current(target.damage_pool)
-			user.hit(target, effect.amount, skill.element, rng, skill.sure_hit)
+			user.hit(target, effect.amount * scale, skill.element, rng, skill.sure_hit)
 			var taken: int = before - vitals.current(target.damage_pool)
 			if taken > 0:
 				_vitals(user).change(user.damage_pool, roundi(taken * effect.fraction))
