@@ -18,6 +18,8 @@ const SKILL_DIR: String = "res://data/skills"
 const ENCOUNTER_DIR: String = "res://data/encounters"
 const PARTY_DIR: String = "res://data/party"
 const STATUS_DIR: String = "res://data/statuses"
+## The action formula's data (C3.10): loadouts, enemy definitions and enemy brains, side by side.
+const ACTION_DIR: String = "res://data/action"
 
 var _csv: Dictionary[String, bool] = {}
 
@@ -40,14 +42,33 @@ func run() -> void:
 	for roster: Resource in _load_all(PARTY_DIR):
 		for def: CombatantDef in (roster as PartyRoster).members:
 			_from_def(def, named)
+	for action: Resource in _load_all(ACTION_DIR):
+		_from_action(action, named, wrong)
 	plan(5 + named.size())
 	equal("the CSV was read", _csv.size() > 0, true)
 	equal("a key nobody wrote is not found", _known("fixture.never_written"), false)
 	equal("every encounter under data/ is sound", EncounterDb.problems(), PackedStringArray())
-	equal("every skill and status under data/ is sound", wrong, PackedStringArray())
+	equal("every skill, status and action resource under data/ is sound", wrong, PackedStringArray())
 	equal("the status catalogue is sound", StatusDb.problems(), PackedStringArray())
 	for key: String in named:
 		equal("%s names '%s', which is in strings.csv" % [named[key], key], _known(key), true)
+
+
+## One file from the action folder, whichever of the three shapes it is. An unknown shape is
+## reported, so a stray resource cannot sit there unchecked.
+func _from_action(action: Resource, named: Dictionary[String, String], wrong: PackedStringArray) -> void:
+	var where: String = action.resource_path
+	if action is ActionLoadout:
+		wrong.append_array((action as ActionLoadout).problems(where))
+		if (action as ActionLoadout).fighter != null:
+			_from_def((action as ActionLoadout).fighter, named)
+	elif action is CombatantDef:
+		wrong.append_array((action as CombatantDef).problems(where))
+		_from_def(action as CombatantDef, named)
+	elif action is ActionBrain:
+		wrong.append_array((action as ActionBrain).problems(where))
+	else:
+		wrong.append("%s is not a loadout, a fighter or a brain" % where)
 
 
 func _known(key: String) -> bool:

@@ -1989,3 +1989,61 @@ were visible only in logs.
   every status a name.
 - There is no marker over the locked enemy in the world. That waits for art, or for a camera
   seam (C5.3).
+
+## 2026-10-30 — C3.10 · Demo proof: an action fight (closes C3)
+
+**Did.**
+- Demo data in `data/action/`:
+  - `wanderer_loadout.tres`: the Wanderer as a field fighter, with a three-swing blade chain and
+    a roll;
+  - `ember_moth.tres`: an enemy definition, weak to blade, with a shield of 3;
+  - `ember_moth_brain.tres`: one lunge.
+- `[combat] action/loadout` names the loadout, so the demo player is a fighter from boot.
+- Two Ember Moths are placed under `lantern_hall`'s `Actors`, each worth 12 experience. The
+  first drops a stone chip.
+- `action_enemy.tscn` uses the alternate placeholder sprite, so enemies are not the player's
+  twin.
+- `ActionHost.configured()` treats a missing loadout file as "no field combat" at info level.
+- `combat_content_test.gd` checks `data/action/`.
+- `AUTHORING.md` § Action combat.
+
+**Why.** Every C3 piece had a unit test and a throwaway probe. None was something a person could
+walk up to. This is the row the owner can play, and the authoring page a game copies.
+
+**Decisions.**
+- **A missing loadout file is not an error.** The stripped template deletes `data/` but keeps
+  `project.godot`, and its boot must stay at 0 errors. A file that exists and is the wrong
+  type is still an error, because that is a real mistake.
+- **The moths live in the hall, not the courtyard.** The courtyard already holds the turn-based
+  thicket and the training dummy, so each formula has its own room.
+- **The content test accepts three shapes in `data/action/`,** and reports any other shape. A
+  stray file cannot sit there unchecked.
+- **Tuned against the real game, not the formula.** At power 4 and hp 30, a moth took 7 a hit
+  and fell in two swings. At power 3 and hp 40 it takes 6 a hit and three or four swings.
+
+**Verified.**
+- Suite: `3270 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`, with `Player fitted for field combat`.
+- All seven checkers exit 0.
+- Red first: with the moth's string missing, the content test failed. The fighter test failed
+  on the now-configured loadout until it set the setting itself.
+- **A real-game probe:** the courtyard, the hall door, then real presses of move, lock, attack
+  and dodge. The log showed:
+  - the lock on the first moth;
+  - one lunge dodged;
+  - the chain landing 13–18 a swing, the finisher catching both moths;
+  - both moths defeated with their rewards;
+  - the player still at full hp.
+- **Windowed captures** (`xvfb-run`) of a dodge, a swing and the fight. They show two
+  alternate-sprite moths and the HUD's `Ember Moth   HP 7 / 40`.
+- **The stripped run,** done locally the way CI does it: data and areas deleted, the CSV pruned.
+  Boot is clean, the suite is `3173 passed, 0 failed, 25 skipped`, and all seven checkers exit 0.
+
+**Unblocks.** C4, the hybrid. It is built from C2's menu and these C3 parts.
+
+**Gaps.**
+- `MoveSet.skills` is data only. No button casts a skill in real time until the hybrid's menu
+  (C4.3).
+- The camera does not follow the lock. Facing does.
+- The combat keys cannot be rebound in the options menu until C5.3.
+- A moth's lunge has no tell beyond its startup pause. That waits for art.

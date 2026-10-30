@@ -1360,6 +1360,73 @@ Cleanse, Rekindle and Bulwark. The wisps are weak to fire and to blades, one may
 to sleep, and two Embers break a wisp. `combat_content_test.gd` fails on a missing string or an
 unsound skill or status.
 
+## Action combat: fighting in real time in the field (combat fork only)
+
+**The player swings, rolls and locks on in the field itself, with no battle screen.** It is
+switched on by one project setting and filled in by three kinds of data file. The worked example
+is the lantern hall: the loadout `data/action/wanderer_loadout.tres`, and two Ember Moths
+(`data/action/ember_moth.tres` with the brain `data/action/ember_moth_brain.tres`) placed under the
+hall's `Actors`.
+
+**Controls:** attack is K (pad X), dodge is the right trigger, lock on is L (pad left trigger), and
+the next target is `;` (pad R3). `combat_actions.gd` installs them at boot. They cannot be rebound
+in the menu yet: that waits for C5.3.
+
+1. **The player's loadout:** an `ActionLoadout` file, named in `project.godot` by
+   `[combat] action/loadout`. Leave the setting empty and the game has no field combat; a path to
+   a file that is gone is treated the same way, quietly. The loadout holds:
+   - `fighter`: a `CombatantDef`, exactly as for the turn-based party (`combatant_id`, `name_key`,
+     `faction` player, `base_stats`, `attack_tags`, a `level_curve`);
+   - `moves`: a `MoveSet`, with the `attack_chain` (one `ActionMove` per press, in order) and a
+     `dodge`. Its `skills` slots are data only for now: the hybrid's command menu (C4.3) spends them;
+   - `defeat_rule`: what the player's fall means, after `delay` seconds on the ground.
+     RESPAWN_AT_ENTRY (the default) gets up with `revive_fraction` of max hp at the area's
+     entrance, with every enemy back; REVIVE_IN_PLACE gets up where they fell; RELOAD_SAVE loads
+     the last save, or respawns at the entry when there is none.
+2. **A move** (`ActionMove`) is timing, a hit, and a shape:
+
+   | Field | What it does |
+   |---|---|
+   | `startup`, `active`, `recovery` | Seconds before the hit, while the hitbox is live, and after it. |
+   | `chain_after` | Seconds into recovery after which the next attack press continues the chain. A press before that is buffered for `MoveTimeline.buffer_window`. Must not exceed `recovery`. |
+   | `iframes_from`, `iframes_to` | Seconds from the start of the move during which the mover cannot be hit. A dodge needs some, or `MoveSet.problems()` complains. |
+   | `power`, `element`, `hits` | The hit, through the same damage formula as turn-based combat. |
+   | `poise` | Shield points it takes from a fighter with `max_shield`, whether or not the hit matches a weakness. Breaking works as in turn-based combat. |
+   | `knockback` | How far a hit pushes its target back. |
+   | `skill` | Optional: the hit resolves as this `Skill` through the shared skill path, so a spell can be cast in real time. |
+   | `hitbox_size`, `hitbox_offset` | The box the hit fills, in metres, relative to the mover's facing (`-z` is in front). Make it generous: the placeholder sprites are thin. |
+   | `travel_speed` | Metres per second the mover slides forward while the move runs. A roll is a move with travel and i-frames and no power. |
+3. **An enemy:** place `scenes/objects/action_enemy.tscn` under the area's `Actors`, then set on
+   the instance:
+   - `fighter`: its `CombatantDef` (faction enemy, the default);
+   - `brain`: an `ActionBrain`;
+   - `experience` and `loot` (item ids), granted the moment it falls;
+   - `remember_defeat`: true for a one-off foe that stays gone; false, the default, means it is
+     back whenever the area is entered again.
+
+   Two instances sharing one definition are told apart by node name: their ids become
+   `<combatant_id>/<node name>`.
+4. **The brain** (`ActionBrain`) decides when to wander, chase, attack, retreat and go home:
+
+   | Field | What it does |
+   |---|---|
+   | `aggro_radius` | It notices a hostile this close. |
+   | `give_up_radius` | It stops chasing past this. Must be at least `aggro_radius`. |
+   | `leash_radius` | It walks home when this far from where it was placed. |
+   | `attack_range`, `attack_cooldown` | How close it must be to attack, and the seconds between attacks. |
+   | `move_speed`, `wander_radius`, `wander_every` | How it walks, and how far and how often it idles about. |
+   | `retreat_below`, `retreat_distance` | Below this fraction of hp it backs off this far. |
+   | `moves` | Weighted `ActionBrainEntry`s: a `move`, a `weight`, an optional `reach` and `min_reach` (the target's distance must fit), and `only_below` (an hp fraction, for a desperation move). |
+5. **Strings:** the fighter's `name_key` is shown by the field HUD's target line, under
+   `combat.`. `NEW_GAME.md`'s prune leaves `combat.` rows, so a game strips those by hand.
+
+**Seeing it:** walk from the courtyard into the lantern hall. Two moths wander near the south
+wall; walk towards them and they come for you. Lock on, attack three times for the full chain,
+and roll through a lunge. The HUD at the bottom left shows your hp and the locked moth's. Each
+moth falls after three or four hits and gives 12 experience; the first drops a stone chip.
+`combat_content_test.gd` fails on a missing name string or an unsound loadout, fighter or brain
+under `data/action/`.
+
 ## Read next
 
 [`ART_CONTRACT.md`](ART_CONTRACT.md) — what art has to satisfy to drop in ·

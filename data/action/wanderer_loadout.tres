@@ -1,0 +1,78 @@
+[gd_resource type="Resource" script_class="ActionLoadout" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="1_p5tgy"]
+[ext_resource type="Script" path="res://src/content/combat/level_curve.gd" id="2_8bigs"]
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="3_tw2jq"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="4_vtpru"]
+[ext_resource type="Script" path="res://src/content/combat/move_set.gd" id="5_ua7tc"]
+[ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="6_o56hc"]
+
+[sub_resource type="Resource" id="Resource_fovq0"]
+script = ExtResource("2_8bigs")
+growth = Dictionary[StringName, float]({
+&"attack": 2.0,
+&"max_hp": 6.0
+})
+
+[sub_resource type="Resource" id="Resource_l1p37"]
+script = ExtResource("3_tw2jq")
+combatant_id = &"wanderer"
+name_key = "combat.member.wanderer.name"
+faction = &"player"
+base_stats = Dictionary[StringName, float]({
+&"attack": 9.0,
+&"defence": 10.0,
+&"max_hp": 46.0,
+&"max_mp": 12.0
+})
+attack_tags = Array[StringName]([&"blade"])
+level_curve = SubResource("Resource_fovq0")
+
+[sub_resource type="Resource" id="Resource_oykhv"]
+script = ExtResource("4_vtpru")
+startup = 0.08
+active = 0.12
+recovery = 0.25
+chain_after = 0.05
+power = 4.0
+hitbox_size = Vector3(1.6, 1.2, 1.4)
+hitbox_offset = Vector3(0, 0.8, -0.9)
+
+[sub_resource type="Resource" id="Resource_p155h"]
+script = ExtResource("4_vtpru")
+startup = 0.08
+active = 0.12
+recovery = 0.25
+chain_after = 0.05
+power = 5.0
+hitbox_size = Vector3(1.6, 1.2, 1.4)
+hitbox_offset = Vector3(0, 0.8, -0.9)
+
+[sub_resource type="Resource" id="Resource_557cg"]
+script = ExtResource("4_vtpru")
+startup = 0.16
+active = 0.14
+recovery = 0.35
+power = 7.0
+poise = 1
+knockback = 2.0
+hitbox_size = Vector3(2, 1.2, 1.8)
+hitbox_offset = Vector3(0, 0.8, -1.1)
+
+[sub_resource type="Resource" id="Resource_qb1o4"]
+script = ExtResource("4_vtpru")
+startup = 0.0
+active = 0.3
+recovery = 0.15
+iframes_to = 0.3
+travel_speed = 6.0
+
+[sub_resource type="Resource" id="Resource_3d047"]
+script = ExtResource("5_ua7tc")
+attack_chain = Array[ExtResource("4_vtpru")]([SubResource("Resource_oykhv"), SubResource("Resource_p155h"), SubResource("Resource_557cg")])
+dodge = SubResource("Resource_qb1o4")
+
+[resource]
+script = ExtResource("6_o56hc")
+fighter = SubResource("Resource_l1p37")
+moves = SubResource("Resource_3d047")

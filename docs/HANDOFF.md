@@ -9,9 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C3.9, the field HUD: the player's hp, pools and statuses, and the
-  locked target's name and hp, at the bottom left, redrawn by events. C3.8 before it made
-  defeat, rewards and respawn work.
+- **Last finished package:** C3.10, the action demo, which **closes C3**. The Wanderer fights in
+  the field: walk into the lantern hall, where two Ember Moths come for you. Lock on with L,
+  attack with K, and roll with the right trigger.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -23,13 +23,13 @@ between them, written in plain words.
     multi-hit), sleep, stun and silence, resistance, misses, counters, reflect, meters,
     stances, Boost, weakness, Break, a battle menu with categories, and a readout with a
     battle log. `AUTHORING.md` § Skills, statuses and combat depth lists every field.
-- **Next package:** **C3.10**, the demo that closes C3: a loadout for the field character,
-  action enemies in the demo area, captures of a swing, a hit, a dodge and lock-on, the
-  stripped run, and `AUTHORING.md` § Action combat.
+  - C3, the action formula (complete): real-time moves as data, hitboxes, the player's
+    chain and roll, lock-on, enemies that chase and lunge, field defeat and rewards, and a HUD.
+    `AUTHORING.md` § Action combat lists every field.
+- **Next package:** **C4.1**, `CombatClock`: a combat-only time scale, which opens the hybrid.
 - **Then, in order:**
-  1. **The rest of C3, action combat (C3.10):** a playable demo, and its authoring guide.
-  2. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
-  3. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
+  1. **C4, the FF7-Remake-style hybrid (C4.1–C4.8).**
+  2. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
 
   Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,
   "Settled by C2.11".
@@ -42,7 +42,7 @@ between them, written in plain words.
 2. It is the **combat fork** of a non-combat base. The non-combat repository is the git remote
    called `template`, and its fixes arrive by `git merge template/main`. Combat code never goes
    back up ([ADR-0008](decisions/ADR-0008-combat-is-in-scope.md)).
-3. It will hold **three combat formulas** a game can pick from: turn-based (done), action, and a
+3. It will hold **three combat formulas** a game can pick from: turn-based (done), action (done), and a
    hybrid of both.
 4. The courtyard, the training dummy, the thicket encounter and the two party members are **demo
    content**. They prove a system works and a real game deletes them. Code under `src/` and
@@ -106,7 +106,7 @@ anything to its left and nothing to its right.
 | `src/ui/combat/` | `CombatHud` (the field readout), `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary) and `BattleHost` (opens the screen when an encounter is requested). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |
 | `tests/unit/*_test.gd` | One test file per system. They build their own made-up content, so they pass with the demo deleted. |
-| `data/` | Demo content: skills, statuses, encounters and the party roster. |
+| `data/` | Demo content: skills, statuses, encounters, the party roster, and the action loadout and enemies in `data/action/`. |
 
 **Every `.gd` file starts with a `##` header** that says what it is, its rules, what it **OWNS**,
 and what it **MUST NOT** do. The larger files also carry an **IN PLAIN WORDS** paragraph. Read the
