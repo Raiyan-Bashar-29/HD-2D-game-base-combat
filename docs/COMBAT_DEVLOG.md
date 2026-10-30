@@ -2115,7 +2115,7 @@ menu spends them.
 - **A null `atb` means no gauge,** so a pure action game carries none of this.
 
 **Verified.**
-- Suite: `3306 passed, 0 failed`. Boot: `0 warnings, 0 errors`. All seven checkers exit 0.
+- Suite: `3307 passed, 0 failed`. Boot: `0 warnings, 0 errors`. All seven checkers exit 0.
 - Red first: with `gain` stubbed, 14 failed.
 - **A real-game probe:** default rules on the Wanderer in the lantern hall. The gauge rose about
   4 a second, gained 10 for a dodged lunge and 12 for each of four hits, and reached 81 points
