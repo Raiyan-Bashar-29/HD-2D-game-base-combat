@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CombatantDef" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+combatant_id = &"thorn_wisp_symbol"
+name_key = "combat.enemy.thorn_wisp.name"
+base_stats = Dictionary[StringName, float]({
+&"defence": 2.0,
+&"max_hp": 20.0
+})

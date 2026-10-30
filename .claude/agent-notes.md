@@ -58,3 +58,10 @@ Look at the PNG with the Read tool. The first run in a fresh container is about 
 against 7 s) while shaders compile. Software rendering is slow, so a capture rung that must
 see an NPC move needs a longer `--quit-after` (600 frames covers a few wander picks). For anything
 intermittent, loop the capture ten times and count, because one clean run proves nothing.
+
+**Real-game probes in the combat fork (C5.1).** A throwaway `zz_capture/drive.tscn` whose root runs
+with `process_mode = 3` (ALWAYS), instancing `res://scenes/boot/game_root.tscn`, drives the real
+game; delete the folder afterwards. **Set the instanced game's own `process_mode` to
+`Node.PROCESS_MODE_PAUSABLE`**, or everything inherits ALWAYS and the world keeps running under a
+pausing screen (a battle), which looks like a game bug and is not. Moving the player by
+`global_position` early in a new game does not stick; move the other actor to the player instead.

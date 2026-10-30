@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3]
+[gd_scene load_steps=39 format=3]
 
 [ext_resource type="Script" path="res://src/gameplay/world/area_root.gd" id="1_area"]
 [ext_resource type="Script" path="res://src/gameplay/world/environment_driver.gd" id="2_env"]
@@ -27,6 +27,10 @@
 [ext_resource type="Resource" path="res://data/actions/keeper_barter.tres" id="22_barter"]
 [ext_resource type="PackedScene" path="res://scenes/objects/strike_target.tscn" id="40_strike"]
 [ext_resource type="PackedScene" path="res://scenes/objects/encounter_point.tscn" id="41_encounter"]
+[ext_resource type="PackedScene" path="res://scenes/objects/action_enemy.tscn" id="42_enemy"]
+[ext_resource type="Resource" path="res://data/action/thorn_wisp_symbol.tres" id="43_wisp"]
+[ext_resource type="Resource" path="res://data/action/symbol_brain.tres" id="44_symbol_brain"]
+[ext_resource type="Script" path="res://src/gameplay/combat/symbol_encounter.gd" id="45_symbol"]
 
 [sub_resource type="StandardMaterial3D" id="m_ground"]
 albedo_texture = ExtResource("4_grass")
@@ -392,5 +396,15 @@ object_id = &"wisp_nest"
 label_key = "object.wisp_nest.label"
 encounter_id = &"encounter/thorn_wisps"
 
+[node name="ThornWispSymbol" parent="Actors" instance=ExtResource("42_enemy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.1, 10)
+fighter = ExtResource("43_wisp")
+brain = ExtResource("44_symbol_brain")
+
+[node name="Symbol" type="Node" parent="Actors/ThornWispSymbol"]
+script = ExtResource("45_symbol")
+encounter_id = &"encounter/thorn_wisps"
+
 [editable path="Actors/Keeper"]
 [editable path="Interactables/TrainingDummy"]
+[editable path="Actors/ThornWispSymbol"]

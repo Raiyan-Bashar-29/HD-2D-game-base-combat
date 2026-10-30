@@ -1558,6 +1558,47 @@ Three well-known styles come from parts that already exist.
   power by it; `problems()` flags a window that closes before it opens, a negative bonus, or a
   centre wider than the window.
 
+## Mixing formulas (C5.1, combat fork only)
+
+**Which formula a fight uses is decided by what the area places.** There is no mode setting.
+
+| Place this | The fight is |
+|---|---|
+| an `ActionEnemy` (`scenes/objects/action_enemy.tscn`) | real time; the hybrid when the player's loadout has `atb` |
+| an `ActionEnemy` with a `SymbolEncounter` child | turn-based, opened when the foe touches or is struck by the party |
+| an `EncounterPoint` (`scenes/objects/encounter_point.tscn`) | turn-based, opened when the player talks to it |
+
+One area can hold all three, and a boss can be turn-based in a field that is fought in real time.
+
+**A symbol encounter**, step by step:
+1. Place an `ActionEnemy` and give it a `fighter` (the body you see and can lock onto) and a
+   `brain`. For a foe that never swings, leave the brain's `moves` empty and set
+   `chase_only`: it notices, chases and wanders, nothing more.
+2. Set its `experience` to 0 and its `loot` empty. The encounter pays the rewards, and the field
+   body would pay them twice.
+3. Add a `Node` child with the script `src/gameplay/combat/symbol_encounter.gd`. Because the
+   enemy is an instanced scene, mark it editable (in the editor, or an `[editable path=...]`
+   line in the `.tscn`); `check_content.gd` fails without it.
+
+   | Field | Default | What it does |
+   |---|---|---|
+   | `encounter_id` | (none) | The `Encounter` it opens, `encounter/<name>` |
+   | `touch_radius` | 1.2 | How close, in metres, a party member must come |
+   | `grace` | 3.0 | Seconds of fight time it leaves the party alone after a flee, a loss, or a request no battle answered |
+
+4. **What happens:**
+   - a touch, or a party strike landing on it (a follower's too), opens the battle once;
+   - **a win** drops the field body to 0 hp: it falls, lingers and is removed, and stays gone
+     if `remember_defeat`;
+   - **a flee or a loss** leaves it standing, quiet for `grace`;
+   - a strike that fells it outright ends it in the field, with no battle, so give the body more
+     hp than one blow.
+
+**Seeing it:** in the courtyard, a thorn wisp wanders east of the wisp nest
+(`data/action/thorn_wisp_symbol.tres`, brain `symbol_brain.tres`). Walk into it, or let the
+Keeper strike it, and the Thorn Wisps battle opens. The nest beside it opens the same battle when
+you talk to it.
+
 ## Read next
 
 [`ART_CONTRACT.md`](ART_CONTRACT.md) — what art has to satisfy to drop in ·

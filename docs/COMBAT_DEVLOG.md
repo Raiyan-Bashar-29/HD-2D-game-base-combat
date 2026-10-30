@@ -2533,3 +2533,55 @@ C4.6's pressure and stagger.
   condition, so the Keeper heals only once it is hurt itself.
 - The player teleport in the probe did not stick (the spawn placement ran after it); the captures
   stand where the hall put the player.
+
+## 2026-10-30 — C5.1 · Mixed formulas: symbol encounters
+
+**Did.**
+- **New `src/gameplay/combat/symbol_encounter.gd` (`SymbolEncounter`).** It is a child of an
+  `ActionEnemy`. It asks for its turn-based `encounter_id`, through `Events.encounter_requested`
+  (the same request an `EncounterPoint` makes), when either:
+  - a party member comes within `touch_radius` (1.2 m), checked by `watch` each physics frame;
+  - a party strike lands on it (a "first strike").
+
+  What happens next:
+  - **WON:** the body's hp drops to 0, so the `ActionEnemy` falls its own way: it lingers, is
+    removed, and is remembered if `remember_defeat`.
+  - **FLED, LOST, or a request nobody answers** (no host, no party, an unknown id): it gives the
+    party `grace` (3 s of fight time) before it can trigger again. It is never stuck waiting.
+- **`ActionBrain.chase_only`.** A foe that should never swing gets a brain with no moves. That
+  used to be reported as a mistake; with this flag it is meant.
+- **Demo:**
+  - `ThornWispSymbol` in the courtyard (`data/action/thorn_wisp_symbol.tres` and
+    `symbol_brain.tres`, with experience 0) opens `encounter/thorn_wisps`;
+  - the talk-to wisp nest stays beside it.
+- **Decided: no `Encounter.mode` and no `[combat] mode`.** Nothing would read them. The formula
+  is what the area places, and `AUTHORING.md` § Mixing formulas has the table.
+- Combat `0.47.0`.
+
+**Why.** It is the board row: a foe seen in the field that fights turn-based, and a boss that
+uses another formula than the field.
+
+**Verified.**
+- **Red first:** with `_challenge` stubbed, 9 failed.
+- **Suite:** `3440 passed, 0 failed` (with the release line). **Boot:** `0 warnings, 0 errors`. **Checkers:** all seven
+  exit 0. `check_content` first caught the child added under an instanced node; the courtyard
+  gained `[editable path="Actors/ThornWispSymbol"]`.
+- **The stripped run:** `3342 passed, 0 failed, 25 skipped`; boot clean; the checkers pass.
+- **Real game, headless:** the wisp touched the party, `thorn_wisps` opened with the world paused,
+  the win felled the field wisp with 0 xp.
+- **Real game, windowed:** the Keeper's field strike (8) opened the battle, the field wisp's hp
+  stayed at 12 for the whole fight, and it fell after the win.
+- **Capture:** the Thorn Wisps battle menu over the dimmed courtyard, the wisp visible behind it.
+- **A probe lesson.** A probe whose root node has `process_mode = ALWAYS` makes the whole game
+  ignore pause, so followers swung during the open battle. The game's own node must be set back
+  to `PROCESS_MODE_PAUSABLE`. This was a probe fault, not a game fault; it is written into
+  `.claude/agent-notes.md`.
+
+**Unblocks.** C5.2, saves around combat.
+
+**Gaps.**
+- A strike that fells a symbol foe outright ends it in the field, with no battle and no reward.
+  Give symbol foes more hp than one blow.
+- No pre-emptive or back-attack advantage: a first strike opens the same battle as a touch.
+- A loss does nothing special yet: the battle's own loss handling applies.
+- An "ambush", an encounter that spawns real-time foes, is not built.
