@@ -1559,3 +1559,66 @@ has to be a pure clock that a test can step by hand.
   the player in C3.4.
 - `hits` above 1 has no spacing in time. C3.3 decides whether a multi-hit move hits once per
   `hits`, or re-arms during ACTIVE.
+
+## 2026-10-30 — C3.3 · Hitbox and hurtbox
+
+**Did.**
+- New `Hitbox` (an Area3D under the attacker, on layer 11, masking layer 12).
+  - `fit(move)` shapes its box from the move.
+  - `strike(hurtbox)` acts only while the attacker's `MoveTimeline` is hitting, and only once per
+    hurtbox per swing.
+  - `area_entered` calls `strike`. `sweep()` catches hurtboxes that were already inside the box
+    when the swing went live.
+- New `Hurtbox` (an Area3D under the defender, on layer 12, monitorable but not monitoring).
+  `take(attacker, move, rng, from)`:
+  - refuses the attacker itself, an ally (by the faction table) and a fallen fighter;
+  - during i-frames, emits `attack_dodged` and does nothing else;
+  - resolves a wrapped `Skill` through `SkillUse.apply`, or a plain move as `hits` calls to
+    `Combatant.hit`. Each plain hit that lands calls `Weakness.strike`;
+  - then, if anything landed, wears the shield by `poise` and asks for a knockback.
+- `Weakness.wear(target, points)`, sharing `_chip` with `strike`.
+- `ActionMove.poise` is now an int, counted in shield points.
+- New signals `attack_dodged(who, by)` and `knockback_requested(who, push)`.
+- New `tests/unit/hitbox_test.gd` (17).
+- Combat `0.28.0`.
+
+**Why.** It is the contact point of the action formula: everything C3.4 to C3.6 does in real
+time lands through these two nodes. They reuse the turn-based pieces (the formula, `SkillUse`,
+`Weakness`, the faction table), so one hit means the same in all three formulas.
+
+**Decisions.**
+- **Poise is the shield from C2.17**, not a new meter. A heavy swing takes `poise` points
+  whatever the target is weak to, and a hit that matches a weakness also takes its usual point,
+  so exploiting a weakness breaks faster. One BROKEN status serves both formulas.
+- **The hurtbox resolves and the hitbox only remembers.** "Once per swing" is the hitbox's
+  rule, because only the attacker knows what a swing is. What a hit does is the defender's,
+  because it depends on the defender's i-frames, side and health.
+- **A dodge is its own signal**, not a miss. A miss is the formula's accuracy roll; a dodge is
+  the player's timing, and C4's "perfect dodge" ATB fill needs to tell the two apart.
+- **A push is a request, not a movement.** `Hurtbox` does not move bodies. C3.4's fighter and
+  C3.6's enemy listen for `knockback_requested`, which keeps both nodes free of
+  CharacterBody3D code.
+- **A wrapped skill counts as landed** for poise and knockback, because `SkillUse.apply` does
+  not report each hit's result. Accuracy still applies inside it.
+
+**Verified.**
+- Suite: `3169 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with `take` stubbed, 9 failed. Going green then found a real defect: a fresh
+  `MoveTimeline` counts swings from 1 again, so a hitbox given a new clock thought it had
+  already struck. The hitbox now forgets whenever its clock changes, as well as on a new swing.
+- No capture: nothing draws yet. The C3.4 and C3.9 captures will show it.
+
+**Unblocks.** C3.4: the player's fighter owns a `MoveTimeline`, gives it to its own `Hitbox` and
+`Hurtbox`, calls `fit` and `sweep`, and moves the body on `knockback_requested`.
+
+**Gaps.**
+- COUNTER does not fire in real time. `SkillUse.counter` needs a caller in `Hurtbox` that knows
+  the defender's own hitbox; this belongs with C3.6's enemies.
+- BROKEN's `SKIP_TURN` means nothing in real time yet. C3.4 and C3.6 treat holding it as a
+  stagger. Its duration counts turns, so the field needs a seconds version (C4.4 pressure, or a
+  `Weakness.broken` set by the game).
+- The skill path reports no per-hit misses, so a skill that misses still pushes the target.
+- Physics overlap is not exercised by a test, because tests emit `area_entered` by hand. The
+  C3.9 capture is the first real-physics proof.

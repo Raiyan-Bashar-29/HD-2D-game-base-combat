@@ -11,7 +11,7 @@ extends Resource
 ## A move that STRIKES (power above 0, or a `skill`) hurts what its hitbox touches. With a `skill`
 ## the hit goes through `SkillUse`, so a spell costs, cures and drains the way it does in a
 ## turn-based battle; without one it is a plain `Combatant.hit` for `power` of `element`.
-## `poise` is how much of the target's shield the hit takes (the Break path, C2.17), and
+## `poise` is how many points of the target's shield the hit takes (the Break path, C2.17), and
 ## `knockback` is how far the target is pushed, in metres.
 ##
 ## A move with i-frames (`iframes_to` above `iframes_from`) makes its user untouchable from
@@ -40,7 +40,7 @@ extends Resource
 @export var power: float = 0.0
 @export var element: StringName = &""
 @export var hits: int = 1
-@export var poise: float = 0.0
+@export var poise: int = 0
 @export var knockback: float = 0.0
 ## A skill to resolve the hit through instead of `power` and `element`.
 @export var skill: Skill
