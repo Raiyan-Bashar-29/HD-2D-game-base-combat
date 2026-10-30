@@ -296,6 +296,11 @@ signal countered(who: StringName, against: StringName)
 ## A skill aimed at `who` bounced back to `back_to` through a REFLECT status. Emitted by
 ## `SkillUse.apply` (C2.15).
 signal skill_reflected(who: StringName, back_to: StringName, skill_id: StringName)
+## A hit matched `key` (an element or a skill tag) among `who`'s weaknesses for the first time:
+## it is now remembered under `weakness/<kind>/<key>`. Emitted by `Weakness` (C2.17).
+signal weakness_revealed(who: StringName, key: StringName)
+## `who`'s shield reached zero and it is BROKEN. Emitted by `Weakness.strike` (C2.17).
+signal combatant_broken(who: StringName)
 ## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
 signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,

@@ -18,6 +18,10 @@ extends Resource
 @export var faction: StringName = &"enemy"
 ## Copied to `Combatant.base_stats`. Every `max_<pool>` here becomes a pool, full at the start.
 @export var base_stats: Dictionary[StringName, float] = {}
+## Elements or skill tags this fighter is weak to, and what its plain attack counts as (C2.17).
+## Give it a `max_shield` stat too, or a weakness is revealed but nothing ever breaks.
+@export var weak_to: Array[StringName] = []
+@export var attack_tags: Array[StringName] = []
 ## The command menu, for one the player controls. Empty means ATTACK, DEFEND and FLEE.
 @export var commands: Array[BattleCommand] = []
 ## How it plays when nobody controls it. Null means the fallback: attack, then defend.

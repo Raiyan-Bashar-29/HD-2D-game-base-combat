@@ -28,6 +28,8 @@ extends RefCounted
 ##   drains that pool (`Meters`, C2.16).
 ## - BOOST: `act` may spend up to `boost_max` points of `boost_pool` on an ATTACK (more swings)
 ##   or a SKILL (its `boost_power` and `boost_hits`). Points are spent only if the action happens.
+## - A landed hit matching the target's `weak_to` takes a shield point; the last one BREAKS it,
+##   and the break costs it a turn (`Weakness`, C2.17). Its shield refills when the break ends.
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
 ##
 ## IN PLAIN WORDS: this is the referee of a turn-based fight. Hand it two lists of fighters,
@@ -111,6 +113,8 @@ func next_turn() -> Combatant:
 		var sleeper: StringName = statuses.blocker(StatusEffect.Block.SKIP_TURN) if statuses != null else &""
 		if statuses != null:
 			statuses.tick_turn()
+		# A break that just wore off gives the shield back (C2.17).
+		Weakness.recover(actor)
 		# Each `regen_<pool>` stat refills (or drains) its pool once a turn, asleep or not
 		# (C2.16). It runs before the defeat check, so a drain that empties hp counts too.
 		Meters.regen_turn(actor)
@@ -205,6 +209,8 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 				var swing: DamageResult = actor.hit(targets[0], 0.0, &"", rng)
 				if swing != null and not swing.missed:
 					landed = swing
+					# Each landed swing counts against a weakness to the actor's attack_tags.
+					Weakness.strike(targets[0], actor.attack_tags)
 			# Only a plain attack is countered, once however many swings landed; a skill is
 			# answered by REFLECT instead (C2.15).
 			SkillUse.counter(actor, targets[0], landed, rng)

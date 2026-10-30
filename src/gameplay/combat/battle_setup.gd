@@ -88,6 +88,10 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 	combatant.combatant_id = id
 	combatant.faction = def.faction
 	combatant.base_stats = def.base_stats
+	combatant.weak_to = def.weak_to
+	combatant.attack_tags = def.attack_tags
+	# Copies of one definition share a kind, so a weakness revealed on one shows on all.
+	combatant.kind = def.combatant_id
 	actor.add_child(combatant)
 	holder.add_child(actor)
 	# Enemies always start at full HP, even if an old flag says otherwise.
