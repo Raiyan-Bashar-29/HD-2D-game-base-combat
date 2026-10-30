@@ -2260,3 +2260,51 @@ did nothing in the shipped game.
 
 **Gaps.** No healing item in the demo data (Salve is a skill); no target picker; Boost not
 offered in the field.
+
+## 2026-10-30 — C4.6 · Pressure and stagger
+
+**Did.**
+- `Combatant.real_time` marks a fighter that lives in seconds. `ActionHost.equip` and
+  `ActionEnemy` set it; a battle builds fresh combatants, so it stays false there.
+- `Weakness` chooses its break by clock (`_break_for`):
+  - In real time, a hit on a weakness that does not empty the shield applies
+    `pressured_status()` (SECONDS, 3 s, `poise_taken` +1). `wear` multiplies poise by
+    1 + `poise_taken`, so a pressured foe takes double.
+  - The hit that empties the shield applies `staggered_status()` (SECONDS, 4 s, SKIP_TURN,
+    `damage_taken` +0.6, tags `broken` and `staggered`) and cures the pressure.
+  - `recover` waits on whichever status suits the clock.
+  - A game swaps either status through `Weakness.pressured` or `staggered`, as with `broken`.
+- New `StatusSet.halts()`: a SECONDS status that skips turns is held. `ActionFighter.stunned`
+  uses it. `ActionEnemy.act` passes it to the decider as stunned (state STAGGERED). Both bodies
+  cancel their swing while halted and call `Weakness.recover` each frame after their statuses
+  tick.
+- `CombatHud`'s target line lists the target's statuses, and has two new strings,
+  `ui.combat_status.pressured` and `staggered`.
+- `AUTHORING.md` § Action combat has a new step 5.
+- Combat `0.41.0`.
+
+**Why.** The board row, and a bug found while planning it:
+- Poise and field weakness hits applied the turn-counted BROKEN.
+- The field only ticks SECONDS statuses, and only `Battle` called `recover`.
+- So a moth broken in the lantern hall stayed broken for good: shield 0, +50% damage, and it was
+  never stunned.
+
+**Verified.**
+- **Red first:** `_break_for` stubbed to always BROKEN failed four stagger assertions, including
+  "shield refills" (`[0, false]`), which is the old bug exactly.
+- **Suite:** `3357 passed, 0 failed`. Boot: `0 warnings, 0 errors`, combat 0.41.0.
+- **Checkers:** all seven exit 0. Budgets first caught `combat_hud_test.run()` at 41 lines; the
+  new assertion moved to a helper.
+- **A real-game probe with the shipped data,** in the lantern hall:
+  1. Blade swings pressured moth A, and its shield went 3, 2, 1.
+  2. Moth B was staggered at F321 with its shield at 0.
+  3. Its shield was back at 3 at F561, which is four seconds.
+- **A windowed capture:** the HUD target line reads `Ember Moth   HP 2 / 40   [Staggered]`.
+
+**Unblocks.** C4.7, a party in the field.
+
+**Gaps.**
+- No pressure or stagger meter is drawn, only the status names.
+- Moths have no stagger-specific animation.
+- A lock-on does not re-acquire a target behind the player (it is a forward cone, by design in
+  C3.5).

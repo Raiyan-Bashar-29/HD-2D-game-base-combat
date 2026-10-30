@@ -10,7 +10,7 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(9)
+	plan(10)
 	SaveFixture.activate()
 	Flags.clear_all()
 	var hud := CombatHud.new()
@@ -39,6 +39,7 @@ func run() -> void:
 	Events.lock_on_changed.emit(&"fixture_hero", &"fixture_brute/one")
 	equal("locking on adds the target's name and hp", hud.text.get_slice("\n", 1),
 		tr(CombatHud.TARGET_KEY).format({"name": "fixture_brute", "hp": 12, "max": 20}))
+	_shows_target_statuses(hud, foe)
 	Events.lock_on_changed.emit(&"fixture_hero", &"")
 	equal("letting go removes it", hud.text.contains("\n"), false)
 	hud.subject = plain
@@ -51,6 +52,12 @@ func run() -> void:
 
 
 ## A fighter with an ATB gauge shows it, redrawn when the gauge announces a change.
+func _shows_target_statuses(hud: CombatHud, foe: Node) -> void:
+	StatusSet.of(foe).apply(Weakness.staggered_status())
+	equal("the target's line lists its statuses, such as a stagger (C4.6)",
+		hud.text.get_slice("\n", 1).contains(tr("ui.combat_status.staggered")), true)
+
+
 func _shows_atb(hud: CombatHud, hero: Node3D) -> void:
 	var meter := AtbMeter.new()
 	hero.add_child(meter)

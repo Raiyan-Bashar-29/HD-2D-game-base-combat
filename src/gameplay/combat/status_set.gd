@@ -123,6 +123,17 @@ func blocker(block: StatusEffect.Block) -> StringName:
 	return &""
 
 
+## True while a status counted in seconds that skips turns is held: a stagger, a field stun.
+## Real-time fighters stand still while it is (C4.6). A status counted in turns is ignored,
+## because nothing in the field would ever count its turns down.
+func halts() -> bool:
+	for status_id: StringName in _held:
+		var effect: StatusEffect = _held[status_id].effect
+		if effect.unit == StatusEffect.Unit.SECONDS and effect.has_block(StatusEffect.Block.SKIP_TURN):
+			return true
+	return false
+
+
 ## Every status held now, in the order they were applied. The battle readout lists them (C2.19).
 func held() -> Array[StatusEffect]:
 	var out: Array[StatusEffect] = []

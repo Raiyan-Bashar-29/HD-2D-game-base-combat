@@ -60,8 +60,11 @@ func refresh() -> void:
 	var target: Combatant = _target()
 	if target != null:
 		var vitals: Vitals = Vitals.of(target.get_parent())
-		lines.append(tr(TARGET_KEY).format({"name": _name_of(target),
-			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")}))
+		var line: String = tr(TARGET_KEY).format({"name": _name_of(target),
+			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})
+		# The target's statuses too, so a pressured or staggered foe shows it (C4.6).
+		var held: String = _statuses_text(target)
+		lines.append(line if held == "" else line + "   " + held)
 	text = "\n".join(lines)
 
 
@@ -76,13 +79,19 @@ func _fighter_line(fighter: Combatant) -> String:
 	var meter: AtbMeter = AtbMeter.of(fighter.get_parent())
 	if meter != null:
 		parts.append(atb_text(meter.gauge))
+	var held: String = _statuses_text(fighter)
+	if held != "":
+		parts.append(held)
+	return "   ".join(parts)
+
+
+## The statuses `fighter` holds, as one translated line, or "" when it holds none.
+func _statuses_text(fighter: Combatant) -> String:
 	var names: Array[String] = []
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
 	for effect: StatusEffect in statuses.held() if statuses != null else []:
 		names.append(tr(effect.name_key) if effect.name_key != "" else _tail(effect.id))
-	if not names.is_empty():
-		parts.append(tr(STATUSES_KEY).format({"list": ", ".join(names)}))
-	return "   ".join(parts)
+	return "" if names.is_empty() else tr(STATUSES_KEY).format({"list": ", ".join(names)})
 
 
 ## The ATB readout: whole bars ready out of all of them, and how full the next one is (100 when

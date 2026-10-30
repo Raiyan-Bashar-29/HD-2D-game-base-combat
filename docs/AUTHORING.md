@@ -1420,13 +1420,27 @@ in the menu yet: that waits for C5.3.
    | `move_speed`, `wander_radius`, `wander_every` | How it walks, and how far and how often it idles about. |
    | `retreat_below`, `retreat_distance` | Below this fraction of hp it backs off this far. |
    | `moves` | Weighted `ActionBrainEntry`s: a `move`, a `weight`, an optional `reach` and `min_reach` (the target's distance must fit), and `only_below` (an hp fraction, for a desperation move). |
-5. **Strings:** the fighter's `name_key` is shown by the field HUD's target line, under
+5. **Pressure and stagger (C4.6).** A fighter in the field counts in seconds, so a break there
+   is an FF7-Remake-style stagger, not the turn-based BROKEN:
+   - a hit on one of its `weak_to` keys **pressures** it: `status/pressured`, 3 seconds of
+     taking double poise (its `poise_taken` stat goes up by 1);
+   - the hit that empties its `shield` **staggers** it: `status/staggered`, 4 seconds standing
+     still (SKIP_TURN, which the field honours for SECONDS statuses) and taking 60% more damage
+     (`damage_taken` +0.6). When it wears off the shield refills.
+
+   To change either, build your own `StatusEffect` and set `Weakness.pressured` or
+   `Weakness.staggered` once at boot (and `Weakness.broken` for the turn-based break). Any
+   status may give `poise_taken`: +1 doubles the poise a fighter takes, -0.5 halves it. The HUD's
+   target line lists the target's statuses, so "Pressured" and "Staggered" show there
+   (`ui.combat_status.*` strings).
+6. **Strings:** the fighter's `name_key` is shown by the field HUD's target line, under
    `combat.`. `NEW_GAME.md`'s prune leaves `combat.` rows, so a game strips those by hand.
 
 **Seeing it:** walk from the courtyard into the lantern hall. Two moths wander near the south
 wall; walk towards them and they come for you. Lock on, attack three times for the full chain,
 and roll through a lunge. The HUD at the bottom left shows your hp and the locked moth's. Each
-moth falls after three or four hits and gives 12 experience; the first drops a stone chip.
+moth is weak to your blade: the first hits pressure it, and when its three shield points are
+gone it is staggered, stock-still for four seconds. Each moth falls after three or four hits and gives 12 experience; the first drops a stone chip.
 `combat_content_test.gd` fails on a missing name string or an unsound loadout, fighter or brain
 under `data/action/`.
 

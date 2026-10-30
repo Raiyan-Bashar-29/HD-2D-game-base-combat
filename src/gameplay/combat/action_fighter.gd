@@ -70,12 +70,17 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	if statuses != null:
 		statuses.tick_seconds(dt)
+	# A stagger that has just worn off refills the shield (C4.6).
+	var me: Combatant = Combatant.of(get_parent())
+	if me != null:
+		Weakness.recover(me)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Locked on, the fighter always faces its target, so every swing and roll aims at it (C3.5).
 	if _lock_on != null and _lock_on.target != null and _lock_on.direction() != Vector3.ZERO:
 		facing = _lock_on.direction()
 	var vitals: Vitals = Vitals.of(get_parent())
-	if vitals != null and vitals.is_defeated():
+	# A fallen or staggered fighter drops whatever swing it was in.
+	if (vitals != null and vitals.is_defeated()) or (statuses != null and statuses.halts()):
 		timeline.cancel()
 	elif not stunned() and not _held_by_others() and moves != null:
 		_start_moves(attack, dodge)
@@ -85,18 +90,12 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 
 
 ## True while the fighter cannot start moves: knocked back, or under a status counted in
-## seconds that skips turns. A status counted in turns is ignored here, because nothing in
-## the field would ever count its turns down.
+## seconds that skips turns, such as a stagger (`StatusSet.halts`).
 func stunned() -> bool:
 	if _stun_left > 0.0:
 		return true
 	var statuses: StatusSet = StatusSet.of(get_parent())
-	if statuses == null:
-		return false
-	for effect: StatusEffect in statuses.held():
-		if effect.unit == StatusEffect.Unit.SECONDS and effect.blocks.has(StatusEffect.Block.SKIP_TURN):
-			return true
-	return false
+	return statuses != null and statuses.halts()
 
 
 func _start_moves(attack: bool, dodge: bool) -> void:

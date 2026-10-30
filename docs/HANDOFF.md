@@ -9,9 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C4.5, the field-command demo: the Wanderer has two ATB bars, and
-  F in the lantern hall casts Ember (Magic) or Salve. `AUTHORING.md` § The hybrid lists every
-  field.
+- **Last finished package:** C4.6, pressure and stagger: in the field a weakness hit pressures
+  a foe and an empty shield staggers it for four seconds, then the shield refills. It fixed field
+  breaks that never ended.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -26,10 +26,10 @@ between them, written in plain words.
   - C3, the action formula (complete): real-time moves as data, hitboxes, the player's
     chain and roll, lock-on, enemies that chase and lunge, field defeat and rewards, and a HUD.
     `AUTHORING.md` § Action combat lists every field.
-- **Next package:** **C4.6**, pressure and stagger: C2.17's Break and C3's poise, timed in
-  seconds (PRESSURED, then STAGGERED, with damage taken raised).
+- **Next package:** **C4.7**, a party in the field: followers for the active party, and
+  switching which member you control.
 - **Then, in order:**
-  1. **The rest of C4, the FF7-Remake-style hybrid (C4.7–C4.10).**
+  1. **The rest of C4, the FF7-Remake-style hybrid (C4.8–C4.10).**
   2. **C5, mixing formulas, hardening and 1.0.0 (C5.1–C5.7).**
 
   Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,
