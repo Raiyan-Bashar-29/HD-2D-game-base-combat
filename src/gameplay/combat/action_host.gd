@@ -25,6 +25,8 @@ func _ready() -> void:
 	Log.info("combat", "Action inputs ready: %d" % CombatActions.ALL.size())
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.field_enemy_defeated.connect(_on_field_enemy_defeated)
+	# A safety net (C4.1): a new room always starts at full fight speed.
+	Events.area_entered.connect(func(_area: StringName) -> void: CombatClock.reset())
 
 
 ## The loadout `project.godot` names, or null when field combat is off, the file is gone, or it
