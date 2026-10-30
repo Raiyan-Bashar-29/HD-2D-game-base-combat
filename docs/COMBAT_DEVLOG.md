@@ -949,3 +949,59 @@ phase's first row re-reads them against the code as it stands then.
   deferred. The path is proven by the probe and by `area_music`'s two assertions.
 - Statuses still have no `name_key`, so this test checks none. C2.14 adds tags, and C2.18 shows
   statuses on screen; whichever row first shows a status name adds its key and widens this test.
+
+## 2026-10-29 — C2.13 · One shared skill path, and more effects
+
+**Did.**
+- `SkillEffect` (content) lists what a skill does beyond its `power`:
+  - DAMAGE: through the formula;
+  - HEAL and RESTORE: straight to a pool;
+  - DRAIN: a hit, with a share of the hp actually taken going back to the user;
+  - CURE: one status, by id;
+  - DISPEL: every status with a tag;
+  - REVIVE: a fraction of max hp.
+
+  Each effect validates itself.
+- `Skill` gains:
+  - `hits`, which repeats the whole strike;
+  - `effects`;
+  - `revives()`.
+
+  Its `problems()` catches hits below 1, and any helping effect aimed at enemies.
+- `StatusEffect.tags` and `StatusSet.cure_tagged(tag)`.
+- `SkillUse` (gameplay) has three static functions: `affordable`, `pay` and `apply`.
+  `Battle._use` now calls them. Checking a target, spending an item and the CTB delay stay with
+  the battle, because each formula has its own rules for those.
+- `Battle.targets_for` aims a reviving skill only at the fallen. `_settle` puts the revived back
+  into the turn order.
+- Plain-English comments throughout, and an IN PLAIN WORDS block in each new file.
+- Combat `0.18.0`.
+
+**Why.** It is the first C2b row. The owner asked for "everything that happens in combat". Cure,
+dispel, revive, MP restore, drain and multi-hit were missing, and the skill logic lived inside
+`Battle`, where C3's real-time fighter and C4's hybrid could not reach it. Now there is one path,
+so a fire spell does the same thing in all three formulas.
+
+**Decisions.**
+- **Statuses roll once per target, not once per hit**, so a three-hit flurry is not three
+  poison rolls.
+- **DRAIN measures the hp really lost**, so draining an almost-dead foe gives back little.
+- **A revive targets only the fallen**, and a plain heal only the standing. That way a menu or
+  an AI never wastes a revive or heals a corpse. `Vitals` already refuses a heal on the fallen.
+- **`tags` arrived here instead of C2.14**, because DISPEL needs them.
+
+**Verified.**
+- Suite: `2993 passed, 0 failed`. The old `battle_test` passes unchanged, which proves the
+  extraction kept its behaviour.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with effect handling stubbed, 9 assertions failed.
+
+**Unblocks.** C2.14, which adds blocks and resistance on top of `tags`, then C3.2, whose moves can
+wrap a skill.
+
+**Gaps.**
+- The battle menu does not yet show effects, hits or a reviving skill's fallen targets in any
+  special way. That is C2.18.
+- No demo skill uses an effect yet. That is C2.19.
+- `AUTHORING.md` gains its skills and statuses section in C2.19, with every field at once.
