@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="1_skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="3_status"]
+[ext_resource type="Resource" path="res://data/statuses/drowse.tres" id="2_sleep"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"skill/lull"
+name_key = "combat.skill.lull.name"
+cost_pool = &"mp"
+cost = 3
+target = 2
+statuses = Array[ExtResource("3_status")]([ExtResource("2_sleep")])
+status_chance = 0.75
+tags = Array[StringName]([&"magic"])

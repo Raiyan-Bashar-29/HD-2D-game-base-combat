@@ -12,3 +12,5 @@ target = 2
 scope = 1
 power = 6.0
 element = &"fire"
+tags = Array[StringName]([&"magic"])
+boost_power = 0.5

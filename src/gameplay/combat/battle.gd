@@ -320,6 +320,7 @@ func _vitals(fighter: Combatant) -> Vitals:
 static func _default_defend() -> StatusEffect:
 	var guard := StatusEffect.new()
 	guard.id = &"status/defend"
+	guard.name_key = "ui.battle.status.defend"
 	guard.duration = 1.0
 	guard.modifiers = [StatModifier.of(&"defence", StatModifier.Op.ADD, 100.0, &"")]
 	return guard

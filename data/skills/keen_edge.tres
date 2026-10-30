@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="1_skill"]
+[ext_resource type="Resource" path="res://data/statuses/keen_edge.tres" id="2_edge"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"skill/keen_edge"
+name_key = "combat.skill.keen_edge.name"
+cost_pool = &"mp"
+cost = 2
+target = 0
+toggle_status = ExtResource("2_edge")

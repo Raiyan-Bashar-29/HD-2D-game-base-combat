@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="1_skill"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"skill/skyfall"
+name_key = "combat.skill.skyfall.name"
+cost_pool = &"limit"
+cost = 100
+target = 2
+scope = 1
+power = 30.0
+sure_hit = true
+tags = Array[StringName]([&"blade"])

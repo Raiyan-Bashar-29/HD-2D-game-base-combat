@@ -1359,3 +1359,84 @@ have learned about it, and what the last few actions did.
 - An element or skill tag in "Weak:" is translated only if the game adds a string for that
   exact key, such as `fire`.
 - The log does not say who acted or with what; it says what happened to whom.
+
+## 2026-10-30 — C2.20 · The depth, played (closes C2b)
+
+**Did.**
+- Demo statuses in `data/statuses/`, the first files in that directory:
+  - `drowse`: sleep, three turns, breaks on a hit, tagged `ailment`;
+  - `guard_up`: +30 defence, tagged `buff`;
+  - `weaken`: attack ×0.6, tagged `debuff`;
+  - `keen_edge`: a stance, +6 attack and `regen_mp` -1, so it costs mp every turn it is on.
+- Demo skills in `data/skills/`:
+  - Salve, a heal;
+  - Cleanse, which dispels `ailment`;
+  - Rekindle, a revive at half hp;
+  - Bulwark, a buff, and Blight, a debuff;
+  - Lull, sleep at 75%;
+  - Keen Edge, the stance;
+  - Skyfall, a limit special: all enemies, sure to hit, costs the full `limit` pool, tagged
+    `blade`.
+
+  Ember gains the `magic` tag, `boost_power` 0.5 and the Magic category.
+- The party:
+  - **The Wanderer** has Magic (Ember, Lull, Blight), Special (Skyfall), the Keen Edge stance,
+    Defend and Flee. It also has Boost (`max_bp` 5, `start_bp` 0.2, `regen_bp` 1), a limit gauge
+    (`max_limit` 100, `start_limit` 0, `fill_on_hit_limit` 2) and `attack_tags` `blade`.
+  - **The Keeper** has Magic (Salve, Cleanse, Rekindle, Bulwark) and `regen_mp` 1.
+- The thorn wisps:
+  - `weak_to` fire and blade, with `max_shield` 2;
+  - `evasion` 0.1 and 60 hp;
+  - a brain entry that sings Lull from 6 mp.
+- **A fix found by playing it:** every unset pool started full, so the limit gauge began at
+  100 and Boost at 5. `Vitals` now reads a `start_<pool>` stat as the fraction an unset pool
+  starts at. Two assertions in `meters_test.gd` cover it; both failed with the check stubbed.
+- The default DEFEND status gets a name, "Guarding", instead of showing `[defend]`.
+- `combat_content_test.gd` now walks `data/statuses/` and the statuses skills use. It checks
+  every status `name_key` and command `category` against the CSV, and that every skill's and
+  status's `problems()` is empty.
+- Fourteen `combat.*` strings.
+- `AUTHORING.md` § Skills, statuses and combat depth, with every field of a skill, a status and
+  a fighter.
+- Combat `0.25.0`.
+
+**Why.** It closes C2b, and the plan's rule is that a phase closes on its demo, played. Every
+piece C2.13 to C2.19 built is now in data a person can fight through.
+
+**Decisions.**
+- **Several demo ids were renamed before they shipped.** `check_boundary` treats each id's last
+  segment as a demo name and failed on `focus` (the camera rig and UI styles), `mend`, `sleep`,
+  `raise` and `hex`, which tests already use as plain words. The ids became `keen_edge`, `salve`,
+  `drowse`, `rekindle` and `blight`, and the player-facing names follow them. That is the gate
+  working as designed: an id must be distinctive enough to delete.
+- **`start_<pool>` is a stat, not a field.** It goes in `base_stats` beside `max_<pool>`, so a
+  level curve or a status can change it, and it needs no new resource field.
+- **The wisp has 60 hp.** At 22 and 40, Ember one-shot the wisps before a second weakness hit
+  could break one, so a Break was never seen. Measured by playing, not guessed.
+
+**Verified.**
+- Suite: `3116 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first:
+  - with the new data in and no strings, `combat_content_test` failed 14;
+  - with `_start` stubbed, `meters_test` failed 2.
+- Stripped run, done locally as CI does it: no script errors, `3018 passed, 0 failed, 25
+  skipped`, and all seven checkers exit 0.
+- Windowed captures under `xvfb-run`, with a throwaway driver (not committed) that requests the
+  real thorn-wisp encounter and plays it: the Wanderer casts Ember, and the Keeper defends.
+  - The Magic submenu: "Ember 3 MP", "Lull 3 MP", "Blight 2 MP", "Back". The Wanderer starts
+    at "BP 2 / 5" and "LIMIT 0 / 100".
+  - The Break, in the log: "Thorn Wisp 1 is broken!", "Thorn Wisp 2 falls.", "Thorn Wisp 2 takes
+    37. Critical!" and "Thorn Wisp 1 cannot act: broken.". Meanwhile LIMIT has filled to 12 from
+    damage taken.
+  - The fight ends in Victory, with experience, levels and loot.
+
+**Unblocks.** C3.1, the first row of the action formula. C2b is complete.
+
+**Gaps.**
+- `BattleAi` uses only what its brain lists. The wisps never Boost or aim at weaknesses.
+- The BROKEN status has no `name_key`, so the log reads "broken". A game sets its own through
+  `Weakness.broken`.
+- The demo does not use counter or reflect. Both are tested with fixtures; a demo boss is a
+  natural home for them later.

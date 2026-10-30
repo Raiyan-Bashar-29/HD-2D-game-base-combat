@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="StatusEffect" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="1_status"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="2_mod"]
+
+[sub_resource type="Resource" id="defence"]
+script = ExtResource("2_mod")
+stat = &"defence"
+value = 30.0
+
+[resource]
+script = ExtResource("1_status")
+id = &"status/guard_up"
+name_key = "combat.status.guard_up.name"
+duration = 3.0
+modifiers = Array[ExtResource("2_mod")]([SubResource("defence")])
+tags = Array[StringName]([&"buff"])

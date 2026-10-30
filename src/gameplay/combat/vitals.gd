@@ -9,7 +9,9 @@ extends Node
 ## modifiers on a sheet (C1.2); storing it would be a second copy that could disagree.
 ##
 ## AN UNSET POOL IS FULL. A combatant nobody has hurt has no flag at all, so a fresh character
-## and a new game both start at their maximum without anybody writing one.
+## and a new game both start at their maximum without anybody writing one. The one exception is
+## a pool with a `start_<pool>` stat, the fraction of its maximum it starts at (C2.20): a limit
+## gauge has `start_limit` 0 and starts empty, Boost points `start_bp` 0.2 and start at a fifth.
 ##
 ## DEFEAT IS AN EDGE, NOT A STATE ANNOUNCEMENT. `combatant_defeated` fires on the step that takes
 ## the defeat pool from above zero to zero, and never again until a revive. Hitting a defeated
@@ -22,6 +24,8 @@ extends Node
 const PREFIX: String = "vital/"
 ## The maximum of pool `hp` is the sheet's stat `max_hp`.
 const MAX_PREFIX: String = "max_"
+## A pool's starting fraction, when it should not start full, is the stat `start_<pool>`.
+const START_PREFIX: String = "start_"
 
 ## Unique per combatant, and it namespaces every flag this component writes. Equipment's rule:
 ## a second combatant that keeps the default shares the first one's pools.
@@ -57,7 +61,15 @@ func maximum(pool: StringName) -> int:
 
 
 func current(pool: StringName) -> int:
-	return clampi(Flags.get_int(key(pool), maximum(pool)), 0, maximum(pool))
+	return clampi(Flags.get_int(key(pool), _start(pool)), 0, maximum(pool))
+
+
+## What an unset pool reads: full, unless the sheet names a `start_<pool>` fraction.
+func _start(pool: StringName) -> int:
+	var stat := StringName(START_PREFIX + String(pool))
+	if not sheet.mentioned(String(stat)).has(stat):
+		return maximum(pool)
+	return roundi(maximum(pool) * clampf(sheet.value(stat), 0.0, 1.0))
 
 
 ## Negative to hurt, positive to heal. Returns the value after.

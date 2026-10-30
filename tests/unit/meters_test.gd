@@ -11,7 +11,7 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(21)
+	plan(23)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_regeneration()
@@ -84,6 +84,10 @@ func _regeneration() -> void:
 	_vitals(sage).set_to(&"mp", 6)
 	Meters.regen_turn(sage)
 	equal("a negative regen drains instead: 6 + 3 - 5", _vitals(sage).current(&"mp"), 4)
+	var fresh := _fighter(&"fixture_fresh", &"side_a", {&"max_hp": 9.0, &"max_limit": 100.0,
+		&"start_limit": 0.0, &"max_bp": 5.0, &"start_bp": 0.2})
+	equal("a gauge with start_limit 0 starts empty, not full", _vitals(fresh).current(&"limit"), 0)
+	equal("start_bp 0.2 of 5 starts at 1", _vitals(fresh).current(&"bp"), 1)
 	_free_all()
 
 

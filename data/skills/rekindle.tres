@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Skill" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="1_skill"]
+[ext_resource type="Script" path="res://src/content/combat/skill_effect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="revive"]
+script = ExtResource("2_effect")
+kind = 6
+amount = 0.5
+
+[resource]
+script = ExtResource("1_skill")
+id = &"skill/rekindle"
+name_key = "combat.skill.rekindle.name"
+cost_pool = &"mp"
+cost = 6
+target = 1
+effects = Array[ExtResource("2_effect")]([SubResource("revive")])
+tags = Array[StringName]([&"magic"])
