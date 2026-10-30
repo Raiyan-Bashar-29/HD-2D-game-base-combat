@@ -13,6 +13,7 @@ extends RefCounted
 ##
 ## THE RULES, each a template default:
 ## - ATTACK is a power-0 hit through the actor's formula, so the attack stat alone decides it.
+##   It can miss against evasion, and a target holding a COUNTER status strikes back (C2.15).
 ## - SKILL and ITEM spend the cost (and, for ITEM, one item from `inventory`), then do what
 ##   `SkillUse.apply` says: power, effects, hits and statuses (C2.13). A reviving skill aims only
 ##   at the fallen, and anyone revived rejoins the turn order.
@@ -183,7 +184,9 @@ func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
 		BattleCommand.Kind.ATTACK:
 			if not _legal(command, targets, true):
 				return false
-			actor.hit(targets[0], 0.0, &"", rng)
+			var landed: DamageResult = actor.hit(targets[0], 0.0, &"", rng)
+			# Only a plain attack is countered; a skill is answered by REFLECT instead (C2.15).
+			SkillUse.counter(actor, targets[0], landed, rng)
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			if not _use(actor, command, targets):
 				return false

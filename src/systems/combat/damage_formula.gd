@@ -5,7 +5,7 @@ extends Resource
 ## THIS IS THE FORMULA-SWAP POINT C1 PROMISED. Turn-based, action and the hybrid all resolve hits
 ## through one of these; a game that wants "attack minus defence", no crits, or a stage of its
 ## own lists different stages in a `.tres`, and never edits `src/`. `standard()` is the template
-## default, the four stages shipped beside this file, in the order most games mean.
+## default, the five stages shipped beside this file, in the order most games mean.
 ##
 ## PURE AND SEEDED. `resolve` reads its request and its stages, draws only from the `rng` it is
 ## given, and returns a new result, so the same seed gives the same hit.
@@ -16,10 +16,11 @@ extends Resource
 @export var stages: Array[DamageStage] = []
 
 
-## The template default: attack against defence, then element, then crit, then variance.
+## The template default: does it land, then attack against defence, element, crit, variance.
+## Accuracy is first so a miss skips the rest, and with no evasion anywhere it never draws.
 static func standard() -> DamageFormula:
 	var formula := DamageFormula.new()
-	formula.stages = [AttackDefenceStage.new(), ElementStage.new(), CritStage.new(), VarianceStage.new()]
+	formula.stages = [AccuracyStage.new(), AttackDefenceStage.new(), ElementStage.new(), CritStage.new(), VarianceStage.new()]
 	return formula
 
 
@@ -34,4 +35,7 @@ func resolve(request: DamageRequest, rng: RandomNumberGenerator) -> DamageResult
 			continue
 		stage.apply(request, result, rng)
 		result.stages_run.append((stage.get_script() as Script).get_global_name())
+		# A hit that missed is over: no later stage may turn a zero back into damage (C2.15).
+		if result.missed:
+			break
 	return result

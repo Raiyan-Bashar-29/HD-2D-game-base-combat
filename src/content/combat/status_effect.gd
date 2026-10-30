@@ -27,6 +27,10 @@ enum Stacking { REFRESH, STACK, IGNORE }
 ## (sleep, stun, freeze). NO_SKILLS: no SKILL commands (silence). NO_ITEMS and NO_FLEE: the same
 ## for ITEM and FLEE. A plain ATTACK and DEFEND are never blocked, so nobody is ever stuck.
 enum Block { SKIP_TURN, NO_SKILLS, NO_ITEMS, NO_FLEE }
+## How a status answers a hit on its holder (C2.15). COUNTER: a plain ATTACK that landed is
+## struck back with the holder's own attack. REFLECT: a skill carrying `reflect_tag` (`magic`
+## by default) bounces back to whoever used it. Each fires at `reaction_chance`.
+enum Reaction { COUNTER, REFLECT }
 
 @export var unit: Unit = Unit.TURNS
 @export var duration: float = 3.0
@@ -45,11 +49,21 @@ enum Block { SKIP_TURN, NO_SKILLS, NO_ITEMS, NO_FLEE }
 @export var blocks: Array[Block] = []
 ## True for a sleep: the first hit that does damage ends it.
 @export var breaks_on_hit: bool = false
+## How the holder answers a hit while this is held, and the chance (0 to 1) each one fires.
+@export var reactions: Array[Reaction] = []
+@export_range(0.0, 1.0, 0.01) var reaction_chance: float = 1.0
+## The skill tag a REFLECT bounces. A skill without it (a sword art, say) goes through.
+@export var reflect_tag: StringName = &"magic"
 
 
 ## True when this status carries `block`.
 func has_block(block: Block) -> bool:
 	return blocks.has(block)
+
+
+## True when this status carries `reaction`.
+func has_reaction(reaction: Reaction) -> bool:
+	return reactions.has(reaction)
 
 
 func problems() -> PackedStringArray:
@@ -65,6 +79,9 @@ func problems() -> PackedStringArray:
 	if blocks.has(Block.SKIP_TURN) and duration <= 0.0 and not breaks_on_hit:
 		# Nothing would ever end it short of a cure, and a whole side asleep forever would stall.
 		found.append("%s (%s) skips turns forever: give it a duration or breaks_on_hit" % [resource_path, id])
+	if reactions.has(Reaction.REFLECT) and reflect_tag == &"":
+		# With no tag to match, nothing would ever be reflected: almost certainly a slip.
+		found.append("%s (%s) reflects but names no reflect_tag" % [resource_path, id])
 	for modifier: StatModifier in modifiers:
 		if modifier == null or modifier.stat == &"":
 			found.append("%s (%s) has a modifier with no stat" % [resource_path, id])

@@ -1059,3 +1059,66 @@ the two new signals.
 - A capped battle (everyone asleep for good) returns null from `next_turn` while the outcome is
   still ONGOING. The screen shows no menu then. Validation makes this unreachable with sound
   data.
+
+## 2026-10-30 — C2.15 · Hit or miss, counters and reflect
+
+**Did.**
+- New `src/systems/combat/accuracy_stage.gd`. The chance to land is `base_accuracy` (1) plus
+  the attacker's `accuracy` stat, minus the defender's `evasion` stat. A miss sets
+  `DamageResult.missed` and zeroes the amount. `DamageFormula.resolve` then stops, so no later
+  stage can turn the zero back into damage.
+- `DamageFormula.standard()` lists it first, so the standard formula is now five stages.
+- `DamageRequest.sure_hit` and `Skill.sure_hit` let a hit skip the roll. `Combatant.hit` takes
+  `sure_hit`, and `SkillUse` passes the skill's own value for power, DAMAGE and DRAIN.
+- `Combatant.receive` on a miss changes nothing, wakes nobody, and emits `attack_missed`.
+- `Skill.tags`: free labels. `magic` is what a reflect bounces by default.
+- `StatusEffect` gains:
+  - `Reaction`: COUNTER and REFLECT;
+  - `reactions`;
+  - `reaction_chance`;
+  - `reflect_tag`;
+  - `has_reaction`.
+
+  `problems()` refuses a REFLECT with no tag. `StatusSet.reactor(reaction)` returns the first
+  held status carrying a reaction.
+- `SkillUse.apply` checks each aimed target for a reflect. A bounced skill, statuses and all,
+  lands on its user.
+- `SkillUse.counter(attacker, defender, landed, rng)` makes the defender strike back with a plain
+  hit. `Battle` calls it after an ATTACK.
+- New signals `attack_missed`, `countered` and `skill_reflected`.
+- New `tests/unit/hit_reaction_test.gd` (19).
+- Combat `0.20.0`.
+
+**Why.** Misses, counters and reflect are on the owner's "everything in combat" list. All three
+answer the same question: what happens around a hit.
+
+**Decisions.**
+- **A certain hit draws no random number.** With no evasion anywhere, the chance is 1 and the
+  stage returns at once, so every seeded test and fight from before this row replays unchanged.
+  This is why no older assertion moved, except the count of stages in the standard formula.
+  Below 1, it always draws once, the crit stage's rule.
+- **A miss is its own signal**, not a 0 on `combatant_damaged`. A floating number or a log line
+  never has to tell "missed" from "hit for 0". This is a change from the plan.
+- **Counters answer only a plain ATTACK that landed**, from a defender who is standing and
+  neither asleep nor stunned. A counter is itself a plain hit, so it can miss too, and it is
+  never countered back.
+- **Reflect works by tag and never bounces twice.** A bounced skill lands on its user even if the
+  user also reflects, so two mirrors cannot ping-pong. A skill aimed at its own user, or at a
+  fallen target, never bounces.
+- **A reaction at chance 1 draws nothing**, for the same replay reason.
+- **Counter lives in `SkillUse`, not `Battle`**, so C3's hurtbox can call the same function.
+
+**Verified.**
+- Suite: `3030 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with the stage, the miss and both reactions stubbed, 14 assertions failed.
+
+**Unblocks.** C2.16 (meters), and C2.18's battle log, which reads the three new signals.
+
+**Gaps.**
+- A counter uses the defender's plain attack only. A counter with a skill (a "counter-magic") is
+  not built; a game can listen to `countered` and act.
+- No demo content uses evasion, counter or reflect yet. C2.19 adds that.
+- `BattleAi` does not avoid casting magic into a reflecting target. A smarter brain can check
+  `StatusSet.reactor`.
