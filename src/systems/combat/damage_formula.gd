@@ -5,7 +5,7 @@ extends Resource
 ## THIS IS THE FORMULA-SWAP POINT C1 PROMISED. Turn-based, action and the hybrid all resolve hits
 ## through one of these; a game that wants "attack minus defence", no crits, or a stage of its
 ## own lists different stages in a `.tres`, and never edits `src/`. `standard()` is the template
-## default, the five stages shipped beside this file, in the order most games mean.
+## default, the six stages shipped beside this file, in the order most games mean.
 ##
 ## PURE AND SEEDED. `resolve` reads its request and its stages, draws only from the `rng` it is
 ## given, and returns a new result, so the same seed gives the same hit.
@@ -16,11 +16,12 @@ extends Resource
 @export var stages: Array[DamageStage] = []
 
 
-## The template default: does it land, then attack against defence, element, crit, variance.
+## The template default: does it land, then attack against defence, element, vulnerability
+## (more damage on a broken target, C2.17), crit, variance.
 ## Accuracy is first so a miss skips the rest, and with no evasion anywhere it never draws.
 static func standard() -> DamageFormula:
 	var formula := DamageFormula.new()
-	formula.stages = [AccuracyStage.new(), AttackDefenceStage.new(), ElementStage.new(), CritStage.new(), VarianceStage.new()]
+	formula.stages = [AccuracyStage.new(), AttackDefenceStage.new(), ElementStage.new(), VulnerabilityStage.new(), CritStage.new(), VarianceStage.new()]
 	return formula
 
 

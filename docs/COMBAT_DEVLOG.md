@@ -1182,3 +1182,63 @@ Boost selector from `can_boost`, and a SPECIAL category.
 - Octopath's rule that a fighter who boosted gains no BP on its next turn is not built. A game can
   add it with a one-turn status carrying `regen_bp` -1.
 - In the field (C3), nothing calls `Meters.regen_turn` yet. C3.4 decides its clock.
+
+## 2026-10-30 — C2.17 · Weakness and Break
+
+**Did.**
+- New `src/gameplay/combat/weakness.gd`:
+  - `strike(target, keys)`: for a hit that landed, it reveals each key the target is weak to and
+    takes one point from the `shield` pool. The last point applies `broken_status()` and emits
+    `combatant_broken`.
+  - `recover(fighter)`: refills the shield once the break has worn off. `Battle.next_turn` calls
+    it after the status tick.
+  - `revealed(fighter, key)`: true when the `weakness/<kind>/<key>` flag is set.
+  - `keys_of(skill)`: a skill's element plus its tags.
+  - `broken_status()`: one lost turn and `damage_taken` +0.5. A game replaces it by setting the
+    static `Weakness.broken`.
+- New `src/systems/combat/vulnerability_stage.gd`: the hit times 1 + the defender's
+  `damage_taken`, never below zero. It is in the standard formula after element, so the formula
+  is now six stages.
+- `Combatant` gains:
+  - `weak_to`;
+  - `attack_tags`, what a plain ATTACK counts as;
+  - `kind`, so twins share revealed weaknesses.
+
+  `CombatantDef` gains `weak_to` and `attack_tags`. `BattleSetup` copies them and sets `kind` to
+  the definition id.
+- `SkillUse` checks weaknesses after every damaging hit that landed: power, DAMAGE and DRAIN.
+  `Battle` checks them after every landed swing of an ATTACK.
+- New signals `weakness_revealed` and `combatant_broken`.
+- New `tests/unit/weakness_test.gd` (14).
+- Combat `0.22.0`.
+
+**Why.** Weakness and Break is the Octopath-style layer the owner's list ends on. The plan also
+makes it the one code path that C3's poise and C4's pressure reuse.
+
+**Decisions.**
+- **One shield point per landed hit, however many weaknesses it matches.** A multi-hit skill
+  chips once per hit, which is Octopath's rule and what makes multi-hit and Boost worth using.
+- **A break costs exactly one turn.** The BROKEN status lasts 1 turn and blocks SKIP_TURN, so the
+  C2.14 rule (decided before the tick) makes it cost exactly that turn. The damage bonus lasts
+  until then.
+- **The shield refills when the break is over**, checked at each turn start after the tick. The
+  broken fighter's skipped turn is that moment, so it comes back with a full shield.
+- **Reveals are per kind and saved in `Flags`**, which is a bestiary for free. `BattleSetup`
+  starts every enemy with a full shield, because `_forget_pools` clears every `max_*` pool.
+- **The broken status is a static var on `Weakness`, not a `Battle` field**, because `SkillUse`
+  has no battle and C3 will break things in the field.
+
+**Verified.**
+- Suite: `3067 passed, 0 failed`.
+- Boot: `0 warnings, 0 errors`.
+- All seven checkers exit 0.
+- Red first: with `strike` and the vulnerability stage stubbed, 7 assertions failed.
+
+**Unblocks.** C2.18's menu, which shows revealed weaknesses with `Weakness.revealed`, and C2.19's
+demo wisp weak to fire. C3.3 and C4.4 reuse `strike` and `recover`.
+
+**Gaps.**
+- A shield counter is not shown anywhere yet. That is C2.18.
+- An enemy broken on its own turn (by a counter or a reflected skill) skips its next turn and
+  recovers then. That is consistent, but Octopath differs in detail.
+- `BattleAi` does not aim for weaknesses.

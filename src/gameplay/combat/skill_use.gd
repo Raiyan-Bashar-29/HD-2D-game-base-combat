@@ -123,7 +123,7 @@ static func _toggle(user: Combatant, skill: Skill) -> void:
 static func _strike(user: Combatant, skill: Skill, target: Combatant,
 		rng: RandomNumberGenerator, scale: float) -> void:
 	if skill.power > 0.0:
-		user.hit(target, skill.power * scale, skill.element, rng, skill.sure_hit)
+		_hit(user, skill, target, skill.power * scale, rng)
 	elif skill.power < 0.0:
 		# Negative power is the original way to write a heal: straight to the pool, no defence.
 		_vitals(target).change(target.damage_pool, roundi(-skill.power * scale))
@@ -138,7 +138,7 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 	var statuses: StatusSet = StatusSet.of(target.get_parent())
 	match effect.kind:
 		SkillEffect.Kind.DAMAGE:
-			user.hit(target, effect.amount * scale, skill.element, rng, skill.sure_hit)
+			_hit(user, skill, target, effect.amount * scale, rng)
 		SkillEffect.Kind.HEAL:
 			vitals.change(target.damage_pool, roundi(effect.amount * scale))
 		SkillEffect.Kind.RESTORE:
@@ -147,7 +147,7 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 			# Measure what the target really lost (a nearly-dead target gives back less), then
 			# hand the user its share.
 			var before: int = vitals.current(target.damage_pool)
-			user.hit(target, effect.amount * scale, skill.element, rng, skill.sure_hit)
+			_hit(user, skill, target, effect.amount * scale, rng)
 			var taken: int = before - vitals.current(target.damage_pool)
 			if taken > 0:
 				_vitals(user).change(user.damage_pool, roundi(taken * effect.fraction))
@@ -161,6 +161,15 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 			# Only the fallen are revived; a standing target is left alone (revive refuses).
 			var back: int = roundi(vitals.maximum(target.damage_pool) * effect.amount)
 			vitals.revive(maxi(1, back))
+
+
+## One damaging hit of `skill`: resolved through the user's formula, then, if it landed, checked
+## against the target's weaknesses (C2.17).
+static func _hit(user: Combatant, skill: Skill, target: Combatant, power: float,
+		rng: RandomNumberGenerator) -> void:
+	var result: DamageResult = user.hit(target, power, skill.element, rng, skill.sure_hit)
+	if result != null and not result.missed:
+		Weakness.strike(target, Weakness.keys_of(skill))
 
 
 static func _vitals(fighter: Combatant) -> Vitals:

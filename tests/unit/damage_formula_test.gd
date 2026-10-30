@@ -111,7 +111,7 @@ func _seeded_is_deterministic() -> void:
 	var again := formula.resolve(request, _rng(42))
 	equal("the same seed gives the same amount", once.amount, again.amount)
 	equal("and the same crit", once.critical, again.critical)
-	equal("the standard formula runs all five shipped stages", once.stages_run.size(), 5)
+	equal("the standard formula runs all six shipped stages", once.stages_run.size(), 6)
 	var gappy := _formula([null, AttackDefenceStage.new()])
 	equal("a null in the list is skipped", gappy.resolve(DamageRequest.of(null, null, 5.0), _rng(1)).stages_run.size(), 1)
 	var rounding := DamageResult.new()

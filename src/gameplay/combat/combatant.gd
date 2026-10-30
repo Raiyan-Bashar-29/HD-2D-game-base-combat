@@ -26,6 +26,14 @@ extends Node
 ## Copied into the sheet on ready, so an actor scene is combat-ready with no code. Modifiers from
 ## equipment and statuses still layer on top.
 @export var base_stats: Dictionary[StringName, float] = {}
+## WEAKNESS AND BREAK (C2.17). What this fighter is weak to: elements or skill tags. A landed
+## hit matching one takes a point from its `shield` pool (`Weakness`).
+@export var weak_to: Array[StringName] = []
+## What this fighter's plain ATTACK counts as for weaknesses, such as `sword`.
+@export var attack_tags: Array[StringName] = []
+## Which kind of fighter this is, shared by every copy (two wisps are both `wisp`), so a
+## revealed weakness shows on all of them. Empty means the combatant id.
+@export var kind: StringName = &""
 
 var sheet: StatSheet = StatSheet.new()
 
