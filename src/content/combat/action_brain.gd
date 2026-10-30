@@ -26,11 +26,14 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var retreat_below: float = 0.0
 @export var retreat_distance: float = 3.0
 @export var moves: Array[ActionBrainEntry] = []
+## True for a foe that only ever chases, never swings: the body of a `SymbolEncounter` (C5.1),
+## which starts a turn-based battle on touch. Then an empty `moves` is meant, not a mistake.
+@export var chase_only: bool = false
 
 
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
-	if moves.is_empty():
+	if moves.is_empty() and not chase_only:
 		found.append("%s has no moves, so it can never attack" % context)
 	for i: int in moves.size():
 		if moves[i] == null:
