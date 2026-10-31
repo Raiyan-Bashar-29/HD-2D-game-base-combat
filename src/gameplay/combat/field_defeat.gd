@@ -11,6 +11,11 @@ extends Node
 ##
 ## The clock runs in `tick`, which `_physics_process` calls, so a test can step it by hand.
 ##
+## AND EVERY AREA ENTRY STANDS A FALLEN FIGHTER UP (C5.2), unless they are still lying out their
+## `delay`. That is how a reload or a re-entry ends the wait, and it is also the safety net for a
+## save written while the player lay at 0 hp (by a build before `CombatSaveGuard`): such a load
+## fires no defeat edge, so without this nothing would ever get them up.
+##
 ## OWNS: the wait on the ground and carrying out the rule.
 ## MUST NOT: choose the rule (the loadout does) or decide what an enemy's defeat means.
 
@@ -25,6 +30,7 @@ var _waiting: float = -1.0
 
 func _ready() -> void:
 	Events.combatant_defeated.connect(_on_defeated)
+	Events.area_entered.connect(_on_area_entered)
 
 
 func _physics_process(delta: float) -> void:
@@ -59,16 +65,17 @@ func _carry_out() -> void:
 	if rule.kind == DefeatRule.Kind.REVIVE_IN_PLACE or Director.current_area_id == &"":
 		_get_up()
 		return
-	# Get up only once the area is entered again. Getting up first would leave the player
-	# standing among the same enemies for the whole fade, and they would fall again.
-	Events.area_entered.connect(_on_back, CONNECT_ONE_SHOT)
+	# Get up only once the area is entered again (`_on_area_entered`). Getting up first would
+	# leave the player standing among the same enemies for the whole fade, and they would fall
+	# again.
 	var slot: int = SaveSystem.latest_slot() if rule.kind == DefeatRule.Kind.RELOAD_SAVE else -1
 	if slot < 0 or SaveSystem.load_from_slot(slot) != OK:
 		Director.reload_current_area()
 
 
-func _on_back(_area_id: StringName) -> void:
-	_get_up()
+func _on_area_entered(_area_id: StringName) -> void:
+	if _waiting < 0.0:
+		_get_up()
 
 
 ## Stands the fighter up with `revive_fraction` of their hp, if they are still down (a loaded

@@ -12,8 +12,9 @@ extends Node
 ##
 ## ITS OWN SAVE SECTION, `Inventory`'s pattern: registered on ready, unregistered on exit, so
 ## `save_system.gd` is untouched. It stores ids, time left and stacks, and rebuilds the modifiers
-## from `StatusDb` on load, so a sheet is never saved. A status whose definition has gone is
-## dropped with a warning: without its definition nothing knows what it changed.
+## from `StatusDb` on load, so a sheet is never saved. The three statuses `Weakness` builds in
+## code (broken, pressured, staggered) are found there instead (C5.2). A status whose definition
+## has gone is dropped with a warning: without its definition nothing knows what it changed.
 ##
 ## IN PLAIN WORDS: the list of buffs and ailments on one fighter (poison, guard, haste...).
 ## Something else says "a turn passed" or "half a second passed"; this file counts down,
@@ -310,6 +311,8 @@ func _apply_save(data: Dictionary, _from_version: int) -> void:
 	_clear()
 	for key: String in data:
 		var effect: StatusEffect = StatusDb.status(StringName(key))
+		if effect == null:
+			effect = Weakness.built_in(StringName(key))
 		if effect == null:
 			Log.warn(CATEGORY, "'%s' held a status '%s' that no longer exists; dropped" % [owner_id, key])
 			continue

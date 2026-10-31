@@ -2585,3 +2585,47 @@ uses another formula than the field.
 - No pre-emptive or back-attack advantage: a first strike opens the same battle as a touch.
 - A loss does nothing special yet: the battle's own loss handling applies.
 - An "ambush", an encounter that spawns real-time foes, is not built.
+
+## 2026-10-31 — C5.2 · Saves around combat
+
+**Did.**
+- **Upstream first.** Planning found no way to say "not now" to a save, so upstream gained one:
+  T7.2, `SaveSystem.blockers` (base `5.17.0`, PR #87 there). This row merged it down. It is the
+  pattern C5.3 names: a combat-neutral seam lands upstream, then the fork uses it.
+- New `src/gameplay/combat/combat_save_guard.gd`, a node under GameRoot in `game_root.tscn`. It
+  refuses a save during a turn-based battle (`ui.combat_save.in_battle`) and while the player
+  lies defeated (`ui.combat_save.fallen`). The save screen shows the reason; the autosave skips.
+- New `Weakness.built_in(id)`, which `StatusSet._apply_save` asks when `StatusDb` has no such
+  status. The broken, pressured and staggered statuses are built in code, so a save holding one
+  used to drop it with a warning.
+- `FieldDefeat` listens to `area_entered` itself, and stands a fallen fighter up unless they are
+  still lying out the rule's delay. It replaces the one-shot `_on_back` connection.
+- New `tests/unit/combat_save_test.gd` (18). Two `ui.combat_save.*` CSV rows. Combat `0.48.0`.
+
+**Why.** Two holes: quitting mid-battle autosaved the party's mid-fight hp, and a save made while
+the player lay at 0 hp (from the pause menu, which the fall does not block, or the quit
+autosave) loaded into a soft-lock, since a load fires no defeat edge.
+
+**What was already right.** Pools, statuses, `remember_defeat` flags and revealed weaknesses
+were all saved, through `Flags` or a status section. Field enemies and ATB reset on a load, as on
+re-entry; `AUTHORING.md` § Saves around combat says so.
+
+**Verified.**
+- **Red first:** with `reason`, `built_in` and the area-entry get-up stubbed, 10 of 18 failed.
+- **Suite:** `3477 passed, 0 failed`. **Boot:** `0 warnings, 0 errors`. **Checkers:** all seven
+  exit 0.
+- **The stripped run:** `3380 passed, 0 failed, 25 skipped`; the checkers pass.
+- **Real game, headless** (a throwaway `zz_capture/drive.tscn`, deleted): in the courtyard,
+  `encounter/thorn_wisps` opened, `save_to_slot` returned `ERR_UNAVAILABLE` (2) and wrote
+  nothing, and `Autosave.request` returned `ERR_SKIP`; after `battle_ended` the refusal was
+  gone. In the lantern hall, hp 33 was saved, healed to 38, and read 33 straight after the load
+  (the moths then went on fighting). At 0 hp the save was refused with `fallen`; the rule
+  (RESPAWN_AT_ENTRY) stood the player up and the refusal cleared.
+
+**Unblocks.** C5.3, upstream seams.
+
+**Gaps.**
+- A player who falls in a battle and loses is not covered here; the battle's own loss handling
+  applies.
+- Followers' statuses are saved under their own ids; a follower rebuilt by an area change
+  re-registers its section, which was not separately probed.

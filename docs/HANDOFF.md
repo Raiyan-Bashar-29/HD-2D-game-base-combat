@@ -9,8 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C5.1, mixed formulas: a `SymbolEncounter` makes a foe seen in the
-  field open a turn-based battle when it touches, or is struck by, the party.
+- **Last finished package:** C5.2, saves around combat: `CombatSaveGuard` refuses a save during
+  a battle and while the player lies fallen (through upstream's `SaveSystem.blockers`, 5.17.0),
+  a stagger survives a load, and a fallen player always gets up on an area entry.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -28,8 +29,8 @@ between them, written in plain words.
   - C4, the hybrid (complete): the fight's own clock, ATB, a command menu over the running
     fight, pressure and stagger, a party in the field that thinks and fights, and three variants.
     `AUTHORING.md` § The hybrid lists every field.
-- **Next package:** **C5.2**, saves around combat: no saving while a battle screen is open, and a
-  field fight that survives a save and load.
+- **Next package:** **C5.3**, upstream seams: rebindable extra actions and a game-registered
+  settings section, each a row on upstream's board first (C5.2 used the same pattern).
 - **Then, in order:**
   1. **C5.3–C5.7:** upstream seams, accessibility, docs, a playtest, 1.0.0.
   2. **C5.8:** a fall safety net (found in C4.11).
@@ -104,7 +105,7 @@ anything to its left and nothing to its right.
 | `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, a real-time move, move set and loadout, the ATB rules, an enemy's action brain, a defeat rule, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
 | `src/systems/input/combat_actions.gd` | The action-combat inputs (attack, dodge, lock on), installed at boot by `ActionHost` because upstream's `Actions` may not be edited. |
 | `src/systems/combat/` | **Pure maths, no nodes:** the combat clock (how fast the fight runs), the ATB gauge, the move timeline (which phase a real-time move is in), the action decider (what a real-time enemy does next), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB, which `advance` can feed with time for an ATB battle), and `TimedWindow` (a timed hit's power multiplier). |
-| `src/gameplay/combat/` | **Things living in the game:** `SymbolEncounter` (a field foe that opens a turn-based battle on touch or on a strike), `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `FieldParty` and `PartyFollower` (the party in the field, switching who you control, and a follower that thinks and fights), `BrainContext`, `BattleBrainContext` and `FieldBrainContext` (what a brain may do in a battle or in the field), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits; `Hurtbox.nearest_hostile` finds a body's nearest foe), `ActionFighter` (a body that swings and dodges), `LockOn`, `ActionEnemy` (a real-time enemy's body) and `ActionHost` (fits the player out as a fighter, and grants field rewards), `FieldDefeat` (what the player's fall means), `AtbMeter` (the ATB gauge on a field fighter), `FieldCommands` (using a skill or item mid-fight), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
+| `src/gameplay/combat/` | **Things living in the game:** `CombatSaveGuard` (refuses a save mid-battle or while the player lies fallen), `SymbolEncounter` (a field foe that opens a turn-based battle on touch or on a strike), `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `FieldParty` and `PartyFollower` (the party in the field, switching who you control, and a follower that thinks and fights), `BrainContext`, `BattleBrainContext` and `FieldBrainContext` (what a brain may do in a battle or in the field), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits; `Hurtbox.nearest_hostile` finds a body's nearest foe), `ActionFighter` (a body that swings and dodges), `LockOn`, `ActionEnemy` (a real-time enemy's body) and `ActionHost` (fits the player out as a fighter, and grants field rewards), `FieldDefeat` (what the player's fall means), `AtbMeter` (the ATB gauge on a field fighter), `FieldCommands` (using a skill or item mid-fight), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
 | `src/ui/combat/` | `CombatHud` (the field readout), `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary), `BattleHost` (opens the screen when an encounter is requested), `CommandOverlay` (the hybrid's command menu over the running fight) and `CommandHost` (opens it on the command key). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |
