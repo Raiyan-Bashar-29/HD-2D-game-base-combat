@@ -34,11 +34,11 @@ const PAD_FIELD: String = "pad"
 static var file_path: String = PATH
 
 
-## Bind `action` to `event` and remember it. Returns false for an action that is not REBINDABLE,
+## Bind `action` to `event` and remember it. Returns false for an action that is not rebindable,
 ## or an event that is neither a key nor a pad button - a mouse wheel cannot be a movement key,
 ## and saying so is better than storing a binding that never fires.
 ##
-## THE GATE IS `Actions.REBINDABLE`, NOT `InputMap.has_action`, AND THE DIFFERENCE WAS A BUG.
+## THE GATE IS `Actions.is_rebindable`, NOT `InputMap.has_action`, AND THE DIFFERENCE WAS A BUG.
 ## Until T5.5 this asked only whether the action EXISTED, so `debug_console` or `cam_zoom_in`
 ## could be overridden and written to input.cfg - and then `reset_bindings()` re-declares only
 ## the four rebindable groups, so nothing put the erased default back and `forget_all()` was the
@@ -50,7 +50,7 @@ static var file_path: String = PATH
 ## the rebindable list here and two lists that drift is the defect this project keeps finding.
 ## `Actions` is an autoload and does not reference this class, so there is still no cycle.
 static func rebind(action: StringName, event: InputEvent) -> bool:
-	if not Actions.REBINDABLE.has(action):
+	if not Actions.is_rebindable(action):
 		Log.error("input", "'%s' is not a rebindable action" % action)
 		return false
 	if not InputMap.has_action(action):
@@ -86,13 +86,26 @@ static func load_all() -> int:
 	for section: String in file.get_sections():
 		var action: StringName = StringName(section)
 		if not InputMap.has_action(action):
-			Log.warn("input", "%s names '%s', which no longer exists" % [file_path, section])
+			# Not an error yet: a game adds its own actions after this runs, and
+			# `Actions.add_rebindable` restores each one's section then (T7.3).
+			Log.info("input", "%s names '%s', not defined yet" % [file_path, section])
 			continue
 		restored += _restore(file, action, KEY_FIELD)
 		restored += _restore(file, action, PAD_FIELD)
 	if restored > 0:
 		Log.info("input", "Restored %d custom binding(s)" % restored)
 	return restored
+
+
+## Put back the stored override of ONE action, for an action defined after `load_all` ran: a
+## game's own, added through `Actions.add_rebindable`. Returns how many halves it restored.
+static func restore(action: StringName) -> int:
+	var file := ConfigFile.new()
+	if file.load(file_path) != OK or not file.has_section(String(action)):
+		return 0
+	if not InputMap.has_action(action):
+		return 0
+	return _restore(file, action, KEY_FIELD) + _restore(file, action, PAD_FIELD)
 
 
 ## Forget every override. The caller re-declares the defaults afterwards: this class does not

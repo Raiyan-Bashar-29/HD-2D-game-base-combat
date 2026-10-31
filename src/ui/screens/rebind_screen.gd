@@ -2,7 +2,8 @@ class_name RebindScreen
 extends MenuScreen
 ## Every rebindable action, its key and its pad button, and one press to change either.
 ##
-## THE LIST IS `Actions.REBINDABLE`, IN ITS ORDER. That constant was written in WP-0 with the
+## THE LIST IS `Actions.rebindable()`, IN ITS ORDER: the built-in `REBINDABLE`, then any action
+## a game added with `Actions.add_rebindable` (T7.3). That constant was written in WP-0 with the
 ## comment "in the order a rebinding screen should list them" and then had no reader for eleven
 ## packages. This is the reader; the order still lives with the actions, not here.
 ##
@@ -71,7 +72,7 @@ func _input(event: InputEvent) -> void:
 
 func _fill() -> void:
 	_actions.clear()
-	for action: StringName in Actions.REBINDABLE:
+	for action: StringName in Actions.rebindable():
 		add_row(row_text(action), listen.bind(action))
 		_actions.append(action)
 	add_row(tr(RESET_KEY), _on_reset)

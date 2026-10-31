@@ -111,7 +111,7 @@ func _floats_step_and_wrap() -> void:
 func _rebinding_replaces_one_half_and_persists() -> void:
 	var screen := RebindScreen.new()
 	equal("the controls screen opens", _stack.open(screen), true)
-	equal("a row per rebindable action, plus reset", screen.row_texts().size(), Actions.REBINDABLE.size() + 1)
+	equal("a row per rebindable action, plus reset", screen.row_texts().size(), Actions.rebindable().size() + 1)
 	equal("nothing is listening yet", screen.listening(), &"")
 
 	var pad_before: String = KeyBindings.text_for(Actions.INVENTORY, true)
@@ -172,7 +172,7 @@ func _every_computed_key_exists() -> void:
 	for path: String in SettingsScreen.NAMED:
 		for value: Variant in DictRead.get_array(SettingsScreen.CHOICES, path):
 			_key_exists("%s.%d" % [SettingsScreen.label_key(path), DictRead.to_float(value) as int])
-	for action: StringName in Actions.REBINDABLE:
+	for action: StringName in Actions.rebindable():
 		_key_exists(RebindScreen.action_key(action))
 	for key: String in [
 		SettingsScreen.TITLE_KEY, SettingsScreen.HINT_KEY, SettingsScreen.ROW_KEY,

@@ -28,3 +28,9 @@ unaffected.
 
 ## Revisit if
 A designer rather than a programmer needs to edit bindings without running the game.
+
+## Addendum, T7.3 (2026-10-31)
+A game built on this base adds its own actions in code too, through
+`Actions.add_rebindable(action, events)`. They are still declared in code, not in
+`project.godot`, so this decision stands; the rebindable list is now the built-in constant plus
+whatever a game added at boot.
