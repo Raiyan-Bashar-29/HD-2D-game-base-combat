@@ -1599,6 +1599,41 @@ One area can hold all three, and a boss can be turn-based in a field that is fou
 Keeper strike it, and the Thorn Wisps battle opens. The nest beside it opens the same battle when
 you talk to it.
 
+## Saves around combat (C5.2, combat fork only)
+
+**What a save keeps:** every pool (`Vitals` stores hp, mp, shield and the rest in `Flags` as
+`vital/<who>/<pool>`), each fighter's statuses with their turns or seconds left (`StatusSet`'s
+section, `statuses/<id>`; the player's is `statuses/player`), which `remember_defeat` foes were
+beaten, and which weaknesses were revealed.
+
+**What a load resets:** field enemies (an area is rebuilt fresh, as on re-entry, so their hp and
+their AI start over), every ATB gauge, and the fight clock.
+
+**When a save is refused.** `CombatSaveGuard`, a node under GameRoot, tells upstream's
+`SaveSystem.blockers` "not now" at two moments:
+
+| Moment | Reason shown | Why |
+|---|---|---|
+| a turn-based battle is open | `ui.combat_save.in_battle` | the party's mid-fight hp and battle-only statuses would be kept |
+| the player lies defeated | `ui.combat_save.fallen` | a load fires no defeat edge, so they would never get up |
+
+The save screen shows "Can't save now: <reason>"; the autosave skips and tries again at the next
+area entry. Loading is never refused.
+
+**Adding your own moment** (a cutscene, a boss door) is one line in any node:
+
+```gdscript
+SaveSystem.blockers.add(&"boss_door", func() -> String:
+	return "ui.my_game.sealed" if _sealed else "")   # "" means saving is fine
+```
+
+Remove it in `_exit_tree` with `SaveSystem.blockers.remove(&"boss_door")`. A blocker whose owner
+is freed is dropped on its own.
+
+**A fallen player always gets up on an area entry**, unless they are still lying out their
+`DefeatRule.delay`. That is how a reload ends the wait, and it rescues a save written at 0 hp by
+an older build.
+
 ## Read next
 
 [`ART_CONTRACT.md`](ART_CONTRACT.md) — what art has to satisfy to drop in ·

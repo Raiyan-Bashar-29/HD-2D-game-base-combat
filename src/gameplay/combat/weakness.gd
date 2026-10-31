@@ -152,6 +152,17 @@ static func recover(fighter: Combatant) -> void:
 	vitals.set_to(SHIELD_POOL, vitals.maximum(SHIELD_POOL))
 
 
+## The built-in status (broken, pressured or staggered, or a game's override of one) whose id is
+## `status_id`, else null. These are made in code, not loaded from `StatusDb`, so a save that
+## holds one finds its definition here (C5.2): without this a player saved while staggered
+## loaded with an empty shield, no stagger and a warning.
+static func built_in(status_id: StringName) -> StatusEffect:
+	for effect: StatusEffect in [broken_status(), pressured_status(), staggered_status()]:
+		if effect.id == status_id:
+			return effect
+	return null
+
+
 ## The break that suits `target`'s clock: STAGGERED, counted in seconds, for a real-time
 ## fighter; BROKEN, counted in turns, in a battle.
 static func _break_for(target: Combatant) -> StatusEffect:
