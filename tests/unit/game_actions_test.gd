@@ -78,8 +78,10 @@ func _a_reset_puts_the_default_back() -> void:
 func _the_controls_screen_lists_it() -> void:
 	var screen := RebindScreen.new()
 	_stack.open(screen)
-	equal("the controls screen has a row for it, plus the built-ins and reset",
-			screen.row_texts().size(), Actions.REBINDABLE.size() + 2)
+	# Counted from rebindable(), not REBINDABLE: a game's own suite may have added actions of its
+	# own before this case runs (5.18.1, found by the combat fork).
+	equal("the controls screen has a row for every rebindable action, plus reset",
+			screen.row_texts().size(), Actions.rebindable().size() + 1)
 	equal("and that row names its key", screen.row_text(ACTION).contains("Y"), true)
 	_stack.close_top()
 
