@@ -43,6 +43,8 @@ const AUTOSAVE_EMPTY_KEY: String = "ui.save.autosave_empty"
 const AUTOSAVE_DAMAGED_KEY: String = "ui.save.autosave_damaged"
 const SAVED_KEY: String = "notify.game_saved"
 const FAILED_KEY: String = "notify.save_failed"
+## A save a blocker refused (T7.2): "{reason}" is the blocker's own key, translated.
+const REFUSED_KEY: String = "notify.save_refused"
 const HINT_KEY: String = "ui.save.hint"
 const OVERWRITE_KEY: String = "ui.save.overwrite"
 const TOAST_SECONDS: float = 2.5
@@ -125,6 +127,9 @@ func _on_slot(slot: int) -> void:
 ## immediately. No curtain and no departure: saving does not hand control anywhere.
 func _write(slot: int) -> void:
 	var err: Error = SaveSystem.save_to_slot(slot)
+	if err == ERR_UNAVAILABLE:
+		Events.notify_requested.emit(REFUSED_KEY, TOAST_SECONDS, {"reason": tr(SaveSystem.blockers.refusal())})
+		return
 	var key: String = SAVED_KEY if err == OK else FAILED_KEY
 	Events.notify_requested.emit(key, TOAST_SECONDS, {"slot": slot + 1})
 	refresh()

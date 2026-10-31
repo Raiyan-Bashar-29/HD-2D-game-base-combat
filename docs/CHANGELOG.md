@@ -19,6 +19,50 @@ the exact rot this discipline exists to prevent.
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
 ---
+## 5.17.0
+
+*2026-10-31 — T7.2: a save can be refused, not only fail.*
+
+**A consuming game does: nothing.** No file a game wrote changes, and with no blocker every save
+behaves exactly as before. One new class, `SaveBlockers`, and one new string,
+`notify.save_refused`, which a game that prunes its CSV keeps (it is not content).
+
+**What changed.**
+- `SaveSystem.blockers` is a `SaveBlockers`.
+  - `add(id, reason)` names a moment when saving would record a broken world: a cutscene, a
+    boss door, or a battle in a game that has one. `reason` is a callable that returns a
+    localization key saying why, or `""` when saving is fine.
+  - `remove(id)` drops one.
+  - `refusal()` is the first non-empty key.
+  - A blocker whose owner has been freed is dropped, so it can never refuse for ever.
+- While a blocker answers with a key, `save_to_slot` writes nothing and returns
+  `ERR_UNAVAILABLE`. That covers the player's save, the autosave and a debug save alike.
+- **Loading is never refused.**
+- `Autosave.request()` skips quietly (`ERR_SKIP`). This is its fourth refusal.
+- `SaveScreen` toasts "Can't save now: {reason}" in place of "could not be written".
+- `save_system.gd`'s line budget went from 180 to 190. `docs/ARCHITECTURE.md` § Line budgets
+  says why.
+
+**How a game uses it.**
+
+```gdscript
+func _ready() -> void:
+	SaveSystem.blockers.add(&"cutscene", _why_not)
+
+func _exit_tree() -> void:
+	SaveSystem.blockers.remove(&"cutscene")
+
+func _why_not() -> String:
+	return "ui.cutscene.no_save" if playing else ""
+```
+
+**Why.** The combat fork found it. A save written while the player lay defeated, or the quit
+autosave written mid-battle, stored a world no load can continue from. The store had no way to
+hear "not now", and every caller (the save screen, the autosave, the debug console) calls
+`save_to_slot` directly. The seam is combat-neutral, so it lives here, and a fork receives it by
+merging.
+
+---
 ## 5.16.4
 
 *2026-10-29 — T7.1: CI's actions off the deprecated Node 20.*

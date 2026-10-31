@@ -27,7 +27,10 @@ const OVERRIDES: Dictionary = {
 	"res://src/core/events/events.gd": 150,
 	"res://src/core/state/flags.gd": 150,
 	"res://src/core/state/settings.gd": 150,
-	"res://src/core/save/save_system.gd": 180,
+	## Raised from 180 to 190 by T7.2, with the reasoning in docs/ARCHITECTURE.md § Line budgets:
+	## the save blockers live in their own `SaveBlockers`, and what stays here is the one check
+	## every write must pass, which cannot live anywhere else.
+	"res://src/core/save/save_system.gd": 190,
 	"res://src/systems/input/actions.gd": 150,
 	"res://src/systems/world_clock/clock.gd": 150,
 	"res://src/systems/weather/weather.gd": 150,

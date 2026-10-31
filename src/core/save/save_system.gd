@@ -12,6 +12,12 @@ extends Node
 ##     func _collect_save() -> Dictionary: return {"day": day, "minute": minute}
 ##     func _apply_save(data: Dictionary, _from: int) -> void: day = DictRead.get_int(data, "day", 1)
 ##
+## A SAVE CAN BE REFUSED, NOT ONLY FAIL (T7.2). A system that knows the world is mid-something
+## registers a blocker with `blockers.add`; while any blocker answers with a reason key,
+## `save_to_slot` writes nothing and returns `ERR_UNAVAILABLE`, and `blockers.refusal()` says why,
+## so a screen can tell the player. The blockers decide; this file only asks them. The list is its
+## own class, `SaveBlockers`, so the store's line budget is spent on the store.
+##
 ## OWNS: slot files on disk, the file format, the schema version, atomic writes, migration, and
 ## which slot NUMBERS exist — including the autosave's, because a number's legality and its path
 ## are facts about the store.
@@ -72,6 +78,8 @@ var _collectors: Dictionary[StringName, Callable] = {}
 var _appliers: Dictionary[StringName, Callable] = {}
 var _playtime: float = 0.0
 var _busy: bool = false
+## Who may refuse a save right now, and why (T7.2). See `SaveBlockers`.
+var blockers: SaveBlockers = SaveBlockers.new()
 
 
 func _ready() -> void:
@@ -167,6 +175,10 @@ func save_to_slot(slot: int) -> Error:
 	if _busy:
 		Log.warn("save", "Save to slot %d ignored: another save is in flight" % slot)
 		return ERR_BUSY
+	var refused: String = blockers.refusal()
+	if not refused.is_empty():
+		Log.info("save", "Save to slot %d refused: %s" % [slot, refused])
+		return ERR_UNAVAILABLE
 	if slot < 0 or slot > AUTOSAVE_SLOT:
 		Log.error("save", "Slot %d out of range" % slot)
 		return ERR_INVALID_PARAMETER
