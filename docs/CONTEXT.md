@@ -7,7 +7,7 @@
 A state snapshot for a new session. `CLAUDE.md` has the *rules*; this file has the *situation*.
 Keep it short. When it drifts from reality, fix it in the same commit as the change.
 
-**Last updated:** 2026-10-31 · **T7.3 (a game's own input actions can be rebound: `Actions.add_rebindable`) complete, at 5.18.0, a MINOR. Phase T7 is open, and its rows T7.1+ come from what the playtest finds.**
+**Last updated:** 2026-10-31 · **T7.3 (a game's own input actions can be rebound: `Actions.add_rebindable`) complete, at 5.18.0, a MINOR; 5.18.1 fixed its test for games that add actions. Phase T7 is open, and its rows T7.1+ come from what the playtest finds.**
 **Phases T1 to T6 are complete and stay complete. The next input is the owner playing through [`PLAYTEST.md`](PLAYTEST.md); each finding is a T7 row.**
 
 **A SCRIPT FOR THE PLAYTEST, AND A COMBAT FORK EXISTS** — T7.0, `5.16.3`. [`PLAYTEST.md`](PLAYTEST.md)
@@ -401,7 +401,7 @@ another sheet, and every facing draws a different figure.
 **A new session's default is still NOT to invent work.** A genuine defect, an unticked criterion,
 or a seam the owner's reframing actually needs is a package. One invented so that there is one is
 how the previous project reached 3,983 lines in a single file, twenty reasonable lines at a time.
-**The version is** **5.18.0**, and it is UNTAGGED — `v4.2.1` is the most recent tag, and the gap is
+**The version is** **5.18.1**, and it is UNTAGGED — `v4.2.1` is the most recent tag, and the gap is
 the owner's to close or to leave.
 
 **THERE IS NO NEXT PACKAGE, AGAIN: PHASE T6 IS COMPLETE.** T6.14 was its last row, on 2026-09-30.
@@ -474,7 +474,7 @@ three steps (one of them a COUNT), 2 mapped areas, 2 path actions, 2 sprite shee
 3 tagged surfaces, 2 languages, **5 gait blocks on the swap sheet and 4 on the default one, the
 fourth being a second IDLE rather than a gait**,
 1 shared area material, **24 settings and 24 consumers**.
-Template version **5.18.0**, and that version is deliberately UNTAGGED — `v4.2.1` is the most
+Template version **5.18.1**, and that version is deliberately UNTAGGED — `v4.2.1` is the most
 recent tag, each tag naming the tree that declares it.
 Boots headless with **0 warnings, 0 errors**, and a run killed mid-load now shuts down clean too.
 
