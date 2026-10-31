@@ -174,17 +174,17 @@ looking for `UiScreen` searched `src/ui/root/` — where `UiRoot` lives and `UiS
 | Inventory capacity | `src/gameplay/character/inventory.gd` | `extends Inventory` (it is a `Node`), override `can_accept(item_id, count)` and **call `super()` first** — it enforces `max_stack`, and reimplementing stacking is the mistake | Capacity is unlimited behind that one method. Slots or weight go there and nowhere else |
 | A bespoke area behaviour | — | a child node with its own script, under the area | **Do not subclass `AreaRoot`.** Areas differ in content, not in shape; the root stays generic so `Director` never grows a per-area case |
 | Save blockers | `src/core/save/save_blockers.gd` | **call, do not subclass**: `SaveSystem.blockers.add(id, reason)`, where `reason` returns a localization key or `""`. Call `remove(id)` on `_exit_tree` | A moment a game knows is unsafe to save in (a cutscene, a boss door, a battle) refuses every save until it ends, and the save screen says why. Loading is never refused (T7.2) |
+| A game's own input actions | `src/systems/input/actions.gd` | **call, do not subclass**: `Actions.add_rebindable(action, events)` once at boot, plus a `ui.action.<id>` CSV row | The action is listed on the controls screen, rebound and saved like a built-in one, and put back by a reset (T7.3) |
 | `Events` signals | `src/core/events/events.gd` | connect to anything declared there | It is the connection map and it is meant to be read and listened to |
 
-**AND ONE THING THIS TIER DOES NOT GIVE YOU, MEASURED RATHER THAN INFERRED.** A game may declare
-its own input action with Godot's own `InputMap.add_action()` and bind it in its own code — but it
-**cannot make that action player-rebindable**. `KeyBindings.rebind()` refuses any action absent
-from the `Actions.REBINDABLE` const, and `rebind_screen.gd` builds its rows by iterating that same
-const. That gate is deliberate and has a bug behind it: until T5.5 it asked only
-`InputMap.has_action`, so `debug_console` could be overridden into `input.cfg` and
-`reset_bindings()` would not put the default back. So the closed list is the fix, not an oversight —
-and the consequence for a game is real and stated here rather than discovered. A game's own action
-works; it is just not offered on the rebinding screen.
+**A GAME'S OWN INPUT ACTIONS ARE REBINDABLE SINCE T7.3.** Until then this paragraph said they
+could not be: `KeyBindings.rebind()` refused any action absent from the `Actions.REBINDABLE`
+const, and the controls screen listed only that const. The gate itself is deliberate and has a
+bug behind it: until T5.5 it asked only `InputMap.has_action`, so `debug_console` could be
+overridden into `input.cfg` and `reset_bindings()` would not put the default back. T7.3 keeps the
+gate closed and adds one door: **call `Actions.add_rebindable(action, events)`** at boot. That
+action's default is kept, so a reset can restore it, which is the whole condition T5.5 set. A
+built-in action cannot be taken over through it. See `CHANGELOG.md` 5.18.0.
 
 ### Tier 3 — internals. Read them; do not edit or subclass them.
 

@@ -17,15 +17,19 @@ extends RefCounted
 ## THE COMMAND MENU HAS NO STANDARD PAD BUTTON LEFT (C4.4). A, B, X, Y, both shoulders, both
 ## stick clicks, both triggers, Back and Start are all someone's by then, so it sits on F and on
 ## the pad's extra centre button (`JOY_BUTTON_MISC1`: Share, Capture or the like, depending on
-## the pad). A game wanting it elsewhere rebinds it once the C5.3 seam exists. The party switch
-## (C4.7) is on C and the pad's first back paddle (`JOY_BUTTON_PADDLE1`), for the same reason:
-## a pad without paddles switches from the keyboard until C5.3.
+## the pad). The party switch (C4.7) is on C and the pad's first back paddle
+## (`JOY_BUTTON_PADDLE1`), for the same reason. A player whose pad lacks either button moves it
+## on the controls screen.
 ##
-## NOT YET REBINDABLE. `KeyBindings.rebind` accepts only `Actions.REBINDABLE`, an upstream list;
-## the seam that lets a game add to it is C5.3.
+## THE PLAYER CAN REBIND ALL SIX (C5.3a). They are added through upstream's
+## `Actions.add_rebindable` (base 5.18.0), so Options -> Controls lists each one under its label
+## `ui.action.<id>` in `strings.csv`, a rebind is saved like any other, and a reset puts these
+## defaults back. The player's saved key wins over the default even at boot, when the bindings
+## file was read before this ran: adding an action re-applies its saved binding.
 ##
 ## OWNS: the names and default bindings of the combat actions.
-## MUST NOT: touch any other action, or overwrite a combat action already installed.
+## MUST NOT: touch any other action. Installing again re-applies the defaults and then the
+## player's saved keys, so it never loses a rebind.
 
 const ATTACK: StringName = &"combat_attack"
 const DODGE: StringName = &"combat_dodge"
@@ -40,8 +44,8 @@ const ALL: Array[StringName] = [ATTACK, DODGE, LOCK_ON, LOCK_CYCLE, COMMAND, SWI
 const TRIGGER_DEADZONE: float = 0.5
 
 
-## Defines each combat action that does not exist yet. Safe to call again: an action already
-## in the InputMap is left exactly as it is.
+## Defines each combat action with its defaults and the player's saved key on top. Safe to call
+## again: the result is the same, and nothing is added twice.
 static func install() -> void:
 	_define(ATTACK, [_key(KEY_K), _pad(JOY_BUTTON_X)])
 	_define(DODGE, [_key(KEY_SPACE), _trigger(JOY_AXIS_TRIGGER_RIGHT)])
@@ -52,11 +56,8 @@ static func install() -> void:
 
 
 static func _define(action: StringName, events: Array[InputEvent]) -> void:
-	if InputMap.has_action(action):
-		return
-	InputMap.add_action(action, TRIGGER_DEADZONE)
-	for event: InputEvent in events:
-		InputMap.action_add_event(action, event)
+	# Refused only if another system already owns the name, which the `combat_` prefix prevents.
+	Actions.add_rebindable(action, events, TRIGGER_DEADZONE)
 
 
 ## Physical keycodes, `Actions`' rule, so the keys stay put on AZERTY and Dvorak.

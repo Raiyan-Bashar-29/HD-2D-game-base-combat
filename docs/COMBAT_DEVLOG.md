@@ -2629,3 +2629,41 @@ re-entry; `AUTHORING.md` § Saves around combat says so.
   applies.
 - Followers' statuses are saved under their own ids; a follower rebuilt by an area change
   re-registers its section, which was not separately probed.
+
+## 2026-10-31 — C5.3a · The combat controls can be rebound
+
+**Did.**
+- Merged upstream `5.18.0` (T7.3, `Actions.add_rebindable`) and `5.18.1`.
+- `CombatActions._define` now calls `Actions.add_rebindable(action, events, TRIGGER_DEADZONE)`
+  instead of writing to the InputMap itself. The header's "NOT YET REBINDABLE" note is gone.
+- Six `ui.action.combat_*` label rows in `strings.csv`.
+- `combat_input_test.gd` (16 -> 25): every combat action is rebindable, listed and labelled;
+  rebinding attack to L is accepted; a boot in miniature (remove, `load_all`, `install`) brings L
+  back, not K; a reset puts K back and leaves dodge on its trigger; the controls screen has an
+  attack row naming K. It ends with a reset so the scratch bindings file is clean.
+- Combat `0.49.0`.
+
+**Why.** Attack, dodge, lock on, next foe, the command menu and the party switch could not be
+moved, and two of them sit on pad buttons (Share, a back paddle) that many pads lack.
+
+**Found by the suite.** Upstream's own `game_actions_test` expected the controls screen to have
+`REBINDABLE.size() + 2` rows, and this fork's suite installs six actions before it runs, so it
+saw 21. The fork may not edit upstream files, so the fix went upstream first as `5.18.1`
+(`rebindable().size() + 1`) and was merged down.
+
+**Connects.** `ActionHost._ready` still calls `install()`, and `game_root.tscn` is the main scene,
+so the rows are on the controls screen from the title menu onward.
+
+**Verified.** Red first: with the old `_define`, 6 of the new assertions failed. Then boot,
+suite, seven checkers, the stripped run and a windowed capture of the controls screen (in the PR).
+
+**Seen in the capture.** Options -> Controls lists Attack (K / Left Action), Dodge (Space / —),
+Lock on (Q / —), Next foe (R / Right Stick), Commands and Switch member after the built-ins.
+
+**Gaps.**
+- **A trigger shows "—" on the controls screen and cannot be chosen there.** Dodge and lock on
+  sit on the pad's triggers, which are an axis; upstream's `KeyBindings` names and rebinds only
+  pad buttons, by design, since no built-in action uses a trigger. The triggers still work in
+  play. New row C5.3c: name and rebind a trigger, upstream first.
+- Combat settings wait for upstream T7.4 (C5.3b).
+

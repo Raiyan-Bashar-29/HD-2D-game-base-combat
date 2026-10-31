@@ -18,6 +18,58 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.18.1
+
+*2026-10-31 — T7.3 follow-up: `game_actions_test` counted the controls screen wrongly in a game.*
+
+**A consuming game does: nothing.** Only a test changed.
+
+**What changed.** `tests/unit/game_actions_test.gd` expected the controls screen to have
+`Actions.REBINDABLE.size() + 2` rows: the built-ins, its one made-up action and Reset. In a game
+whose own tests add actions with `add_rebindable` before this case runs, the screen rightly has
+more rows, and the case failed. It now counts `Actions.rebindable().size() + 1`. Found by the
+combat fork on the day it first used the seam: its six combat actions made the count 21, not 15.
+
+## 5.18.0
+
+*2026-10-31 — T7.3: a game's own input actions can be rebound.*
+
+**A consuming game does: nothing.** With no action added, the controls screen, the bindings file
+and every built-in action behave exactly as before. A game that added actions with
+`InputMap.add_action` may move them to the new call to make them rebindable.
+
+**What changed.**
+- `Actions.add_rebindable(action, events, deadzone)` adds one of the game's own actions:
+  - it defines the action with `events` as its default;
+  - it lists it on the controls screen, after the built-in actions, in the order added;
+  - `KeyBindings.rebind` accepts it, and `Actions.reset_bindings()` puts its default back;
+  - it re-applies the player's saved binding for it. `KeyBindings.load_all()` runs before any
+    game code, so it could not have done that at boot.
+  - It refuses (returns false, changing nothing) an action that already exists and was not added
+    this way: a built-in, an engine `ui_*` action, or a debug key.
+- `Actions.remove_rebindable(action)`, `Actions.rebindable()` (the whole list) and
+  `Actions.is_rebindable(action)`.
+- `KeyBindings.restore(action)` puts back one action's saved override.
+- `RebindScreen` lists `Actions.rebindable()`. `Actions.REBINDABLE` still holds the built-in
+  actions only.
+- A section of `input.cfg` naming an action not defined yet is logged at info, not as a warning:
+  a game adds its own after `load_all` runs.
+
+**How a game uses it.** Once, at boot, from any node:
+
+```gdscript
+func _ready() -> void:
+	var key := InputEventKey.new()
+	key.physical_keycode = KEY_G
+	Actions.add_rebindable(&"wave", [key])
+```
+
+and one CSV row for its label on the controls screen, `ui.action.wave,,Wave,...`. A game that
+prunes its CSV keeps it: it is a `ui.` row. `options_test` fails if it is missing.
+
+**Why.** The combat fork found it. Its attack, dodge and lock-on keys could not be rebound,
+because `REBINDABLE` is a constant a game cannot add to without editing this base.
+
 ---
 ## 5.17.0
 

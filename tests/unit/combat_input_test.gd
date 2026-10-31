@@ -1,24 +1,33 @@
 extends TestCase
-## Combat input and layers (C3.1, C4.4): the five action-combat actions exist after `install()`, on
-## keys and pad buttons no other action already uses, installing twice changes nothing, the
-## prompt text resolves, and the two new physics layers are named in `project.godot` exactly where
-## `CombatLayers` says they are.
+## Combat input and layers (C3.1, C4.4, C5.3a): the six action-combat actions exist after
+## `install()`, on keys and pad buttons no other action already uses, installing twice changes
+## nothing, the prompt text resolves, and the two new physics layers are named in `project.godot`
+## exactly where `CombatLayers` says they are.
+##
+## AND SINCE C5.3a THE PLAYER CAN REBIND THEM. They are added through upstream's
+## `Actions.add_rebindable`, so they are listed on the controls screen, a rebind is accepted and
+## saved, a reset puts the default back, and a saved key survives a boot: the case removes attack
+## and installs again, which is what a fresh start does after `KeyBindings.load_all` has run.
+##
+## THIS CASE WRITES THE BINDINGS FILE, the run's scratch copy (T6.13), and resets it at the end.
 ##
 ## OWNS: assertions about `CombatActions` and `CombatLayers`.
-## MUST NOT: rebind anything the player chose; it only reads the InputMap after installing.
+## MUST NOT: leave a rebind behind; it ends with `Actions.reset_bindings()`.
 
 func run() -> void:
-	plan(16)
+	plan(25)
 	CombatActions.install()
 	_the_actions()
 	_the_layers()
+	_they_can_be_rebound()
+	Actions.reset_bindings()
 
 
 func _the_actions() -> void:
 	var all_there: bool = true
 	for action: StringName in CombatActions.ALL:
 		all_there = all_there and InputMap.has_action(action)
-	equal("all five combat actions exist after install", all_there, true)
+	equal("all six combat actions exist after install", all_there, true)
 	equal("attack is on K", _has_key(CombatActions.ATTACK, KEY_K), true)
 	equal("and on the pad's west button", _has_pad(CombatActions.ATTACK, JOY_BUTTON_X), true)
 	equal("dodge is on the right trigger", _has_axis(CombatActions.DODGE, JOY_AXIS_TRIGGER_RIGHT), true)
@@ -40,6 +49,36 @@ func _the_layers() -> void:
 	equal("CombatLayers.HITBOX is layer 11", CombatLayers.HITBOX, 1 << 10)
 	equal("CombatLayers.HURTBOX is layer 12", CombatLayers.HURTBOX, 1 << 11)
 	equal("a hitbox looks for hurtboxes and nothing else", CombatLayers.HITBOX_MASK, CombatLayers.HURTBOX)
+
+
+func _they_can_be_rebound() -> void:
+	var listed: bool = true
+	for action: StringName in CombatActions.ALL:
+		listed = listed and Actions.is_rebindable(action) and Actions.rebindable().has(action)
+	equal("every combat action is rebindable and listed", listed, true)
+	var labelled: bool = true
+	for action: StringName in CombatActions.ALL:
+		var key: String = "ui.action.%s" % action
+		labelled = labelled and tr(key) != key
+	equal("and each has its controls-screen label", labelled, true)
+	equal("rebinding attack is accepted",
+			KeyBindings.rebind(CombatActions.ATTACK, KeyBindings.event_for_key(KEY_L)), true)
+	equal("attack is now on L", _has_key(CombatActions.ATTACK, KEY_L), true)
+	# A boot in miniature: attack is gone when load_all runs, and install adds it later.
+	Actions.remove_rebindable(CombatActions.ATTACK)
+	KeyBindings.load_all()
+	CombatActions.install()
+	equal("THE SAVED KEY CAME BACK when combat installed", _has_key(CombatActions.ATTACK, KEY_L), true)
+	equal("not the default", _has_key(CombatActions.ATTACK, KEY_K), false)
+	Actions.reset_bindings()
+	equal("a reset puts K back", _has_key(CombatActions.ATTACK, KEY_K), true)
+	equal("and dodge keeps its trigger", _has_axis(CombatActions.DODGE, JOY_AXIS_TRIGGER_RIGHT), true)
+	var screen := RebindScreen.new()
+	var stack := UiRoot.new()
+	attach(stack)
+	stack.open(screen)
+	equal("the controls screen has an attack row naming K", screen.row_text(CombatActions.ATTACK).contains("K"), true)
+	stack.close_top()
 
 
 func _has_key(action: StringName, code: Key) -> bool:
