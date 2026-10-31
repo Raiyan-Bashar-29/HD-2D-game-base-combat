@@ -1627,6 +1627,10 @@ phase that fixes what playing finds cannot list its rows in advance.*
     autosave skips.
   - The save screen says why.
   - Loading is never refused.
+- **T7.3 A game's own input actions can be rebound — DONE, 2026-10-31, `5.18.0`.** Found from
+  the combat fork. `Actions.add_rebindable(action, events)` makes a game's action rebindable:
+  listed on the controls screen, saved, put back by a reset, and given back the player's saved
+  binding at boot.
 
 **Exit criteria for the phase:**
 
