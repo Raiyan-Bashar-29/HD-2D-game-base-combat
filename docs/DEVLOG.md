@@ -12059,3 +12059,20 @@ this PR: both ladder jobs green and no Node 20 warning in their logs.
 **Unblocks.** Combat C5.3a, and any game's own rebindable verb.
 
 **Gaps.** No duplicate-binding warning yet, for built-in or added actions alike.
+
+## 2026-10-31 — T7.3 follow-up · 5.18.1, the rebind test counts what is there
+
+**Did.** `tests/unit/game_actions_test.gd`'s controls-screen assertion now expects
+`Actions.rebindable().size() + 1` rows instead of `Actions.REBINDABLE.size() + 2`. Base `5.18.1`, a
+PATCH.
+
+**Why.** The combat fork made its six actions rebindable with `add_rebindable` (its C5.3a). Its
+own `combat_input_test` installs them before `game_actions_test` runs, so the screen rightly had
+21 rows and the case, which assumed no game action but its own, failed. The fork may not edit
+upstream files, so the fix comes here first and is merged down.
+
+**Verified.** The suite and the seven checkers, below in the PR; the case still passes with
+nothing else added, where the two counts agree.
+
+**Gaps.** None.
+

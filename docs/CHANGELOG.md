@@ -18,6 +18,18 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.18.1
+
+*2026-10-31 — T7.3 follow-up: `game_actions_test` counted the controls screen wrongly in a game.*
+
+**A consuming game does: nothing.** Only a test changed.
+
+**What changed.** `tests/unit/game_actions_test.gd` expected the controls screen to have
+`Actions.REBINDABLE.size() + 2` rows: the built-ins, its one made-up action and Reset. In a game
+whose own tests add actions with `add_rebindable` before this case runs, the screen rightly has
+more rows, and the case failed. It now counts `Actions.rebindable().size() + 1`. Found by the
+combat fork on the day it first used the seam: its six combat actions made the count 21, not 15.
+
 ## 5.18.0
 
 *2026-10-31 — T7.3: a game's own input actions can be rebound.*
