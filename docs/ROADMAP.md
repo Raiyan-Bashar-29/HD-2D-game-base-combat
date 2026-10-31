@@ -1620,6 +1620,13 @@ phase that fixes what playing finds cannot list its rows in advance.*
   combat fork's CI, not the playtest: every job warned that `checkout`, `cache` and
   `upload-artifact` at `@v4` target Node 20. Moved to `checkout@v5`, `cache@v5`,
   `upload-artifact@v6`. CI only.
+- **T7.2 A save can be refused, not only fail — DONE, 2026-10-31, `5.17.0`.** Found from the
+  combat fork. `SaveSystem.blockers` lets a game name a moment when saving would record a broken
+  world.
+  - While a blocker answers with a reason key, every save is refused (`ERR_UNAVAILABLE`), and the
+    autosave skips.
+  - The save screen says why.
+  - Loading is never refused.
 
 **Exit criteria for the phase:**
 

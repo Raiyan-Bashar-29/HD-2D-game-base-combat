@@ -27,7 +27,7 @@ extends Node
 ## needs an ADR, and this is a node with two connections and one decision, which is exactly what
 ## `UiAccessibility` is and where T5.5 put that.
 ##
-## THREE REFUSALS, AND EACH IS A REAL FAILURE MODE RATHER THAN DEFENSIVE PADDING:
+## FOUR REFUSALS, AND EACH IS A REAL FAILURE MODE RATHER THAN DEFENSIVE PADDING:
 ##   the player said no       — `gameplay/autosave` is a veto and nothing else. It cannot make
 ##                              an autosave happen anywhere this file does not already ask.
 ##   a transition is running  — `SYSTEMS_INVENTORY.md` item 6 has asked for this since WP-00. A
@@ -36,6 +36,9 @@ extends Node
 ##   there is no run yet      — quitting from the main menu on a cold boot would otherwise write
 ##                              an autosave of nothing over the autosave of a real run, which is
 ##                              the same destruction the slot policy above exists to prevent.
+##   a blocker says not now   — T7.2. `SaveSystem.blockers.refusal()` names a moment a game marked unsafe
+##                              (a cutscene, a battle in a game that has one). Asked here first so
+##                              it is a quiet skip, not the store's refusal logged on every quit.
 ##
 ## OWNS: when an autosave happens, whether it may, and the toast that says it did.
 ## MUST NOT: know what a save contains, write a file itself, or name an area. It asks
@@ -68,6 +71,9 @@ func request() -> Error:
 		return ERR_SKIP
 	if Director.is_transitioning():
 		Log.debug("save", "Autosave skipped: a transition is in flight")
+		return ERR_SKIP
+	if not SaveSystem.blockers.refusal().is_empty():
+		Log.debug("save", "Autosave skipped: %s" % SaveSystem.blockers.refusal())
 		return ERR_SKIP
 	if Director.current_area_id == &"":
 		return ERR_SKIP
