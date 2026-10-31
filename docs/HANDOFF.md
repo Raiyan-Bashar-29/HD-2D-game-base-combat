@@ -29,10 +29,13 @@ between them, written in plain words.
   - C4, the hybrid (complete): the fight's own clock, ATB, a command menu over the running
     fight, pressure and stagger, a party in the field that thinks and fights, and three variants.
     `AUTHORING.md` § The hybrid lists every field.
-- **Next package:** **C5.3**, upstream seams: rebindable extra actions and a game-registered
-  settings section, each a row on upstream's board first (C5.2 used the same pattern).
+  - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
+    `Actions.add_rebindable`, 5.18.0).
+- **Next package:** upstream **T7.4**, a game-registered settings section, then **C5.3b**, the
+  combat settings on it (lock-on assist, wait/active, difficulty, auto-battle). Each seam is a
+  row on upstream's board first (C5.2 and C5.3a used the same pattern).
 - **Then, in order:**
-  1. **C5.3–C5.7:** upstream seams, accessibility, docs, a playtest, 1.0.0.
+  1. **C5.3b–C5.7:** combat settings, accessibility, docs, a playtest, 1.0.0.
   2. **C5.8:** a fall safety net (found in C4.11).
 
   Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,

@@ -1371,8 +1371,10 @@ hall's `Actors`.
 **Controls:** attack is K (pad X), dodge is Space (pad right trigger), lock on is Q (pad left
 trigger), the next target is R (pad R3), and the hybrid's command menu is F (the pad's extra
 centre button, `MISC1`; it opens only for a loadout with `atb` rules and `commands`).
-`combat_actions.gd` installs them at boot. They cannot be rebound
-in the menu yet: that waits for C5.3.
+`combat_actions.gd` installs them at boot, and since C5.3a the player can rebind every one of
+them from Options -> Controls. Each row's label is `ui.action.<action id>` in `strings.csv`
+(`ui.action.combat_attack` and so on); a game that adds a combat action adds its label row too,
+or `options_test` fails.
 
 1. **The player's loadout:** an `ActionLoadout` file, named in `project.godot` by
    `[combat] action/loadout`. Leave the setting empty and the game has no field combat; a path to
