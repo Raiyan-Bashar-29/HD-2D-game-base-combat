@@ -11984,3 +11984,44 @@ this PR: both ladder jobs green and no Node 20 warning in their logs.
 **Unblocks.** Nothing; it removes noise.
 
 **Gaps.** None.
+
+## 2026-10-31 — T7.2 · A save can be refused, not only fail
+
+**Did.**
+- New `src/core/save/save_blockers.gd` (`SaveBlockers`), held as `SaveSystem.blockers`, with
+  `add(id, reason)`, `remove(id)` and `refusal()`.
+- `save_to_slot` returns `ERR_UNAVAILABLE` and writes nothing while a blocker answers with a key.
+- `Autosave.request()` gains a fourth refusal.
+- `SaveScreen` toasts `notify.save_refused` with the reason.
+- New `tests/unit/save_blocker_test.gd`, with 17 assertions.
+- Base `5.17.0`, a MINOR.
+
+**Why.**
+- The combat fork's C5.2 ("saves around combat") found two saves that store a broken world:
+  - one written while the player lies defeated, since the pause menu is still open to them;
+  - the quit autosave written mid-battle.
+- Either one, loaded, puts a player at 0 hp that nothing gets up.
+- The store could fail a save but never refuse one, and three callers call `save_to_slot`
+  directly. A refusal had to be at the store, or the debug save and a game's own call would slip
+  past it.
+
+**Connects.**
+- `SaveSystem` still decides nothing about WHEN: each blocker decides, and the store asks it.
+  This is the same shape as `_busy`.
+- The blockers are their own class so `save_system.gd`'s budget is spent on the store. The
+  budget still went from 180 to 190 for the one check every write passes, and
+  `ARCHITECTURE.md` § Line budgets records why.
+- The fork registers a blocker in C5.2.
+
+**Verified.**
+- **Red first:** with `refusal()` stubbed to return `""`, `save_blocker_test` failed 10 of 17.
+- **Full checkout:** 2700 passed, 0 failed. The boot ended `0 warnings, 0 errors`, and all
+  seven checkers exited 0.
+- **The stripped template, done locally as CI does:** 2623 passed and 25 skipped; checkers 0.
+
+**Unblocks.** Combat C5.2. Any game's "not during a cutscene".
+
+**Gaps.**
+- The pause menu still offers Save while blocked; the refusal arrives as a toast on choosing a
+  slot.
+- Greying the row out is a later row if the playtest asks for it.

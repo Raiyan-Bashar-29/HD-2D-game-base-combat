@@ -173,6 +173,7 @@ looking for `UiScreen` searched `src/ui/root/` — where `UiRoot` lives and `UiS
 | `SpriteSheetLayout`, `ui_theme.tres` | `src/content/art/sprite_sheet_layout.gd`, `assets/theme/ui_theme.tres` | **replace the resource, not the class** | The art contract. See `ART_CONTRACT.md` |
 | Inventory capacity | `src/gameplay/character/inventory.gd` | `extends Inventory` (it is a `Node`), override `can_accept(item_id, count)` and **call `super()` first** — it enforces `max_stack`, and reimplementing stacking is the mistake | Capacity is unlimited behind that one method. Slots or weight go there and nowhere else |
 | A bespoke area behaviour | — | a child node with its own script, under the area | **Do not subclass `AreaRoot`.** Areas differ in content, not in shape; the root stays generic so `Director` never grows a per-area case |
+| Save blockers | `src/core/save/save_blockers.gd` | **call, do not subclass**: `SaveSystem.blockers.add(id, reason)`, where `reason` returns a localization key or `""`. Call `remove(id)` on `_exit_tree` | A moment a game knows is unsafe to save in (a cutscene, a boss door, a battle) refuses every save until it ends, and the save screen says why. Loading is never refused (T7.2) |
 | `Events` signals | `src/core/events/events.gd` | connect to anything declared there | It is the connection map and it is meant to be read and listened to |
 
 **AND ONE THING THIS TIER DOES NOT GIVE YOU, MEASURED RATHER THAN INFERRED.** A game may declare
@@ -249,6 +250,11 @@ Good intentions did not work last time. These are mechanical:
    rather than a slippery slope is that **190 is not above the 250 default; it is a
    self-imposed tightening being relaxed 60 lines short of it.** Going over 250 still means
    split.
+
+   **T7.2 raised `save_system.gd` from 180 to 190 on the same terms, after splitting first.**
+   The save blockers are their own class, `SaveBlockers`. What stayed is the field holding them
+   and the one check every write must pass. That check cannot live outside the store, or the
+   debug save and a game's own `save_to_slot` call would slip past it.
 3. **A stated `MUST NOT` in every file header.** Every script says what it is forbidden to
    know. When a change requires violating it, that is the signal to add a new system instead.
 4. **The verification ladder,** below. Nothing is "done" until the engine has run it.
