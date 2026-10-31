@@ -19,7 +19,16 @@ extends Node
 ## than in an eleventh autoload because adding one needs an ADR, and the fact is part of the
 ## input map's own vocabulary: the two halves `KeyBindings.text_for(action, pad)` already reads.
 ##
-## OWNS: the action name constants, their default bindings, and which device is active.
+## A GAME MAY ADD ACTIONS OF ITS OWN, AND THEY ARE REBINDABLE LIKE OURS (T7.3). `REBINDABLE`
+## is a constant, so a game cannot edit it without editing this file. It calls
+## `add_rebindable(action, events)` once at boot instead. That defines the action, keeps its
+## default for `reset_bindings`, puts it on the controls screen after ours, and re-applies the
+## player's saved binding for it: `KeyBindings.load_all()` ran before any game code did, so it
+## could not have found that action then. Its row label is `ui.action.<id>`, a row the game adds
+## to its CSV. Built-in actions cannot be taken over this way.
+##
+## OWNS: the action name constants, their default bindings, which device is active, and the
+## list of actions a game has added.
 ## MUST NOT: decide what any action means, or read an event for anything but its device.
 ## Actions are named, not interpreted.
 
@@ -62,7 +71,8 @@ const DEBUG_FREECAM: StringName = &"debug_freecam"
 const DEBUG_PERF: StringName = &"debug_perf"
 const DEBUG_SCREENSHOT: StringName = &"debug_screenshot"
 
-## Every gameplay action, in the order a rebinding screen should list them.
+## Every built-in gameplay action, in the order a rebinding screen should list them. A game's
+## own come after these; read `rebindable()` for the whole list.
 const REBINDABLE: Array[StringName] = [
 	MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT,
 	RUN, SNEAK,
@@ -75,6 +85,11 @@ const STICK_DEADZONE: float = 0.25
 ## Keyboard until proven otherwise. A game that boots with a pad in hand switches on the first
 ## press, and one that boots on a keyboard never shows a pad button it has no pad for.
 var _device: GameEnums.DeviceKind = GameEnums.DeviceKind.KEYBOARD_MOUSE
+## The actions a game added, in the order it added them, and the default events of each, kept
+## so `reset_bindings` can put them back.
+var _added: Array[StringName] = []
+var _added_defaults: Dictionary[StringName, Array] = {}
+var _added_deadzones: Dictionary[StringName, float] = {}
 
 
 func _ready() -> void:
@@ -135,7 +150,62 @@ func reset_bindings() -> void:
 	_define_traversal()
 	_define_interaction()
 	_define_screens()
+	for action: StringName in _added:
+		_define_added(action)
 	Log.info("input", "Bindings reset to defaults")
+
+
+## Add one of the game's own actions, bound to `events` by default, and make it rebindable.
+## Returns false, changing nothing, for an action that already exists and was not added here:
+## a built-in, an engine `ui_*` action or a debug key is not a game's to redefine. Adding the
+## same action again replaces its default and keeps its place in the list.
+func add_rebindable(action: StringName, events: Array[InputEvent], deadzone: float = STICK_DEADZONE) -> bool:
+	if InputMap.has_action(action) and not _added.has(action):
+		Log.error("input", "'%s' already exists and is not a game's to add" % action)
+		return false
+	var kept: Array[InputEvent] = []
+	for event: InputEvent in events:
+		kept.append(event.duplicate() as InputEvent)
+	_added_defaults[action] = kept
+	_added_deadzones[action] = deadzone
+	if not _added.has(action):
+		_added.append(action)
+	_define_added(action)
+	# The player's own binding wins over the default, as it does for ours at boot.
+	KeyBindings.restore(action)
+	return true
+
+
+## Take a game's action away again: out of the InputMap and off the controls screen. Its saved
+## override stays in the file, so adding it back restores it.
+func remove_rebindable(action: StringName) -> void:
+	if not _added.has(action):
+		return
+	_added.erase(action)
+	_added_defaults.erase(action)
+	_added_deadzones.erase(action)
+	if InputMap.has_action(action):
+		InputMap.erase_action(action)
+
+
+## Every rebindable action, ours then the game's, in the order the controls screen lists them.
+func rebindable() -> Array[StringName]:
+	var all: Array[StringName] = REBINDABLE.duplicate()
+	all.append_array(_added)
+	return all
+
+
+func is_rebindable(action: StringName) -> bool:
+	return REBINDABLE.has(action) or _added.has(action)
+
+
+## Defines an added action from fresh copies of its kept defaults, so an event in the InputMap
+## is never the same object as the one kept for the next reset.
+func _define_added(action: StringName) -> void:
+	var events: Array[InputEvent] = []
+	for event: Variant in _added_defaults[action]:
+		events.append((event as InputEvent).duplicate() as InputEvent)
+	_define(action, events, _added_deadzones[action])
 
 
 func _define_movement() -> void:

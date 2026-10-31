@@ -12025,3 +12025,37 @@ this PR: both ladder jobs green and no Node 20 warning in their logs.
 - The pause menu still offers Save while blocked; the refusal arrives as a toast on choosing a
   slot.
 - Greying the row out is a later row if the playtest asks for it.
+
+## 2026-10-31 — T7.3 · A game's own input actions can be rebound
+
+**Did.**
+- `Actions.add_rebindable(action, events, deadzone)`, `remove_rebindable`, `rebindable()` and
+  `is_rebindable`. `reset_bindings` re-declares the added actions from their kept defaults.
+- `KeyBindings.restore(action)`; the `rebind` gate asks `Actions.is_rebindable`.
+- `RebindScreen` lists `Actions.rebindable()`.
+- New `tests/unit/game_actions_test.gd`, 19 assertions. `options_test` reads `rebindable()`.
+- Base `5.18.0`, a MINOR.
+
+**Why.**
+- The combat fork's C5.3 needs its attack, dodge and lock-on keys rebindable, and
+  `Actions.REBINDABLE` is a constant a game cannot add to without editing this base.
+- **A second bug, found while planning:** `KeyBindings.load_all()` runs in `Actions._ready`,
+  before any game code. Opening the gate alone would have let a player rebind a game's action
+  and then lose the binding at the next boot. `add_rebindable` restores that one action's saved
+  override when the game adds it.
+
+**Connects.**
+- T5.5's condition holds: an action is rebindable only if a reset can put its default back, and
+  `Actions` keeps each added action's defaults for exactly that.
+- A built-in, `ui_*` or debug action cannot be taken over; the call refuses it.
+- The fork merges this in its C5.3a.
+
+**Verified.**
+- **Red first:** with `is_rebindable` stubbed to `REBINDABLE.has` and `restore` to 0,
+  4 of 19 failed (the rebind and the boot restore).
+- **Full checkout:** 2723 passed, 0 failed; boot `0 warnings, 0 errors`; seven checkers 0.
+- **The stripped template, done locally as CI does:** 2646 passed, 0 failed, 25 skipped; checkers 0.
+
+**Unblocks.** Combat C5.3a, and any game's own rebindable verb.
+
+**Gaps.** No duplicate-binding warning yet, for built-in or added actions alike.
