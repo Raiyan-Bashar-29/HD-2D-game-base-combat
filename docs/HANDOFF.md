@@ -9,9 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.0, hero powers research and design (documents only):
-  [`POWERS.md`](POWERS.md) maps nine characters' powers onto one framework and thirteen shared
-  mechanisms, so a new character is a data file.
+- **Last finished package:** C6.1a, the hero powers' data shapes: `PowerKit`, `Power`,
+  `PowerScaling` and `PowerMechanism` in `src/content/combat/powers/`, and `SkillUse.cost_of`
+  (a `cost_mult_<pool>` stat makes skills cheaper). The design is [`POWERS.md`](POWERS.md).
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -31,7 +31,8 @@ between them, written in plain words.
     `AUTHORING.md` § The hybrid lists every field.
   - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
     `Actions.add_rebindable`, 5.18.0).
-- **Next package:** **C6.1**, the powers framework (`POWERS.md` § The framework). Then the
+- **Next package:** **C6.1b**, the powers' gameplay side: `PowerSet`, `PowerUse`, the
+  `PowerMechanisms` registry (`POWERS.md` § The framework). Then the
   C6 rows in board order: equip, quick slots, the mechanisms, then one kit per character.
 - **Then, in order** (unless the owner reorders):
   1. **C5.3b–C5.7:** upstream T7.4 (a game settings section) and the combat settings on it,

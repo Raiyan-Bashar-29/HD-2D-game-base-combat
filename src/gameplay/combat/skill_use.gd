@@ -15,23 +15,39 @@ extends RefCounted
 ## THE CALLER DECIDES WHO AND WHEN. Checking a target is legal, spending an item and pushing a
 ## CTB turn back are the caller's, because each formula has its own rules for them.
 ##
+## WHAT A SKILL COSTS can be less than its `cost` (C6.1a): `cost_of` applies the user's
+## `cost_mult_<pool>` stat, so a passive such as "spells cost a tenth" is one stat, not code.
+##
 ## OWNS: the meaning of `power`, `hits`, `effects` and `statuses` when a skill lands, and the
 ## COUNTER and REFLECT reactions.
 ## MUST NOT: choose targets, check timing or turns, or draw anything.
 
 
+## What `skill` really costs `user`: its `cost`, changed by the user's `cost_mult_<pool>` stat
+## (C6.1a). The stat is added to 1, the way `poise_taken` is, so -0.5 halves the cost, -1 makes
+## it free and 0 (no such stat) leaves it alone. A passive power gives the stat; a cost that
+## rounds down to 0 is free.
+static func cost_of(user: Combatant, skill: Skill) -> int:
+	if skill.cost <= 0:
+		return skill.cost
+	var mult: float = 1.0 + user.sheet.value(StringName("cost_mult_" + String(skill.cost_pool)))
+	return roundi(skill.cost * maxf(0.0, mult))
+
+
 ## True when `user` can pay `skill`'s cost from its own pools. A free skill is always affordable.
 static func affordable(user: Combatant, skill: Skill) -> bool:
-	if skill.cost <= 0 or stance_on(user, skill):
+	var cost: int = cost_of(user, skill)
+	if cost <= 0 or stance_on(user, skill):
 		return true
 	var vitals: Vitals = _vitals(user)
-	return vitals != null and vitals.current(skill.cost_pool) >= skill.cost
+	return vitals != null and vitals.current(skill.cost_pool) >= cost
 
 
 ## Takes the cost. Call `affordable` first: this does not check.
 static func pay(user: Combatant, skill: Skill) -> void:
-	if skill.cost > 0 and not stance_on(user, skill):
-		_vitals(user).change(skill.cost_pool, -skill.cost)
+	var cost: int = cost_of(user, skill)
+	if cost > 0 and not stance_on(user, skill):
+		_vitals(user).change(skill.cost_pool, -cost)
 
 
 ## True when `skill` is a stance and `user` has it on now, so using it would turn it off.
