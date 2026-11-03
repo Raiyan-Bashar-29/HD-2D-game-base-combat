@@ -9,9 +9,9 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C5.2, saves around combat: `CombatSaveGuard` refuses a save during
-  a battle and while the player lies fallen (through upstream's `SaveSystem.blockers`, 5.17.0),
-  a stagger survives a load, and a fallen player always gets up on an area entry.
+- **Last finished package:** C6.0, hero powers research and design (documents only):
+  [`POWERS.md`](POWERS.md) maps nine characters' powers onto one framework and thirteen shared
+  mechanisms, so a new character is a data file.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -31,16 +31,30 @@ between them, written in plain words.
     `AUTHORING.md` § The hybrid lists every field.
   - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
     `Actions.add_rebindable`, 5.18.0).
-- **Next package:** upstream **T7.4**, a game-registered settings section, then **C5.3b**, the
-  combat settings on it (lock-on assist, wait/active, difficulty, auto-battle). Each seam is a
-  row on upstream's board first (C5.2 and C5.3a used the same pattern).
-- **Then, in order:**
-  1. **C5.3b–C5.7:** combat settings, accessibility, docs, a playtest, 1.0.0.
-  2. **C5.8:** a fall safety net (found in C4.11).
+- **Next package:** **C6.1**, the powers framework (`POWERS.md` § The framework). Then the
+  C6 rows in board order: equip, quick slots, the mechanisms, then one kit per character.
+- **Then, in order** (unless the owner reorders):
+  1. **C5.3b–C5.7:** upstream T7.4 (a game settings section) and the combat settings on it,
+     accessibility, docs, a playtest, 1.0.0.
+  2. **C5.3c:** pad triggers on the controls screen (upstream first).
+  3. **C5.8:** a fall safety net (found in C4.11).
 
   Every row's detail is on the board. The facts the plan rests on are in `COMBAT.md` § C2b,
   "Settled by C2.11".
 - **Known gaps:** each package's "Gaps" list in `COMBAT_DEVLOG.md`, newest last.
+
+## Working rhythm (the owner's standing preference)
+
+- **One package at a time, all the way to done:** tested, committed, pushed, and the PR merged
+  on green.
+- **Then stop and report,** ending the report with **"Good time to /compact now."**
+- The owner runs `/compact`. In Claude Code, a `PostCompact` hook in the owner's user settings
+  wakes the session, and the next package starts without anyone typing "continue". With no
+  hook, wait for the owner's go-ahead.
+- **Never schedule timers or routines to resume work.**
+- **Pick the recommended option without asking,** and fix what needs fixing on the way.
+- **The owner asked (2026-11-03) for this rhythm to hold everywhere,** so it is written here, in
+  the owner's user memory, and in upstream's `.claude/agent-notes.md`.
 
 ## What this repository is, in five lines
 

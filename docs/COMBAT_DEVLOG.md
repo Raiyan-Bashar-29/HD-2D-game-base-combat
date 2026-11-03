@@ -2667,3 +2667,50 @@ Lock on (Q / —), Next foe (R / Right Stick), Commands and Switch member after 
   play. New row C5.3c: name and rebind a trigger, upstream first.
 - Combat settings wait for upstream T7.4 (C5.3b).
 
+
+## 2026-11-03 — C6.0 · Hero powers: research and design
+
+**Did.**
+- New `docs/POWERS.md`.
+  - **Researched** the powers of Gilgamesh, Kishou Arima, Satoru Gojo, Escanor, Lelouch,
+    Yhwach, the Barnabas and Odin Eikon, Vergil and Dante.
+  - **Designed** a framework: `PowerKit`, `Power`, `PowerScaling`, `GaugeRule` and
+    `PowerMechanism` in content; `PowerSet`, `PowerUse` and the `PowerMechanisms` registry in
+    gameplay.
+  - **Designed thirteen shared mechanisms:** barrage, finisher, barrier, domain, form, gauge,
+    foresight, command, blink, clone, sacrifice, grant and counter stance.
+  - **Wrote one kit per character,** with costs as starting values.
+- Board rows C6.1 to C6.23, and a C6 phase section in `COMBAT.md`.
+- HANDOFF § Working rhythm: the owner's compact-between-packages preference, written into the
+  repository so any session or account finds it.
+- Combat `0.49.1`.
+
+**Why.** The owner wants special powers for the main character, and will add more characters
+over time.
+
+**How the design holds up as the roster grows.**
+- **Most new characters need no code.** A character is a data file, and every power is a `Skill`
+  plus an optional `ActionMove`. Only where neither covers it does a power add a mechanism, and
+  each mechanism is shared and never named after a character.
+- **Some powers need no mechanism at all:** Enkidu, Hollow Purple and Sunshine come out of the
+  framework's `PowerScaling`, `requires_statuses` and `active_hours` alone.
+
+**Decided (the owner, 2026-11-03).**
+- Use the real names for now, kept only in data and the CSV. The owner renames them later, and
+  `POWERS.md` § Renaming says where each name lives.
+- The project is not monetised, and the owner has reviewed the fair-use question.
+
+**Connects.**
+- **The incoming-hit guard** in `Combatant.receive` is the one new hook in the damage path.
+- **Quick slots** use C5.3a's `Actions.add_rebindable`.
+- **Finishers** use C4.1's `CombatClock` for the time-stop flourish.
+- **Timed blocks and Black Flash** use C4.10's `TimedWindow`.
+
+**Verified.** Documents only. Boot, the suite (`combat_record_test` reads the new rows and the
+version), the seven checkers.
+
+**Gaps.**
+- **The fandom wikis are outside this container's network allow-list,** so the research used
+  search results that quote or mirror them, and game guides.
+- **Disputed details are flagged in `POWERS.md`:** Gungnir's exact effect, and the Geass range.
+- **The numbers are untuned.**
