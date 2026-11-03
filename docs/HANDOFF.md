@@ -9,8 +9,10 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.1b, the hero powers' gameplay side, in
-  `src/gameplay/combat/powers/`: `PowerSet` (equips a kit on a body, counts cooldowns, runs
+- **Last finished package:** C6.2a, hero powers in a turn-based battle: a fighter whose
+  `CombatantDef.power_kit` is set has the kit equipped when the battle builds it, and a POWER
+  `BattleCommand` uses a power through `PowerUse`, its cooldown counted in the holder's turns.
+  Before it, C6.1b built the gameplay side in `src/gameplay/combat/powers/`: `PowerSet` (equips a kit on a body, counts cooldowns, runs
   mechanisms), `PowerUse` (why a power is refused, who it aims at, scaling, using it),
   `PowerMechanisms` (which executor runs which mechanism) and `PowerExecutor` (the base every
   mechanism's code extends). C6.1a's data shapes are in `src/content/combat/powers/`. The design
@@ -34,9 +36,9 @@ between them, written in plain words.
     `AUTHORING.md` § The hybrid lists every field.
   - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
     `Actions.add_rebindable`, 5.18.0).
-- **Next package:** **C6.2**, equipping powers in both formulas: `ActionLoadout.power_kit`,
-  `CombatantDef.power_kit`, a POWER battle command and a "Powers" menu category (`COMBAT.md`
-  board). Then the C6 rows in board order: quick slots, the mechanisms, then one kit per character.
+- **Next package:** **C6.2b**, powers in the field (`ActionHost` adds a `PowerSet`, a party
+  switch carries it, `FieldCommands` routes a POWER), then **C6.2c**, the "Powers" category in
+  both menus (`COMBAT.md` board). Then the C6 rows in board order: quick slots, the mechanisms, then one kit per character.
 - **Then, in order** (unless the owner reorders):
   1. **C5.3b–C5.7:** upstream T7.4 (a game settings section) and the combat settings on it,
      accessibility, docs, a playtest, 1.0.0.

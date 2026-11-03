@@ -2780,3 +2780,36 @@ fighter is built, like the ATB gauge.
 (both C6.2). Executors have no incoming-hit hook yet (C6.6). Menus still print the plain cost
 (C6.3).
 
+## 2026-11-03 — C6.2a · Hero powers in a turn-based battle
+
+**Did.**
+- `CombatantDef.power_kit`: the kit a fighter has, in both formulas. Its problems are the
+  fighter's.
+- `BattleCommand.Kind.POWER`, appended so saved menus keep their kinds; `BattleCommand.power`;
+  `BattleCommand.for_power(power)`, which also carries the power's skill so the battle aims it
+  like any skill. A POWER naming no power is a problem.
+- `BattleSetup._fighter` adds a `PowerSet` and equips the kit, after the fighter is in the tree
+  so the kit's stat bonuses land on its wired sheet. Either side may have one.
+- `Battle`: `targets_for` aims a POWER by its skill (nobody, for a power that is all
+  mechanism); `allows` blocks it under a silence; `act` routes it to a new `_power`, which checks
+  the target and calls `PowerUse.use` (every refusal, the cost, the mechanism, the cooldown, the
+  used-up statuses), plus a CTB delay like a heavy skill; `next_turn` ticks the holder's
+  cooldowns beside its statuses.
+- New `tests/unit/power_battle_test.gd`, 24 assertions. Version 0.52.0.
+
+**Why.** C6.2 was about 13 files, so it is split by formula: a (battle), b (field), c (menus).
+
+**Connects.** A power used in battle pays through `SkillUse.pay` and lands through
+`SkillUse.apply`, so the battle's reflect, counters, weakness and Break apply to it.
+
+**Verified.** Red first: with `_power` stubbed and the tick left out, 9 of the new assertions
+failed. Boot 0 warnings, 0 errors, printing 0.52.0; suite 3591 passed, 0 failed; the seven checkers 0; the stripped run 3494 passed, 0 failed, 25 skipped.
+
+**Decisions.**
+- One kit field, on `CombatantDef`. A loadout's `fighter` is a `CombatantDef`, so both formulas
+  give a character the same kit, as they give it the same hp.
+- Cooldowns count at the START of the holder's turn, not the end: a sleeping or stunned fighter's
+  cooldowns still count, and "cooldown N" means used on one turn, usable N turns later.
+
+**Gaps.** No menu offers a power yet (C6.2c), so only a test or a brain builds a POWER command.
+The field has no `PowerSet` yet (C6.2b). A battle's cooldowns start fresh each fight.

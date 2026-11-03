@@ -26,6 +26,9 @@ extends Resource
 @export var commands: Array[BattleCommand] = []
 ## How it plays when nobody controls it. Null means the fallback: attack, then defend.
 @export var brain: BattleBrain
+## The hero powers this fighter has, in both formulas (C6.2): a battle equips them when it builds
+## the fighter, and so does the field when this is a loadout's `fighter`. Null means none.
+@export var power_kit: PowerKit
 ## How a party member grows with experience. Null means it never levels: an enemy, or a guest.
 @export var level_curve: LevelCurve
 
@@ -46,4 +49,6 @@ func problems(context: String) -> PackedStringArray:
 			found.append_array(command.problems(where))
 	if brain != null:
 		found.append_array(brain.problems(where))
+	if power_kit != null:
+		found.append_array(power_kit.problems(where))
 	return found
