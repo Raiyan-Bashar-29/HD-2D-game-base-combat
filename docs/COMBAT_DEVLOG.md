@@ -2714,3 +2714,31 @@ version), the seven checkers.
   search results that quote or mirror them, and game guides.
 - **Disputed details are flagged in `POWERS.md`:** Gungnir's exact effect, and the Geass range.
 - **The numbers are untuned.**
+
+## 2026-11-03 — C6.1a · Hero powers: the data shapes, and cheaper costs
+
+**Did.**
+- New `src/content/combat/powers/`: `PowerKit` (powers, passives, stat bonuses; `power(id)`),
+  `Power` (skill, move, mechanism, cooldown, required and consumed statuses, a pool fraction,
+  `active_hours` with `active_at`, scaling, passive), `PowerScaling` (five sources, four things it
+  affects, a pure `multiplier(reading)` from a factor or a `Curve`) and `PowerMechanism` (the base
+  every mechanism's settings extend). Each has `problems()`.
+- `SkillUse.cost_of(user, skill)`: the skill's cost times `1 + cost_mult_<pool>`, rounded, never
+  below 0. `affordable` and `pay` use it.
+- New `tests/unit/power_content_test.gd`, 20 assertions. Version 0.50.0.
+
+**Why.** C6.1 was about 13 files, over the 8-file package rule, so it was split along the layer
+line: the data shapes now (C6.1a), the gameplay classes next (C6.1b). `GaugeRule` moved to C6.4,
+where the gauges that read it are built.
+
+**Connects.** `Power.skill` is an ordinary `Skill`, so a power lands through `SkillUse.apply`
+like every skill. The cost stat is the one line POWERS.md promised for Six Eyes' efficiency.
+
+**Verified.** Red first: with `cost_of` stubbed to the plain cost, the three cost assertions
+failed. Boot 0 warnings, 0 errors; suite 0 failed; the seven checkers; the stripped run.
+
+**Found.** A `Curve` clamps its points to `max_value`, which starts at 1, so a curve meant to
+triple a power silently topped out at 1. The test's first run caught it; the field's comment now
+says to raise `max_value`.
+
+**Gaps.** Nothing equips or uses a kit yet (C6.1b, C6.2). Menus still print the plain cost (C6.3).
