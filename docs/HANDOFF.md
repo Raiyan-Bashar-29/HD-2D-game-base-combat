@@ -9,9 +9,12 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.1a, the hero powers' data shapes: `PowerKit`, `Power`,
-  `PowerScaling` and `PowerMechanism` in `src/content/combat/powers/`, and `SkillUse.cost_of`
-  (a `cost_mult_<pool>` stat makes skills cheaper). The design is [`POWERS.md`](POWERS.md).
+- **Last finished package:** C6.1b, the hero powers' gameplay side, in
+  `src/gameplay/combat/powers/`: `PowerSet` (equips a kit on a body, counts cooldowns, runs
+  mechanisms), `PowerUse` (why a power is refused, who it aims at, scaling, using it),
+  `PowerMechanisms` (which executor runs which mechanism) and `PowerExecutor` (the base every
+  mechanism's code extends). C6.1a's data shapes are in `src/content/combat/powers/`. The design
+  is [`POWERS.md`](POWERS.md).
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -31,9 +34,9 @@ between them, written in plain words.
     `AUTHORING.md` § The hybrid lists every field.
   - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
     `Actions.add_rebindable`, 5.18.0).
-- **Next package:** **C6.1b**, the powers' gameplay side: `PowerSet`, `PowerUse`, the
-  `PowerMechanisms` registry (`POWERS.md` § The framework). Then the
-  C6 rows in board order: equip, quick slots, the mechanisms, then one kit per character.
+- **Next package:** **C6.2**, equipping powers in both formulas: `ActionLoadout.power_kit`,
+  `CombatantDef.power_kit`, a POWER battle command and a "Powers" menu category (`COMBAT.md`
+  board). Then the C6 rows in board order: quick slots, the mechanisms, then one kit per character.
 - **Then, in order** (unless the owner reorders):
   1. **C5.3b–C5.7:** upstream T7.4 (a game settings section) and the combat settings on it,
      accessibility, docs, a playtest, 1.0.0.
@@ -123,7 +126,7 @@ anything to its left and nothing to its right.
 | `src/content/combat/` | **Data shapes** that designers fill in as `.tres` files: a stat modifier, a status effect, a skill, a battle command, a real-time move, move set and loadout, the ATB rules, an enemy's action brain, a defeat rule, an enemy or party-member definition, an encounter, an AI brain, a level curve, a party roster, and the faction table. Each has `problems()`, which lists what is wrong with it. |
 | `src/systems/input/combat_actions.gd` | The action-combat inputs (attack, dodge, lock on), installed at boot by `ActionHost` because upstream's `Actions` may not be edited. |
 | `src/systems/combat/` | **Pure maths, no nodes:** the combat clock (how fast the fight runs), the ATB gauge, the move timeline (which phase a real-time move is in), the action decider (what a real-time enemy does next), the stat sheet (base value plus modifiers), the damage formula and its stages (hit or miss, attack against defence, element, vulnerability, critical hit, variance), the request and result of one hit, and the turn schedulers (rounds, and CTB, which `advance` can feed with time for an ATB battle), and `TimedWindow` (a timed hit's power multiplier). |
-| `src/gameplay/combat/` | **Things living in the game:** `CombatSaveGuard` (refuses a save mid-battle or while the player lies fallen), `SymbolEncounter` (a field foe that opens a turn-based battle on touch or on a strike), `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `FieldParty` and `PartyFollower` (the party in the field, switching who you control, and a follower that thinks and fights), `BrainContext`, `BattleBrainContext` and `FieldBrainContext` (what a brain may do in a battle or in the field), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits; `Hurtbox.nearest_hostile` finds a body's nearest foe), `ActionFighter` (a body that swings and dodges), `LockOn`, `ActionEnemy` (a real-time enemy's body) and `ActionHost` (fits the player out as a fighter, and grants field rewards), `FieldDefeat` (what the player's fall means), `AtbMeter` (the ATB gauge on a field fighter), `FieldCommands` (using a skill or item mid-fight), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. |
+| `src/gameplay/combat/` | **Things living in the game:** `CombatSaveGuard` (refuses a save mid-battle or while the player lies fallen), `SymbolEncounter` (a field foe that opens a turn-based battle on touch or on a strike), `Vitals` (HP and other pools, saved through `Flags`), `Meters` (pools that refill each turn or fill when hit), `Weakness` (shields and Break), `FieldParty` and `PartyFollower` (the party in the field, switching who you control, and a follower that thinks and fights), `BrainContext`, `BattleBrainContext` and `FieldBrainContext` (what a brain may do in a battle or in the field), `StatusSet` (the buffs and ailments on one fighter), `Combatant` (makes a node fightable), `Hitbox` and `Hurtbox` (real-time hits; `Hurtbox.nearest_hostile` finds a body's nearest foe), `ActionFighter` (a body that swings and dodges), `LockOn`, `ActionEnemy` (a real-time enemy's body) and `ActionHost` (fits the player out as a fighter, and grants field rewards), `FieldDefeat` (what the player's fall means), `AtbMeter` (the ATB gauge on a field fighter), `FieldCommands` (using a skill or item mid-fight), `Battle` (the referee of one turn-based fight), `BattleAi`, `BattleSetup` (builds fighters from data), `Party` and `Rewards`. In `powers/`: `PowerSet` (the hero powers a body has equipped, and their cooldowns), `PowerUse` (refusing, aiming, scaling and using a power), `PowerMechanisms` and `PowerExecutor` (which code runs a power's mechanism). |
 | `src/gameplay/interactables/` | `StrikeTarget` (something you hit by interacting, such as the training dummy) and `EncounterPoint` (something that starts a fight). |
 | `src/ui/combat/` | `CombatHud` (the field readout), `BattleScreen` (the battle menu), `BattleMenu` (what the menu offers, and why a row is greyed out), `BattleLog` (the running commentary), `BattleHost` (opens the screen when an encounter is requested), `CommandOverlay` (the hybrid's command menu over the running fight) and `CommandHost` (opens it on the command key). |
 | `src/core/events/events.gd` | Every cross-system signal, including the combat ones at the bottom. Read it to see how things connect. |
