@@ -30,6 +30,11 @@ extends RefCounted
 ##   or a SKILL (its `boost_power` and `boost_hits`). Points are spent only if the action happens.
 ## - A landed hit matching the target's `weak_to` takes a shield point; the last one BREAKS it,
 ##   and the break costs it a turn (`Weakness`, C2.17). Its shield refills when the break ends.
+## - POWER uses a hero power from the actor's kit through `PowerUse` (C6.2a): every refusal it
+##   has (cooldown, hours, statuses, cost), its skill aimed like any skill, then its mechanism,
+##   its cooldown and the statuses it uses up. A silence blocks it, as it blocks SKILL.
+## - Power cooldowns count in the holder's own turns, at the START of each, beside its statuses,
+##   asleep or not. So "cooldown 3" means used on one turn, usable again three turns later.
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
 ##
 ## IN PLAIN WORDS: this is the referee of a turn-based fight. Hand it two lists of fighters,
@@ -113,6 +118,10 @@ func next_turn() -> Combatant:
 		var sleeper: StringName = statuses.blocker(StatusEffect.Block.SKIP_TURN) if statuses != null else &""
 		if statuses != null:
 			statuses.tick_turn()
+		# Hero power cooldowns count down here too, so a sleeper's still count (C6.2a).
+		var powers: PowerSet = PowerSet.of(actor.get_parent())
+		if powers != null:
+			powers.tick_turn()
 		# A break that just wore off gives the shield back (C2.17).
 		Weakness.recover(actor)
 		# Each `regen_<pool>` stat refills (or drains) its pool once a turn, asleep or not
@@ -157,7 +166,10 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 	# A plain ATTACK always aims at enemies; a skill or item says who it may aim at.
 	var filter: FactionTable.Target = FactionTable.Target.ENEMY
 	match command.kind:
-		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
+		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM, BattleCommand.Kind.POWER:
+			# A power that is all mechanism has no skill, and so aims at nobody.
+			if command.skill == null:
+				return out
 			filter = command.skill.target
 		# DEFEND and FLEE aim at nobody.
 		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE:
@@ -180,7 +192,7 @@ func allows(command: BattleCommand) -> bool:
 	if statuses == null:
 		return true
 	match command.kind:
-		BattleCommand.Kind.SKILL:
+		BattleCommand.Kind.SKILL, BattleCommand.Kind.POWER:
 			return statuses.blocker(StatusEffect.Block.NO_SKILLS) == &""
 		BattleCommand.Kind.ITEM:
 			return statuses.blocker(StatusEffect.Block.NO_ITEMS) == &""
@@ -216,6 +228,9 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 			SkillUse.counter(actor, targets[0], landed, rng)
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			if not _use(actor, command, targets, boost):
+				return false
+		BattleCommand.Kind.POWER:
+			if not _power(actor, command, targets):
 				return false
 		# Guard: a one-turn defence bonus that wears off when this fighter's next turn starts.
 		BattleCommand.Kind.DEFEND:
@@ -265,6 +280,22 @@ func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant], b
 	SkillUse.apply(actor, skill, targets if single else targets_for(command), rng, boost)
 	# Heavy skills push the user back in a CTB queue; in round-based battles this does nothing.
 	if skill.delay > 0.0 and scheduler is CtbScheduler:
+		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
+	return true
+
+
+## A hero power (C6.2a): aimed like its skill, then everything else is `PowerUse.use`'s, which
+## refuses (changing nothing) on a cooldown, the wrong hour, a missing status or a cost.
+func _power(actor: Combatant, command: BattleCommand, targets: Array[Combatant]) -> bool:
+	var skill: Skill = command.skill
+	var single: bool = skill != null and skill.scope == Skill.Scope.ONE
+	if not _legal(command, targets, single):
+		return false
+	var aimed: Array[Combatant] = targets if single else targets_for(command)
+	if not PowerUse.use(actor, command.power, aimed, rng):
+		return false
+	# A heavy power pushes its user back in a CTB queue, as a heavy skill does.
+	if skill != null and skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
 	return true
 

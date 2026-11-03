@@ -14,6 +14,9 @@ extends RefCounted
 ## `release`, so a save after the fight carries none of them. The party's are kept: a party
 ## member's hp is meant to carry from one fight to the next.
 ##
+## HERO POWERS (C6.2a): a definition with a `power_kit` gets a `PowerSet` with that kit equipped,
+## on either side. Its cooldowns start fresh each battle; the battle counts them in turns.
+##
 ## IN PLAIN WORDS: the factory. Give it an encounter file and the party, and it makes one
 ## fighter node per combatant, picks the turn order the encounter asked for, and starts the
 ## `Battle`. `release` cleans everything up afterwards.
@@ -76,7 +79,8 @@ static func release(battle: Battle) -> void:
 			actor.queue_free()
 
 
-# One fighter = a plain Node with three children: Vitals (HP/MP), StatusSet, Combatant.
+# One fighter = a plain Node with three children: Vitals (HP/MP), StatusSet, Combatant, and a
+# fourth, a PowerSet, when it has hero powers.
 static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: bool) -> Combatant:
 	var actor := Node.new()
 	actor.name = String(id)
@@ -94,6 +98,12 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 	combatant.kind = def.combatant_id
 	actor.add_child(combatant)
 	holder.add_child(actor)
+	# The kit goes on after the actor is in the tree, when the Combatant's sheet is wired up, so
+	# the kit's stat bonuses land on it.
+	if def.power_kit != null:
+		var powers := PowerSet.new()
+		actor.add_child(powers)
+		powers.equip(def.power_kit)
 	# Enemies always start at full HP, even if an old flag says otherwise.
 	if fresh:
 		_forget_pools(combatant)

@@ -47,7 +47,10 @@ Do not invent substitute names.
 
 C6.1a built the content classes below except `GaugeRule`, which C6.4 builds with the gauges
 that read it. C6.1b built the gameplay classes; their executors have only `use`, `tick` and
-`end` so far, and each later row adds the hook its seam needs (`intercept_incoming` with C6.6). Menus still print a skill's plain `cost`, not
+`end` so far, and each later row adds the hook its seam needs (`intercept_incoming` with C6.6).
+C6.2a put kits into a turn-based battle. A fighter's kit is `CombatantDef.power_kit`, the one
+kit field for both formulas (the field reads its loadout's `fighter`). In battle a cooldown counts
+down at the start of each of the holder's turns, beside its statuses, asleep or not. Menus still print a skill's plain `cost`, not
 `SkillUse.cost_of`; C6.3 shows the real one.
 
 ### Content (`src/content/combat/powers/`), data shapes only
@@ -364,7 +367,7 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | Row | Builds | Needs |
 |---|---|---|
 | C6.1 | Framework content and logic: `PowerKit`, `Power`, `PowerScaling`, `GaugeRule` (shape only), `PowerMechanism`, `PowerSet`, `PowerUse`, `PowerMechanisms`; `cost_mult_<pool>` in `SkillUse.pay` | — |
-| C6.2 | Equip in both formulas: `ActionLoadout.power_kit`, `CombatantDef.power_kit`, `BattleCommand.Kind.POWER`, routing in `Battle` and `FieldCommands`, the "Powers" category in both menus | C6.1 |
+| C6.2a–c | Equip in both formulas: `CombatantDef.power_kit`, `BattleCommand.Kind.POWER` and routing in `Battle` (a); the field's `PowerSet` and `FieldCommands` (b); the "Powers" category in both menus (c) | C6.1 |
 | C6.3 | Quick slots and the HUD: four rebindable `combat_power_N` actions; the slot, cooldown and gauge readout | C6.2 |
 | C6.4 | M6 `gauge` running: every `GaugeRule` event, `levels` | C6.1 |
 | C6.5 | M5 `form` | C6.2 |
