@@ -2742,3 +2742,41 @@ triple a power silently topped out at 1. The test's first run caught it; the fie
 says to raise `max_value`.
 
 **Gaps.** Nothing equips or uses a kit yet (C6.1b, C6.2). Menus still print the plain cost (C6.3).
+
+## 2026-11-03 — C6.1b · Hero powers: equip a kit, and use a power
+
+**Did.**
+- New `src/gameplay/combat/powers/`:
+  - `PowerSet`, a child of the body like `Vitals`. `equip` puts a kit's stat bonuses on the
+    fighter's sheet (re-sourced to the kit id, so `unequip` removes exactly them) and its
+    passives on as statuses, and makes one executor per mechanism. It counts cooldowns down in
+    seconds of fight time (`CombatClock`) for a `real_time` fighter, or by `tick_turn` in battle.
+  - `PowerUse`, the powers' twin of `FieldCommands`: `refusal` (passive, not equipped,
+    cooldown, hours, a needed status, a pool not full enough, a silence, the cost), `targets`
+    (the field's aiming), `use` (pay, scale, `SkillUse.apply`, the executor, the cooldown, the
+    used-up statuses), `scaled_skill` and `multiplier`.
+  - `PowerMechanisms`, the kind -> executor table: `BUILT_IN` (empty until C6.4) and
+    `register` for a game's own mechanism.
+  - `PowerExecutor`, the base: `use`, `tick`, `end`.
+- New `tests/unit/power_use_test.gd`, 34 assertions, with a fake mechanism. Version 0.51.0.
+
+**Why.** The second half of C6.1, split by the 8-file rule. Every kit row after this one only
+adds data and, at most, one executor.
+
+**Connects.** A power's skill lands through `SkillUse.apply` and pays through `SkillUse.pay`, so
+reflect, counters, weakness and `cost_mult_<pool>` all apply to powers with no new code. Field
+aiming is `FieldCommands.targets`.
+
+**Verified.** Red first: with `use` and `scaled_skill` stubbed, 12 assertions failed. Boot
+0 warnings, 0 errors, printing 0.51.0; suite 3566 passed, 0 failed; the seven checkers 0; the
+stripped run.
+
+**Decisions.** Scaling works on a copy of the skill, so the kit's data never drifts. A rule that
+reads a target's tag reads the first target. A revive's amount is not scaled (it is a fraction of
+max hp). Cooldowns and executors are not saved: the kit comes from the loadout each time a
+fighter is built, like the ATB gauge.
+
+**Gaps.** Nothing equips a kit in the running game, and `Battle` does not call `tick_turn` yet
+(both C6.2). Executors have no incoming-hit hook yet (C6.6). Menus still print the plain cost
+(C6.3).
+

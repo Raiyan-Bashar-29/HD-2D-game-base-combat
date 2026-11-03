@@ -46,7 +46,8 @@ Do not invent substitute names.
 ## The framework (built by C6.1–C6.3)
 
 C6.1a built the content classes below except `GaugeRule`, which C6.4 builds with the gauges
-that read it. C6.1b builds the gameplay classes. Menus still print a skill's plain `cost`, not
+that read it. C6.1b built the gameplay classes; their executors have only `use`, `tick` and
+`end` so far, and each later row adds the hook its seam needs (`intercept_incoming` with C6.6). Menus still print a skill's plain `cost`, not
 `SkillUse.cost_of`; C6.3 shows the real one.
 
 ### Content (`src/content/combat/powers/`), data shapes only
