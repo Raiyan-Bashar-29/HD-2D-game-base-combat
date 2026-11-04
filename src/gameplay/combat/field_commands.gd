@@ -14,11 +14,17 @@ extends RefCounted
 ## - `use`: does it. It spends the ATB bars and the cost, takes the item, and resolves the skill
 ##   through `SkillUse.apply`, the same path a turn-based battle and a real-time hit take.
 ##
+## A HERO POWER (C6.2b) is a command too (`BattleCommand.for_power`), and goes through `PowerUse`:
+## it is refused for any `PowerUse` reason (reported here as `Reason.POWER`; the menu asks
+## `PowerUse.refusal` which one), and it costs NO ATB, because a power has its own cooldown. A
+## power with only a mechanism (no skill) needs nobody to aim at.
+##
 ## OWNS: the field's rules for aiming, refusing and using a command.
 ## MUST NOT: draw a menu or slow the fight. The command overlay (C4.4) does both.
 
 ## Why a command cannot be used now. NONE means it can.
-enum Reason { NONE, ATB, BLOCKED, COST, ITEM, TARGET }
+## POWER: a hero power `PowerUse.refusal` refuses (cooling down, out of hours, and so on).
+enum Reason { NONE, ATB, BLOCKED, COST, ITEM, TARGET, POWER }
 
 ## How far, in metres, a field command can reach when nothing is locked on.
 const REACH: float = 8.0
@@ -65,6 +71,8 @@ static func candidates(user: Combatant, command: BattleCommand) -> Array[Combata
 
 ## Why `user` cannot use `command` now; `Reason.NONE` when it can.
 static func refusal(user: Combatant, command: BattleCommand) -> Reason:
+	if user != null and command != null and command.kind == BattleCommand.Kind.POWER:
+		return _power_refusal(user, command)
 	if user == null or command == null or command.skill == null:
 		return Reason.TARGET
 	var body: Node = user.get_parent()
@@ -102,6 +110,8 @@ static func use(user: Combatant, command: BattleCommand, rng: RandomNumberGenera
 			if not reachable.has(fighter):
 				return false
 		aimed = aim
+	if command.kind == BattleCommand.Kind.POWER:
+		return PowerUse.use(user, command.power, aimed, rng)
 	var body: Node = user.get_parent()
 	AtbMeter.of(body).spend(command.skill.atb_cost)
 	if command.kind == BattleCommand.Kind.ITEM:
@@ -110,6 +120,15 @@ static func use(user: Combatant, command: BattleCommand, rng: RandomNumberGenera
 		SkillUse.pay(user, command.skill)
 	SkillUse.apply(user, command.skill, aimed, rng)
 	return true
+
+
+# A hero power's refusal: `PowerUse`'s rules, then someone to aim at when it has a skill.
+static func _power_refusal(user: Combatant, command: BattleCommand) -> Reason:
+	if PowerUse.refusal(user, command.power) != PowerUse.Reason.NONE:
+		return Reason.POWER
+	if command.skill != null and targets(user, command).is_empty():
+		return Reason.TARGET
+	return Reason.NONE
 
 
 ## The fighter `user`'s lock-on holds, or null.

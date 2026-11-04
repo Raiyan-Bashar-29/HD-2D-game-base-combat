@@ -2813,3 +2813,31 @@ failed. Boot 0 warnings, 0 errors, printing 0.52.0; suite 3591 passed, 0 failed;
 
 **Gaps.** No menu offers a power yet (C6.2c), so only a test or a brain builds a POWER command.
 The field has no `PowerSet` yet (C6.2b). A battle's cooldowns start fresh each fight.
+
+## 2026-11-04 — C6.2b · Hero powers in the field
+
+**Did.**
+- `ActionHost.fit_identity` adds a `PowerSet` wearing `loadout.fighter.power_kit`, after the
+  `Combatant` so the kit's bonuses land on its sheet. The player and every follower get theirs.
+- `FieldParty._identity` counts the `PowerSet` as part of a member, so a switch carries the
+  kit, its cooldowns and its running mechanisms with them.
+- `PowerSet` ends its executors on `NOTIFICATION_PREDELETE`, not `_exit_tree`: a switch
+  reparents the node, which fires exit and enter, and must not stop a mechanism. Its header's
+  turn line now says "at the start of the holder's turn".
+- `FieldCommands`: a POWER command goes through `PowerUse` (new `Reason.POWER` for any of its
+  refusals; no ATB cost; a power with only a mechanism needs nobody to aim at).
+- New `tests/unit/power_field_test.gd`, 18 assertions. Version 0.53.0.
+
+**Bug found and fixed.** A kit passive is a `StatusEffect` that lives only in its kit file.
+`StatusSet._apply_save` looked only in `StatusDb` and `Weakness`, so every load dropped it with
+a "no longer exists" warning, and a new game's clear took it off for good. Now `_apply_save`
+also asks `PowerSet.passive_of`, and `PowerSet` holds its passives again on `game_started`
+and `game_loaded` (connected after its sibling `StatusSet`, so after the clear). A passive
+already held is never applied twice.
+
+**Verified.** Red first: with the switch line, the passive re-hold, the load lookup, the
+predelete and the POWER route stubbed, 11 of the new assertions failed. Boot 0 warnings,
+0 errors, printing 0.53.0; suite 3609 passed, 0 failed; the seven checkers 0; the stripped run 3512 passed, 0 failed, 25 skipped.
+
+**Gaps.** No menu offers a power yet (C6.2c); until then `CommandOverlay.reason_key` has no
+words for `Reason.POWER`. Followers' brains do not use powers (a later row, if wanted).

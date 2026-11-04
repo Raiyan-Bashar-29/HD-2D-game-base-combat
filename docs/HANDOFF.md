@@ -9,7 +9,10 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.2a, hero powers in a turn-based battle: a fighter whose
+- **Last finished package:** C6.2b, hero powers in the field: the player and each follower
+  wear their fighter's `power_kit`, a party switch carries it with the member, a POWER
+  command goes through `FieldCommands` with no ATB cost, and a kit's passive survives a load.
+  Before it, C6.2a, hero powers in a turn-based battle: a fighter whose
   `CombatantDef.power_kit` is set has the kit equipped when the battle builds it, and a POWER
   `BattleCommand` uses a power through `PowerUse`, its cooldown counted in the holder's turns.
   Before it, C6.1b built the gameplay side in `src/gameplay/combat/powers/`: `PowerSet` (equips a kit on a body, counts cooldowns, runs
@@ -36,9 +39,7 @@ between them, written in plain words.
     `AUTHORING.md` § The hybrid lists every field.
   - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
     `Actions.add_rebindable`, 5.18.0).
-- **Next package:** **C6.2b**, powers in the field (`ActionHost` adds a `PowerSet`, a party
-  switch carries it, `FieldCommands` routes a POWER), then **C6.2c**, the "Powers" category in
-  both menus (`COMBAT.md` board). Then the C6 rows in board order: quick slots, the mechanisms, then one kit per character.
+- **Next package:** **C6.2c**, the "Powers" category in both menus (`COMBAT.md` board). Then the C6 rows in board order: quick slots, the mechanisms, then one kit per character.
 - **Then, in order** (unless the owner reorders):
   1. **C5.3b–C5.7:** upstream T7.4 (a game settings section) and the combat settings on it,
      accessibility, docs, a playtest, 1.0.0.
