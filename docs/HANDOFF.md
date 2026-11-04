@@ -9,7 +9,11 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.3b, the HUD's slot line: `CombatHud` shows each quick slot's
+- **Last finished package:** C6.0b, documents only: two more characters for the main character,
+  Isliid (Grand Summoners; Emperor, Defier of Fate, Human Pinnacle forms and three swords) and
+  Roland (The Last Cloudia; base, Ascended and Heroic Lord forms), in `POWERS.md`, with a
+  fourteenth mechanism (`refresh`) and kit rows C6.24 and C6.25.
+  Before it, C6.3b, the HUD's slot line: `CombatHud` shows each quick slot's
   key, power and cost, or "ready in 3s" counting down, from a new
   `Events.power_cooldown_changed` that `PowerSet` emits when the whole seconds or turns left
   change; the F menu redraws when a power is ready again.
@@ -49,7 +53,7 @@ between them, written in plain words.
     `AUTHORING.md` § The hybrid lists every field.
   - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
     `Actions.add_rebindable`, 5.18.0).
-- **Next package:** **C6.4**, gauges: `GaugeRule`, `PowerKit.gauges` and the HUD's gauge readout (`COMBAT.md` board). Then the C6 rows in board order: the mechanisms, then one kit per character.
+- **Next package:** **C6.4**, gauges: `GaugeRule`, `PowerKit.gauges` and the HUD's gauge readout (`COMBAT.md` board). Then the C6 rows in board order: the mechanisms, then one kit per character (eleven now, Isliid and Roland last).
 - **Then, in order** (unless the owner reorders):
   1. **C5.3b–C5.7:** upstream T7.4 (a game settings section) and the combat settings on it,
      accessibility, docs, a playtest, 1.0.0.
