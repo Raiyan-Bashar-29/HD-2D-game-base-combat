@@ -7,10 +7,14 @@ extends Label
 ## IN PLAIN WORDS: it shows nothing until the player is a fighter (the loadout fitted them,
 ## C3.4). Then it reads, at the bottom left:
 ##     HP 25 / 30   MP 8 / 10   ATB 1 / 2  40%   [Poisoned]
+##     [1] Bolt   5 MP   [2] Gate  (ready in 3s)
 ##     Thorn Wisp   HP 12 / 20
 ## the ATB part only for a fighter with an ATB gauge (C4.4): whole bars ready out of all of them,
-## then how full the next bar is. The second line only while something is locked on. It redraws whenever a pool moves, a
-## status starts or ends, or the lock changes, and never polls.
+## then how full the next bar is. The slot line (C6.3b) only for a fighter with hero powers: each
+## quick slot's key, its power's name, and its cost, or why it cannot be used now (the same words
+## the command menu uses, from `PowerMenu`). The last line only while something is locked on.
+## It redraws whenever a pool moves, a status starts or ends, the lock changes, or a cooldown's
+## whole seconds tick down (`Events.power_cooldown_changed`), and never polls.
 ##
 ## OWNS: the rendering of the player's and the locked target's combat state.
 ## MUST NOT: change anything it shows, or find targets (it shows what `LockOn` announces).
@@ -18,6 +22,9 @@ extends Label
 const HP_KEY: String = "ui.combat_hud.hp"
 const TARGET_KEY: String = "ui.combat_hud.target"
 const ATB_KEY: String = "ui.combat_hud.atb"
+const SLOT_KEY: String = "ui.combat_hud.slot"
+const COST_KEY: String = "ui.battle.cost"
+const UNAVAILABLE_KEY: String = "ui.battle.unavailable"
 const POOL_KEY: String = "ui.battle.pool"
 const STATUSES_KEY: String = "ui.battle.statuses"
 const VARIATION: StringName = &"HudText"
@@ -31,7 +38,7 @@ var target_id: StringName = &""
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	offset_top = -96.0
+	offset_top = -132.0
 	offset_bottom = -24.0
 	offset_left = 32.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -42,6 +49,7 @@ func _ready() -> void:
 	Events.status_expired.connect(func(_w: StringName, _s: StringName) -> void: refresh())
 	Events.lock_on_changed.connect(_on_lock_on_changed)
 	Events.atb_changed.connect(func(_w: StringName, _v: float, _s: int) -> void: refresh())
+	Events.power_cooldown_changed.connect(func(_w: StringName, _p: StringName, _l: int) -> void: refresh())
 	# The fighter's parts are fitted a frame after the player spawns (C3.4), so look then.
 	Events.player_spawned.connect(func(_p: Node3D) -> void: refresh.call_deferred())
 	Events.player_despawned.connect(refresh)
@@ -57,6 +65,9 @@ func refresh() -> void:
 		text = ""
 		return
 	var lines: Array[String] = [_fighter_line(fighter)]
+	var slots: String = slot_text(fighter)
+	if slots != "":
+		lines.append(slots)
 	var target: Combatant = _target()
 	if target != null:
 		var vitals: Vitals = Vitals.of(target.get_parent())
@@ -82,6 +93,26 @@ func _fighter_line(fighter: Combatant) -> String:
 	var held: String = _statuses_text(fighter)
 	if held != "":
 		parts.append(held)
+	return "   ".join(parts)
+
+
+## The quick-slot line: for each slotted power, its key, its name, and its cost or the reason it
+## is refused ("ready in 3s"). "" for a fighter with no powers. Public so a test reads it.
+func slot_text(fighter: Combatant) -> String:
+	var parts: Array[String] = []
+	var slotted: Array[Power] = PowerSlots.powers(fighter)
+	for slot: int in slotted.size():
+		var power: Power = slotted[slot]
+		var label: String = tr(power.name_key)
+		if power.skill != null and power.skill.cost > 0:
+			label = tr(COST_KEY).format({"label": label, "cost": SkillUse.cost_of(fighter, power.skill),
+				"pool": String(power.skill.cost_pool).to_upper()})
+		var reason: String = PowerMenu.reason_key(fighter, power)
+		if reason != "":
+			var args: Dictionary = PowerMenu.reason_args(fighter, BattleCommand.for_power(power))
+			label = tr(UNAVAILABLE_KEY).format({"label": label, "reason": tr(reason).format(args)})
+		parts.append(tr(SLOT_KEY).format({"key": KeyBindings.text_for(CombatActions.SLOTS[slot], false),
+			"label": label}))
 	return "   ".join(parts)
 
 

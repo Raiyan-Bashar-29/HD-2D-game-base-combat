@@ -9,7 +9,11 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.3a, quick slots: keys 1 to 4 (rebindable, no pad default) use
+- **Last finished package:** C6.3b, the HUD's slot line: `CombatHud` shows each quick slot's
+  key, power and cost, or "ready in 3s" counting down, from a new
+  `Events.power_cooldown_changed` that `PowerSet` emits when the whole seconds or turns left
+  change; the F menu redraws when a power is ready again.
+  Before it, C6.3a, quick slots: keys 1 to 4 (rebindable, no pad default) use
   the kit's first four non-passive powers in the field through `PowerSlots` and
   `ActionFighter.press_slot`, with no menu and no ATB.
   Before it, C6.2c, hero powers in the menus: the battle menu and the F
@@ -45,7 +49,7 @@ between them, written in plain words.
     `AUTHORING.md` § The hybrid lists every field.
   - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
     `Actions.add_rebindable`, 5.18.0).
-- **Next package:** **C6.3b**, the HUD's slot line with live cooldowns (`COMBAT.md` board). Then the C6 rows in board order: the mechanisms, then one kit per character.
+- **Next package:** **C6.4**, gauges: `GaugeRule`, `PowerKit.gauges` and the HUD's gauge readout (`COMBAT.md` board). Then the C6 rows in board order: the mechanisms, then one kit per character.
 - **Then, in order** (unless the owner reorders):
   1. **C5.3b–C5.7:** upstream T7.4 (a game settings section) and the combat settings on it,
      accessibility, docs, a playtest, 1.0.0.

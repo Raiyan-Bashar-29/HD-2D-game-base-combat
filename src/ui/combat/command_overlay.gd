@@ -20,7 +20,9 @@ extends MenuScreen
 ##
 ## HERO POWERS (C6.2c) follow the loadout's commands under one Powers row (`PowerMenu`). A power
 ## costs no ATB, so its row shows no bars, and a refused one reads its `PowerUse` reason
-## ("ready in 3s", "not at this hour"), from `PowerMenu.reason_key`.
+## ("ready in 3s", "not at this hour"), from `PowerMenu.reason_key`. When a cooldown runs out
+## while the menu is up, the rows are drawn again so that power can be picked (C6.3b); the
+## seconds counting down in between are on the HUD's slot line, which stays in view.
 ##
 ## OWNS: which menu is up, drawing the rows, and slowing the fight while it is open.
 ## MUST NOT: aim, refuse or resolve a command itself, or leave the fight slowed after it closes.
@@ -92,6 +94,9 @@ func _ready() -> void:
 	# A bar filling while the menu is up makes a greyed row usable, so redraw then (and only
 	# then: a redraw puts focus back on the first row).
 	Events.atb_changed.connect(_on_atb_changed)
+	# Likewise a power coming off cooldown (C6.3b). Not each second of it: that would pull focus
+	# back to the first row every second.
+	Events.power_cooldown_changed.connect(_on_power_cooldown_changed)
 
 
 func _opened() -> void:
@@ -171,4 +176,9 @@ func _back() -> void:
 
 func _on_atb_changed(who: StringName, _value: float, segments: int) -> void:
 	if user != null and who == user.combatant_id and segments != _bars:
+		refresh()
+
+
+func _on_power_cooldown_changed(who: StringName, _power_id: StringName, left: int) -> void:
+	if user != null and who == user.combatant_id and left == 0:
 		refresh()
