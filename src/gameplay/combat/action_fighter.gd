@@ -13,6 +13,7 @@ extends Node
 ##    lock (dialogue, a menu, a climb).
 ## 4. The `MoveTimeline` steps; the hitbox is fitted to each new move, faces where the fighter
 ##    faces, and sweeps while the move is live.
+## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
 ## 5. While busy, the fighter holds the body's `&"action"` lock, so the controller stops
 ##    walking it; the fighter then sets the horizontal velocity itself: the push of a
 ##    knockback, or a move's `travel_speed` (a dodge's roll, a lunge).
@@ -45,9 +46,11 @@ var _stun_left: float = 0.0
 var _push: Vector3 = Vector3.ZERO
 var _roll: Vector3 = Vector3.ZERO
 var _fitted: int = -1
+var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	_rng.randomize()
 	_body = get_parent() as CharacterBody3D
 	for child: Node in get_parent().get_children():
 		if child is Hitbox:
@@ -66,6 +69,9 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed(CombatActions.SWITCH) and not timeline.busy() and not stunned() \
 			and not _held_by_others() and _body != null:
 		FieldParty.switch(_body)
+	for slot: int in CombatActions.SLOTS.size():
+		if Input.is_action_just_pressed(CombatActions.SLOTS[slot]):
+			press_slot(slot)
 	drive(delta, Input.is_action_just_pressed(CombatActions.ATTACK),
 		Input.is_action_just_pressed(CombatActions.DODGE))
 
@@ -94,6 +100,17 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	timeline.step(dt)
 	_aim_hitbox()
 	_move_body()
+
+
+## Uses the power in quick slot `slot` (0 is the first, C6.3a). It works mid-swing, as a menu
+## command does, but not while knocked back or staggered, fallen, or held by something else (a
+## menu, dialogue). False when refused or the slot is empty.
+func press_slot(slot: int) -> bool:
+	var me: Combatant = Combatant.of(get_parent())
+	var vitals: Vitals = Vitals.of(get_parent())
+	if me == null or stunned() or _held_by_others() or (vitals != null and vitals.is_defeated()):
+		return false
+	return PowerSlots.press(me, slot, _rng)
 
 
 ## True while the fighter cannot start moves: knocked back, or under a status counted in

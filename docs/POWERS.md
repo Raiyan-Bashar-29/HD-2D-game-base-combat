@@ -88,8 +88,10 @@ greyed out with its `PowerUse.Reason` in words, and costs shown as `SkillUse.cos
   applies a result. This is how Infinity, Blut Vene, Royal Guard and The Almighty step in, and it
   is the only new hook in the damage path.
 - **Four quick slots.** `combat_power_1` to `combat_power_4`, added through
-  `Actions.add_rebindable` (C5.3a's path), so they are rebindable from day one. The HUD shows
-  each slot's cooldown and every kit gauge.
+  `Actions.add_rebindable` (C5.3a's path), so they are rebindable from day one. Built in C6.3a:
+  the keys are 1 to 4 with no pad default (every pad button is taken), and slot N holds the
+  kit's Nth power that is not a passive, in kit order, the same order as the Powers menu
+  (`PowerSlots`). The HUD shows each slot's cooldown (C6.3b) and every kit gauge (C6.4).
 
 ## The thirteen shared mechanisms
 

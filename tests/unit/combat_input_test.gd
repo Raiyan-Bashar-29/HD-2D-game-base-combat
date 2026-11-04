@@ -1,5 +1,5 @@
 extends TestCase
-## Combat input and layers (C3.1, C4.4, C5.3a): the six action-combat actions exist after
+## Combat input and layers (C3.1, C4.4, C5.3a, C6.3a): every action-combat action exists after
 ## `install()`, on keys and pad buttons no other action already uses, installing twice changes
 ## nothing, the prompt text resolves, and the two new physics layers are named in `project.godot`
 ## exactly where `CombatLayers` says they are.
@@ -15,7 +15,7 @@ extends TestCase
 ## MUST NOT: leave a rebind behind; it ends with `Actions.reset_bindings()`.
 
 func run() -> void:
-	plan(25)
+	plan(26)
 	CombatActions.install()
 	_the_actions()
 	_the_layers()
@@ -27,7 +27,7 @@ func _the_actions() -> void:
 	var all_there: bool = true
 	for action: StringName in CombatActions.ALL:
 		all_there = all_there and InputMap.has_action(action)
-	equal("all six combat actions exist after install", all_there, true)
+	equal("every combat action exists after install", all_there, true)
 	equal("attack is on K", _has_key(CombatActions.ATTACK, KEY_K), true)
 	equal("and on the pad's west button", _has_pad(CombatActions.ATTACK, JOY_BUTTON_X), true)
 	equal("dodge is on the right trigger", _has_axis(CombatActions.DODGE, JOY_AXIS_TRIGGER_RIGHT), true)
@@ -35,6 +35,8 @@ func _the_actions() -> void:
 	equal("and on the pad's extra centre button", _has_pad(CombatActions.COMMAND, JOY_BUTTON_MISC1), true)
 	equal("the party switch is on C (C4.7)", _has_key(CombatActions.SWITCH, KEY_C), true)
 	equal("and on the pad's first paddle", _has_pad(CombatActions.SWITCH, JOY_BUTTON_PADDLE1), true)
+	equal("the first quick slot is on 1 and the last on 4 (C6.3a)",
+		[_has_key(CombatActions.POWER_1, KEY_1), _has_key(CombatActions.POWER_4, KEY_4)], [true, true])
 	equal("no combat key or button is already another action's", _clashes(), [])
 	var before: int = InputMap.action_get_events(CombatActions.ATTACK).size()
 	CombatActions.install()
