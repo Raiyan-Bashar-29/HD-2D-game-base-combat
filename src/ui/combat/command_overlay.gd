@@ -18,6 +18,10 @@ extends MenuScreen
 ## IT DECIDES NOTHING. Who a command lands on, why it is refused, and what it does all come from
 ## `FieldCommands`. This file turns a `FieldCommands.Reason` into the words a player reads.
 ##
+## HERO POWERS (C6.2c) follow the loadout's commands under one Powers row (`PowerMenu`). A power
+## costs no ATB, so its row shows no bars, and a refused one reads its `PowerUse` reason
+## ("ready in 3s", "not at this hour"), from `PowerMenu.reason_key`.
+##
 ## OWNS: which menu is up, drawing the rows, and slowing the fight while it is open.
 ## MUST NOT: aim, refuse or resolve a command itself, or leave the fight slowed after it closes.
 
@@ -65,7 +69,8 @@ static func slow() -> float:
 
 
 ## The words for `reason`, or "" for `Reason.NONE`. The battle menu's keys where the meaning is
-## the same, so a player reads one phrase for one problem in both kinds of fight.
+## the same, so a player reads one phrase for one problem in both kinds of fight. `Reason.POWER`
+## has no words of its own: the row asks `PowerMenu.reason_key` which power reason it is.
 static func reason_key(reason: FieldCommands.Reason) -> String:
 	match reason:
 		FieldCommands.Reason.ATB:
@@ -107,11 +112,11 @@ func _fill() -> void:
 	if meter != null:
 		add_note(CombatHud.atb_text(meter.gauge))
 	if _category != "":
-		for command: BattleCommand in BattleMenu.in_category(commands, _category):
+		for command: BattleCommand in BattleMenu.in_category(_offered(), _category):
 			_command_row(command)
 		add_row(tr(BACK_KEY), _back)
 		return
-	for entry: Variant in BattleMenu.top_level(commands):
+	for entry: Variant in BattleMenu.top_level(_offered()):
 		if entry is BattleCommand:
 			_command_row(entry as BattleCommand)
 		else:
@@ -122,17 +127,28 @@ func _fill() -> void:
 # A greyed row has no action at all.
 func _command_row(command: BattleCommand) -> void:
 	var skill: Skill = command.skill
+	var power: bool = command.kind == BattleCommand.Kind.POWER
 	var text: String = tr(command.label_key) if command.label_key != "" else (tr(skill.name_key) if skill != null else "")
 	if skill != null:
-		text = tr(ATB_COST_KEY).format({"label": text, "bars": skill.atb_cost})
+		# A power has its own cooldown and costs no bars, so it shows none.
+		if not power:
+			text = tr(ATB_COST_KEY).format({"label": text, "bars": skill.atb_cost})
 		if skill.cost > 0 and command.kind != BattleCommand.Kind.ITEM:
-			text = tr(COST_KEY).format({"label": text, "cost": skill.cost, "pool": String(skill.cost_pool).to_upper()})
-	var reason: String = reason_key(FieldCommands.refusal(user, command))
+			text = tr(COST_KEY).format({"label": text, "cost": SkillUse.cost_of(user, skill),
+					"pool": String(skill.cost_pool).to_upper()})
+	var refused: FieldCommands.Reason = FieldCommands.refusal(user, command)
+	var reason: String = reason_key(refused)
+	if refused == FieldCommands.Reason.POWER:
+		reason = PowerMenu.reason_key(user, command.power)
 	if reason != "":
-		var pool: String = String(skill.cost_pool).to_upper() if skill != null else ""
-		text = tr(UNAVAILABLE_KEY).format({"label": text, "reason": tr(reason).format({"pool": pool})})
+		text = tr(UNAVAILABLE_KEY).format({"label": text, "reason": tr(reason).format(PowerMenu.reason_args(user, command))})
 	var button: Button = add_row(text, _choose.bind(command) if reason == "" else Callable())
 	button.disabled = reason != ""
+
+
+# The loadout's commands, then the fighter's hero powers.
+func _offered() -> Array[BattleCommand]:
+	return PowerMenu.with_powers(commands, user)
 
 
 func _choose(command: BattleCommand) -> void:

@@ -7,7 +7,7 @@ extends Node
 ## commands right now, `CommandOverlay` opens. "Can" means all of these:
 ## - the player is a fighter (`ActionHost` fitted them) and is still standing;
 ## - they have an ATB gauge, which only a loadout with `atb` rules gives;
-## - the loadout offers at least one command;
+## - the loadout offers at least one command, or the fighter has a hero power (C6.2c);
 ## - no other screen is open (a conversation, the pause menu, a battle).
 ## Otherwise the press does nothing at all, so a game with no hybrid never sees this menu.
 ##
@@ -40,7 +40,9 @@ func toggle(stack: UiRoot, player: Node) -> bool:
 		return stack.close_top()
 	if not stack.is_gameplay_input_allowed() or not can_open(player):
 		return false
-	return stack.open(CommandOverlay.for_fighter(Combatant.of(player), _loadout(player).commands))
+	var offered: ActionLoadout = _loadout(player)
+	var listed: Array[BattleCommand] = offered.commands if offered != null else []
+	return stack.open(CommandOverlay.for_fighter(Combatant.of(player), listed))
 
 
 ## Whether `player` may open the menu now: a standing fighter with a gauge and something to use.
@@ -50,8 +52,10 @@ func can_open(player: Node) -> bool:
 	var fighter: Combatant = Combatant.of(player)
 	var vitals: Vitals = Vitals.of(player)
 	var offered: ActionLoadout = _loadout(player)
-	return fighter != null and vitals != null and not vitals.is_defeated() \
-			and AtbMeter.of(player) != null and offered != null and not offered.commands.is_empty()
+	if fighter == null or vitals == null or vitals.is_defeated() or AtbMeter.of(player) == null:
+		return false
+	# Something to choose: the loadout's commands, or a hero power (C6.2c).
+	return (offered != null and not offered.commands.is_empty()) or not PowerMenu.commands(fighter).is_empty()
 
 
 ## The set loadout, else the controlled member's (a party switch changes it, C4.7), else the
