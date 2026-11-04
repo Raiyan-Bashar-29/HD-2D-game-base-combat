@@ -13,7 +13,8 @@ extends Node
 ## ITS OWN SAVE SECTION, `Inventory`'s pattern: registered on ready, unregistered on exit, so
 ## `save_system.gd` is untouched. It stores ids, time left and stacks, and rebuilds the modifiers
 ## from `StatusDb` on load, so a sheet is never saved. The three statuses `Weakness` builds in
-## code (broken, pressured, staggered) are found there instead (C5.2). A status whose definition
+## code (broken, pressured, staggered) are found there instead (C5.2), and a hero kit's
+## passives in the sibling `PowerSet` (C6.2b). A status whose definition
 ## has gone is dropped with a warning: without its definition nothing knows what it changed.
 ##
 ## IN PLAIN WORDS: the list of buffs and ailments on one fighter (poison, guard, haste...).
@@ -313,6 +314,8 @@ func _apply_save(data: Dictionary, _from_version: int) -> void:
 		var effect: StatusEffect = StatusDb.status(StringName(key))
 		if effect == null:
 			effect = Weakness.built_in(StringName(key))
+		if effect == null:
+			effect = PowerSet.passive_of(get_parent(), StringName(key))
 		if effect == null:
 			Log.warn(CATEGORY, "'%s' held a status '%s' that no longer exists; dropped" % [owner_id, key])
 			continue

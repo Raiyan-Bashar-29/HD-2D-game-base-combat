@@ -4,11 +4,12 @@ extends RefCounted
 ## player controls.
 ##
 ## IN PLAIN WORDS: the player's body is always the one the camera follows and the keys move.
-## What a switch changes is WHO that body is. A member is four nodes, its `Vitals`,
-## `StatusSet`, `Combatant` and `AtbMeter`. A switch moves those four from the follower's body to
-## the player's, and the leader's four the other way, swaps the two bodies' places, and gives the
-## player's fighter the new member's loadout (moves and commands). So hp, statuses, weaknesses and
-## the gauge all go with the member, and you take over standing where they stood.
+## What a switch changes is WHO that body is. A member is five nodes, its `Vitals`,
+## `StatusSet`, `Combatant`, `AtbMeter` and `PowerSet` (its hero powers, C6.2b). A switch moves
+## those five from the follower's body to the player's, and the leader's five the other way,
+## swaps the two bodies' places, and gives the player's fighter the new member's loadout (moves
+## and commands). So hp, statuses, weaknesses, the gauge and the powers (cooldowns included) all
+## go with the member, and you take over standing where they stood.
 ##
 ## WHO COMES ALONG: the lead loadout's `companions`, minus any `Party` has put in reserve (once
 ## its line-up has been set; before that, everyone). A fallen member cannot be switched to.
@@ -130,7 +131,8 @@ static func _swap(player: Node3D, follower: PartyFollower, fighter: ActionFighte
 static func _identity(body: Node) -> Array[Node]:
 	var out: Array[Node] = []
 	for child: Node in body.get_children():
-		if child is Vitals or child is StatusSet or child is Combatant or child is AtbMeter:
+		if child is Vitals or child is StatusSet or child is Combatant or child is AtbMeter \
+				or child is PowerSet:
 			out.append(child)
 	return out
 

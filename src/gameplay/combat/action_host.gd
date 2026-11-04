@@ -68,8 +68,9 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	return fighter
 
 
-## Adds who `loadout`'s fighter is under `body`: `Vitals`, `StatusSet`, `Combatant`, an `AtbMeter`
-## when the loadout has ATB rules, and a `Hurtbox` with a shape. The player's body gets this from
+## Adds who `loadout`'s fighter is under `body`: `Vitals`, `StatusSet`, `Combatant`, a `PowerSet`
+## wearing the fighter's `power_kit` when it has one (C6.2b), an `AtbMeter` when the loadout has
+## ATB rules, and a `Hurtbox` with a shape. The player's body gets this from
 ## `equip`, and a party follower's from itself (C4.7). Every node but the hurtbox is the member
 ## and moves with them on a party switch (`FieldParty`). Returns the combatant.
 static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
@@ -86,6 +87,11 @@ static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 	# The field counts in seconds, so a break here is a stagger (C4.6).
 	combatant.real_time = true
 	body.add_child(combatant)
+	# Hero powers (C6.2b): after the Combatant, whose sheet the kit's stat bonuses go on.
+	if def.power_kit != null:
+		var powers := PowerSet.new()
+		body.add_child(powers)
+		powers.equip(def.power_kit)
 	# The hybrid's ATB gauge (C4.2), only when the loadout asks for one.
 	if loadout.atb != null:
 		var meter := AtbMeter.new()

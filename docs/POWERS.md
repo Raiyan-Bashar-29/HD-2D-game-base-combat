@@ -50,7 +50,11 @@ that read it. C6.1b built the gameplay classes; their executors have only `use`,
 `end` so far, and each later row adds the hook its seam needs (`intercept_incoming` with C6.6).
 C6.2a put kits into a turn-based battle. A fighter's kit is `CombatantDef.power_kit`, the one
 kit field for both formulas (the field reads its loadout's `fighter`). In battle a cooldown counts
-down at the start of each of the holder's turns, beside its statuses, asleep or not. Menus still print a skill's plain `cost`, not
+down at the start of each of the holder's turns, beside its statuses, asleep or not. C6.2b put
+kits into the field: `ActionHost.fit_identity` equips the fighter's kit on the player and each
+follower, a party switch carries the `PowerSet` (cooldowns and running mechanisms) with the
+member, and `FieldCommands` uses a POWER with no ATB cost (a power has its cooldown). A kit's
+passive is held again after a load or a new game, never twice. Menus still print a skill's plain `cost`, not
 `SkillUse.cost_of`; C6.3 shows the real one.
 
 ### Content (`src/content/combat/powers/`), data shapes only

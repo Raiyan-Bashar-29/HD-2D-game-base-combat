@@ -13,10 +13,18 @@ extends Node
 ##
 ## TIME, IN BOTH FORMULAS. A field fighter (`Combatant.real_time`) counts down in seconds of FIGHT
 ## time, every physics frame, so a fight slowed by `CombatClock` cools slowly. A battle fighter
-## counts in turns: `Battle` calls `tick_turn` at its turn's end (wired in C6.2).
+## counts in turns: `Battle` calls `tick_turn` at the START of the holder's turn (C6.2a), so a
+## sleeping fighter's cooldowns still count.
 ##
-## NOT SAVED: the kit comes from the loadout or the definition each time a fighter is built
-## (C6.2), and a cooldown is a moment's state, like the ATB gauge.
+## NOT SAVED: the kit comes from the fighter's definition each time a fighter is built (C6.2a in
+## a battle, C6.2b in the field), and a cooldown is a moment's state, like the ATB gauge. The
+## passives are statuses, and a load or a new game clears the `StatusSet`, which cannot find a
+## status that lives only in a kit. So after either one the set puts its passives back
+## (`_hold_passives`), never twice.
+##
+## A PARTY SWITCH MOVES THIS NODE to another body (`FieldParty`), and moving a node makes it
+## leave the tree and enter again. So its mechanisms end only when it is freed, not when it
+## leaves the tree.
 ##
 ## OWNS: which kit is equipped, its cooldowns, and its running executors.
 ## MUST NOT: decide whether a power may be used, or use one. `PowerUse` does both.
@@ -38,16 +46,45 @@ static func of(who: Node) -> PowerSet:
 	return null
 
 
+## The passive `status_id` of the kit worn under `who`, or null. A passive lives only in its kit
+## file, so `StatusSet` finds it here when it loads a save (C6.2b).
+static func passive_of(who: Node, status_id: StringName) -> StatusEffect:
+	var powers: PowerSet = of(who)
+	if powers == null or powers.kit == null:
+		return null
+	for passive: StatusEffect in powers.kit.passives:
+		if passive != null and passive.id == status_id:
+			return passive
+	return null
+
+
 func _physics_process(delta: float) -> void:
 	var fighter: Combatant = Combatant.of(get_parent())
 	if fighter != null and fighter.real_time:
 		tick_seconds(CombatClock.scaled(delta))
 
 
+# Connected each time it enters, and after its `StatusSet` (an earlier sibling, moved first on a
+# switch), so on a new game the set has already cleared when the passives go back on.
+func _enter_tree() -> void:
+	if not Events.game_started.is_connected(_hold_passives):
+		Events.game_started.connect(_hold_passives)
+	if not Events.game_loaded.is_connected(_on_game_loaded):
+		Events.game_loaded.connect(_on_game_loaded)
+
+
 func _exit_tree() -> void:
-	# A body leaving the world stops its mechanisms; its kit stays for when it comes back.
-	for executor: PowerExecutor in _running.values():
-		executor.end()
+	if Events.game_started.is_connected(_hold_passives):
+		Events.game_started.disconnect(_hold_passives)
+	if Events.game_loaded.is_connected(_on_game_loaded):
+		Events.game_loaded.disconnect(_on_game_loaded)
+
+
+func _notification(what: int) -> void:
+	# Freed: its mechanisms stop. Not on leaving the tree, which a party switch does.
+	if what == NOTIFICATION_PREDELETE:
+		for executor: PowerExecutor in _running.values():
+			executor.end()
 
 
 ## Puts `new_kit` on, taking off whatever kit was on first. Null just takes the old one off.
@@ -62,11 +99,7 @@ func equip(new_kit: PowerKit) -> void:
 			# Re-sourced to the kit's id, so taking the kit off removes exactly these.
 			if bonus != null:
 				sheet.add(StatModifier.of(bonus.stat, bonus.op, bonus.value, kit.kit_id))
-	var statuses: StatusSet = StatusSet.of(get_parent())
-	if statuses != null:
-		for passive: StatusEffect in kit.passives:
-			if passive != null and statuses.stacks(passive.id) == 0 and statuses.apply(passive):
-				_passives.append(passive.id)
+	_hold_passives()
 	for power: Power in kit.powers:
 		if power == null or power.mechanism == null:
 			continue
@@ -138,6 +171,25 @@ func _count_down(amount: float) -> void:
 			_cooling[power_id] = left
 	for running: PowerExecutor in _running.values():
 		running.tick(amount)
+
+
+# Puts each of the kit's passives on, unless it is already held (a save that kept it), and
+# remembers it so `unequip` takes it off again.
+func _hold_passives() -> void:
+	var statuses: StatusSet = StatusSet.of(get_parent())
+	if kit == null or statuses == null:
+		return
+	for passive: StatusEffect in kit.passives:
+		if passive == null:
+			continue
+		if statuses.stacks(passive.id) == 0:
+			statuses.apply(passive)
+		if statuses.stacks(passive.id) > 0 and not _passives.has(passive.id):
+			_passives.append(passive.id)
+
+
+func _on_game_loaded(_slot: int) -> void:
+	_hold_passives()
 
 
 ## The fighter's sheet, which its `Vitals` and `StatusSet` share.
