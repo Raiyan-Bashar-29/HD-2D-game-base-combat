@@ -2897,3 +2897,31 @@ fighter's gates removed, the menu-lock assertion failed. Then the full ladder, t
 checkers and the stripped run, and a real-game probe pressing `combat_power_1`.
 
 **Unblocks.** C6.3b, the slot line on the HUD.
+
+## 2026-11-04 — C6.3b · The HUD's slot line
+
+**Did.** A new signal, `Events.power_cooldown_changed(who, power_id, left)`. `PowerSet` emits it
+when a cooldown starts, when it ticks past a whole second (field) or turn (battle), when it ends
+(left 0), and when the kit is taken off while cooling. `CombatHud` gains a second line for a
+fighter with powers, `slot_text`: for each quick slot, its key, its power's name, its cost as the
+fighter pays it, and the refusal words from `PowerMenu` ("ready in 3s"). The F menu draws its rows
+again when a power comes off cooldown. One CSV row, `ui.combat_hud.slot`. Combat 0.56.0.
+
+**Why.** C6.3a put powers on keys, but nothing showed which key held what or when it was ready.
+And C6.2c left the F menu with a greyed power that stayed greyed after its cooldown ran out.
+
+**Decisions.** Whole numbers only, so the HUD redraws about once a second, not every frame, as
+`atb_changed` does. The F menu redraws only when a power is ready again, because a redraw puts
+focus back on the first row; the HUD line, which stays in view behind the menu, counts the
+seconds. The HUD line sits between the fighter's line and the target's, so the panel grew to
+three lines (`offset_top` -132).
+
+**Found on the way.** The first version emitted before storing the new value, so a listener
+reading `cooldown_left` saw the old one and the HUD ran a tick behind. It now emits after.
+
+**Verified.** Red first: the emit-before-store version failed the three HUD assertions and the
+menu one; with the overlay's connection removed, the menu assertion failed. Then the ladder, the
+seven checkers, the stripped run, a real-game probe and a windowed capture of the slot line.
+
+**Unblocks.** C6.4, gauges and their HUD readout.
+

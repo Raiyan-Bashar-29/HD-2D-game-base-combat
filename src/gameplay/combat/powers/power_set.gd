@@ -7,7 +7,9 @@ extends Node
 ## - its `stat_bonuses` sit on the fighter's sheet, under the kit's id as their source;
 ## - its `passives` are held as statuses (give them duration 0, so they never run out);
 ## - each power with a mechanism has its own running `PowerExecutor`;
-## - each power used counts down its cooldown here.
+## - each power used counts down its cooldown here, and says so on
+##   `Events.power_cooldown_changed` each time the whole number left changes (C6.3b), so the
+##   HUD and the command menu can show "ready in 3s" without asking every frame.
 ## `unequip` takes all of it off again, and nothing else: another source's modifiers and
 ## statuses stay.
 ##
@@ -125,7 +127,11 @@ func unequip() -> void:
 		executor.end()
 	_passives.clear()
 	_running.clear()
+	# Every cooldown goes with the kit, so each one is announced as over, once it is gone.
+	var cooled: Dictionary[StringName, float] = _cooling.duplicate()
 	_cooling.clear()
+	for power_id: StringName in cooled:
+		_announce(power_id, cooled[power_id], 0.0)
 	kit = null
 
 
@@ -142,7 +148,9 @@ func cooldown_left(power_id: StringName) -> float:
 ## Starts `power`'s cooldown. `PowerUse.use` calls it after a use.
 func start_cooldown(power: Power) -> void:
 	if power.cooldown > 0.0:
+		var before: float = cooldown_left(power.power_id)
 		_cooling[power.power_id] = power.cooldown
+		_announce(power.power_id, before, power.cooldown)
 
 
 ## The running executor of `power_id`'s mechanism, or null.
@@ -164,11 +172,13 @@ func _count_down(amount: float) -> void:
 	if amount <= 0.0:
 		return
 	for power_id: StringName in _cooling.keys():
-		var left: float = _cooling[power_id] - amount
+		var before: float = _cooling[power_id]
+		var left: float = before - amount
 		if left <= 0.0:
 			_cooling.erase(power_id)
 		else:
 			_cooling[power_id] = left
+		_announce(power_id, before, maxf(left, 0.0))
 	for running: PowerExecutor in _running.values():
 		running.tick(amount)
 
@@ -186,6 +196,16 @@ func _hold_passives() -> void:
 			statuses.apply(passive)
 		if statuses.stacks(passive.id) > 0 and not _passives.has(passive.id):
 			_passives.append(passive.id)
+
+
+# Called after the cooldown has changed, so a listener reading `cooldown_left` sees the new value.
+# Tells everyone when the whole seconds or turns left on `power_id` change, from `before` to
+# `after`; nothing when only a fraction of one passed.
+func _announce(power_id: StringName, before: float, after: float) -> void:
+	if ceili(before) == ceili(after):
+		return
+	var fighter: Combatant = Combatant.of(get_parent())
+	Events.power_cooldown_changed.emit(fighter.combatant_id if fighter != null else &"", power_id, ceili(after))
 
 
 func _on_game_loaded(_slot: int) -> void:

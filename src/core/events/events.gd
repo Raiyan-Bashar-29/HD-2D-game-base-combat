@@ -317,6 +317,10 @@ signal field_enemy_defeated(who: StringName, experience: int, loot: Array[String
 ## `who`'s ATB gauge now holds `value` points, `segments` whole bars of them. Emitted by
 ## `AtbMeter` (C4.2) when a whole point or a whole bar changes, not every frame.
 signal atb_changed(who: StringName, value: float, segments: int)
+## `who`'s hero power `power_id` now has `left` whole seconds (in the field) or turns (in a
+## battle) of cooldown before it can be used again; 0 means it is ready. Emitted by `PowerSet`
+## (C6.3b) only when that whole number changes, not every frame, so a HUD can show it live.
+signal power_cooldown_changed(who: StringName, power_id: StringName, left: int)
 ## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
 signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,
