@@ -2925,3 +2925,27 @@ seven checkers, the stripped run, a real-game probe and a windowed capture of th
 
 **Unblocks.** C6.4, gauges and their HUD readout.
 
+## 2026-11-04 — C6.0b · Two more characters: Isliid and Roland
+
+**Did.** Documents only. The owner asked for two more characters for the main character: Emperor
+Isliid, "Beyond Fate" and Human Pinnacle (Grand Summoners), and Roland's forms (The Last
+Cloudia). `POWERS.md` gains a section for each, a fourteenth mechanism (M14 `refresh`: cut the
+user's or allies' cooldowns by a fraction, and a `cooldown_rate` stat), and four seams, each put
+in the row that builds the part it touches. Board rows C6.24 (Isliid) and C6.25 (Roland); C6.4,
+C6.5, C6.6 and C6.12 widened. Combat 0.56.1.
+
+**Decisions.** Each character is ONE kit, and its forms are M5 forms in one exclusive group, the
+way Dante's styles are; a power that belongs to one form says so with `requires_statuses`, and
+C6.5 now makes the quick slots skip a power whose form is not held, so each form gets its own
+four. "Beyond Fate" is not a unit name in the game; the closest, and the one used, is Isliid,
+Defier of Fate. Isliid's sword is picked by party slot in the game; a hero has no slot, so the
+player cycles it, or it moves on after each True Arts. Roland's "one sword equipped" becomes the
+Heroic Lord form, since this base has no dual-wield. Damage caps are dropped: nothing here caps
+damage.
+
+**Verified.** The research ran through web search; the wikis and `grandsummoners.info` are outside
+the network allow-list, so `POWERS.md` § Sources says so. Ascended Roland's kit was not found and
+is marked as such. The suite and the docs gates ran green (version 0.56.1 matches `COMBAT.md`).
+
+**Unblocks.** C6.24 and C6.25, after their mechanisms.
+

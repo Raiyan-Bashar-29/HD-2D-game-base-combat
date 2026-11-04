@@ -8,7 +8,13 @@
 > "The Almighty" and his other powers (Bleach), the Barnabas and Odin Eikon (Final Fantasy XVI),
 > Vergil and Dante (Devil May Cry) … the list will grow, so organize it so we can add more later.
 
-**Contents:** the rules in one screen · Renaming · the framework · the thirteen shared mechanisms
+**C6.0b (2026-11-04) added two more,** at the owner's request: "Emperor Isliid, Beyond Fate and
+Human Pinnacle (Grand Summoners), and Roland's many forms (The Last Cloudia)". Both are
+characters with FORMS, so each is one kit whose forms are M5 `form`s in one exclusive group.
+They needed one new mechanism (M14 `refresh`) and four small seams, each placed in the row that
+builds the part it touches.
+
+**Contents:** the rules in one screen · Renaming · the framework · the fourteen shared mechanisms
 · one section per character · the build order (board rows) · Sources.
 
 ## The rules in one screen
@@ -20,7 +26,7 @@
 2. **Every power is built from parts that already exist.** A `Power` wraps a `Skill` (cost,
    power, element, statuses, effects: C2.3–C2.17), an optional `ActionMove` (real-time timing and
    hitbox: C3.2), and an optional `PowerMechanism` for the one thing a skill cannot already do.
-3. **A mechanism is written once and shared.** Thirteen mechanisms cover all nine characters.
+3. **A mechanism is written once and shared.** Fourteen mechanisms cover all eleven characters.
    For example, the barrage covers Gate of Babylon, Heilig Pfeil, Summoned Swords, Narukami,
    Gunslinger and Barnabas's blades. A mechanism is never named after a character.
 4. **Every power works in all three formulas.** Turn-based, action and hybrid each get a stated
@@ -94,7 +100,7 @@ greyed out with its `PowerUse.Reason` in words, and costs shown as `SkillUse.cos
   (`PowerSlots`). The HUD's slot line shows each slot's key, power and cost, or its cooldown
   counting down from `Events.power_cooldown_changed` (built in C6.3b); every kit gauge follows in C6.4.
 
-## The thirteen shared mechanisms
+## The fourteen shared mechanisms
 
 **Battle** means the turn-based formula (`Battle`). **Field** means the action and hybrid
 formulas (`ActionFighter`, `CombatClock`).
@@ -114,6 +120,7 @@ formulas (`ActionFighter`, `CombatClock`).
 | M11 | `sacrifice` | Take from your own side to grow | Takes `fraction` of each ally's HP (and optionally their buffs) and gives it to the user, plus a status | The same, within `radius` | Auswählen |
 | M12 | `grant` | Give a power to an ally | Applies a status, or equips a power, on an ally for `turns` | The same, in seconds | The Almighty's gift of a Schrift, Lelouch's tactics |
 | M13 | `counter_stance` | Hold a stance and answer a hit | A status with the COUNTER reaction (C2.15) at chance 1 for one turn | Hold to keep the stance (pool upkeep); a hit received becomes a counter move, and a perfect press is a parry | Gungnir, Royal Guard's Release timing, Arima's counters |
+| M14 | `refresh` | Hurry your side's powers along (C6.0b) | Cuts each remaining cooldown of the user (`scope` SELF) or every ally (ALLIES) by `fraction` (0.5 halves it), rounded down in turns; optionally adds `pool_gain` to a named pool | The same in seconds, and an optional `speed` status (a `cooldown_rate` stat, read by `PowerSet`'s count-down) for `duration` s | Isliid's Super Arts (halves her cooldowns), Conquering Dark Bringer's ally speed-up |
 
 **No mechanism needed** (framework or existing parts alone):
 
@@ -126,6 +133,19 @@ formulas (`ActionFighter`, `CombatClock`).
 - Black Flash: a `TimedWindow` with a perfect band;
 - Six Eyes' efficiency: a passive with the new stat `cost_mult_<pool>`, read by `SkillUse.pay`
   (one line in C6.1).
+- damage against a kind of foe (Isliid's swords against gods, humans or demons): `PowerScaling`
+  `TARGET_HAS_TAG` on the power;
+- a power that only works in one form: `requires_statuses [<form status>]`. **C6.5 makes the quick
+  slots skip a power whose required form is not held, so each form has its own four slots.**
+
+**Small seams the C6.0b characters add** (each is built inside the row named, not a new row):
+
+| Seam | What | Built in |
+|---|---|---|
+| `GaugeRule.blocked_by_tags` | A rule that fills only while the holder has no status with these tags (Human Pinnacle's "+7/s while free of ailments") | C6.4 |
+| `FormMechanism.advance_after` | A `cycle` form moves to the next entry after the named power is used (Isliid's fourth-slot sword rotation) | C6.5 |
+| `knockback_taken` stat | Read by the fighter on `knockback_requested`; −1 means no push and no flinch ("Will Not Flinch", Roland's super armor) | C6.6 |
+| `PowerScaling.Source.ALLIES_STANDING` | The fraction of the user's party still standing (Heroic Lord Roland's hits grow with living allies) | C6.25 |
 
 ## The characters
 
@@ -367,6 +387,92 @@ boss a counter, and a later story beat a lever.
 
 **Gauges.** `devil`, `sin`, `royal`, `style`.
 
+### Isliid (Grand Summoners) · `kit/isliid`
+
+**Source.** Isliid is the Emperor, a Light-element swordsman who carries three swords and has
+several units in the game. The owner named three of them:
+- **Emperor Isliid:** his three swords, **Sky Light**, **Terra Master** and **Dark Bringer**, are
+  modes. Which sword he holds depends on his party slot, and in the fourth slot he cycles through
+  them with every Arts. His True Arts (67000% Light) adds a bonus by sword: Sky Light raises
+  allies' accuracy 30% and the True Arts' damage against Gods by 150%; Terra Master lowers the
+  damage allies take by 20% and raises it against Humans; Dark Bringer raises allies' attack 50%
+  and raises it against Demons.
+- **"Beyond Fate":** the game's unit is **Isliid, Defier of Fate** (shown on the Isliid Ascendant
+  page). Skill **Eisen Walzer**: 2000% Light, +20 Arts gauge, **Will Not Flinch** for 7 s. Arts
+  **Weiss Furcht Drei**: 15000% Light, with the sword chosen as above. The Ascendant version's
+  Arts, **Conquering Dark Bringer**, raises damage against Demons 180% and every ally's physical
+  equipment cooldown speed 30% for 25 s.
+- **Isliid, Human Pinnacle:** a support. His True Arts raises every ally's Arts gauge for 8–9 s
+  and cuts enemies' damage resistance by 120% against Humans, Gods and Demons. His Super Arts
+  halves his own remaining equipment cooldowns. His own gauge fills by 7 per second while no
+  status ailment holds him.
+- (The game also has Young Isliid, Awoken Emperor Isliid and Last Miracle Isliid. The owner did
+  not name them; Last Miracle's True Arts, enemy damage resistance −50% and own super-critical
+  rate +50% for 50 s, is the obvious fourth form if wanted.)
+
+**The kit.** Three forms in the group `isliid_form`, a sword cycle in the group `sword`, and the
+Arts gauge that every Arts and True Arts spends. In battle a "form" is a toggle status (C2.16);
+in the field it also swaps the attack chain.
+
+| Power | Mechanism and parts | Cost |
+|---|---|---|
+| Emperor (form) | M5 `form` (group `isliid_form`), the default: a three-sword attack chain | free switch |
+| Defier of Fate (form) | M5 `form`: the Eisen Walzer chain, +10% critical rate | free switch |
+| Human Pinnacle (form) | M5 `form`: support, `cost_mult_arts` −0.2; Arts gauge +7/s while free of ailments (`GaugeRule.blocked_by_tags [ailment]`) | free switch |
+| Sky Light / Terra Master / Dark Bringer | M5 `form` `cycle` (group `sword`), each holding a status (`sky_light`, `terra_master`, `dark_bringer`); `advance_after` the True Arts, so each True Arts moves to the next sword | free |
+| Eisen Walzer | A Light skill, 3 hits, +20 `arts`; applies **Will Not Flinch** to the user (`knockback_taken` −1, `poise_taken` −1) for 7 s or 1 turn; `requires_statuses [defier_of_fate]` | 6 MP, 13 s / 3 turns |
+| Weiss Furcht Drei (Arts) | A heavy Light skill; `PowerScaling TARGET_HAS_TAG` divine, human or demon by the held sword (three data entries, each `requires_statuses` its sword) | 100 `arts` |
+| True Arts: Sky Light | M2 `finisher`: a huge Light hit, ×2.5 against `divine`; allies' accuracy +30% for 15 s / 3 turns | 100 `true_arts` |
+| True Arts: Terra Master | as above, ×2.5 against `human`; allies take 20% less damage | 100 `true_arts` |
+| True Arts: Dark Bringer | as above, ×2.5 against `demon`; allies' attack +50% | 100 `true_arts` |
+| Conquering Dark Bringer | A Light skill ×2.8 against `demon` (`requires_statuses [dark_bringer, defier_of_fate]`) plus M14 `refresh` ALLIES with a `cooldown_rate` +30% status for 25 s | 100 `arts` |
+| Pinnacle True Arts | M12 `grant` to all allies: a status with `regen_arts` +10 (per turn in battle, C2.16; per second in the field, through C6.4's gauge tick) for 9 s (3 turns); every foe gets `damage_taken` +1.2 for 9 s; `requires_statuses [human_pinnacle]` | 100 `true_arts` |
+| Super Arts | M14 `refresh` SELF, `fraction` 0.5 (halves every remaining cooldown); `requires_statuses [human_pinnacle]` | 100 `super_arts`, 60 s |
+
+**Gauges.**
+- `arts` (0–100): +5/s, +4 per hit dealt.
+- `true_arts` (0–100): +1 per 3 `arts` spent (a `GaugeRule` on spending).
+- `super_arts` (0–100): +2 per hit dealt, Human Pinnacle only.
+
+**Simplified on purpose.** The game picks the sword by party slot; here the player cycles it (or
+it rotates after each True Arts), because a hero has no fixed slot. "Against Humans, Gods and
+Demons" filters by the foe's tags; an untagged foe takes the plain hit.
+
+### Roland (The Last Cloudia) · `kit/roland`
+
+**Source.** Roland is a Light-element swordsman with several units:
+- **Roland** (Descent of Heroes): a Light bruiser and healer, with a party-wide Charisma and
+  super armor (he does not flinch).
+- **Ascended Roland:** an upgraded version that tier lists recommend; the sources found give no
+  details of its kit, so it is played as the base form, stronger.
+- **Heroic Lord Roland** (third anniversary, April 2022): his trait **Heroic Lord** raises his
+  Light damage and damage cap. Skill **Star Geyser** closes on a foe at once and launches it with
+  a combo. Special **Glorious Finale** is a powerful Light combo on every foe. **Trance** boosts
+  his skill damage and damage cap, more for more MP spent (at 500 MP or more: damage +100%). With
+  only one sword equipped, a chance to add skill hits, by the number of allies standing.
+
+**The kit.** Three forms in the group `roland_form`, and the limit gauge for the Special.
+
+| Power | Mechanism and parts | Cost |
+|---|---|---|
+| Roland (form) | M5 `form`, the default: a sword chain; super armor (`knockback_taken` −1) | free switch |
+| Ascended (form) | M5 `form`: the base form with attack and defence +15% | free switch |
+| Heroic Lord (form) | M5 `form`: attack +30% (the source raises Light damage; every Roland power is Light, so attack is the same thing with no new stat); Star Geyser, Trance and Glorious Finale need it | free switch |
+| Charisma | M4 `domain` around the user, `affects_allies`, radius 8 m: allies' attack and defence +10% while inside; no effect on foes; Roland and Ascended forms | 8 MP, 30 s |
+| Healing Light | A heal skill on ALL allies | 10 MP, 10 s |
+| Star Geyser | M9 `blink` TARGET, then a launching move (`knockback` UP, 4 hits); `PowerScaling ALLIES_STANDING` adds up to +2 hits; Heroic Lord only | 8 MP, 6 s |
+| Trance | M5 `form`, `consumes` all MP (at least 100): skill damage +100%; `PowerScaling POOL_FRACTION mp` on DURATION (5 s to 20 s, 1 to 4 turns); Heroic Lord only | all MP |
+| Glorious Finale | M2 `finisher`, scope ALL, 8 Light hits; Heroic Lord only | 100 `limit` |
+
+**Gauge.** `limit` (0–100): +3 per hit dealt, +5 per hit taken (C2.16's `fill_on_hit_limit`
+already gives the second; the first is a `GaugeRule`).
+
+**Simplified on purpose.** "Only one sword equipped" becomes the Heroic Lord form itself: this
+base has no dual-wield, so the form is the one sword. Trance's strength is fixed and its length
+scales with the MP spent, because `PowerScaling` already scales a duration; scaling a status's
+strength would be a new `Affects` value, which can come later if the tuning needs it. The damage
+cap has no meaning here, because this base caps no damage.
+
 ## Build order (the board rows)
 
 Each row is one package of about 8 files or fewer, red first, with the full ladder. The details
@@ -385,14 +491,16 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | C6.9 | M4 `domain` (including clash and pull) | C6.6 |
 | C6.10 | M7 `foresight` | C6.6 |
 | C6.11 | M8 `command` and M12 `grant` | C6.2 |
-| C6.12 | M9 `blink` and M11 `sacrifice` | C6.2 |
+| C6.12 | M9 `blink`, M11 `sacrifice` and M14 `refresh` (with the `cooldown_rate` stat) | C6.2 |
 | C6.13 | M10 `clone` | C6.5 |
 | C6.14–C6.22 | One kit each: Gojo, Gilgamesh, Escanor, Arima, Lelouch, Yhwach, Odin and Barnabas (with the boss), Vergil, Dante. Each is data, CSV rows, a content test case, a probe and a windowed capture | their mechanisms |
 | C6.23 | Choosing a kit: a debug command `power_kit <id>`, a loadout default, and `AUTHORING.md` § Powers with "add a new character in five steps" | C6.2 |
+| C6.24 | Kit: Isliid (C6.0b): three forms, the sword cycle, `arts`, `true_arts` and `super_arts` | C6.4, C6.5, C6.6, C6.8, C6.11, C6.12 |
+| C6.25 | Kit: Roland (C6.0b): three forms, Charisma, Trance, Glorious Finale; `PowerScaling.Source.ALLIES_STANDING` | C6.4, C6.5, C6.8, C6.9, C6.12 |
 
 ### Adding a character later, in five steps (C6.23 writes the full how-to)
 
-1. Read the mechanism table. Most powers are a `Skill` plus one of M1–M13.
+1. Read the mechanism table. Most powers are a `Skill` plus one of M1–M14.
 2. Write `data/powers/<kit>.tres` with its powers, passives, gauges and stat bonuses.
 3. Add the `power.<kit>.*` rows to `strings.csv`.
 4. Only if no mechanism fits: add one content class and one executor, plus one line in
@@ -452,3 +560,21 @@ so.
 - [Devil May Cry wiki: Perfect Devil Trigger](https://devilmaycry.fandom.com/wiki/Perfect_Devil_Trigger)
 - [BiliGame DMC5 wiki: Sin Devil Trigger](https://wiki.biligame.com/dmc5/Sin_Devil_Trigger)
 - [GameSpot: Dante guide](https://www.gamespot.com/articles/devil-may-cry-5-dante-guide-tips-to-get-sss-rank-a/1100-6465533/)
+
+**Isliid (C6.0b, 2026-11-04).** The wikis and `grandsummoners.info` are outside the allow-list,
+so these came from search results quoting them.
+- [Grand Summoners Wiki: Emperor Isliid](https://grandsummoners.fandom.com/wiki/Emperor_Isliid)
+- [Grand Summoners Wiki: Awoken Emperor Isliid](https://grandsummoners.fandom.com/wiki/Awoken_Emperor_Isliid)
+- [Grand Summoners Wiki: Isliid Ascendant (Defier of Fate)](https://grandsummoners.fandom.com/wiki/Isliid_Ascendant)
+- [grandsummoners.info: Emperor Isliid](https://www.grandsummoners.info/units/Emperor%20Isliid)
+- [grandsummoners.info: Isliid, Human Pinnacle](https://www.grandsummoners.info/units/Isliid,%20Human%20Pinnacle)
+- [grandsummoners.info: Last Miracle Isliid](https://www.grandsummoners.info/units/Last%20Miracle%20Isliid)
+- [Pocket Gamer: Grand Summoners tier list](https://www.pocketgamer.com/grand-summoners/tier-list)
+
+**Roland (C6.0b).**
+- [Last Cloudia Wiki: Roland](https://lastcloudia.fandom.com/wiki/Roland)
+- [Last Cloudia Wiki: Heroic Lord Roland](https://lastcloudia.fandom.com/wiki/Heroic_Lord_Roland)
+- [Last Cloudia: third anniversary and Heroic Lord Roland](https://lastcloudia.com/en/post/2927/)
+- [Last Cloudia on X: Heroic Lord Roland](https://twitter.com/lastcloudiaen/status/1514120620979924992)
+- [Driffle: Last Cloudia tier list (Ascended Roland)](https://driffle.com/blog/last-cloudia-tier-list/)
+
