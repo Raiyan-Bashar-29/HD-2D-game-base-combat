@@ -2872,3 +2872,28 @@ seven checkers, the stripped run and a windowed capture of the Powers submenu (s
 **Gaps.** The overlay redraws only when an ATB bar fills, so a field "ready in Ns" can go stale
 while it is open (C6.3's HUD shows live cooldowns). No kit is in the demo yet, so only a probe
 shows the row (the first character kit row adds one).
+
+## 2026-11-04 — C6.3a · Quick slots
+
+**Did.** Four rebindable actions, `combat_power_1` to `combat_power_4`, on keys 1 to 4, and a
+new static `PowerSlots` (`src/gameplay/combat/powers/`): slot N holds the kit's Nth power that is
+not a passive, and `press` uses it through `FieldCommands`. `ActionFighter` reads the keys and
+calls `press_slot`, which refuses while the fighter is knocked back, staggered, fallen or held by
+a menu or dialogue. Four `ui.action.combat_power_N` label rows. Combat 0.55.0.
+
+**Why.** C6.2 made powers usable only through a menu. An action game wants them on a key.
+
+**Decisions.** Slot order is kit order, the order the Powers menu already shows, so nothing new
+is saved and the player sees one order everywhere. There is no pad default because every
+standard pad button is taken and the D-pad walks; the controls screen binds them. A press works
+mid-swing, as a menu command does.
+
+**Split.** The C6.3 row was about 11 files, so it is C6.3a (this) and C6.3b (a live cooldown
+signal, the HUD's slot line, the overlay redrawing on it). The HUD's gauge readout moves to
+C6.4, where `GaugeRule` arrives.
+
+**Verified.** Red first: with `press` stubbed to false, five slot assertions failed; with the
+fighter's gates removed, the menu-lock assertion failed. Then the full ladder, the seven
+checkers and the stripped run, and a real-game probe pressing `combat_power_1`.
+
+**Unblocks.** C6.3b, the slot line on the HUD.

@@ -1370,7 +1370,9 @@ hall's `Actors`.
 
 **Controls:** attack is K (pad X), dodge is Space (pad right trigger), lock on is Q (pad left
 trigger), the next target is R (pad R3), and the hybrid's command menu is F (the pad's extra
-centre button, `MISC1`; it opens only for a loadout with `atb` rules and `commands`).
+centre button, `MISC1`; it opens only for a loadout with `atb` rules and `commands`), and the
+four power quick slots are 1 to 4 (no pad default; slot N is the kit's Nth non-passive power,
+C6.3a).
 `combat_actions.gd` installs them at boot, and since C5.3a the player can rebind every one of
 them from Options -> Controls. Each row's label is `ui.action.<action id>` in `strings.csv`
 (`ui.action.combat_attack` and so on); a game that adds a combat action adds its label row too,

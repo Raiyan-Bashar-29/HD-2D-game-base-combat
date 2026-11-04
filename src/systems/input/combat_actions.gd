@@ -1,7 +1,7 @@
 class_name CombatActions
 extends RefCounted
 ## The action-combat inputs (C3.1): attack, dodge, lock on, cycle the locked target, and open the
-## hybrid's command menu (C4.4).
+## hybrid's command menu (C4.4), switch party member (C4.7), and the four power quick slots (C6.3a).
 ##
 ## IN PLAIN WORDS: upstream's `Actions` autoload defines every other input at boot, and this
 ## fork may not edit it (ADR-0008), so the combat actions live here and `ActionHost` calls
@@ -21,7 +21,11 @@ extends RefCounted
 ## (`JOY_BUTTON_PADDLE1`), for the same reason. A player whose pad lacks either button moves it
 ## on the controls screen.
 ##
-## THE PLAYER CAN REBIND ALL SIX (C5.3a). They are added through upstream's
+## THE QUICK SLOTS HAVE NO PAD BUTTON BY DEFAULT (C6.3a). The four power keys are 1 to 4 on the
+## keyboard. Every standard pad button is taken (above) and the D-pad walks, so a pad player
+## puts them where they like on the controls screen, as they can every action here.
+##
+## THE PLAYER CAN REBIND EVERY ONE (C5.3a). They are added through upstream's
 ## `Actions.add_rebindable` (base 5.18.0), so Options -> Controls lists each one under its label
 ## `ui.action.<id>` in `strings.csv`, a rebind is saved like any other, and a reset puts these
 ## defaults back. The player's saved key wins over the default even at boot, when the bindings
@@ -39,7 +43,15 @@ const LOCK_CYCLE: StringName = &"combat_lock_cycle"
 const COMMAND: StringName = &"combat_command"
 ## Hands control to the next party member in the field (C4.7).
 const SWITCH: StringName = &"combat_switch"
-const ALL: Array[StringName] = [ATTACK, DODGE, LOCK_ON, LOCK_CYCLE, COMMAND, SWITCH]
+## The four quick slots (C6.3a): each uses one of the fighter's powers (`PowerSlots`).
+const POWER_1: StringName = &"combat_power_1"
+const POWER_2: StringName = &"combat_power_2"
+const POWER_3: StringName = &"combat_power_3"
+const POWER_4: StringName = &"combat_power_4"
+## The slot keys in slot order: `SLOTS[0]` uses slot 1.
+const SLOTS: Array[StringName] = [POWER_1, POWER_2, POWER_3, POWER_4]
+const ALL: Array[StringName] = [ATTACK, DODGE, LOCK_ON, LOCK_CYCLE, COMMAND, SWITCH,
+	POWER_1, POWER_2, POWER_3, POWER_4]
 ## A trigger is an axis from 0 to 1; half-way down counts as pressed.
 const TRIGGER_DEADZONE: float = 0.5
 
@@ -53,6 +65,10 @@ static func install() -> void:
 	_define(LOCK_CYCLE, [_key(KEY_R), _pad(JOY_BUTTON_RIGHT_STICK)])
 	_define(COMMAND, [_key(KEY_F), _pad(JOY_BUTTON_MISC1)])
 	_define(SWITCH, [_key(KEY_C), _pad(JOY_BUTTON_PADDLE1)])
+	_define(POWER_1, [_key(KEY_1)])
+	_define(POWER_2, [_key(KEY_2)])
+	_define(POWER_3, [_key(KEY_3)])
+	_define(POWER_4, [_key(KEY_4)])
 
 
 static func _define(action: StringName, events: Array[InputEvent]) -> void:
