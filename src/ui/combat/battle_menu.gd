@@ -12,6 +12,9 @@ extends RefCounted
 ## `Battle.can_boost`, `Battle.targets_for` and `SkillUse.affordable`, the same checks
 ## `Battle.act` makes, so a row the menu offers is a row the battle accepts.
 ##
+## A HERO POWER (C6.2c) also asks `PowerUse.refusal`, through `PowerMenu.reason_key`: cooling
+## down, out of hours, and so on. A power with no skill (all mechanism) needs nobody to aim at.
+##
 ## OWNS: grouping commands into categories, and choosing the reason a row is refused.
 ## MUST NOT: act, draw, or hold any state. The screen does both.
 
@@ -59,6 +62,11 @@ static func refusal(battle: Battle, command: BattleCommand, boost: int) -> Strin
 			return "" if battle.can_flee else FLEE_REASON_KEY
 		BattleCommand.Kind.DEFEND:
 			return ""
+		BattleCommand.Kind.POWER:
+			# `PowerUse` already checked the cost; what is left is someone to aim at.
+			var why: String = PowerMenu.reason_key(actor, command.power)
+			if why != "" or command.skill == null:
+				return why
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			if not SkillUse.affordable(actor, command.skill):
 				return COST_REASON_KEY

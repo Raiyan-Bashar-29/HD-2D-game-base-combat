@@ -54,8 +54,9 @@ down at the start of each of the holder's turns, beside its statuses, asleep or 
 kits into the field: `ActionHost.fit_identity` equips the fighter's kit on the player and each
 follower, a party switch carries the `PowerSet` (cooldowns and running mechanisms) with the
 member, and `FieldCommands` uses a POWER with no ATB cost (a power has its cooldown). A kit's
-passive is held again after a load or a new game, never twice. Menus still print a skill's plain `cost`, not
-`SkillUse.cost_of`; C6.3 shows the real one.
+passive is held again after a load or a new game, never twice. C6.2c put powers into both
+menus through `PowerMenu` (`src/ui/combat/`): one Powers row from the kit, each refused power
+greyed out with its `PowerUse.Reason` in words, and costs shown as `SkillUse.cost_of` says.
 
 ### Content (`src/content/combat/powers/`), data shapes only
 

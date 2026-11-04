@@ -13,7 +13,8 @@ extends MenuScreen
 ## THE MENU HAS DEPTH (C2.18). Commands with a `category` sit in a submenu behind one row. Every
 ## skill row shows its cost, a stance shows On or Off, and a row the fighter cannot use right now
 ## is greyed out with the reason beside it (`BattleMenu.refusal`). A fighter with Boost points
-## gets a Boost row that cycles the level the next action spends.
+## gets a Boost row that cycles the level the next action spends. A fighter with a hero power
+## kit gets a Powers row too (C6.2c, `PowerMenu`), and a cooling power reads "ready in 2 turns".
 ##
 ## IT TELLS THE PLAYER WHAT IS GOING ON (C2.19). Each fighter's line shows hp, every other pool
 ## it has (MP, BP, a limit gauge, its shield), its statuses by name, and the weaknesses already
@@ -175,17 +176,18 @@ func name_of(fighter: Combatant) -> String:
 	return tr(def.name_key) + suffix.replace("_", " ")
 
 
-# A fighter with no authored commands gets Attack, Defend and Flee.
+# A fighter with no authored commands gets Attack, Defend and Flee. Either way, its hero powers
+# follow under one Powers row (C6.2c).
 func _menu() -> Array[BattleCommand]:
 	var def: CombatantDef = battle.defs.get(battle.current().combatant_id, null)
 	if def != null and not def.commands.is_empty():
-		return def.commands
+		return PowerMenu.with_powers(def.commands, battle.current())
 	var basic: Array[BattleCommand] = []
 	for kind: BattleCommand.Kind in [BattleCommand.Kind.ATTACK, BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE]:
 		var command := BattleCommand.new()
 		command.kind = kind
 		basic.append(command)
-	return basic
+	return PowerMenu.with_powers(basic, battle.current())
 
 
 # One command's row: its label with cost or stance state, greyed out with a reason when the
@@ -197,11 +199,13 @@ func _command_row(command: BattleCommand) -> void:
 	if skill != null and skill.toggle_status != null:
 		var on: bool = SkillUse.stance_on(battle.current(), skill)
 		text = tr(STANCE_ON_KEY if on else STANCE_OFF_KEY).format({"label": text})
+	# The cost the fighter really pays, after its kit's discounts (C6.1a).
 	if skill != null and skill.cost > 0 and not SkillUse.stance_on(battle.current(), skill):
-		text = tr(COST_KEY).format({"label": text, "cost": skill.cost, "pool": String(skill.cost_pool).to_upper()})
+		text = tr(COST_KEY).format({"label": text, "cost": SkillUse.cost_of(battle.current(), skill),
+				"pool": String(skill.cost_pool).to_upper()})
 	if reason != "":
-		var pool: String = String(skill.cost_pool).to_upper() if skill != null else ""
-		text = tr(UNAVAILABLE_KEY).format({"label": text, "reason": tr(reason).format({"pool": pool})})
+		var args: Dictionary = PowerMenu.reason_args(battle.current(), command)
+		text = tr(UNAVAILABLE_KEY).format({"label": text, "reason": tr(reason).format(args)})
 	var button: Button = add_row(text, _choose.bind(command) if reason == "" else Callable())
 	button.disabled = reason != ""
 

@@ -2841,3 +2841,34 @@ predelete and the POWER route stubbed, 11 of the new assertions failed. Boot 0 w
 
 **Gaps.** No menu offers a power yet (C6.2c); until then `CommandOverlay.reason_key` has no
 words for `Reason.POWER`. Followers' brains do not use powers (a later row, if wanted).
+
+## 2026-11-04 — C6.2c · Hero powers in the menus
+
+**Did.**
+- New `src/ui/combat/power_menu.gd` (`PowerMenu`), the one place both menus ask about powers:
+  `commands` (the kit's non-passive powers as POWER commands under `ui.battle.powers`),
+  `with_powers`, `reason_key` (each `PowerUse.Reason` as words; a cooldown in seconds for a
+  `real_time` fighter, in turns in a battle) and `reason_args` (the `pool` and `left` blanks).
+- `BattleScreen._menu` and `CommandOverlay` list the fighter's powers after its commands, so
+  `BattleMenu.top_level` shows one Powers row.
+- `CommandHost.can_open` opens for a fighter whose loadout has no commands but whose kit has
+  powers (an ATB gauge is still needed: the overlay is the hybrid's menu).
+- Seven `ui.battle.*` CSV rows. New `tests/unit/power_menu_test.gd`, 18 assertions. Version
+  0.54.0.
+
+**Defects found and fixed while planning.**
+- `BattleMenu.refusal` never asked `PowerUse`, so a cooling power looked usable in a battle,
+  and a power with no skill (all mechanism) was greyed out as "nothing to aim at".
+- `CommandOverlay.reason_key(Reason.POWER)` returned "", so a refused power looked usable in
+  the field. The row now asks `PowerMenu.reason_key` which power reason it is.
+- The overlay printed ATB bars on a power, which costs none.
+- Both screens printed a skill's plain `cost`, not `SkillUse.cost_of`, so a kit's discount
+  never showed. This was a gap left for C6.3; this row draws the rows, so it fixed it.
+
+**Verified.** Red first: with the `BattleMenu` POWER branch and the overlay's mapping stubbed,
+5 of the new assertions failed. Boot 0 warnings, 0 errors, printing 0.54.0; the suite, the
+seven checkers, the stripped run and a windowed capture of the Powers submenu (see the PR).
+
+**Gaps.** The overlay redraws only when an ATB bar fills, so a field "ready in Ns" can go stale
+while it is open (C6.3's HUD shows live cooldowns). No kit is in the demo yet, so only a probe
+shows the row (the first character kit row adds one).
