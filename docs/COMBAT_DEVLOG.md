@@ -2949,3 +2949,29 @@ is marked as such. The suite and the docs gates ran green (version 0.56.1 matche
 
 **Unblocks.** C6.24 and C6.25, after their mechanisms.
 
+
+## 2026-11-04 — C6.4a · Kit gauges fill and drain
+
+**Did.** The C6.4 row (rules, every event, levels, the blocking tags and the HUD readout) is about
+eleven files, so it splits: C6.4a makes the rules run, C6.4b adds the readout and the events that
+need new wiring. New `GaugeRule` (content) and `PowerKit.gauges`. New `KitGauges` (gameplay):
+moves each gauge pool in the fighter's `Vitals` by the second (plus standing or moving), by the
+battle turn, and for each hit landed or taken, dodge and miss; carries fractions until they make a
+whole point; skips a rule while a status carries one of its `blocked_by_tags`; adds a gauge pool's
+`regen_<pool>` stat each second in the field; holds the status of the level each pool has reached.
+`PowerSet` builds it on equip, clears it on unequip, ticks it beside its cooldowns, and feeds it
+from `combatant_damaged`, `attack_dodged`, `attack_missed` and `vitals_changed`. Combat 0.57.0.
+
+**Decisions.** A gauge is an ordinary pool, so the save, the `vital/<who>/<pool>` flag and
+`vitals_changed` all come free, and no new signal is needed for the HUD. Levels follow the pool
+on every `vitals_changed`, not only on a rule's own fill, so spending a gauge on a power drops its
+level. A battle turn gets its own `per_turn`, rather than reusing `per_second`. Field regen of a
+gauge pool is per second, as POWERS.md promised for Pinnacle True Arts; only the kit's gauge pools
+do it, so `regen_mp` keeps its per-turn meaning. A blocked rule pauses both its fill and its drain.
+
+**Verified.** Red first: with `happen` and `refresh_levels` stubbed, the ten event and level
+assertions failed and nothing else. The first run also found ten tenths of a second adding up to
+0.99999 and dropping a point, now counted within 0.0001. Then the suite (0 failed), the seven
+checkers, and the stripped run. No capture: nothing is drawn yet (C6.4b).
+
+**Unblocks.** C6.4b, and every kit with a gauge.
