@@ -9,7 +9,11 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.0b, documents only: two more characters for the main character,
+- **Last finished package:** C6.4a, kit gauges run: a kit's `GaugeRule`s (`PowerKit.gauges`)
+  move its gauge pools by the second, the battle turn, standing still or moving, and for each hit
+  landed or taken, dodge and miss, through a `KitGauges` that `PowerSet` feeds; a status tag can
+  pause a rule (`blocked_by_tags`), and each gauge's level status follows its pool.
+  Before it, C6.0b, documents only: two more characters for the main character,
   Isliid (Grand Summoners; Emperor, Defier of Fate, Human Pinnacle forms and three swords) and
   Roland (The Last Cloudia; base, Ascended and Heroic Lord forms), in `POWERS.md`, with a
   fourteenth mechanism (`refresh`) and kit rows C6.24 and C6.25.
@@ -53,7 +57,7 @@ between them, written in plain words.
     `AUTHORING.md` § The hybrid lists every field.
   - C5.3a: the six combat controls are rebindable from Options -> Controls (upstream
     `Actions.add_rebindable`, 5.18.0).
-- **Next package:** **C6.4**, gauges: `GaugeRule`, `PowerKit.gauges` and the HUD's gauge readout (`COMBAT.md` board). Then the C6 rows in board order: the mechanisms, then one kit per character (eleven now, Isliid and Roland last).
+- **Next package:** **C6.4b**, the HUD's gauge readout and the gauge events that need new wiring (kill, ally defeated, a new move, spending; `COMBAT.md` board). Then the C6 rows in board order: the mechanisms, then one kit per character (eleven now, Isliid and Roland last).
 - **Then, in order** (unless the owner reorders):
   1. **C5.3b–C5.7:** upstream T7.4 (a game settings section) and the combat settings on it,
      accessibility, docs, a playtest, 1.0.0.

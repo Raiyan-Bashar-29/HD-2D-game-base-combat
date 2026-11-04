@@ -10,6 +10,9 @@ extends Node
 ## - each power used counts down its cooldown here, and says so on
 ##   `Events.power_cooldown_changed` each time the whole number left changes (C6.3b), so the
 ##   HUD and the command menu can show "ready in 3s" without asking every frame.
+## - its `gauges` (C6.4a) fill and drain by their rules, through a `KitGauges`: this set tells it
+##   when time passes and when the fighter lands a hit, takes one, dodges or misses, and every
+##   change to a gauge pool, whoever made it, moves that gauge's level status.
 ## `unequip` takes all of it off again, and nothing else: another source's modifiers and
 ## statuses stay.
 ##
@@ -28,13 +31,15 @@ extends Node
 ## leave the tree and enter again. So its mechanisms end only when it is freed, not when it
 ## leaves the tree.
 ##
-## OWNS: which kit is equipped, its cooldowns, and its running executors.
+## OWNS: which kit is equipped, its cooldowns, its running executors, and its gauges.
 ## MUST NOT: decide whether a power may be used, or use one. `PowerUse` does both.
 
 var kit: PowerKit
 var _cooling: Dictionary[StringName, float] = {}
 var _running: Dictionary[StringName, PowerExecutor] = {}
 var _passives: Array[StringName] = []
+## The equipped kit's gauges. Empty, never null, with no kit.
+var gauges: KitGauges = KitGauges.new()
 
 
 ## The set under `who`, or null.
@@ -69,17 +74,26 @@ func _physics_process(delta: float) -> void:
 # Connected each time it enters, and after its `StatusSet` (an earlier sibling, moved first on a
 # switch), so on a new game the set has already cleared when the passives go back on.
 func _enter_tree() -> void:
-	if not Events.game_started.is_connected(_hold_passives):
-		Events.game_started.connect(_hold_passives)
-	if not Events.game_loaded.is_connected(_on_game_loaded):
-		Events.game_loaded.connect(_on_game_loaded)
+	for pair: Array in _listens():
+		var heard: Signal = pair[0]
+		var handler: Callable = pair[1]
+		if not heard.is_connected(handler):
+			heard.connect(handler)
 
 
 func _exit_tree() -> void:
-	if Events.game_started.is_connected(_hold_passives):
-		Events.game_started.disconnect(_hold_passives)
-	if Events.game_loaded.is_connected(_on_game_loaded):
-		Events.game_loaded.disconnect(_on_game_loaded)
+	for pair: Array in _listens():
+		var heard: Signal = pair[0]
+		var handler: Callable = pair[1]
+		if heard.is_connected(handler):
+			heard.disconnect(handler)
+
+
+# Every event this set answers, with its handler.
+func _listens() -> Array[Array]:
+	return [[Events.game_started, _hold_passives], [Events.game_loaded, _on_game_loaded],
+		[Events.combatant_damaged, _on_damaged], [Events.attack_dodged, _on_dodged],
+		[Events.attack_missed, _on_missed], [Events.vitals_changed, _on_vitals_changed]]
 
 
 func _notification(what: int) -> void:
@@ -102,6 +116,9 @@ func equip(new_kit: PowerKit) -> void:
 			if bonus != null:
 				sheet.add(StatModifier.of(bonus.stat, bonus.op, bonus.value, kit.kit_id))
 	_hold_passives()
+	gauges = KitGauges.new(kit.gauges)
+	for pool: StringName in gauges.pools():
+		gauges.refresh_levels(get_parent(), pool)
 	for power: Power in kit.powers:
 		if power == null or power.mechanism == null:
 			continue
@@ -125,6 +142,8 @@ func unequip() -> void:
 			statuses.cure(status_id)
 	for executor: PowerExecutor in _running.values():
 		executor.end()
+	gauges.clear(get_parent())
+	gauges = KitGauges.new()
 	_passives.clear()
 	_running.clear()
 	# Every cooldown goes with the kit, so each one is announced as over, once it is gone.
@@ -158,14 +177,16 @@ func executor(power_id: StringName) -> PowerExecutor:
 	return _running.get(power_id, null)
 
 
-## `delta` seconds of fight time pass: cooldowns count down and mechanisms tick.
+## `delta` seconds of fight time pass: cooldowns count down, mechanisms tick, gauges move.
 func tick_seconds(delta: float) -> void:
 	_count_down(delta)
+	gauges.tick_seconds(get_parent(), delta)
 
 
 ## One of this fighter's battle turns passes.
 func tick_turn() -> void:
 	_count_down(1.0)
+	gauges.tick_turn(get_parent())
 
 
 func _count_down(amount: float) -> void:
@@ -204,12 +225,43 @@ func _hold_passives() -> void:
 func _announce(power_id: StringName, before: float, after: float) -> void:
 	if ceili(before) == ceili(after):
 		return
-	var fighter: Combatant = Combatant.of(get_parent())
-	Events.power_cooldown_changed.emit(fighter.combatant_id if fighter != null else &"", power_id, ceili(after))
+	Events.power_cooldown_changed.emit(_id(), power_id, ceili(after))
 
 
 func _on_game_loaded(_slot: int) -> void:
 	_hold_passives()
+
+
+# A hit landed or taken moves the gauges; a heal (a negative amount) does not.
+func _on_damaged(who: StringName, by: StringName, amount: int, _critical: bool) -> void:
+	var me: StringName = _id()
+	if amount <= 0 or me == &"":
+		return
+	if by == me:
+		gauges.happen(get_parent(), GaugeRule.Event.HIT_DEALT)
+	if who == me:
+		gauges.happen(get_parent(), GaugeRule.Event.HIT_TAKEN)
+
+
+func _on_dodged(who: StringName, _by: StringName) -> void:
+	if who != &"" and who == _id():
+		gauges.happen(get_parent(), GaugeRule.Event.DODGE)
+
+
+# `who` is the one the attack missed; `by` threw it.
+func _on_missed(_who: StringName, by: StringName) -> void:
+	if by != &"" and by == _id():
+		gauges.happen(get_parent(), GaugeRule.Event.MISS)
+
+
+func _on_vitals_changed(who: StringName, pool: StringName, _value: int, _maximum: int) -> void:
+	if who != &"" and who == _id() and gauges.has_pool(pool):
+		gauges.refresh_levels(get_parent(), pool)
+
+
+func _id() -> StringName:
+	var fighter: Combatant = Combatant.of(get_parent())
+	return fighter.combatant_id if fighter != null else &""
 
 
 ## The fighter's sheet, which its `Vitals` and `StatusSet` share.

@@ -51,8 +51,9 @@ Do not invent substitute names.
 
 ## The framework (built by C6.1–C6.3)
 
-C6.1a built the content classes below except `GaugeRule`, which C6.4 builds with the gauges
-that read it. C6.1b built the gameplay classes; their executors have only `use`, `tick` and
+C6.1a built the content classes below except `GaugeRule`, which C6.4a built with `KitGauges`,
+the part of `PowerSet` that runs it (time, hits landed and taken, dodges, misses, `levels`,
+`blocked_by_tags`, and `regen_<pool>` by the second in the field); C6.4b adds the other events. C6.1b built the gameplay classes; their executors have only `use`, `tick` and
 `end` so far, and each later row adds the hook its seam needs (`intercept_incoming` with C6.6).
 C6.2a put kits into a turn-based battle. A fighter's kit is `CombatantDef.power_kit`, the one
 kit field for both formulas (the field reads its loadout's `fighter`). In battle a cooldown counts
@@ -71,7 +72,7 @@ greyed out with its `PowerUse.Reason` in words, and costs shown as `SkillUse.cos
 | `PowerKit` | `kit_id`, `name_key`, `desc_key`, `powers: Array[Power]`, `passives: Array[StatusEffect]` (held while equipped, duration 0), `stat_bonuses: Array[StatModifier]`, `gauges: Array[GaugeRule]` | `problems()` checks every part. One per character |
 | `Power` | `power_id`, `name_key`, `desc_key`, `skill: Skill`, `move: ActionMove` (optional; the field's timing and hitbox), `mechanism: PowerMechanism` (optional), `cooldown` (seconds in the field, turns in battle), `requires_statuses`, `consumes_statuses`, `requires_pool` and `requires_fraction`, `active_hours: Vector2` (a `Clock` window; `(0, 24)` is always), `scaling: Array[PowerScaling]`, `passive: bool` | The cost is the skill's own `cost_pool` and `cost`, so a gauge power such as Zantetsuken costs its gauge pool through the path every skill already uses |
 | `PowerScaling` | `source`: USER_HP_FRACTION, USER_MISSING_HP, POOL_FRACTION (a `pool`), CLOCK_CURVE (a `Curve` over 0–24 h), TARGET_HAS_TAG (a `tag`); `affects`: POWER, DURATION, HITS, COUNT; `curve` or `factor` | Pure: `multiplier(context) -> float`. It covers Sunshine, The One's "more HP, more damage", and Enkidu's divinity bonus with no mechanism at all |
-| `GaugeRule` | `pool`, and an amount per event: `on_hit_dealt`, `on_hit_taken`, `on_dodge`, `on_perfect_dodge`, `per_idle_second`, `per_moving_second`, `on_miss`, `on_ally_defeated`, `on_kill`, `on_new_move` (a different move from the last one, as a style rank counts), `per_second` | The generalisation of C4.2's `AtbRules` to any pool. A negative amount drains |
+| `GaugeRule` | `pool`, and an amount per event: `on_hit_dealt`, `on_hit_taken`, `on_dodge`, `per_idle_second`, `per_moving_second`, `on_miss`, `per_second`, `per_turn` (C6.4a); `on_perfect_dodge`, `on_ally_defeated`, `on_kill`, `on_new_move` (a different move from the last one, as a style rank counts), `on_spent` (C6.4b); `blocked_by_tags`; `levels` (points -> status) | The generalisation of C4.2's `AtbRules` to any pool. A negative amount drains |
 | `PowerMechanism` | base: `kind: StringName` (read-only), `problems()`; each subclass holds only typed `@export`s | Data only. Its runtime twin lives in gameplay (below) |
 
 ### Gameplay (`src/gameplay/combat/powers/`)

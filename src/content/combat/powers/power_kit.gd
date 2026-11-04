@@ -8,6 +8,8 @@ extends Resource
 ## other kit and no code changes.
 ##
 ## OWNS: the shape of a kit, and finding a power in it by id.
+## Its `gauges` are pools that fill by rule (C6.4a), such as a Devil Trigger gauge.
+##
 ## MUST NOT: equip itself or hold cooldowns. `PowerSet` (C6.1b) does that on a fighter.
 
 @export var kit_id: StringName = &""
@@ -19,6 +21,9 @@ extends Resource
 ## Stat changes held while the kit is equipped. Their `source` should be the kit id, so taking
 ## the kit off removes exactly them.
 @export var stat_bonuses: Array[StatModifier] = []
+## How the kit's gauges fill and drain (C6.4a). Each gauge is a pool: give it a `max_<pool>`
+## stat bonus, and `start_<pool>` 0 to start it empty.
+@export var gauges: Array[GaugeRule] = []
 
 
 ## The power with `id`, or null.
@@ -56,4 +61,9 @@ func problems(context: String) -> PackedStringArray:
 			continue
 		for problem: String in bonus.problems():
 			found.append("%s stat bonus %s" % [where, problem])
+	for rule: GaugeRule in gauges:
+		if rule == null:
+			found.append("%s lists an empty gauge" % where)
+		else:
+			found.append_array(rule.problems(where))
 	return found
