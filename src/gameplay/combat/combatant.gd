@@ -11,8 +11,14 @@ extends Node
 ## through this combatant's `formula` with the caller's seeded `rng`, and hands the RESULT to the
 ## target's `receive`. A defender never re-resolves, so a preview and the real hit agree.
 ##
+## EVERY COMBATANT IS IN THE GROUP `GROUP`, so `find` can turn an id from an event back into
+## its fighter (C6.4b: a kit gauge asks whether the one who fell was an ally).
+##
 ## OWNS: the combatant id, the faction, the shared sheet, and applying a resolved hit.
 ## MUST NOT: choose targets, decide turns or timing, or decide what defeat means.
+
+## The group every combatant joins, for `find`.
+const GROUP: StringName = &"combatants"
 
 @export var combatant_id: StringName = &"player"
 @export var faction: StringName = &"player"
@@ -43,6 +49,7 @@ var sheet: StatSheet = StatSheet.new()
 
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	for stat: StringName in base_stats:
 		sheet.set_base(stat, base_stats[stat])
 	var vitals: Vitals = Vitals.of(get_parent())
@@ -57,6 +64,18 @@ func _ready() -> void:
 		# so it is given one named after this combatant instead (C2.12).
 		if statuses.save_id == StatusSet.DEFAULT_SAVE_ID and combatant_id != &"player":
 			statuses.rename_save(StringName("statuses/" + String(combatant_id)))
+
+
+## The first combatant in `tree` with the id `id`, or null. A party member's field body and its
+## battle copy share an id and a faction, so the first is as good as any (C6.4b).
+static func find(tree: SceneTree, id: StringName) -> Combatant:
+	if tree == null or id == &"":
+		return null
+	for node: Node in tree.get_nodes_in_group(GROUP):
+		var found: Combatant = node as Combatant
+		if found != null and found.combatant_id == id:
+			return found
+	return null
 
 
 static func of(who: Node) -> Combatant:

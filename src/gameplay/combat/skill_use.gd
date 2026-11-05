@@ -48,6 +48,10 @@ static func pay(user: Combatant, skill: Skill) -> void:
 	var cost: int = cost_of(user, skill)
 	if cost > 0 and not stance_on(user, skill):
 		_vitals(user).change(skill.cost_pool, -cost)
+		# A kit gauge may fill on spending this pool (C6.4b: Isliid's true arts).
+		var powers: PowerSet = PowerSet.of(user.get_parent())
+		if powers != null:
+			powers.spent(skill.cost_pool, cost)
 
 
 ## True when `skill` is a stance and `user` has it on now, so using it would turn it off.

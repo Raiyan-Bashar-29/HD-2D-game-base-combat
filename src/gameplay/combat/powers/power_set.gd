@@ -12,7 +12,13 @@ extends Node
 ##   HUD and the command menu can show "ready in 3s" without asking every frame.
 ## - its `gauges` (C6.4a) fill and drain by their rules, through a `KitGauges`: this set tells it
 ##   when time passes and when the fighter lands a hit, takes one, dodges or misses, and every
-##   change to a gauge pool, whoever made it, moves that gauge's level status.
+##   change to a gauge pool, whoever made it, moves that gauge's level status. Since C6.4b it
+##   also hears a kill, an ally falling, a new move (`moved`, from `ActionFighter`) and a cost
+##   paid (`spent`, from `SkillUse.pay`).
+##
+## A KILL WITHOUT A LOOKUP: `Combatant.receive` changes the pool first, which announces
+## `combatant_defeated`, and then announces `combatant_damaged`. So the id that just fell is
+## remembered, and a damage event on that same id thrown by this fighter is its kill.
 ## `unequip` takes all of it off again, and nothing else: another source's modifiers and
 ## statuses stay.
 ##
@@ -40,6 +46,8 @@ var _running: Dictionary[StringName, PowerExecutor] = {}
 var _passives: Array[StringName] = []
 ## The equipped kit's gauges. Empty, never null, with no kit.
 var gauges: KitGauges = KitGauges.new()
+# The id that fell a moment ago, until the next damage event says who felled it.
+var _just_fell: StringName = &""
 
 
 ## The set under `who`, or null.
@@ -93,7 +101,8 @@ func _exit_tree() -> void:
 func _listens() -> Array[Array]:
 	return [[Events.game_started, _hold_passives], [Events.game_loaded, _on_game_loaded],
 		[Events.combatant_damaged, _on_damaged], [Events.attack_dodged, _on_dodged],
-		[Events.attack_missed, _on_missed], [Events.vitals_changed, _on_vitals_changed]]
+		[Events.attack_missed, _on_missed], [Events.vitals_changed, _on_vitals_changed],
+		[Events.combatant_defeated, _on_defeated], [Events.combatant_revived, _on_revived]]
 
 
 func _notification(what: int) -> void:
@@ -183,6 +192,16 @@ func tick_seconds(delta: float) -> void:
 	gauges.tick_seconds(get_parent(), delta)
 
 
+## The fighter started `move` in the field: a gauge's `on_new_move` counts when it is new.
+func moved(move: ActionMove) -> void:
+	gauges.moved(get_parent(), move)
+
+
+## The fighter paid `amount` points of `pool` as a cost: `SkillUse.pay` says so.
+func spent(pool: StringName, amount: int) -> void:
+	gauges.spent(get_parent(), pool, amount)
+
+
 ## One of this fighter's battle turns passes.
 func tick_turn() -> void:
 	_count_down(1.0)
@@ -235,12 +254,32 @@ func _on_game_loaded(_slot: int) -> void:
 # A hit landed or taken moves the gauges; a heal (a negative amount) does not.
 func _on_damaged(who: StringName, by: StringName, amount: int, _critical: bool) -> void:
 	var me: StringName = _id()
+	var felled: bool = who != &"" and who == _just_fell
+	_just_fell = &""
 	if amount <= 0 or me == &"":
 		return
+	if felled and by == me and who != me:
+		gauges.happen(get_parent(), GaugeRule.Event.KILL)
 	if by == me:
 		gauges.happen(get_parent(), GaugeRule.Event.HIT_DEALT)
 	if who == me:
 		gauges.happen(get_parent(), GaugeRule.Event.HIT_TAKEN)
+
+
+# Remembers who fell, for the damage event that follows; and an ally falling moves the gauges.
+func _on_defeated(who: StringName) -> void:
+	_just_fell = who
+	var me: Combatant = Combatant.of(get_parent())
+	if me == null or who == &"" or who == me.combatant_id:
+		return
+	var other: Combatant = Combatant.find(get_tree(), who)
+	if other != null and me.can_target(other, FactionTable.Target.ALLY):
+		gauges.happen(get_parent(), GaugeRule.Event.ALLY_DEFEATED)
+
+
+func _on_revived(who: StringName) -> void:
+	if who == _just_fell:
+		_just_fell = &""
 
 
 func _on_dodged(who: StringName, _by: StringName) -> void:

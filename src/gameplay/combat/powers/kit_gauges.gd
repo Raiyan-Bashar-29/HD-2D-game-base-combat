@@ -13,6 +13,13 @@ extends RefCounted
 ## granting `regen_arts` +10) adds that many points a second, as a battle adds it once a turn
 ## (`Meters.regen_turn`, C2.16). Only the kit's gauge pools do this, so `regen_mp` is unchanged.
 ##
+## RUNNING (C6.4b): while the body is the player and its gait is RUN, `per_running_second` is
+## added on top of the moving rate. A roll leaves the player BUSY, so a dodge is not a run. Only
+## the player has a gait, so nobody else ever runs.
+##
+## A NEW MOVE (C6.4b) counts only when it differs from the last one started (`moved`), and a
+## SPENDING (`spent`) moves the rules whose `spent_pool` was paid from.
+##
 ## LEVELS FOLLOW THE POOL, WHOEVER MOVED IT. `PowerSet` calls `refresh_levels` on every
 ## `vitals_changed` of a gauge pool, so spending a gauge on a power drops its level too.
 ##
@@ -27,6 +34,7 @@ const NEARLY: float = 0.0001
 var rules: Array[GaugeRule] = []
 var _owed: Dictionary[StringName, float] = {}
 var _levels: Dictionary[StringName, StringName] = {}
+var _last_move: ActionMove = null
 
 
 func _init(kit_rules: Array[GaugeRule] = []) -> void:
@@ -54,9 +62,12 @@ func tick_seconds(body: Node, seconds: float) -> void:
 	if seconds <= 0.0 or _down(body):
 		return
 	var moving: bool = _moving(body)
+	var running: bool = moving and _running(body)
 	for rule: GaugeRule in rules:
 		if not _blocked(body, rule):
 			var rate: float = rule.per_moving_second if moving else rule.per_idle_second
+			if running:
+				rate += rule.per_running_second
 			_give(body, rule.pool, (rule.per_second + rate) * seconds)
 	var fighter: Combatant = Combatant.of(body)
 	if fighter != null:
@@ -82,6 +93,23 @@ func happen(body: Node, event: GaugeRule.Event) -> void:
 	for rule: GaugeRule in rules:
 		if not _blocked(body, rule):
 			_give(body, rule.pool, rule.amount(event))
+
+
+## The fighter `body` started `move`. Counts as NEW_MOVE only when it differs from the last.
+func moved(body: Node, move: ActionMove) -> void:
+	if move == null or move == _last_move:
+		return
+	_last_move = move
+	happen(body, GaugeRule.Event.NEW_MOVE)
+
+
+## The fighter `body` paid `amount` points of `pool` as a cost.
+func spent(body: Node, pool: StringName, amount: int) -> void:
+	if amount <= 0 or _down(body):
+		return
+	for rule: GaugeRule in rules:
+		if rule.spent_pool == pool and not _blocked(body, rule):
+			_give(body, rule.pool, rule.on_spent * amount)
 
 
 ## Holds the status of the level `pool` has reached, and drops the one it held before.
@@ -114,6 +142,7 @@ func clear(body: Node) -> void:
 			statuses.cure(status_id)
 	_levels.clear()
 	_owed.clear()
+	_last_move = null
 
 
 # Adds `amount` to `pool`, carrying the part that is not yet a whole point.
@@ -145,6 +174,11 @@ func _blocked(body: Node, rule: GaugeRule) -> bool:
 func _moving(body: Node) -> bool:
 	var mover: CharacterBody3D = body as CharacterBody3D
 	return mover != null and Vector2(mover.velocity.x, mover.velocity.z).length() > MOVING_SPEED
+
+
+func _running(body: Node) -> bool:
+	var walker: PlayerController = body as PlayerController
+	return walker != null and walker.state == GameEnums.MoveState.RUN
 
 
 func _down(body: Node) -> bool:

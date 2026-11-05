@@ -72,7 +72,7 @@ greyed out with its `PowerUse.Reason` in words, and costs shown as `SkillUse.cos
 | `PowerKit` | `kit_id`, `name_key`, `desc_key`, `powers: Array[Power]`, `passives: Array[StatusEffect]` (held while equipped, duration 0), `stat_bonuses: Array[StatModifier]`, `gauges: Array[GaugeRule]` | `problems()` checks every part. One per character |
 | `Power` | `power_id`, `name_key`, `desc_key`, `skill: Skill`, `move: ActionMove` (optional; the field's timing and hitbox), `mechanism: PowerMechanism` (optional), `cooldown` (seconds in the field, turns in battle), `requires_statuses`, `consumes_statuses`, `requires_pool` and `requires_fraction`, `active_hours: Vector2` (a `Clock` window; `(0, 24)` is always), `scaling: Array[PowerScaling]`, `passive: bool` | The cost is the skill's own `cost_pool` and `cost`, so a gauge power such as Zantetsuken costs its gauge pool through the path every skill already uses |
 | `PowerScaling` | `source`: USER_HP_FRACTION, USER_MISSING_HP, POOL_FRACTION (a `pool`), CLOCK_CURVE (a `Curve` over 0–24 h), TARGET_HAS_TAG (a `tag`); `affects`: POWER, DURATION, HITS, COUNT; `curve` or `factor` | Pure: `multiplier(context) -> float`. It covers Sunshine, The One's "more HP, more damage", and Enkidu's divinity bonus with no mechanism at all |
-| `GaugeRule` | `pool`, and an amount per event: `on_hit_dealt`, `on_hit_taken`, `on_dodge`, `per_idle_second`, `per_moving_second`, `on_miss`, `per_second`, `per_turn` (C6.4a); `on_perfect_dodge`, `on_ally_defeated`, `on_kill`, `on_new_move` (a different move from the last one, as a style rank counts), `on_spent` (C6.4b); `blocked_by_tags`; `levels` (points -> status) | The generalisation of C4.2's `AtbRules` to any pool. A negative amount drains |
+| `GaugeRule` | `pool`, and an amount per event: `on_hit_dealt`, `on_hit_taken`, `on_dodge`, `per_idle_second`, `per_moving_second`, `on_miss`, `per_second`, `per_turn` (C6.4a); `on_ally_defeated`, `on_kill`, `on_new_move` (a different move from the last one, as a style rank counts; the field only), `per_running_second` (added on top of `per_moving_second` while running), `spent_pool` and `on_spent` (points per point of `spent_pool` paid as a cost) (C6.4b); `on_perfect_dodge` (C6.6, with the perfect dodge); `blocked_by_tags`; `levels` (points -> status) | The generalisation of C4.2's `AtbRules` to any pool. A negative amount drains |
 | `PowerMechanism` | base: `kind: StringName` (read-only), `problems()`; each subclass holds only typed `@export`s | Data only. Its runtime twin lives in gameplay (below) |
 
 ### Gameplay (`src/gameplay/combat/powers/`)
@@ -349,7 +349,7 @@ boss a counter, and a later story beat a lever.
 
 | Power | Mechanism and parts | Cost |
 |---|---|---|
-| Concentration (passive) | M6 `gauge` `concentration`: +8 per idle second, +4 per walking second, +25 per perfect dodge, −15 per running second, −30 per hit taken, −10 per miss. `levels` at 33/66/100 give +10/+20/+35% damage and range | — |
+| Concentration (passive) | M6 `gauge` `concentration`: +8 per idle second, +4 per walking second, +25 per perfect dodge, −15 per running second (data: `per_moving_second` 4, `per_running_second` −19), −30 per hit taken, −10 per miss. `levels` at 33/66/100 give +10/+20/+35% damage and range | — |
 | Judgment Cut | M1 `barrage`, 3 cuts at the locked target's position after 0.3 s | 6 MP, 2 s |
 | Judgment Cut End | M2 `finisher`: `requires_fraction concentration 1.0` or `requires_statuses [sin_devil_trigger]`; a 1 s time-stop flourish, then every cut lands on all foes in 10 m | all `concentration`, 40 s |
 | Summoned Swords | M1 `barrage` RING_BEHIND_USER (formations: Spiral orbiting the user as a shield, Storm, Blistering, Heavy Rain) | 4 MP each formation, 3 s |
@@ -432,7 +432,7 @@ in the field it also swaps the attack chain.
 
 **Gauges.**
 - `arts` (0–100): +5/s, +4 per hit dealt.
-- `true_arts` (0–100): +1 per 3 `arts` spent (a `GaugeRule` on spending).
+- `true_arts` (0–100): +1 per 3 `arts` spent (`spent_pool arts`, `on_spent 0.3334`).
 - `super_arts` (0–100): +2 per hit dealt, Human Pinnacle only.
 
 **Simplified on purpose.** The game picks the sword by party slot; here the player cycles it (or
