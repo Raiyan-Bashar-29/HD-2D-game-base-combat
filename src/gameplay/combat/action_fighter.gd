@@ -13,6 +13,8 @@ extends Node
 ##    lock (dialogue, a menu, a climb).
 ## 4. The `MoveTimeline` steps; the hitbox is fitted to each new move, faces where the fighter
 ##    faces, and sweeps while the move is live.
+## 4a. Each move started, other than the dodge, is told to the fighter's `PowerSet` (C6.4b), so a
+##    kit gauge can count a new move.
 ## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
 ## 5. While busy, the fighter holds the body's `&"action"` lock, so the controller stops
 ##    walking it; the fighter then sets the horizontal velocity itself: the push of a
@@ -44,6 +46,8 @@ var _hitbox: Hitbox
 var _lock_on: LockOn
 var _stun_left: float = 0.0
 var _push: Vector3 = Vector3.ZERO
+# The last swing told to the `PowerSet`.
+var _reported: int = 0
 var _roll: Vector3 = Vector3.ZERO
 var _fitted: int = -1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -98,6 +102,7 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	elif not stunned() and not _held_by_others() and moves != null:
 		_start_moves(attack, dodge)
 	timeline.step(dt)
+	_report_move()
 	_aim_hitbox()
 	_move_body()
 
@@ -143,6 +148,16 @@ func _aim_hitbox() -> void:
 	_hitbox.rotation.y = atan2(-facing.x, -facing.z)
 	if timeline.is_hitting():
 		_hitbox.sweep()
+
+
+# Tells the kit about each move started since last frame, except a dodge (C6.4b).
+func _report_move() -> void:
+	if timeline.swing == _reported or timeline.move == null:
+		return
+	_reported = timeline.swing
+	var powers: PowerSet = PowerSet.of(get_parent())
+	if powers != null and (moves == null or timeline.move != moves.dodge):
+		powers.moved(timeline.move)
 
 
 ## Holds or lets go of the body, and sets its horizontal velocity while holding it.

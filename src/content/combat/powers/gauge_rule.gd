@@ -13,6 +13,15 @@ extends Resource
 ## many, the status of the highest level reached is held and the others are not (Concentration's
 ## three ranks, a style rank). Put a pool's levels on one of its rules only.
 ##
+## MORE HAPPENINGS (C6.4b): a foe the holder finishes off (`on_kill`), an ally of the holder
+## falling (`on_ally_defeated`), a move started that differs from the one before (`on_new_move`,
+## as a style rank counts; the field only, a battle has no moves), and points of another pool
+## paid as a cost (`on_spent` for each point of `spent_pool`: "+1 true arts per 3 arts spent" is
+## `spent_pool arts`, `on_spent 0.3334`).
+##
+## RUNNING: `per_running_second` is ADDED to `per_moving_second` while the player runs, because a
+## run is a fast move. "+4 walking, -15 running" is `per_moving_second 4`, `per_running_second -19`.
+##
 ## BLOCKED: while the holder has any status carrying one of `blocked_by_tags`, this rule does
 ## nothing at all, fill or drain ("+7 a second while free of ailments").
 ##
@@ -20,7 +29,7 @@ extends Resource
 ## MUST NOT: hold a fighter's current fill. The pool is in `Vitals`; `KitGauges` moves it.
 
 ## The happenings a rule can answer, besides the passing of time.
-enum Event {HIT_DEALT, HIT_TAKEN, DODGE, MISS}
+enum Event {HIT_DEALT, HIT_TAKEN, DODGE, MISS, KILL, ALLY_DEFEATED, NEW_MOVE}
 
 ## The pool this rule moves.
 @export var pool: StringName = &""
@@ -32,6 +41,8 @@ enum Event {HIT_DEALT, HIT_TAKEN, DODGE, MISS}
 @export var per_idle_second: float = 0.0
 ## Points a second while moving, in the field.
 @export var per_moving_second: float = 0.0
+## Points a second while running, on top of `per_moving_second`, in the field.
+@export var per_running_second: float = 0.0
 ## Points for each hit the holder lands.
 @export var on_hit_dealt: float = 0.0
 ## Points for each hit that hurts the holder.
@@ -40,6 +51,16 @@ enum Event {HIT_DEALT, HIT_TAKEN, DODGE, MISS}
 @export var on_dodge: float = 0.0
 ## Points for each attack of the holder's that misses.
 @export var on_miss: float = 0.0
+## Points for each foe the holder's hit defeats.
+@export var on_kill: float = 0.0
+## Points each time one of the holder's allies falls.
+@export var on_ally_defeated: float = 0.0
+## Points for each move started that differs from the one before, in the field.
+@export var on_new_move: float = 0.0
+## The pool whose spending moves this rule.
+@export var spent_pool: StringName = &""
+## Points for each point of `spent_pool` paid as a cost.
+@export var on_spent: float = 0.0
 ## While a status with any of these tags is held, this rule is paused.
 @export var blocked_by_tags: Array[StringName] = []
 ## Points reached -> the status held from there up to the next level.
@@ -57,6 +78,12 @@ func amount(event: Event) -> float:
 			return on_dodge
 		Event.MISS:
 			return on_miss
+		Event.KILL:
+			return on_kill
+		Event.ALLY_DEFEATED:
+			return on_ally_defeated
+		Event.NEW_MOVE:
+			return on_new_move
 	return 0.0
 
 
@@ -74,6 +101,8 @@ func problems(context: String) -> PackedStringArray:
 	var where: String = "%s gauge %s" % [context, pool]
 	if pool == &"":
 		found.append("%s names no pool" % where)
+	if on_spent != 0.0 and spent_pool == &"":
+		found.append("%s fills on spending but names no pool spent" % where)
 	for at: int in levels:
 		if at < 0:
 			found.append("%s has a level below 0 points" % where)

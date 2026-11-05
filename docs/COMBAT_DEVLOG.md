@@ -2975,3 +2975,29 @@ assertions failed and nothing else. The first run also found ten tenths of a sec
 checkers, and the stripped run. No capture: nothing is drawn yet (C6.4b).
 
 **Unblocks.** C6.4b, and every kit with a gauge.
+
+## 2026-11-05 — C6.4b · Kills, fallen allies, new moves, spending and running
+
+**Did.** `GaugeRule` gains `on_kill`, `on_ally_defeated`, `on_new_move`, `per_running_second`,
+`spent_pool` and `on_spent`. `KitGauges` gains `moved` and `spent`, and adds the running rate
+while the body is the player with a RUN gait. `PowerSet` hears `combatant_defeated` and
+`combatant_revived`, and has public `moved` and `spent`. `ActionFighter` reports each move it
+starts, except its dodge; `SkillUse.pay` reports each cost paid. Every `Combatant` joins
+`Combatant.GROUP`, and `Combatant.find(tree, id)` turns an event's id back into its fighter.
+Combat 0.58.0. This closes C6.4.
+
+**Decisions.** A kill needs no lookup: `Combatant.receive` changes the pool first (which
+announces the defeat) and announces the damage after, so the id that just fell, followed by
+damage from this fighter, is its kill. An ally falling does need the faction, hence the group.
+Running is added on top of moving, so a C6.4a rule is unchanged; a roll leaves the player BUSY,
+so a dodge is no run. A new move is field only, since a battle has no moves. The HUD readout
+needed no code: `CombatHud` already lists every pool with a `max_<pool>` stat and every held
+status, and a level is a status. A perfect dodge does not exist yet, so `on_perfect_dodge` moved
+to C6.6.
+
+**Verified.** New `power_gauge_events_test` (16 assertions). Red first: with `moved` and `spent`
+stubbed and the kill unwired, 13 of its assertions failed. Then the suite (0 failed), the seven
+checkers, and the stripped run. No capture: nothing new is drawn.
+
+**Unblocks.** C6.5, and every kit with a gauge (Vergil's Concentration, Isliid's true arts,
+Dante's style rank, Yhwach's soul fragments).

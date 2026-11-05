@@ -9,7 +9,11 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.4a, kit gauges run: a kit's `GaugeRule`s (`PowerKit.gauges`)
+- **Last finished package:** C6.4b, the other gauge events: a `GaugeRule` also moves on a kill
+  of the holder's own, an ally falling, a move unlike the last (the field), points of another pool
+  spent as a cost (`spent_pool`, `on_spent`), and a running second on top of a moving one. The HUD
+  already shows a gauge and its level. **C6.4 is complete; next is C6.5, forms.**
+  Before it, C6.4a, kit gauges run: a kit's `GaugeRule`s (`PowerKit.gauges`)
   move its gauge pools by the second, the battle turn, standing still or moving, and for each hit
   landed or taken, dodge and miss, through a `KitGauges` that `PowerSet` feeds; a status tag can
   pause a rule (`blocked_by_tags`), and each gauge's level status follows its pool.
