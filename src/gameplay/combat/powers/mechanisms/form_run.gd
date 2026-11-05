@@ -12,6 +12,9 @@ extends PowerExecutor
 ## - `tick`: the drain, by the second in the field (`Combatant.real_time`) and by the turn in a
 ##   battle, carrying fractions of a point; at an empty pool the form ends.
 ## - `power_used`: a cycle moves on after a power named in `advance_after`.
+## - `moves` (C6.5b): while on, the field plays the held stage's attack chain and dodge in place
+##   of the fighter's own. The set built is kept, so nothing is made anew each frame.
+## - `moved` (C6.5b): each move the fighter starts in the field drains `drain_per_action`.
 ## - `end`: the kit came off, so the form ends (its status comes off with it).
 ##
 ## OWNS: entering, leaving and draining one form on one fighter.
@@ -21,6 +24,8 @@ extends PowerExecutor
 var stage: int = -1
 # Fractions of a drain point owed, until they make a whole one.
 var _owed: float = 0.0
+# The move sets built over a base, by base and stage, so the same set comes back each frame.
+var _built: Dictionary[int, MoveSet] = {}
 
 
 func use(_user: Combatant, _targets: Array[Combatant], _rng: RandomNumberGenerator) -> void:
@@ -37,20 +42,26 @@ func use(_user: Combatant, _targets: Array[Combatant], _rng: RandomNumberGenerat
 func tick(amount: float) -> void:
 	_sync()
 	var form: FormMechanism = mechanism as FormMechanism
-	if stage < 0 or form.drain_pool == &"" or holder == null:
+	var fighter: Combatant = Combatant.of(holder.get_parent()) if holder != null else null
+	if stage < 0 or fighter == null:
 		return
-	var fighter: Combatant = Combatant.of(holder.get_parent())
-	var vitals: Vitals = Vitals.of(holder.get_parent())
-	if fighter == null or vitals == null:
-		return
-	var rate: float = form.drain_per_second if fighter.real_time else form.drain_per_turn
-	_owed += rate * amount
-	var whole: int = floori(_owed)
-	if whole > 0:
-		_owed -= whole
-		vitals.change(form.drain_pool, -whole)
-	if rate > 0.0 and vitals.current(form.drain_pool) <= 0:
-		leave()
+	_drain(form.drain_per_second if fighter.real_time else form.drain_per_turn, amount)
+
+
+func moved(_move: ActionMove) -> void:
+	_sync()
+	if stage >= 0:
+		_drain((mechanism as FormMechanism).drain_per_action, 1.0)
+
+
+func moves(base: MoveSet) -> MoveSet:
+	_sync()
+	if stage < 0 or base == null:
+		return base
+	var key: int = base.get_instance_id() * 64 + stage
+	if not _built.has(key):
+		_built[key] = _build(base)
+	return _built[key]
 
 
 func power_used(used: Power) -> void:
@@ -116,6 +127,34 @@ func _sync() -> void:
 	if found < 0:
 		_owed = 0.0
 	stage = found
+
+
+# The set played over `base` at this stage: the stage's chain and dodge where it has them. When
+# it has neither, `base` itself, so nothing new is made.
+func _build(base: MoveSet) -> MoveSet:
+	var own: FormMechanism = (mechanism as FormMechanism).moves_of(stage)
+	if own.attack_chain.is_empty() and own.dodge == null:
+		return base
+	var built := MoveSet.new()
+	built.attack_chain = own.attack_chain if not own.attack_chain.is_empty() else base.attack_chain
+	built.dodge = own.dodge if own.dodge != null else base.dodge
+	built.skills = base.skills
+	return built
+
+
+# Takes `rate * amount` points of the drain pool, carrying fractions; at empty, the form ends.
+func _drain(rate: float, amount: float) -> void:
+	var form: FormMechanism = mechanism as FormMechanism
+	var vitals: Vitals = Vitals.of(holder.get_parent()) if holder != null else null
+	if form.drain_pool == &"" or vitals == null or rate <= 0.0:
+		return
+	_owed += rate * amount
+	var whole: int = floori(_owed)
+	if whole > 0:
+		_owed -= whole
+		vitals.change(form.drain_pool, -whole)
+	if vitals.current(form.drain_pool) <= 0:
+		leave()
 
 
 func _stage_status(index: int) -> StatusEffect:

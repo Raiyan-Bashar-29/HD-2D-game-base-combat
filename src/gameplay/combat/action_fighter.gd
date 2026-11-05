@@ -15,6 +15,8 @@ extends Node
 ##    faces, and sweeps while the move is live.
 ## 4a. Each move started, other than the dodge, is told to the fighter's `PowerSet` (C6.4b), so a
 ##    kit gauge can count a new move.
+## 4c. The moves played are the fighter's own, unless a running power hands over others: a
+##    form's own attack chain and dodge (`current_moves`, C6.5b).
 ## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
 ## 5. While busy, the fighter holds the body's `&"action"` lock, so the controller stops
 ##    walking it; the fighter then sets the horizontal velocity itself: the push of a
@@ -48,6 +50,8 @@ var _stun_left: float = 0.0
 var _push: Vector3 = Vector3.ZERO
 # The last swing told to the `PowerSet`.
 var _reported: int = 0
+# The swing that is a dodge, so a form entered or left mid-roll cannot make it read as a swing.
+var _dodge_swing: int = -1
 var _roll: Vector3 = Vector3.ZERO
 var _fitted: int = -1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -118,6 +122,13 @@ func press_slot(slot: int) -> bool:
 	return PowerSlots.press(me, slot, _rng)
 
 
+## The moves the fighter plays now: its own `moves`, or what a running power puts in their place
+## (a form's chain and dodge, C6.5b).
+func current_moves() -> MoveSet:
+	var powers: PowerSet = PowerSet.of(get_parent())
+	return powers.moves_over(moves) if powers != null else moves
+
+
 ## True while the fighter cannot start moves: knocked back, or under a status counted in
 ## seconds that skips turns, such as a stagger (`StatusSet.halts`).
 func stunned() -> bool:
@@ -128,13 +139,15 @@ func stunned() -> bool:
 
 
 func _start_moves(attack: bool, dodge: bool) -> void:
-	if dodge and moves.dodge != null and timeline.can_dodge():
-		timeline.start(moves.dodge)
+	var playing: MoveSet = current_moves()
+	if dodge and playing.dodge != null and timeline.can_dodge():
+		timeline.start(playing.dodge)
+		_dodge_swing = timeline.swing
 		# Roll the way the body is already moving; standing still, roll the way it faces.
 		var going: Vector3 = _flat(_body.velocity) if _body != null else Vector3.ZERO
 		_roll = going.normalized() if going.length() > 0.1 else facing
 	elif attack:
-		timeline.press(moves.attack_chain)
+		timeline.press(playing.attack_chain)
 
 
 ## Fits the hitbox to each new move, turns it to face, and sweeps it while the move is live.
@@ -156,7 +169,7 @@ func _report_move() -> void:
 		return
 	_reported = timeline.swing
 	var powers: PowerSet = PowerSet.of(get_parent())
-	if powers != null and (moves == null or timeline.move != moves.dodge):
+	if powers != null and timeline.swing != _dodge_swing:
 		powers.moved(timeline.move)
 
 
@@ -183,7 +196,7 @@ func _move_body() -> void:
 	if _stun_left > 0.0:
 		wish = _push
 	elif timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.move.travel_speed > 0.0:
-		var way: Vector3 = _roll if timeline.move == moves.dodge else facing
+		var way: Vector3 = _roll if timeline.swing == _dodge_swing else facing
 		wish = way * timeline.move.travel_speed
 	# A slowed fight slows the roll and the push with it, and a stopped one holds them still.
 	_body.velocity.x = wish.x * CombatClock.scale

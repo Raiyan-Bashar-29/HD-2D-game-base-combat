@@ -141,9 +141,13 @@ formulas (`ActionFighter`, `CombatClock`).
   that are forms themselves; the group and drain are the cycle's), `advance_after` (power ids),
   `drain_pool`, `drain_per_second` (field) and `drain_per_turn` (battle); its executor is `FormRun`
   (`src/gameplay/combat/powers/mechanisms/`). A form IS its status: a cure or a timed form running
-  out ends it with no wiring. The field moves, `drain_per_action`, the quick slots and saves are
-  C6.5b.
-- a power that only works in one form: `requires_statuses [<form status>]`. **C6.5 makes the quick
+  out ends it with no wiring. **C6.5b:** in the field the form plays its own `attack_chain` and
+  `dodge` in place of the fighter's (a cycle stage's own, falling back to the cycle's; empty or
+  null keeps the fighter's), through the executor hook `moves(base)` and
+  `PowerSet.moves_over`, for the player and for followers; `drain_per_action` drains for each
+  move started (never a dodge; the player only, since followers do not report moves). The quick
+  slots and saves are C6.5c.
+- a power that only works in one form: `requires_statuses [<form status>]`. **C6.5c makes the quick
   slots skip a power whose required form is not held, so each form has its own four slots.**
 
 **Small seams the C6.0b characters add** (each is built inside the row named, not a new row):
