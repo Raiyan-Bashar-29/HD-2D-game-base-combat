@@ -12,6 +12,8 @@ extends RefCounted
 ## - `use`: the power was used (`PowerUse.use`), after its skill, if any, has landed;
 ## - `tick`: time passed (`PowerSet`): seconds in the field, 1 per turn in a battle;
 ## - `end`: the kit came off (`PowerSet.unequip`); undo anything still running.
+## - `power_used`: any power of the kit was used (`PowerSet.used`, C6.5a), so a form's cycle can
+##   move on after a finisher.
 ## Later rows add the hooks their seams need: the incoming-hit guard in C6.6, gauges in C6.4.
 ##
 ## OWNS: the running state of one mechanism on one fighter.
@@ -31,6 +33,11 @@ func use(_user: Combatant, _targets: Array[Combatant], _rng: RandomNumberGenerat
 
 ## `amount` passed: seconds in the field, 1 per turn in a battle.
 func tick(_amount: float) -> void:
+	pass
+
+
+## `used`, one of the kit's powers (this one's own included), was just used.
+func power_used(_used: Power) -> void:
 	pass
 
 

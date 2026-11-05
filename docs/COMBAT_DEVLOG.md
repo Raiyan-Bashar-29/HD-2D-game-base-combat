@@ -3001,3 +3001,31 @@ checkers, and the stripped run. No capture: nothing new is drawn.
 
 **Unblocks.** C6.5, and every kit with a gauge (Vergil's Concentration, Isliid's true arts,
 Dante's style rank, Yhwach's soul fragments).
+
+## 2026-11-05 — C6.5a · Forms: stance, style and transformation
+
+**Did.** Built M5 `form`, the base's first built-in mechanism (until now every mechanism was a
+test fake). `FormMechanism` (content) holds a form's `status`, `exclusive_group`, `cycle` of
+stages, `advance_after`, and a drain (`drain_pool`, `drain_per_second`, `drain_per_turn`), plus
+`attack_chain` and `dodge` for C6.5b. `FormRun` (gameplay) runs it: a plain form toggles, a cycle
+moves on, entering leaves the rest of the group, and the drain ends the form at an empty pool.
+New executor hook `power_used` (from `PowerSet.used`, called by `PowerUse.use`) moves a cycle
+on after a named power. `PowerSet.running()` lets a form find its rivals.
+
+**Why.** The C6.5 row was about 13 files, so it split: the form itself here, the field's moves,
+per-action drain, quick slots and saves in C6.5b. A form is read back from its status every time
+it matters, so a cure, a dispel, a timed form (The One's 60 s), a new game or a load stay right
+without any extra wiring, and executors never need saving.
+
+**Connects.** `PowerMechanisms.BUILT_IN` now maps `form`; `FormRun` uses `StatusSet`, `Vitals`
+and `Combatant.real_time`; kits C6.14 onwards (Dante, Vergil, Isliid, Roland...) use it.
+
+**Verified.** Red first: with `FormRun.use` stubbed the form assertions failed. Then the suite
+passed with 0 failed (21 new assertions in `power_form_test.gd`), all seven checkers exited 0,
+boot showed 0 warnings and 0 errors, and the stripped run passed.
+
+**Unblocks.** C6.5b, then every kit with a form.
+
+**Gaps.** A form does not yet change the field's moves, drain per action, own quick slots, or
+survive a save (its status is dropped on load because `StatusDb` cannot find it): all C6.5b.
+

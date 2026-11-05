@@ -11,8 +11,10 @@ extends RefCounted
 ## OWNS: the kind -> executor table, and making an executor for a mechanism.
 ## MUST NOT: name a character or a kit, or run an executor itself.
 
-## The base's own mechanisms: kind -> executor script path. Empty until C6.4 adds the first.
-const BUILT_IN: Dictionary[StringName, String] = {}
+## The base's own mechanisms: kind -> executor script path. The first, `form`, came in C6.5a.
+const BUILT_IN: Dictionary[StringName, String] = {
+	&"form": "res://src/gameplay/combat/powers/mechanisms/form_run.gd",
+}
 
 ## Kinds a game (or a test) registered at run time.
 static var _registered: Dictionary[StringName, GDScript] = {}

@@ -9,10 +9,16 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.4b, the other gauge events: a `GaugeRule` also moves on a kill
+- **Last finished package:** C6.5a, forms, the first built-in mechanism (M5 `form`): a form's
+  power enters it (its status is held) and leaves it; one form per `exclusive_group`; a `cycle`
+  moves on with each use and after a power in `advance_after`; a drain by the second (field) or
+  turn (battle) ends it at an empty pool. `FormMechanism` and `FormRun` live in
+  `powers/mechanisms/` under content and gameplay. **Next is C6.5b: a form's own field moves,
+  drain per action, its own quick slots, and surviving a save.**
+  Before it, C6.4b, the other gauge events: a `GaugeRule` also moves on a kill
   of the holder's own, an ally falling, a move unlike the last (the field), points of another pool
   spent as a cost (`spent_pool`, `on_spent`), and a running second on top of a moving one. The HUD
-  already shows a gauge and its level. **C6.4 is complete; next is C6.5, forms.**
+  already shows a gauge and its level. **C6.4 is complete.**
   Before it, C6.4a, kit gauges run: a kit's `GaugeRule`s (`PowerKit.gauges`)
   move its gauge pools by the second, the battle turn, standing still or moving, and for each hit
   landed or taken, dodge and miss, through a `KitGauges` that `PowerSet` feeds; a status tag can
