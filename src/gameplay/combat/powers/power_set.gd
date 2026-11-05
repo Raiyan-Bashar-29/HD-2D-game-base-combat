@@ -15,6 +15,8 @@ extends Node
 ##   change to a gauge pool, whoever made it, moves that gauge's level status. Since C6.4b it
 ##   also hears a kill, an ally falling, a new move (`moved`, from `ActionFighter`) and a cost
 ##   paid (`spent`, from `SkillUse.pay`).
+## - every running mechanism hears of each power used (`used`, from `PowerUse.use`, C6.5a), so a
+##   form's cycle can move on after a finisher.
 ##
 ## A KILL WITHOUT A LOOKUP: `Combatant.receive` changes the pool first, which announces
 ## `combatant_defeated`, and then announces `combatant_damaged`. So the id that just fell is
@@ -179,6 +181,19 @@ func start_cooldown(power: Power) -> void:
 		var before: float = cooldown_left(power.power_id)
 		_cooling[power.power_id] = power.cooldown
 		_announce(power.power_id, before, power.cooldown)
+
+
+## Every running executor of the kit, in no set order: a form uses it to find its rivals (C6.5a).
+func running() -> Array[PowerExecutor]:
+	var out: Array[PowerExecutor] = []
+	out.assign(_running.values())
+	return out
+
+
+## `power` was just used (`PowerUse.use`): every running mechanism hears of it (C6.5a).
+func used(power: Power) -> void:
+	for executor: PowerExecutor in _running.values():
+		executor.power_used(power)
 
 
 ## The running executor of `power_id`'s mechanism, or null.

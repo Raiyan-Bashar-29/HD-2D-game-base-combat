@@ -90,6 +90,7 @@ static func use(user: Combatant, power: Power, aimed: Array[Combatant],
 	if running != null:
 		running.use(user, aimed, rng)
 	powers.start_cooldown(power)
+	powers.used(power)
 	var statuses: StatusSet = StatusSet.of(body)
 	if statuses != null:
 		for status_id: StringName in power.consumes_statuses:

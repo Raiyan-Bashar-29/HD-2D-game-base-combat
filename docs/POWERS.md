@@ -53,8 +53,8 @@ Do not invent substitute names.
 
 C6.1a built the content classes below except `GaugeRule`, which C6.4a built with `KitGauges`,
 the part of `PowerSet` that runs it (time, hits landed and taken, dodges, misses, `levels`,
-`blocked_by_tags`, and `regen_<pool>` by the second in the field); C6.4b adds the other events. C6.1b built the gameplay classes; their executors have only `use`, `tick` and
-`end` so far, and each later row adds the hook its seam needs (`intercept_incoming` with C6.6).
+`blocked_by_tags`, and `regen_<pool>` by the second in the field); C6.4b adds the other events. C6.1b built the gameplay classes; their executors have `use`, `tick`, `end` and (C6.5a)
+`power_used`, which hears every power of the kit used, and each later row adds the hook its seam needs (`intercept_incoming` with C6.6).
 C6.2a put kits into a turn-based battle. A fighter's kit is `CombatantDef.power_kit`, the one
 kit field for both formulas (the field reads its loadout's `fighter`). In battle a cooldown counts
 down at the start of each of the holder's turns, beside its statuses, asleep or not. C6.2b put
@@ -136,6 +136,13 @@ formulas (`ActionFighter`, `CombatClock`).
   (one line in C6.1).
 - damage against a kind of foe (Isliid's swords against gods, humans or demons): `PowerScaling`
   `TARGET_HAS_TAG` on the power;
+- **M5 `form` as built (C6.5a)**, the first built-in mechanism: `FormMechanism`
+  (`src/content/combat/powers/mechanisms/`) holds `status`, `exclusive_group`, `cycle` (stages
+  that are forms themselves; the group and drain are the cycle's), `advance_after` (power ids),
+  `drain_pool`, `drain_per_second` (field) and `drain_per_turn` (battle); its executor is `FormRun`
+  (`src/gameplay/combat/powers/mechanisms/`). A form IS its status: a cure or a timed form running
+  out ends it with no wiring. The field moves, `drain_per_action`, the quick slots and saves are
+  C6.5b.
 - a power that only works in one form: `requires_statuses [<form status>]`. **C6.5 makes the quick
   slots skip a power whose required form is not held, so each form has its own four slots.**
 
