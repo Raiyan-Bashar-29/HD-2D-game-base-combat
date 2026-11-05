@@ -12,15 +12,17 @@ extends PowerMechanism
 ##   first stage, each further use moves to the next, and the last wraps round to the first. A
 ##   cycle never turns off by being used; it ends by its group, a drain, a cure or the kit coming
 ##   off. `advance_after` names powers whose use also moves the cycle on (a sword that changes
-##   after each finisher). A stage gives only its status; the group and the drain are the
-##   cycle's own.
+##   after each finisher). A stage gives its status and its moves; the group and the drain are
+##   the cycle's own.
 ## - A drain: `drain_pool` loses `drain_per_second` in the field and `drain_per_turn` in a
-##   battle while the form is held, and the form ends when the pool is empty.
+##   battle while the form is held, and `drain_per_action` for each move the fighter starts in
+##   the field (never its dodge). The form ends when the pool is empty.
 ## What a form needs before it can be entered is its power's own `requires_pool` and
 ## `requires_fraction` (a Devil Trigger needs a full enough gauge).
 ##
 ## `attack_chain` and `dodge` are what the form plays in the field instead of the fighter's own
-## moves; empty or null keeps the fighter's own. They are read from C6.5b.
+## moves (C6.5b); empty or null keeps the fighter's own. A cycle stage with no moves of its own
+## plays the cycle's (`moves_of`).
 ##
 ## OWNS: the shape of a form.
 ## MUST NOT: hold running state. `FormRun` (gameplay) runs it.
@@ -35,7 +37,9 @@ extends PowerMechanism
 @export var drain_pool: StringName = &""
 @export var drain_per_second: float = 0.0
 @export var drain_per_turn: float = 0.0
-## The form's own attack chain and dodge in the field (C6.5b). Empty or null: the fighter's own.
+## Points of `drain_pool` lost for each move started in the field (C6.5b).
+@export var drain_per_action: float = 0.0
+## The form's own attack chain and dodge in the field. Empty or null: the fighter's own.
 @export var attack_chain: Array[ActionMove] = []
 @export var dodge: ActionMove
 
@@ -55,6 +59,19 @@ func stage_statuses() -> Array[StatusEffect]:
 	return out
 
 
+## The moves played at `stage`: a stage's own chain and dodge, each falling back to the
+## cycle's own when the stage has none. A plain form's are its own. The result is a form used
+## only for its `attack_chain` and `dodge`.
+func moves_of(stage: int) -> FormMechanism:
+	if cycle.is_empty() or stage < 0 or stage >= cycle.size() or cycle[stage] == null:
+		return self
+	var picked := FormMechanism.new()
+	var held: FormMechanism = cycle[stage]
+	picked.attack_chain = held.attack_chain if not held.attack_chain.is_empty() else attack_chain
+	picked.dodge = held.dodge if held.dodge != null else dodge
+	return picked
+
+
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = super.problems(context)
 	if status == null and cycle.is_empty():
@@ -63,9 +80,10 @@ func problems(context: String) -> PackedStringArray:
 		found.append_array(status.problems())
 	if not advance_after.is_empty() and cycle.is_empty():
 		found.append("%s advances after a power but is not a cycle" % context)
-	if drain_pool == &"" and (drain_per_second != 0.0 or drain_per_turn != 0.0):
+	if drain_pool == &"" and (drain_per_second != 0.0 or drain_per_turn != 0.0 \
+			or drain_per_action != 0.0):
 		found.append("%s drains no pool" % context)
-	if drain_per_second < 0.0 or drain_per_turn < 0.0:
+	if drain_per_second < 0.0 or drain_per_turn < 0.0 or drain_per_action < 0.0:
 		found.append("%s has a negative drain" % context)
 	for i: int in cycle.size():
 		var stage: FormMechanism = cycle[i]

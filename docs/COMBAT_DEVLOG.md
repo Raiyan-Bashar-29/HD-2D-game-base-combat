@@ -3029,3 +3029,34 @@ boot showed 0 warnings and 0 errors, and the stripped run passed.
 **Gaps.** A form does not yet change the field's moves, drain per action, own quick slots, or
 survive a save (its status is dropped on load because `StatusDb` cannot find it): all C6.5b.
 
+
+## 2026-11-05 — C6.5b · A form plays its own moves
+
+**Did.** A form now changes what the fighter does in the field, not only its stats. Two new
+executor hooks: `moves(base)` (the base hands back `base`) and `moved(move)`. `PowerSet.moves_over`
+threads the fighter's own `MoveSet` through every running mechanism in kit order, and
+`PowerSet.moved` now tells every mechanism as well as the gauges. `FormRun.moves` hands back a
+set with the held stage's chain and dodge (`FormMechanism.moves_of`: a stage's own, else the
+cycle's, else the fighter's), kept per base and stage so nothing is built each frame.
+`ActionFighter.current_moves()` is what the attack and dodge buttons play; the follower's swing
+presses the form's chain when its brain opens the member's own. `FormMechanism.drain_per_action`
+drains for each move started (`FormRun.moved`, sharing `_drain` with the timed drain).
+
+**Why.** The old C6.5b row was about 12 files, so it split again: moves and the per-action drain
+here, the quick slots and saves in C6.5c. A dodge used to be recognised by comparing the move to
+`moves.dodge`; with a form swapping the dodge, a form entered or left mid-roll would turn the
+roll into a lunge (the wrong direction) and report it as a new move. It is now recognised by the
+swing number that started it.
+
+**Connects.** `ActionFighter`, `PartyFollower` and `PowerSet` read the new hooks; every form kit
+(Dante's styles, Vergil's weapons, IXA, Isliid's swords, Roland's forms) gets its moves this way.
+
+**Verified.** Red first: with `FormRun.moves` returning the base and `moved` doing nothing, 10 of
+the 14 new assertions in `power_form_moves_test.gd` failed. Then the suite passed with 0 failed,
+all seven checkers exited 0, boot showed 0 warnings and 0 errors, and the stripped run passed.
+
+**Unblocks.** C6.5c, then the kits.
+
+**Gaps.** A follower does not report its moves (the same as C6.4b's `on_new_move`), so its form
+does not drain per action. A battle has no moves, so the per-action drain is the field's only.
+The quick slots and saves are C6.5c.

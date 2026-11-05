@@ -14,6 +14,10 @@ extends RefCounted
 ## - `end`: the kit came off (`PowerSet.unequip`); undo anything still running.
 ## - `power_used`: any power of the kit was used (`PowerSet.used`, C6.5a), so a form's cycle can
 ##   move on after a finisher.
+## - `moves`: the field asks which moves the fighter plays now (`PowerSet.moves_over`, C6.5b), so
+##   a form can hand over its own attack chain and dodge. The base hands back what it was given.
+## - `moved`: the fighter started a move in the field, other than its dodge (`PowerSet.moved`,
+##   C6.5b), so a form can drain per action.
 ## Later rows add the hooks their seams need: the incoming-hit guard in C6.6, gauges in C6.4.
 ##
 ## OWNS: the running state of one mechanism on one fighter.
@@ -38,6 +42,17 @@ func tick(_amount: float) -> void:
 
 ## `used`, one of the kit's powers (this one's own included), was just used.
 func power_used(_used: Power) -> void:
+	pass
+
+
+## The moves the fighter plays in the field while this runs, given `base`, the moves it would
+## play otherwise. Return `base` itself to change nothing.
+func moves(base: MoveSet) -> MoveSet:
+	return base
+
+
+## The fighter started `_move` in the field (never its dodge).
+func moved(_move: ActionMove) -> void:
 	pass
 
 

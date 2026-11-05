@@ -17,6 +17,8 @@ extends Node
 ##   paid (`spent`, from `SkillUse.pay`).
 ## - every running mechanism hears of each power used (`used`, from `PowerUse.use`, C6.5a), so a
 ##   form's cycle can move on after a finisher.
+## - in the field, the fighter plays the moves its running mechanisms hand it (`moves_over`,
+##   C6.5b): a form's own attack chain and dodge.
 ##
 ## A KILL WITHOUT A LOOKUP: `Combatant.receive` changes the pool first, which announces
 ## `combatant_defeated`, and then announces `combatant_damaged`. So the id that just fell is
@@ -207,9 +209,25 @@ func tick_seconds(delta: float) -> void:
 	gauges.tick_seconds(get_parent(), delta)
 
 
-## The fighter started `move` in the field: a gauge's `on_new_move` counts when it is new.
+## The fighter started `move` in the field: a gauge's `on_new_move` counts when it is new, and
+## every running mechanism hears of it (a form's drain per action, C6.5b).
 func moved(move: ActionMove) -> void:
 	gauges.moved(get_parent(), move)
+	for executor: PowerExecutor in _running.values():
+		executor.moved(move)
+
+
+## The moves the fighter plays in the field now: `base` (its own), handed through each running
+## mechanism in the kit's order, so a form can put its own chain and dodge in (C6.5b).
+func moves_over(base: MoveSet) -> MoveSet:
+	var out: MoveSet = base
+	if kit == null:
+		return out
+	for power: Power in kit.powers:
+		var running: PowerExecutor = executor(power.power_id) if power != null else null
+		if running != null:
+			out = running.moves(out)
+	return out
 
 
 ## The fighter paid `amount` points of `pool` as a cost: `SkillUse.pay` says so.
