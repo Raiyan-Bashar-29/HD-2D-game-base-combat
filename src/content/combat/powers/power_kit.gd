@@ -34,6 +34,22 @@ func power(id: StringName) -> Power:
 	return null
 
 
+## The status `id` that this kit itself grants, or null: one of its passives, or one a power's
+## mechanism puts on (a form's, C6.5c). Such a status lives only in the kit file, so a save
+## finds it here, and the quick slots ask here whether a needed status is a form of this kit.
+func status(id: StringName) -> StatusEffect:
+	for passive: StatusEffect in passives:
+		if passive != null and passive.id == id:
+			return passive
+	for entry: Power in powers:
+		if entry == null or entry.mechanism == null:
+			continue
+		for granted: StatusEffect in entry.mechanism.statuses():
+			if granted.id == id:
+				return granted
+	return null
+
+
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
 	var where: String = "%s kit %s" % [context, kit_id]

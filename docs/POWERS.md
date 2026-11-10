@@ -145,10 +145,12 @@ formulas (`ActionFighter`, `CombatClock`).
   `dodge` in place of the fighter's (a cycle stage's own, falling back to the cycle's; empty or
   null keeps the fighter's), through the executor hook `moves(base)` and
   `PowerSet.moves_over`, for the player and for followers; `drain_per_action` drains for each
-  move started (never a dodge; the player only, since followers do not report moves). The quick
-  slots and saves are C6.5c.
-- a power that only works in one form: `requires_statuses [<form status>]`. **C6.5c makes the quick
-  slots skip a power whose required form is not held, so each form has its own four slots.**
+  move started (never a dodge; the player only, since followers do not report moves). **C6.5c:** `PowerMechanism.statuses()`
+  lists what a mechanism puts on (a form: its stage statuses) and `PowerKit.status(id)` finds
+  it, so a form held at save time loads again.
+- a power that only works in one form: `requires_statuses [<form status>]`. **As built (C6.5c): the quick
+  slots skip a power whose required status is one the kit grants and is not held, so each form
+  has its own four slots.** A status from elsewhere does not hide the power; it shows its reason.
 
 **Small seams the C6.0b characters add** (each is built inside the row named, not a new row):
 

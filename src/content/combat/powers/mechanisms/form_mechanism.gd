@@ -59,6 +59,15 @@ func stage_statuses() -> Array[StatusEffect]:
 	return out
 
 
+## Every status this form can put on: its own, or each stage's, with no gaps.
+func statuses() -> Array[StatusEffect]:
+	var out: Array[StatusEffect] = []
+	for held: StatusEffect in stage_statuses():
+		if held != null:
+			out.append(held)
+	return out
+
+
 ## The moves played at `stage`: a stage's own chain and dodge, each falling back to the
 ## cycle's own when the stage has none. A plain form's are its own. The result is a form used
 ## only for its `attack_chain` and `dodge`.
