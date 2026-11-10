@@ -35,7 +35,9 @@ extends Node
 ## a battle, C6.2b in the field), and a cooldown is a moment's state, like the ATB gauge. The
 ## passives are statuses, and a load or a new game clears the `StatusSet`, which cannot find a
 ## status that lives only in a kit. So after either one the set puts its passives back
-## (`_hold_passives`), never twice.
+## (`_hold_passives`), never twice. A form's status IS saved, by the `StatusSet`, and found
+## again on load through `passive_of` (C6.5c), so a form outlives a save though its executor
+## does not.
 ##
 ## A PARTY SWITCH MOVES THIS NODE to another body (`FieldParty`), and moving a node makes it
 ## leave the tree and enter again. So its mechanisms end only when it is freed, not when it
@@ -65,16 +67,14 @@ static func of(who: Node) -> PowerSet:
 	return null
 
 
-## The passive `status_id` of the kit worn under `who`, or null. A passive lives only in its kit
-## file, so `StatusSet` finds it here when it loads a save (C6.2b).
+## The status `status_id` granted by the kit worn under `who`, or null: a passive, or a form's
+## status (C6.5c). Such a status lives only in its kit file, so `StatusSet` finds it here when it
+## loads a save (C6.2b), and a form held when the game was saved is held again.
 static func passive_of(who: Node, status_id: StringName) -> StatusEffect:
 	var powers: PowerSet = of(who)
 	if powers == null or powers.kit == null:
 		return null
-	for passive: StatusEffect in powers.kit.passives:
-		if passive != null and passive.id == status_id:
-			return passive
-	return null
+	return powers.kit.status(status_id)
 
 
 func _physics_process(delta: float) -> void:

@@ -35,6 +35,9 @@ extends Node
 ## write cannot reach a real save, and `_saves_were_claimed()` fails the case that made it. Why it
 ## takes both halves is in `tests/framework/save_fixture.gd`'s header.
 ##
+## THE COMBAT FORK'S CASES live in `tests/combat_cases.gd` and run after these (C6.5c): the list
+## here is upstream's own, so it merges cleanly and this file keeps its line budget.
+##
 ## OWNS: discovering cases, tallying them, enforcing the plans and the exit code.
 ## MUST NOT: contain assertions of its own, or any game logic.
 
@@ -88,60 +91,6 @@ const CASES: Array[String] = [
 	"res://tests/unit/idle_break_test.gd",
 	"res://tests/unit/doc_counts_test.gd",
 	"res://tests/unit/record_shape_test.gd",
-	"res://tests/unit/combat_record_test.gd",
-	"res://tests/unit/stat_sheet_test.gd",
-	"res://tests/unit/vitals_test.gd",
-	"res://tests/unit/damage_formula_test.gd",
-	"res://tests/unit/status_set_test.gd",
-	"res://tests/unit/combatant_test.gd",
-	"res://tests/unit/strike_target_test.gd",
-	"res://tests/unit/turn_scheduler_test.gd",
-	"res://tests/unit/ctb_scheduler_test.gd",
-	"res://tests/unit/skill_test.gd",
-	"res://tests/unit/battle_test.gd",
-	"res://tests/unit/battle_ai_test.gd",
-	"res://tests/unit/encounter_test.gd",
-	"res://tests/unit/battle_screen_test.gd",
-	"res://tests/unit/combat_content_test.gd",
-	"res://tests/unit/skill_use_test.gd",
-	"res://tests/unit/status_behaviour_test.gd",
-	"res://tests/unit/hit_reaction_test.gd",
-	"res://tests/unit/meters_test.gd",
-	"res://tests/unit/weakness_test.gd",
-	"res://tests/unit/stagger_test.gd",
-	"res://tests/unit/field_party_test.gd",
-	"res://tests/unit/ally_brain_test.gd",
-	"res://tests/unit/ally_fight_test.gd",
-	"res://tests/unit/variants_test.gd",
-	"res://tests/unit/symbol_encounter_test.gd",
-	"res://tests/unit/combat_save_test.gd",
-	"res://tests/unit/battle_menu_test.gd",
-	"res://tests/unit/battle_readout_test.gd",
-	"res://tests/unit/combat_input_test.gd",
-	"res://tests/unit/move_timeline_test.gd",
-	"res://tests/unit/hitbox_test.gd",
-	"res://tests/unit/action_fighter_test.gd",
-	"res://tests/unit/lock_on_test.gd",
-	"res://tests/unit/action_decider_test.gd",
-	"res://tests/unit/action_enemy_test.gd",
-	"res://tests/unit/field_defeat_test.gd",
-	"res://tests/unit/combat_hud_test.gd",
-	"res://tests/unit/combat_clock_test.gd",
-	"res://tests/unit/atb_test.gd",
-	"res://tests/unit/field_commands_test.gd",
-	"res://tests/unit/power_content_test.gd",
-	"res://tests/unit/power_use_test.gd",
-	"res://tests/unit/power_battle_test.gd",
-	"res://tests/unit/power_field_test.gd",
-	"res://tests/unit/power_menu_test.gd",
-	"res://tests/unit/power_slots_test.gd",
-	"res://tests/unit/power_hud_test.gd",
-	"res://tests/unit/power_gauge_test.gd",
-	"res://tests/unit/power_gauge_events_test.gd",
-	"res://tests/unit/power_form_test.gd",
-	"res://tests/unit/power_form_moves_test.gd",
-	"res://tests/unit/command_overlay_test.gd",
-	"res://tests/unit/party_rewards_test.gd",
 	"res://tests/unit/gates_test.gd",
 	"res://tests/unit/settings_consumers_test.gd",
 	"res://tests/unit/settings_effects_test.gd",
@@ -206,7 +155,7 @@ func _ready() -> void:
 		Log.info("test", "no demo content in this checkout — demo-only cases will skip")
 
 	_manifest_is_complete()
-	for path: String in CASES:
+	for path: String in _cases():
 		_run_case(path)
 
 	_no_unattributed_errors()
@@ -228,6 +177,11 @@ func _report() -> void:
 		Log.error("test", "FAILED: %s" % failure)
 
 
+## Every case to run: upstream's, then the combat fork's.
+func _cases() -> Array[String]:
+	return CASES + CombatCases.LIST
+
+
 ## A suite file that nobody listed is never run, and every rung stays green. This is gotcha 22's
 ## shape one layer up: not a file that fails to parse, but a file that is never asked to.
 func _manifest_is_complete() -> void:
@@ -235,7 +189,7 @@ func _manifest_is_complete() -> void:
 		if not file_name.ends_with(".gd"):
 			continue
 		var path: String = "%s/%s" % [CASE_DIR, file_name]
-		if not CASES.has(path):
+		if not _cases().has(path):
 			_record_failure("%s exists but is not listed in CASES, so it never runs" % path)
 
 

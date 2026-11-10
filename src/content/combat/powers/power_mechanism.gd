@@ -8,6 +8,9 @@ extends Resource
 ## executor found by `kind()` through the `PowerMechanisms` registry (C6.1b). A mechanism is
 ## named after what it does, never after a character, so one barrage serves many kits.
 ##
+## A mechanism that puts statuses of its own on its holder (a form) lists them in `statuses()`
+## (C6.5c), so the kit can find them: a save can load them, and the quick slots know them.
+##
 ## OWNS: the base shape every mechanism shares.
 ## MUST NOT: hold running state or touch a fighter. The executor does both.
 
@@ -16,6 +19,12 @@ extends Resource
 ## base returns nothing, which `problems` reports.
 func kind() -> StringName:
 	return &""
+
+
+## The statuses this mechanism can put on its holder. None for most; a form lists its own.
+func statuses() -> Array[StatusEffect]:
+	var none: Array[StatusEffect] = []
+	return none
 
 
 ## Empty when it can run. A subclass adds its own checks to this list.

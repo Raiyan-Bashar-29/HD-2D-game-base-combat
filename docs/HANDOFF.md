@@ -9,11 +9,17 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.5b, a form plays its own moves: while held, its `attack_chain`
+- **Last finished package:** C6.5c, which finishes forms: a kit finds the statuses it grants
+  (`PowerKit.status`: a passive, or a form's through `PowerMechanism.statuses()`), so a form held
+  when the game was saved is held again after a load; and the quick slots skip a power that
+  needs a form of its kit that is not held, so each form has its own four. **C6.5 is complete.
+  Next is C6.6: the barrier and the counter stance (M3, M13).**
+  **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
+  `tests/test_runner.gd`, whose own list had reached its line budget.
+  Before it, C6.5b, a form plays its own moves: while held, its `attack_chain`
   and `dodge` replace the fighter's own in the field (`PowerSet.moves_over`, read by
   `ActionFighter.current_moves()` and the follower's swing), a cycle stage plays its own or the
-  cycle's, and `drain_per_action` drains for each move started. **Next is C6.5c: each form owns
-  its quick slots, and a form survives a save.**
+  cycle's, and `drain_per_action` drains for each move started.
   Before it, C6.5a, forms, the first built-in mechanism (M5 `form`): a form's
   power enters it (its status is held) and leaves it; one form per `exclusive_group`; a `cycle`
   moves on with each use and after a power in `advance_after`; a drain by the second (field) or

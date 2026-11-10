@@ -1,0 +1,69 @@
+class_name CombatCases
+extends RefCounted
+## The combat fork's test cases (C6.5c), run by `tests/test_runner.gd` after upstream's own.
+##
+## IN PLAIN WORDS: upstream's runner lists upstream's cases and has a line budget. The fork's
+## cases were added to that list, which filled the budget and made every upstream merge touch
+## the same lines. They live here now. Add a new combat test to this list, beside the tests it
+## belongs with; the runner still fails a test file that is in neither list.
+##
+## OWNS: the list of the fork's test files, in the order they run.
+## MUST NOT: hold assertions or logic.
+
+const LIST: Array[String] = [
+	"res://tests/unit/combat_record_test.gd",
+	"res://tests/unit/stat_sheet_test.gd",
+	"res://tests/unit/vitals_test.gd",
+	"res://tests/unit/damage_formula_test.gd",
+	"res://tests/unit/status_set_test.gd",
+	"res://tests/unit/combatant_test.gd",
+	"res://tests/unit/strike_target_test.gd",
+	"res://tests/unit/turn_scheduler_test.gd",
+	"res://tests/unit/ctb_scheduler_test.gd",
+	"res://tests/unit/skill_test.gd",
+	"res://tests/unit/battle_test.gd",
+	"res://tests/unit/battle_ai_test.gd",
+	"res://tests/unit/encounter_test.gd",
+	"res://tests/unit/battle_screen_test.gd",
+	"res://tests/unit/combat_content_test.gd",
+	"res://tests/unit/skill_use_test.gd",
+	"res://tests/unit/status_behaviour_test.gd",
+	"res://tests/unit/hit_reaction_test.gd",
+	"res://tests/unit/meters_test.gd",
+	"res://tests/unit/weakness_test.gd",
+	"res://tests/unit/stagger_test.gd",
+	"res://tests/unit/field_party_test.gd",
+	"res://tests/unit/ally_brain_test.gd",
+	"res://tests/unit/ally_fight_test.gd",
+	"res://tests/unit/variants_test.gd",
+	"res://tests/unit/symbol_encounter_test.gd",
+	"res://tests/unit/combat_save_test.gd",
+	"res://tests/unit/battle_menu_test.gd",
+	"res://tests/unit/battle_readout_test.gd",
+	"res://tests/unit/combat_input_test.gd",
+	"res://tests/unit/move_timeline_test.gd",
+	"res://tests/unit/hitbox_test.gd",
+	"res://tests/unit/action_fighter_test.gd",
+	"res://tests/unit/lock_on_test.gd",
+	"res://tests/unit/action_decider_test.gd",
+	"res://tests/unit/action_enemy_test.gd",
+	"res://tests/unit/field_defeat_test.gd",
+	"res://tests/unit/combat_hud_test.gd",
+	"res://tests/unit/combat_clock_test.gd",
+	"res://tests/unit/atb_test.gd",
+	"res://tests/unit/field_commands_test.gd",
+	"res://tests/unit/power_content_test.gd",
+	"res://tests/unit/power_use_test.gd",
+	"res://tests/unit/power_battle_test.gd",
+	"res://tests/unit/power_field_test.gd",
+	"res://tests/unit/power_menu_test.gd",
+	"res://tests/unit/power_slots_test.gd",
+	"res://tests/unit/power_hud_test.gd",
+	"res://tests/unit/power_gauge_test.gd",
+	"res://tests/unit/power_gauge_events_test.gd",
+	"res://tests/unit/power_form_test.gd",
+	"res://tests/unit/power_form_moves_test.gd",
+	"res://tests/unit/power_form_slots_test.gd",
+	"res://tests/unit/command_overlay_test.gd",
+	"res://tests/unit/party_rewards_test.gd",
+]

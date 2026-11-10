@@ -3060,3 +3060,35 @@ all seven checkers exited 0, boot showed 0 warnings and 0 errors, and the stripp
 **Gaps.** A follower does not report its moves (the same as C6.4b's `on_new_move`), so its form
 does not drain per action. A battle has no moves, so the per-action drain is the field's only.
 The quick slots and saves are C6.5c.
+
+## 2026-11-10 — C6.5c · A form's own quick slots, and forms survive a save
+
+**Did.** `PowerMechanism.statuses()` lists the statuses a mechanism can put on its holder (none
+by default; a form lists its stage statuses). `PowerKit.status(id)` finds a status the kit itself
+grants: a passive, or one of those. `PowerSet.passive_of` now returns it, so `StatusSet` can load
+a form's status. `PowerSlots.powers` skips a power whose `requires_statuses` names a status the
+kit grants and the fighter does not hold.
+
+**Why.** A form's status lives only in its kit file, so on load `StatusSet._apply_save` could not
+find it and dropped it with a warning: a player who saved in Devil Trigger loaded out of it. And
+a kit with several forms wants keys 1 to 4 to follow the form, as Dante's styles do. Only a
+status the kit grants hides a power; one from elsewhere (a buff, a gauge level) leaves the power
+on its key with its reason, because the player cannot fix that by changing form.
+
+**Connects.** `StatusSet._apply_save` (unchanged) through `passive_of`; `CombatHud.slot_text`
+(unchanged) through `PowerSlots.powers`; `FormRun` reads the loaded status back by itself.
+
+**Verified.** Red first: with `PowerKit.status` searching only the passives and the skip taken
+out, 5 of the 14 new assertions in `power_form_slots_test.gd` failed, the save one among them.
+Then the suite passed with 0 failed, all seven checkers exited 0, boot showed 0 warnings and 0
+errors, and the stripped run passed.
+
+**Unblocks.** C6.6, and every kit with forms. **C6.5 is complete.**
+
+**Also.** Registering this test took upstream's `tests/test_runner.gd` to 251 of its 250
+budgeted lines. The fix was not a longer budget: the fork's 55 cases moved to a new
+`tests/combat_cases.gd` (`CombatCases.LIST`), which the runner runs after upstream's own. The
+runner now differs from upstream by ten lines, not fifty-five, so merges touch it less. The
+combat cases now run after all of upstream's, not in the middle; the suite passed unchanged.
+
+**Gaps.** None new. Still open from C6.5b: a follower's form does not drain per action.
