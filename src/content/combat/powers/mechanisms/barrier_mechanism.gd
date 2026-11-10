@@ -21,16 +21,24 @@ extends FormMechanism
 ## `scope` ALLIES guards every ally too, with the guard's own pools paying and storing.
 ## A heal is never touched, and a fallen guard guards nobody.
 ##
-## The timed block (a perfect press takes nothing) is C6.6b.
+## THE TIMED BLOCK (C6.6b), `mode` TIMED_BLOCK: the press that raises the guard is the timing.
+## A hit that arrives while `timing` is open, counted in seconds from the moment the guard went
+## up, is a PERFECT block: it takes nothing, costs nothing, and what it would have taken is added
+## to `store_pool` when one is named. Any later hit is a LATE block: it pays `cost_per_block` and
+## leaves `factor` of the hit, as REDUCE does. Give the guard's `status` a short duration, so
+## each press raises it anew. In a battle there are no seconds: a block is perfect until the
+## start of the guard's own next turn.
+## Example: `timing` 0 to 0.2 s, `factor` 0.3, `cost_per_block` 10 of `devil`, `store_pool`
+## `royal`: a press within 0.2 s of the hit takes 0 and stores it; a slower one takes 30%.
 ##
 ## OWNS: the shape of a barrier.
 ## MUST NOT: hold running state. `BarrierRun` (gameplay) runs it.
 
-enum Mode { NULLIFY, REDUCE }
+enum Mode { NULLIFY, REDUCE, TIMED_BLOCK }
 enum Scope { SELF, ALLIES }
 
 @export var mode: Mode = Mode.NULLIFY
-## REDUCE only: what is left of the hit, from 0 to 1.
+## REDUCE, and a late TIMED_BLOCK: what is left of the hit, from 0 to 1.
 @export_range(0.0, 1.0) var factor: float = 0.5
 @export var scope: Scope = Scope.SELF
 ## Paid each time the barrier stops or softens a hit.
@@ -40,7 +48,10 @@ enum Scope { SELF, ALLIES }
 @export var bypass_tags: Array[StringName] = []
 ## Elements drunk whole into `store_pool`.
 @export var absorb_elements: Array[StringName] = []
+## Also where a perfect timed block stores what it stopped.
 @export var store_pool: StringName = &""
+## TIMED_BLOCK only: when, in seconds after the guard goes up, a hit is blocked perfectly.
+@export var timing: TimedWindow
 
 
 func kind() -> StringName:
@@ -61,4 +72,11 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s pays its blocks from no pool" % context)
 	if not absorb_elements.is_empty() and store_pool == &"":
 		found.append("%s absorbs into no pool" % context)
+	if mode == Mode.TIMED_BLOCK:
+		if timing == null:
+			found.append("%s is a timed block with no timing" % context)
+		else:
+			found.append_array(timing.problems(context))
+		if status == null and cycle.is_empty():
+			found.append("%s is a timed block that is never raised: it has no status" % context)
 	return found

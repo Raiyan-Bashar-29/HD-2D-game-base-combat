@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## IN PLAIN WORDS: while a battle screen is open, this listens on `Events` for damage, misses,
 ## counters, reflects, breaks, revealed weaknesses, statuses and defeats, and writes one line for
-## each: "Wisp takes 12.", "The attack on Wisp missed.", "Wisp is broken!". `BattleScreen` shows
+## each: "Wisp takes 12.", "The attack on Wisp missed.", "Wisp blocks the attack.", "Wisp is broken!". `BattleScreen` shows
 ## `lines` under the turn order.
 ##
 ## IT ONLY LISTENS. Every line comes from a signal another system already emits, so the log can
@@ -20,6 +20,7 @@ const DAMAGE_KEY: String = "ui.battle.log.damage"
 const CRITICAL_KEY: String = "ui.battle.log.critical"
 const HEALED_KEY: String = "ui.battle.log.healed"
 const MISSED_KEY: String = "ui.battle.log.missed"
+const BLOCKED_KEY: String = "ui.battle.log.blocked"
 const RESISTED_KEY: String = "ui.battle.log.resisted"
 const SKIPPED_KEY: String = "ui.battle.log.skipped"
 const COUNTERED_KEY: String = "ui.battle.log.countered"
@@ -45,6 +46,7 @@ func _init(battle: Battle, namer: Callable) -> void:
 func start() -> void:
 	Events.combatant_damaged.connect(_on_damaged)
 	Events.attack_missed.connect(_on_missed)
+	Events.attack_blocked.connect(_on_blocked)
 	Events.status_resisted.connect(_on_resisted)
 	Events.turn_skipped.connect(_on_skipped)
 	Events.countered.connect(_on_countered)
@@ -59,6 +61,7 @@ func start() -> void:
 ## in that battle's own log.
 func stop() -> void:
 	for pair: Array in [[Events.combatant_damaged, _on_damaged], [Events.attack_missed, _on_missed],
+			[Events.attack_blocked, _on_blocked],
 			[Events.status_resisted, _on_resisted], [Events.turn_skipped, _on_skipped],
 			[Events.countered, _on_countered], [Events.skill_reflected, _on_reflected],
 			[Events.weakness_revealed, _on_weak], [Events.combatant_broken, _on_broken],
@@ -111,6 +114,10 @@ func _on_damaged(who: StringName, _by: StringName, amount: int, critical: bool) 
 
 func _on_missed(who: StringName, _by: StringName) -> void:
 	_add(MISSED_KEY, {"name": _name(who)})
+
+
+func _on_blocked(who: StringName, _by: StringName) -> void:
+	_add(BLOCKED_KEY, {"name": _name(who)})
 
 
 func _on_resisted(who: StringName, status_id: StringName) -> void:

@@ -23,10 +23,16 @@ extends Resource
 @export var perfect_bonus: float = 2.0
 
 
+## True when `at` seconds falls inside the window, its two edges included. A timed block (C6.6b)
+## asks this: was the guard raised just before the hit?
+func inside(at: float) -> bool:
+	return at >= opens and at <= closes
+
+
 ## The power multiplier for a press `pressed_at` seconds after the move started: 1.0 outside
 ## the window, `bonus` inside it, `perfect_bonus` in its centre.
 func multiplier(pressed_at: float) -> float:
-	if pressed_at < opens or pressed_at > closes:
+	if not inside(pressed_at):
 		return 1.0
 	if perfect > 0.0:
 		var middle: float = (opens + closes) / 2.0

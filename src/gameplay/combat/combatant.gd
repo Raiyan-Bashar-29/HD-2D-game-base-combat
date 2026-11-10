@@ -9,7 +9,8 @@ extends Node
 ##
 ## A BARRIER STEPS IN BEFORE THE HIT LANDS (C6.6a). `receive` hands the resolved hit to
 ## `PowerSet.guard`, the one hook the hero powers have in the damage path: a barrier may bring
-## it to nothing, make it smaller, or drink its element.
+## it to nothing, make it smaller, or drink its element. A hit stopped whole is announced as
+## `attack_blocked` and changes nothing (C6.6b).
 ##
 ## THE ATTACKER'S FORMULA RESOLVES THE HIT. `hit` builds the request from both sheets, resolves it
 ## through this combatant's `formula` with the caller's seeded `rng`, and hands the RESULT to the
@@ -133,6 +134,10 @@ func receive(result: DamageResult, from: StringName) -> int:
 		return 0
 	# A barrier of this fighter's kit, or of an ally's, may stop or soften the hit first (C6.6a).
 	PowerSet.guard(self, result, from)
+	# A hit stopped whole is announced as blocked, not as 0 damage (C6.6b).
+	if result.blocked:
+		Events.attack_blocked.emit(combatant_id, from)
+		return 0
 	var before: int = vitals.current(damage_pool)
 	var after: int = vitals.change(damage_pool, -result.total())
 	# A hit that really hurt wakes a sleeper (a status with breaks_on_hit) (C2.14).
