@@ -16,6 +16,10 @@ extends Node
 ## through this combatant's `formula` with the caller's seeded `rng`, and hands the RESULT to the
 ## target's `receive`. A defender never re-resolves, so a preview and the real hit agree.
 ##
+## WHAT WORN GEAR LENDS (C7.1c). A worn weapon can give the plain attack an element and extra
+## weakness tags. The worn set writes them into `lent_element` and `lent_tags`; this node does
+## not know what gear is. Whoever resolves a plain attack asks `strike_element` and `strike_tags`.
+##
 ## EVERY COMBATANT IS IN THE GROUP `GROUP`, so `find` can turn an id from an event back into
 ## its fighter (C6.4b: a kit gauge asks whether the one who fell was an ally).
 ##
@@ -50,6 +54,10 @@ const GROUP: StringName = &"combatants"
 ## whoever builds a field fighter (`ActionHost.equip`, `ActionEnemy`); a battle builds fresh
 ## combatants, which stay false. `Weakness` reads it to choose a break in turns or in seconds.
 var real_time: bool = false
+## The element worn gear gives this fighter's plain attack. Written by `GearSet`.
+var lent_element: StringName = &""
+## The weakness tags worn gear adds to this fighter's plain attack. Written by `GearSet`.
+var lent_tags: Array[StringName] = []
 var sheet: StatSheet = StatSheet.new()
 
 
@@ -103,6 +111,20 @@ func can_target(other: Combatant, filter: FactionTable.Target) -> bool:
 ## The formula this combatant's hits resolve through: its own, or the standard one.
 func resolving_formula() -> DamageFormula:
 	return formula if formula != null else DamageFormula.standard()
+
+
+## The element a plain attack has: its `own` when it names one, else what worn gear lends.
+func strike_element(own: StringName) -> StringName:
+	return own if own != &"" else lent_element
+
+
+## What a plain attack counts as for a weakness: this fighter's own tags, then worn gear's.
+func strike_tags() -> Array[StringName]:
+	var out: Array[StringName] = attack_tags.duplicate()
+	for tag: StringName in lent_tags:
+		if not out.has(tag):
+			out.append(tag)
+	return out
 
 
 ## Resolves one hit on `target` and applies it. Null when there is nobody to hit.

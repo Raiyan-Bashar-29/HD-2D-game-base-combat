@@ -7,6 +7,10 @@ extends Resource
 ## repeat it. It says which family the kind belongs to, which slots it may be worn in, and the
 ## stat changes all of its pieces carry (heavy plate slows its wearer, whatever the plate).
 ##
+## WHAT A WEAPON LENDS (C7.1c): a type may say what element its wearer's plain attack has and
+## what it counts as for a weakness (a lance is `pierce`). It may also list slots its pieces
+## take up besides their own, in `blocks`: a two-handed sword blocks the off hand.
+##
 ## A type is a data file, `data/gear_types/<name>.tres`, that pieces point at. Adding a kind of
 ## gear is adding a file: no code changes.
 ##
@@ -24,6 +28,12 @@ enum Family { WEAPON, ARMOUR, ACCESSORY, SPECIAL }
 ## Stat changes every piece of this type carries while worn. Leave `source` empty: the worn set
 ## names the piece as the source, so taking the piece off removes them.
 @export var modifiers: Array[StatModifier] = []
+## The element the wearer's plain attack gets, such as `fire`. A piece's own element wins.
+@export var element: StringName = &""
+## What the wearer's plain attack counts as for a weakness, such as `sword` or `pierce`.
+@export var attack_tags: Array[StringName] = []
+## Slots a piece of this type takes up besides the one it is worn in. Two-handed: the off hand.
+@export var blocks: Array[StringName] = []
 
 
 func problems(context: String) -> PackedStringArray:
@@ -40,4 +50,11 @@ func problems(context: String) -> PackedStringArray:
 			found.append("%s lists an empty modifier" % where)
 		elif modifier.stat == &"":
 			found.append("%s has a modifier with no stat" % where)
+	if attack_tags.has(&""):
+		found.append("%s lists an unnamed attack tag" % where)
+	for slot: StringName in blocks:
+		if slot == &"":
+			found.append("%s blocks an unnamed slot" % where)
+		elif slots.has(slot):
+			found.append("%s blocks %s, a slot it is worn in" % [where, slot])
 	return found

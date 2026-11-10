@@ -91,11 +91,13 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 		# It does not report misses one by one, so poise and knockback treat it as landed.
 		SkillUse.apply(attacker, move.skill, [target], rng)
 		return true
-	var keys: Array[StringName] = [move.element]
-	keys.append_array(attacker.attack_tags)
+	# A move with no element of its own takes the worn weapon's, and its tags too (C7.1c).
+	var element: StringName = attacker.strike_element(move.element)
+	var keys: Array[StringName] = [element]
+	keys.append_array(attacker.strike_tags())
 	var landed: bool = false
 	for i: int in maxi(1, move.hits):
-		var result: DamageResult = attacker.hit(target, move.power, move.element, rng)
+		var result: DamageResult = attacker.hit(target, move.power, element, rng)
 		# A hit a barrier stopped whole did not land: no shield chip, no poise, no push (C6.6a).
 		if result != null and not result.missed and not result.blocked:
 			landed = true

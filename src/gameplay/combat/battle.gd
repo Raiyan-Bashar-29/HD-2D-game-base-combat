@@ -217,12 +217,16 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 			if not _legal(command, targets, true):
 				return false
 			var landed: DamageResult = null
+			# A worn weapon may lend the attack an element and weakness tags (C7.1c).
+			var element: StringName = actor.strike_element(&"")
+			var keys: Array[StringName] = [element]
+			keys.append_array(actor.strike_tags())
 			for i: int in 1 + attack_boost_hits * boost:
-				var swing: DamageResult = actor.hit(targets[0], 0.0, &"", rng)
+				var swing: DamageResult = actor.hit(targets[0], 0.0, element, rng)
 				if swing != null and not swing.missed:
 					landed = swing
-					# Each landed swing counts against a weakness to the actor's attack_tags.
-					Weakness.strike(targets[0], actor.attack_tags)
+					# Each landed swing counts against a weakness to what the attack carries.
+					Weakness.strike(targets[0], keys)
 			# Only a plain attack is countered, once however many swings landed; a skill is
 			# answered by REFLECT instead (C2.15).
 			SkillUse.counter(actor, targets[0], landed, rng)

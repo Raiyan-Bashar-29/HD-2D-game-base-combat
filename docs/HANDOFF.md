@@ -9,7 +9,10 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C7.1b, gear in a fight. A fighter's definition lists the gear it
+- **Last finished package:** C7.1c, the worn weapon on attacks. A worn piece lends the
+  wearer's plain attack an `element` and `attack_tags` (`GearSet` writes them onto the
+  `Combatant`; `Battle`'s ATTACK and `Hurtbox` read them), and a piece can take up more slots
+  through `blocks` (two-handed = blocks the off hand). Before it, C7.1b, gear in a fight. A fighter's definition lists the gear it
   starts with (`CombatantDef.gear`). `GearSet.fit` gives a fighter its worn set in a battle
   (`BattleSetup`), in the field (`ActionHost`) and on a field enemy (`ActionEnemy`), and a
   party switch carries it. Starting pieces go on once and need not be in the bag; a foe's gear
@@ -18,8 +21,8 @@ between them, written in plain words.
   piece per slot, saved in `Flags`. The owner's rule (2026-11-10): build mechanisms that
   combine, not every weapon; the idea list is `docs/reference/weapon_ideas.csv` and the
   mapping is `GEAR.md` § The mechanism catalogue.
-- **Next: C7.1c, the worn weapon on attacks** (element, tags, two-handed). The build order is
-  the table at the foot of `GEAR.md`: C7.1c, C7.2, C7.3, then C6.5d, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
+- **Next: C7.2, rarity and drops.** The build order is
+  the table at the foot of `GEAR.md`: C7.2, C7.3, then C6.5d, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
