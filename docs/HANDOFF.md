@@ -9,11 +9,13 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.5c, which finishes forms: a kit finds the statuses it grants
-  (`PowerKit.status`: a passive, or a form's through `PowerMechanism.statuses()`), so a form held
-  when the game was saved is held again after a load; and the quick slots skip a power that
-  needs a form of its kit that is not held, so each form has its own four. **C6.5 is complete.
-  Next is C6.6: the barrier and the counter stance (M3, M13).**
+- **Last finished package:** C6.6a, the barrier (M3). `Combatant.receive` now shows every hit
+  to `PowerSet.guard` before it lands, the one hook hero powers have in the damage path. A
+  `BarrierMechanism` is a form that guards: while up it nullifies or reduces a hit, lets a
+  bypass tag through, drinks an absorbed element into a pool, pays a cost per block, and can
+  guard allies. Its executor is `BarrierRun` (a `FormRun`). **C6.6 was split in three. Next is
+  C6.6b: the timed block, the perfect dodge and the `knockback_taken` stat; then C6.6c, the
+  counter stance (M13).**
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
   `tests/test_runner.gd`, whose own list had reached its line budget.
   Before it, C6.5b, a form plays its own moves: while held, its `attack_chain`

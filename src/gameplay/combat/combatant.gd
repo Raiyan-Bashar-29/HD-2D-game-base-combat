@@ -7,6 +7,10 @@ extends Node
 ## hands both its sheet and its id, so a status's modifier changes the same maximum that `Vitals`
 ## clamps to, and every signal names the same `who`. Nothing about the actor itself changes.
 ##
+## A BARRIER STEPS IN BEFORE THE HIT LANDS (C6.6a). `receive` hands the resolved hit to
+## `PowerSet.guard`, the one hook the hero powers have in the damage path: a barrier may bring
+## it to nothing, make it smaller, or drink its element.
+##
 ## THE ATTACKER'S FORMULA RESOLVES THE HIT. `hit` builds the request from both sheets, resolves it
 ## through this combatant's `formula` with the caller's seeded `rng`, and hands the RESULT to the
 ## target's `receive`. A defender never re-resolves, so a preview and the real hit agree.
@@ -101,14 +105,18 @@ func resolving_formula() -> DamageFormula:
 
 
 ## Resolves one hit on `target` and applies it. Null when there is nobody to hit.
-## `sure_hit` skips the accuracy roll, for a skill that cannot miss (C2.15).
-func hit(target: Combatant, power: float, element: StringName,
-		rng: RandomNumberGenerator, sure_hit: bool = false) -> DamageResult:
+## `sure_hit` skips the accuracy roll, for a skill that cannot miss (C2.15). `tags` say what kind
+## of hit it is (a skill's tags), for a barrier to read (C6.6a).
+func hit(target: Combatant, power: float, element: StringName, rng: RandomNumberGenerator,
+		sure_hit: bool = false, tags: Array[StringName] = []) -> DamageResult:
 	if target == null:
 		return null
 	var request := DamageRequest.of(sheet, target.sheet, power, element)
 	request.sure_hit = sure_hit
 	var result: DamageResult = resolving_formula().resolve(request, rng)
+	result.tags.assign(tags)
+	if sure_hit:
+		result.tags.append(&"sure_hit")
 	target.receive(result, combatant_id)
 	return result
 
@@ -123,6 +131,8 @@ func receive(result: DamageResult, from: StringName) -> int:
 	if result.missed:
 		Events.attack_missed.emit(combatant_id, from)
 		return 0
+	# A barrier of this fighter's kit, or of an ally's, may stop or soften the hit first (C6.6a).
+	PowerSet.guard(self, result, from)
 	var before: int = vitals.current(damage_pool)
 	var after: int = vitals.change(damage_pool, -result.total())
 	# A hit that really hurt wakes a sleeper (a status with breaks_on_hit) (C2.14).

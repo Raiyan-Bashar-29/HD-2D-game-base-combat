@@ -187,8 +187,9 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 ## against the target's weaknesses (C2.17).
 static func _hit(user: Combatant, skill: Skill, target: Combatant, power: float,
 		rng: RandomNumberGenerator) -> void:
-	var result: DamageResult = user.hit(target, power, skill.element, rng, skill.sure_hit)
-	if result != null and not result.missed:
+	var result: DamageResult = user.hit(target, power, skill.element, rng, skill.sure_hit, skill.tags)
+	# A hit a barrier stopped whole touched nothing, so it finds no weakness either (C6.6a).
+	if result != null and not result.missed and not result.blocked:
 		Weakness.strike(target, Weakness.keys_of(skill))
 
 

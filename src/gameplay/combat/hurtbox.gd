@@ -96,7 +96,8 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 	var landed: bool = false
 	for i: int in maxi(1, move.hits):
 		var result: DamageResult = attacker.hit(target, move.power, move.element, rng)
-		if result != null and not result.missed:
+		# A hit a barrier stopped whole did not land: no shield chip, no poise, no push (C6.6a).
+		if result != null and not result.missed and not result.blocked:
 			landed = true
 			Weakness.strike(target, keys)
 	return landed
