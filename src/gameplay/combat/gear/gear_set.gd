@@ -19,6 +19,19 @@ extends Node
 ## WHY NOT `Equipment`: its slots are upstream's enum, which has no weapon or armour slot on
 ## purpose, and this fork may not edit it. The two do not touch each other.
 ##
+## IN A FIGHT (C7.1b): `fit` is how a battle, the field and a field enemy give a fighter its
+## worn set. Three rules come with it:
+##   - STARTING PIECES. A fighter's definition lists the gear it starts with (`CombatantDef.gear`).
+##     They are put on once. After that the player's own choices stand, so a piece the player
+##     took off stays off. A new game puts them on again.
+##   - A STARTING PIECE IS THE FIGHTER'S OWN. It need not be in the bag, so a party member keeps
+##     its sword whoever carries the bag, and a foe with no bag can wear one.
+##   - A FOE LEAVES NO TRACE. A set with `kept` off remembers what it wears itself and writes no
+##     flag, so a save after the fight carries nothing of a foe's gear.
+##
+## THE SLOT LIST is one `GearRules` file a game names in `[combat] gear/rules`. With no setting,
+## the nine default slots are used.
+##
 ## OWNS: the key shape, one piece per slot, and the worn pieces' modifiers on the stat sheet.
 ## MUST NOT: decide what a stat means, draw anything, or name a game's gear.
 
@@ -37,32 +50,43 @@ enum Refusal {
 
 const CATEGORY: String = "gear"
 const PREFIX: String = "gear/"
+## The flag that says a fighter's starting pieces were already put on: `gear_started/<wearer id>`.
+const STARTED_PREFIX: String = "gear_started/"
+## The project setting naming a game's `GearRules` file.
+const RULES_SETTING: String = "combat/gear/rules"
 
 ## The slot list. Null means the defaults in `GearRules`.
 @export var rules: GearRules
+## Whether what is worn is written to `Flags`, and so saved. Off for a foe, which leaves no trace.
+var kept: bool = true
+## The fighter's starting pieces, by item id. They are its own, so they need not be in the bag.
+var innate: Array[StringName] = []
 
 # The sources this set has put on the stat sheet, so a refresh removes exactly them.
 var _applied: Array[StringName] = []
+# What a set with `kept` off is wearing: item id -> slot.
+var _loose: Dictionary[StringName, StringName] = {}
 
 
 func _ready() -> void:
 	if rules == null:
-		rules = GearRules.new()
+		rules = configured_rules()
 	refresh()
+	_start()
 
 
 # Connected on entering the tree and not in `_ready`, because a party switch moves this node to
 # another body, and that leaves the tree and enters it again.
 func _enter_tree() -> void:
-	if not Events.game_started.is_connected(refresh):
-		Events.game_started.connect(refresh)
+	if not Events.game_started.is_connected(_on_game_started):
+		Events.game_started.connect(_on_game_started)
 		Events.game_loaded.connect(_on_game_loaded)
 		Events.inventory_changed.connect(_revalidate)
 
 
 func _exit_tree() -> void:
-	if Events.game_started.is_connected(refresh):
-		Events.game_started.disconnect(refresh)
+	if Events.game_started.is_connected(_on_game_started):
+		Events.game_started.disconnect(_on_game_started)
 		Events.game_loaded.disconnect(_on_game_loaded)
 		Events.inventory_changed.disconnect(_revalidate)
 
@@ -76,6 +100,29 @@ static func of(who: Node) -> GearSet:
 		if found != null:
 			return found
 	return null
+
+
+## Gives `body` its worn set, wearing the starting pieces `def` lists. `keep` says whether what is
+## worn is saved: true for a party member, false for a foe. A foe with no starting gear gets no
+## set at all, and null comes back. Call it after the body has its `Combatant`.
+static func fit(body: Node, def: CombatantDef, keep: bool) -> GearSet:
+	if not keep and def.gear.is_empty():
+		return null
+	var gear := GearSet.new()
+	gear.kept = keep
+	gear.innate.assign(def.gear)
+	body.add_child(gear)
+	return gear
+
+
+## The slot list every fighter uses: the file named in `[combat] gear/rules`, else the defaults.
+static func configured_rules() -> GearRules:
+	var path: String = str(ProjectSettings.get_setting(RULES_SETTING, ""))
+	if path != "" and ResourceLoader.exists(path):
+		var found: GearRules = load(path) as GearRules
+		if found != null:
+			return found
+	return GearRules.new()
 
 
 ## The flag that says this wearer wears `item_id`. Public because an author writes it into a
@@ -94,8 +141,8 @@ func refusal(item_id: StringName) -> Refusal:
 	if who == &"" or not piece.may_wear(who):
 		return Refusal.WRONG_WEARER
 	var bag: Inventory = Inventory.of(get_parent())
-	# A fighter with no bag (a foe) wears what it is given.
-	if bag != null and not bag.has(item_id):
+	# A fighter with no bag (a foe) wears what it is given, and a starting piece is its own.
+	if bag != null and not innate.has(item_id) and not bag.has(item_id):
 		return Refusal.NOT_CARRIED
 	if _allowed(piece).is_empty():
 		return Refusal.NO_SLOT
@@ -117,7 +164,10 @@ func wear(item_id: StringName, into: StringName = &"") -> bool:
 	var occupant: StringName = worn(slot)
 	if occupant != &"":
 		take_off(occupant)
-	Flags.set_flag(key(item_id), String(slot))
+	if kept:
+		Flags.set_flag(key(item_id), String(slot))
+	else:
+		_loose[item_id] = slot
 	_apply(item_id, piece)
 	Log.info(CATEGORY, "%s wears '%s' in %s" % [_wearer(), item_id, slot])
 	return true
@@ -128,7 +178,10 @@ func wear(item_id: StringName, into: StringName = &"") -> bool:
 func take_off(item_id: StringName) -> bool:
 	if slot_of(item_id) == &"":
 		return false
-	Flags.erase_flag(key(item_id))
+	if kept:
+		Flags.erase_flag(key(item_id))
+	else:
+		_loose.erase(item_id)
 	_remove(item_id)
 	Log.info(CATEGORY, "%s took off '%s'" % [_wearer(), item_id])
 	return true
@@ -136,6 +189,8 @@ func take_off(item_id: StringName) -> bool:
 
 ## The slot `item_id` is worn in, or empty when it is not worn.
 func slot_of(item_id: StringName) -> StringName:
+	if not kept:
+		return _loose.get(item_id, &"")
 	return StringName(Flags.get_string(key(item_id)))
 
 
@@ -151,9 +206,12 @@ func worn(slot: StringName) -> StringName:
 func worn_ids() -> Array[StringName]:
 	var out: Array[StringName] = []
 	var scope: String = "%s%s/" % [PREFIX, _wearer()]
-	for flag: StringName in Flags.with_prefix(scope):
-		if Flags.get_string(flag) != "":
-			out.append(StringName(String(flag).trim_prefix(scope)))
+	if not kept:
+		out.assign(_loose.keys())
+	else:
+		for flag: StringName in Flags.with_prefix(scope):
+			if Flags.get_string(flag) != "":
+				out.append(StringName(String(flag).trim_prefix(scope)))
 	out.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
 	return out
 
@@ -177,6 +235,26 @@ func _on_game_loaded(_slot: int) -> void:
 	refresh()
 
 
+# A new game cleared every flag, so the starting pieces go on again.
+func _on_game_started() -> void:
+	refresh()
+	_start()
+
+
+# Puts the starting pieces on, once. A saved set marks that with a flag, so a piece the player
+# later took off is not put back by the next battle.
+func _start() -> void:
+	if innate.is_empty() or _wearer() == &"":
+		return
+	if kept:
+		var started: StringName = StringName(STARTED_PREFIX + String(_wearer()))
+		if Flags.get_bool(started):
+			return
+		Flags.set_flag(started, true)
+	for item_id: StringName in innate:
+		wear(item_id)
+
+
 # Takes off anything that left the bag. This is the price of leaving the item in the bag, paid
 # here once and not by everyone who removes an item.
 func _revalidate() -> void:
@@ -184,7 +262,7 @@ func _revalidate() -> void:
 	if bag == null:
 		return
 	for item_id: StringName in worn_ids():
-		if not bag.has(item_id):
+		if not innate.has(item_id) and not bag.has(item_id):
 			take_off(item_id)
 
 

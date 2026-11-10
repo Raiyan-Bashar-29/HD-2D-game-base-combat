@@ -4,9 +4,9 @@ extends RefCounted
 ## player controls.
 ##
 ## IN PLAIN WORDS: the player's body is always the one the camera follows and the keys move.
-## What a switch changes is WHO that body is. A member is five nodes, its `Vitals`,
+## What a switch changes is WHO that body is. A member is up to six nodes, its `Vitals`, its `GearSet` (C7.1b),
 ## `StatusSet`, `Combatant`, `AtbMeter` and `PowerSet` (its hero powers, C6.2b). A switch moves
-## those five from the follower's body to the player's, and the leader's five the other way,
+## those from the follower's body to the player's, and the leader's the other way,
 ## swaps the two bodies' places, and gives the player's fighter the new member's loadout (moves
 ## and commands). So hp, statuses, weaknesses, the gauge and the powers (cooldowns included) all
 ## go with the member, and you take over standing where they stood.
@@ -132,7 +132,7 @@ static func _identity(body: Node) -> Array[Node]:
 	var out: Array[Node] = []
 	for child: Node in body.get_children():
 		if child is Vitals or child is StatusSet or child is Combatant or child is AtbMeter \
-				or child is PowerSet:
+				or child is PowerSet or child is GearSet:
 			out.append(child)
 	return out
 

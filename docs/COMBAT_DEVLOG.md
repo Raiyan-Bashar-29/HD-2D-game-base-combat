@@ -3212,3 +3212,34 @@ seven of them fail. Boot, the suite, the seven checkers and the stripped run, as
 **Gaps.** Nothing in a fight builds a `GearSet` yet (C7.1b). No screen (C7.7).
 
 **Unblocks.** C7.1b, C7.2, C7.3.
+
+## 2026-11-10 — C7.1b · Gear in a fight
+
+**Did.** `CombatantDef.gear`: the item ids a fighter starts with. `GearSet.fit(body, def, keep)`
+builds the worn set, and three places call it: `BattleSetup._fighter` (party kept, enemies
+not), `ActionHost.fit_identity` (the player and every follower) and `ActionEnemy._build`.
+`GearSet` gained `kept`, `innate`, the once-only start (`gear_started/<id>`), and
+`configured_rules()` reading `[combat] gear/rules`. `FieldParty._identity` moves the set on a
+party switch.
+
+**Why.** C7.1a built gear nobody wore in a fight. The row was about fourteen files with the
+weapon's element, tags and two-handed rule, so those became C7.1c.
+
+**Connects.** `Flags` (the worn flags and the started flag), `Inventory` (the bag check that a
+starting piece skips), `Events.game_started` (starting pieces go on again), `GearDb` (a
+definition's `problems` flags a starting item with no gear file).
+
+**Decided.** A foe's pieces write no flags: battle enemy ids such as `<enemy>_1` would leave
+flags in every save. A starting piece is the fighter's own, not a bag item: a follower's body
+has no bag, and after a switch the bag check would strip its sword. Starting pieces go on once,
+so a battle never undoes what the player took off.
+
+**Verified.** `tests/unit/gear_fight_test.gd`, 23 assertions; with the start and the
+own-piece rule stubbed out, eleven of them fail. Boot, the suite, the seven checkers and the
+stripped run, as in the PR.
+
+**Gaps.** A follower wearing a bag piece keeps it when the item leaves the bag, until it
+leads (its body has no bag to ask). No screen (C7.7). The weapon does nothing to attacks yet
+(C7.1c).
+
+**Unblocks.** C7.1c, C7.2, C7.3.
