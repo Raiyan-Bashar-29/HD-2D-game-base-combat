@@ -158,7 +158,10 @@ formulas (`ActionFighter`, `CombatClock`).
   `cost_per_block` of `cost_pool` is paid, or the barrier comes down and the hit lands; then
   NULLIFY or REDUCE (`factor`). A barrier that only absorbs is REDUCE with factor 1. A hit's
   tags are its skill's `tags`, plus `sure_hit`. A hit stopped whole is `blocked`: no shield
-  chip, and from a plain move no poise and no push. TIMED_BLOCK is C6.6b.
+  chip, and from a plain move no poise and no push. **TIMED_BLOCK as built (C6.6b):** `timing` is a `TimedWindow` counted
+  from the moment the guard goes up. A hit inside it takes 0, costs nothing and is stored in
+  `store_pool`; a later one pays `cost_per_block` and leaves `factor`. In a battle a block is
+  perfect until the guard's own next turn. A hit stopped whole emits `Events.attack_blocked`.
 - a power that only works in one form: `requires_statuses [<form status>]`. **As built (C6.5c): the quick
   slots skip a power whose required status is one the kit grants and is not held, so each form
   has its own four slots.** A status from elsewhere does not hide the power; it shows its reason.
@@ -510,7 +513,7 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | C6.3 | Quick slots and the HUD: four rebindable `combat_power_N` actions; the slot, cooldown and gauge readout | C6.2 |
 | C6.4 | M6 `gauge` running: every `GaugeRule` event, `levels` | C6.1 |
 | C6.5 | M5 `form` | C6.2 |
-| C6.6 | M3 `barrier` and the incoming guard in `Combatant.receive` (C6.6a, built); the timed block, perfect dodge and `knockback_taken` (C6.6b); M13 `counter_stance` (C6.6c) | C6.1 |
+| C6.6 | M3 `barrier` and the incoming guard in `Combatant.receive` (C6.6a, built); the timed block (C6.6b, built); the perfect dodge and `knockback_taken` (C6.6c); M13 `counter_stance` (C6.6d) | C6.1 |
 | C6.7 | M1 `barrage` and the `Projectile` node | C6.2 |
 | C6.8 | M2 `finisher` (charge, hold, flourish) | C6.4 |
 | C6.9 | M4 `domain` (including clash and pull) | C6.6 |

@@ -291,6 +291,9 @@ signal combatant_damaged(who: StringName, by: StringName, amount: int, critical:
 ## A hit on `who` from `by` missed: evasion beat accuracy, and nothing was applied. Emitted by
 ## `Combatant.receive` INSTEAD of `combatant_damaged`, so a log says "Missed" and not "0" (C2.15).
 signal attack_missed(who: StringName, by: StringName)
+## A hit from `by` was stopped whole before it reached `who`, by a barrier or a perfect block.
+## Emitted by `Combatant.receive` (C6.6b), instead of `combatant_damaged`.
+signal attack_blocked(who: StringName, by: StringName)
 ## `who` struck back at `against` through a COUNTER status. Emitted by `SkillUse.counter` (C2.15).
 signal countered(who: StringName, against: StringName)
 ## A skill aimed at `who` bounced back to `back_to` through a REFLECT status. Emitted by

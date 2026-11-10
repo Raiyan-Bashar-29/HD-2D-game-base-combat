@@ -11,7 +11,7 @@ var _holder: Node
 
 
 func run() -> void:
-	plan(13)
+	plan(14)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_stack = UiRoot.new()
@@ -85,6 +85,8 @@ func _the_log(screen: BattleScreen) -> void:
 	equal("damage becomes a line", journal.lines.back(), tr(BattleLog.DAMAGE_KEY).format({"name": foe_name, "amount": 7}))
 	Events.attack_missed.emit(&"fixture_foe", &"fixture_hero")
 	equal("a miss becomes a line", journal.lines.back(), tr(BattleLog.MISSED_KEY).format({"name": foe_name}))
+	Events.attack_blocked.emit(&"fixture_foe", &"fixture_hero")
+	equal("a blocked hit becomes a line", journal.lines.back(), tr(BattleLog.BLOCKED_KEY).format({"name": foe_name}))
 	Events.combatant_broken.emit(&"fixture_foe")
 	equal("a break becomes a line", journal.lines.back(), tr(BattleLog.BROKEN_KEY).format({"name": foe_name}))
 	Events.turn_skipped.emit(&"fixture_foe", &"status/fixture_dazed")

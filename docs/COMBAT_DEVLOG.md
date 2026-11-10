@@ -3124,3 +3124,33 @@ checkers exited 0, boot showed 0 warnings and 0 errors, and the stripped run pas
 **Gaps.** A nullified hit is still announced as 0 damage, so the battle log reads "takes 0"; a
 "blocked" line comes with C6.6b. A move that wraps a skill does not report a blocked hit, so
 its poise and push still apply through a barrier. A field body never guards a battle fighter.
+
+## 2026-11-10 — C6.6b · The timed block, and a blocked hit announced
+
+**Did.** `BarrierMechanism` gains mode TIMED_BLOCK and `timing`, a `TimedWindow` (which gains
+`inside`). `BarrierRun` counts how long the guard has been up (`_held`), from 0 each time its
+power is used: seconds in the field, the guard's own turns in a battle. A hit that arrives
+inside `timing` is a perfect block: stopped whole, free, and added to `store_pool`. A later hit
+is a late block: it pays `cost_per_block` and leaves `factor`. New `Events.attack_blocked`:
+`Combatant.receive` emits it for a hit stopped whole and returns, in place of
+`combatant_damaged` with 0. `BattleLog` writes "{name} blocks the attack."
+
+**Why.** Royal Guard and IXA's shield reward a guard raised just before the hit. The press that
+raises the guard is already a power use, so it is the timing, and no new input is needed; a
+short status duration makes each press a fresh guard. The old C6.6b row was about 12 files, so
+the perfect dodge and `knockback_taken` are now C6.6c and the counter stance is C6.6d.
+
+**Connects.** `PowerSet.tick_seconds` and `tick_turn` -> `BarrierRun.tick` -> `_held`.
+`Combatant.receive` -> `Events.attack_blocked` -> `BattleLog`.
+
+**Verified.** Red first: with `_perfect` stubbed false and the `blocked` branch off, 6 of the 8
+assertions in the new `power_timed_block_test.gd` failed. Then the suite, the seven checkers, boot and
+the stripped run, all clean.
+
+**Also.** The owner asked for gear: signature weapons (IXA, Ea), armour, gear types, special
+gear, rarity and crafting. It is phase C7 on the board, rows C7.0 to C7.6, and C7.0 (the design)
+is next.
+
+**Gaps.** No HUD line says "blocked" in the field. A plain form toggles, so using a timed guard
+while it is still up lowers it; the short status duration is the intended way round that. A
+move wrapping a skill still gives poise and push through a block (as in C6.6a).

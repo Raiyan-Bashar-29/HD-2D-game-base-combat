@@ -9,13 +9,16 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.6a, the barrier (M3). `Combatant.receive` now shows every hit
-  to `PowerSet.guard` before it lands, the one hook hero powers have in the damage path. A
-  `BarrierMechanism` is a form that guards: while up it nullifies or reduces a hit, lets a
-  bypass tag through, drinks an absorbed element into a pool, pays a cost per block, and can
-  guard allies. Its executor is `BarrierRun` (a `FormRun`). **C6.6 was split in three. Next is
-  C6.6b: the timed block, the perfect dodge and the `knockback_taken` stat; then C6.6c, the
-  counter stance (M13).**
+- **Last finished package:** C6.6b, the timed block. A `BarrierMechanism` with mode
+  TIMED_BLOCK reads its `timing` (a `TimedWindow`) from the moment the guard goes up: a hit
+  inside it takes nothing and is stored in `store_pool`; a later one pays and leaves `factor`.
+  A hit stopped whole now emits `Events.attack_blocked` (not 0 damage), and the battle log says
+  so. Before it, C6.6a built the barrier and `PowerSet.guard`, the one hook hero powers have in
+  the damage path.
+- **Next: C7.0, the gear design** (`docs/GEAR.md`). The owner asked on 2026-11-10 for signature
+  weapons (IXA, Ea), armour, gear types, special gear, rarity and crafting; the rows are C7.0
+  to C7.6 on the board. Then back to C6.6c (perfect dodge, `knockback_taken`) and C6.6d (the
+  counter stance).
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
   `tests/test_runner.gd`, whose own list had reached its line budget.
   Before it, C6.5b, a form plays its own moves: while held, its `attack_chain`
