@@ -29,6 +29,15 @@ extends Node
 ##   - A FOE LEAVES NO TRACE. A set with `kept` off remembers what it wears itself and writes no
 ##     flag, so a save after the fight carries nothing of a foe's gear.
 ##
+## WHAT A WORN PIECE LENDS (C7.1c). A piece may give the wearer's plain attack an element and
+## weakness tags. After every change this set writes them onto the wearer's `Combatant`
+## (`lent_element`, `lent_tags`). Pieces are read in the slot list's order, so the weapon comes
+## first: the first piece with an element decides it, and every piece's tags are joined.
+##
+## A PIECE CAN TAKE UP MORE SLOTS (C7.1c). A piece that `blocks` a slot empties it when put on
+## (a two-handed sword empties the off hand), and a piece put into a blocked slot takes the
+## blocker off (a shield takes the two-handed sword off).
+##
 ## THE SLOT LIST is one `GearRules` file a game names in `[combat] gear/rules`. With no setting,
 ## the nine default slots are used.
 ##
@@ -161,14 +170,13 @@ func wear(item_id: StringName, into: StringName = &"") -> bool:
 		return false
 	# A piece moved between two slots it fits comes off the old one first.
 	take_off(item_id)
-	var occupant: StringName = worn(slot)
-	if occupant != &"":
-		take_off(occupant)
+	_make_room(piece, slot)
 	if kept:
 		Flags.set_flag(key(item_id), String(slot))
 	else:
 		_loose[item_id] = slot
 	_apply(item_id, piece)
+	_lend()
 	Log.info(CATEGORY, "%s wears '%s' in %s" % [_wearer(), item_id, slot])
 	return true
 
@@ -183,6 +191,7 @@ func take_off(item_id: StringName) -> bool:
 	else:
 		_loose.erase(item_id)
 	_remove(item_id)
+	_lend()
 	Log.info(CATEGORY, "%s took off '%s'" % [_wearer(), item_id])
 	return true
 
@@ -229,6 +238,7 @@ func refresh() -> void:
 		var piece: GearDefinition = GearDb.for_item(item_id)
 		if piece != null:
 			_apply(item_id, piece)
+	_lend()
 
 
 func _on_game_loaded(_slot: int) -> void:
@@ -264,6 +274,37 @@ func _revalidate() -> void:
 	for item_id: StringName in worn_ids():
 		if not innate.has(item_id) and not bag.has(item_id):
 			take_off(item_id)
+
+
+# Empties what `piece` needs to go into `slot`: the slot itself, every slot the piece blocks,
+# and any worn piece that blocks `slot`.
+func _make_room(piece: GearDefinition, slot: StringName) -> void:
+	var needed: Array[StringName] = [slot]
+	needed.append_array(piece.all_blocks())
+	for other_id: StringName in worn_ids():
+		var other: GearDefinition = GearDb.for_item(other_id)
+		var blocks_it: bool = other != null and other.all_blocks().has(slot)
+		if blocks_it or needed.has(slot_of(other_id)):
+			take_off(other_id)
+
+
+# Writes what the worn pieces lend onto the wearer: the plain attack's element and its extra
+# weakness tags. Slots are read in the slot list's order, so the weapon speaks first.
+func _lend() -> void:
+	var fighter: Combatant = Combatant.of(get_parent())
+	if fighter == null:
+		return
+	fighter.lent_element = &""
+	fighter.lent_tags.clear()
+	for slot: StringName in rules.slots:
+		var piece: GearDefinition = GearDb.for_item(worn(slot))
+		if piece == null:
+			continue
+		if fighter.lent_element == &"":
+			fighter.lent_element = piece.strike_element()
+		for tag: StringName in piece.all_attack_tags():
+			if not fighter.lent_tags.has(tag):
+				fighter.lent_tags.append(tag)
 
 
 func _apply(item_id: StringName, piece: GearDefinition) -> void:

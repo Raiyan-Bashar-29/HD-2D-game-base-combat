@@ -3243,3 +3243,31 @@ leads (its body has no bag to ask). No screen (C7.7). The weapon does nothing to
 (C7.1c).
 
 **Unblocks.** C7.1c, C7.2, C7.3.
+
+## 2026-11-10 — C7.1c · The worn weapon on attacks
+
+**Did.** `GearType` and `GearDefinition` gained `element`, `attack_tags` and `blocks`
+(`strike_element()`, `all_attack_tags()`, `all_blocks()`). `Combatant` gained `lent_element`,
+`lent_tags`, `strike_element(own)` and `strike_tags()`. `GearSet` writes what the worn pieces
+lend after every wear, take off and refresh (`_lend`), and makes room for a piece that blocks
+slots (`_make_room`). `Battle`'s ATTACK and `Hurtbox._resolve` use the lent element and tags.
+
+**Why.** A worn piece only changed stats. A fire sword did not burn, a lance did not count as
+piercing for a weakness, and a greatsword could be worn with a shield.
+
+**Connects.** `ElementStage` (the hit now has an element, so `resist_<element>` applies),
+`Weakness.strike` (the element and tags are its keys), barriers (they read the hit's element).
+
+**Decided.** `blocks` and not a `two_handed` flag: any piece can take up any other slot, so
+one rule covers a two-handed sword and anything a game invents. Slots are read in the slot
+list's order, so the weapon's element wins over a helm's. Only the plain attack borrows; a
+skill, a power, or a move with its own element keeps its own. `Combatant` does not know about
+gear: it holds two fields that the worn set writes.
+
+**Verified.** `tests/unit/gear_attack_test.gd`, 21 assertions; with `_lend` and the block rule
+stubbed out, eleven fail. Boot, the suite, the seven checkers and the stripped run, as in the PR.
+
+**Gaps.** No demo piece uses these yet (the demo has no gear files). A weapon's own attack
+chain comes with special gear (C7.3). No screen (C7.7).
+
+**Unblocks.** C7.2, C7.3.

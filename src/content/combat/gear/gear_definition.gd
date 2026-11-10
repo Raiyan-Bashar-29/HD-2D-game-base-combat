@@ -9,6 +9,15 @@ extends ContentEntry
 ## WHERE IT IS WORN: a piece with `slot` set goes in that one slot. A piece with `slot` left
 ## empty may go in any slot its type lists, so one ring fits either accessory slot.
 ##
+## WHAT IT LENDS TO THE WEARER'S PLAIN ATTACK (C7.1c):
+##   - `element`: the attack becomes a hit of that element (a fire sword burns).
+##   - `attack_tags`: what the attack counts as for a weakness (a lance is `pierce`).
+## Both add to what the type gives. A skill or a power keeps its own element and tags.
+##
+## TAKING UP MORE THAN ONE SLOT (C7.1c): `blocks` lists slots the piece fills besides its own.
+## A two-handed sword blocks the off hand: putting it on empties the off hand, and putting a
+## shield there takes the sword off. Any slot can be blocked, not only the off hand.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -23,6 +32,12 @@ extends ContentEntry
 @export var modifiers: Array[StatModifier] = []
 ## The fighters who may wear it, by combatant id. Empty means anyone.
 @export var wearers: Array[StringName] = []
+## The element the wearer's plain attack gets. Empty means the type's.
+@export var element: StringName = &""
+## What the wearer's plain attack counts as for a weakness, on top of the type's.
+@export var attack_tags: Array[StringName] = []
+## Slots this piece takes up besides the one it is worn in, on top of the type's.
+@export var blocks: Array[StringName] = []
 
 
 ## The slots this piece may be worn in, in the order to try them.
@@ -41,6 +56,23 @@ func all_modifiers() -> Array[StatModifier]:
 		out.append_array(type.modifiers)
 	out.append_array(modifiers)
 	return out
+
+
+## The element this piece lends: its own, else its type's, else none.
+func strike_element() -> StringName:
+	if element != &"" or type == null:
+		return element
+	return type.element
+
+
+## Every weakness tag this piece lends: the type's, then its own, each once.
+func all_attack_tags() -> Array[StringName]:
+	return _joined(type.attack_tags if type != null else ([] as Array[StringName]), attack_tags)
+
+
+## Every slot this piece takes up besides its own: the type's, then its own, each once.
+func all_blocks() -> Array[StringName]:
+	return _joined(type.blocks if type != null else ([] as Array[StringName]), blocks)
 
 
 func may_wear(who: StringName) -> bool:
@@ -63,4 +95,20 @@ func problems() -> PackedStringArray:
 			found.append("%s lists an empty modifier" % where)
 		elif modifier.stat == &"":
 			found.append("%s has a modifier with no stat" % where)
+	if attack_tags.has(&""):
+		found.append("%s lists an unnamed attack tag" % where)
+	for blocked: StringName in blocks:
+		if blocked == &"":
+			found.append("%s blocks an unnamed slot" % where)
+		elif slots().has(blocked):
+			found.append("%s blocks %s, a slot it is worn in" % [where, blocked])
 	return found
+
+
+func _joined(first: Array[StringName], second: Array[StringName]) -> Array[StringName]:
+	var out: Array[StringName] = []
+	for list: Array[StringName] in [first, second]:
+		for entry: StringName in list:
+			if not out.has(entry):
+				out.append(entry)
+	return out

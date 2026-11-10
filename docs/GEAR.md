@@ -77,7 +77,7 @@ row that builds it. The hero powers it leans on are in [`POWERS.md`](POWERS.md).
 | `set_id` | The set it belongs to (§ Sets) |
 | `sockets` | How many gems it holds (§ Sockets) |
 | `max_upgrade`, `upgrade` | The upgrade track (§ Upgrading) |
-| `two_handed` | A weapon that also fills the off hand |
+| `blocks` | Slots the piece takes up besides its own. A two-handed weapon is `blocks = [offhand]` (built in C7.1c; the design first called this `two_handed`) |
 | `cursed` | Cannot be taken off in the ordinary way |
 
 **Slots** are data, a list on one `GearRules` resource (`[combat] gear/rules`), so a game
@@ -102,7 +102,7 @@ defaults every piece of that type shares, so a sword does not repeat them:
 | `attack_tags` | Tags every piece of this type adds (`pierce` for a lance) |
 | `moves` | The default field chain for this type |
 | `weight` | LIGHT, MEDIUM or HEAVY armour, as modifiers (`speed`, `evasion`) |
-| `two_handed` | The default |
+| `element`, `blocks` | The defaults for every piece of the type |
 
 The default types the demo ships:
 
@@ -144,8 +144,23 @@ worn set. The rules:
 - **The slot list** is the `GearRules` file named in `[combat] gear/rules`; with no setting,
   the nine defaults.
 
-Still to come: the weapon's element and tags on attacks, and two-handed weapons (C7.1c); the
-weapon's own attack chain (with special gear, C7.3); a foe dropping what it wears (C7.2).
+**As built (C7.1c): what a worn piece lends, and pieces that take two slots.**
+
+- **Element and tags.** `element` and `attack_tags` sit on `GearType` and `GearDefinition`. A
+  piece's own element wins over its type's; the tags of both are joined.
+- **Who lends.** Every worn piece, read in the slot list's order, so the weapon comes first.
+  The first piece with an element decides it. `GearSet` writes the result onto the wearer's
+  `Combatant` (`lent_element`, `lent_tags`) after every change, a load included.
+- **Who borrows.** Only the plain attack: `Battle`'s ATTACK and a field move with no skill.
+  They ask `Combatant.strike_element(own)` and `strike_tags()`. A move that names its own
+  element keeps it. A skill or a power keeps its own element and tags.
+- **What it does.** The hit has that element, so resistances and absorbing barriers apply,
+  and the element and tags count against the target's weaknesses (shield, pressure, Break).
+- **`blocks`.** A list of slots a piece takes up besides the one it is worn in. Putting the
+  piece on empties those slots; putting a piece into one of them takes the blocker off. A
+  two-handed sword is `blocks = [offhand]`. A file that blocks its own slot is a problem.
+
+Still to come: the weapon's own attack chain (with special gear, C7.3); a foe dropping what it wears (C7.2).
 
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
@@ -558,7 +573,7 @@ for ideas before searching the web. Its eleven mechanic groups map onto the mech
 | Group in the list (count) | What such weapons do | Built from | Row |
 |---|---|---|---|
 | Energy / Tech (484) | Beams, blasts, satellite panels, charged shots | M1 `barrage` + `Projectile`; a charge is a gauge (C6.4) | C6.7 |
-| Elemental (396) | Fire, ice, lightning on the blade or as spells | Gear `element` and `attack_tags`; statuses; weakness and Break | C7.1c |
+| Elemental (396) | Fire, ice, lightning on the blade or as spells | Gear `element` and `attack_tags` (built, C7.1c); statuses; weakness and Break | C7.1c |
 | Transformation (317) | A weapon with modes; a suitcase that opens into a weapon; armour that changes the wearer | M5 `form` with a look and its own moves; **deploy** below | C6.5, C6.5d |
 | Projectile (236) | Thrown knives, arrows, volleys, returning throws | M1 `barrage`; M15 `plant` for ones that stay and trigger later | C6.7, C6.26 |
 | Curse / Rule (235) | "It always hits", "cannot be healed", binding chains, contract breakers | `sure_hit`; statuses with `blocks`; DISPEL; M9 `command`; rule tags a barrier reads | C6.10 on, C8 |
@@ -582,7 +597,7 @@ weapons themselves.
 |---|---|---|
 | C7.1a | Gear as data, worn (built): `GearDefinition`, `GearType`, `GearRules`, `GearDb`, `GearSet`; modifiers on the wearer; saved in `Flags` | — |
 | C7.1b | Gear in a fight (built): starting gear on a `CombatantDef`; `GearSet.fit` in `BattleSetup`, `ActionHost` and `ActionEnemy`; a party switch carries the `GearSet`; a foe's gear is not saved; the `[combat] gear/rules` setting | C7.1a |
-| C7.1c | The worn weapon on attacks: `element` and `attack_tags` lent to the wearer's plain attack in both formulas; `two_handed` | C7.1b |
+| C7.1c | The worn weapon on attacks (built): `element` and `attack_tags` lent to the wearer's plain attack in both formulas; `blocks` for two-handed | C7.1b |
 | C7.2 | Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
 | C7.3 | Special gear: `PowerSet` holds several kits by source; a piece's `kit`, `passives` and `moves`; `Power.requires_gear`; weapon pools | C7.1 |
 | C6.5d | Transformations: `LookDef`, `LookSwap`, a form's `look`, `name_key`, `commands`, `replaces_attack`, `aftermath`, `once_per_battle`; shown on the battle screen, HUD and sheet with dummy looks | C6.5 |
