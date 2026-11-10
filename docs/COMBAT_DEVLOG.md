@@ -3182,3 +3182,33 @@ and a label until art exists.
 search summaries; uncertain details are marked "(reading)". Numbers are first passes.
 
 **Unblocks.** C7.1.
+
+## 2026-11-10 — C7.1a · Gear as data, worn
+
+**Did.** Four content shapes in `src/content/combat/gear/`: `GearType` (family, slots, shared
+modifiers), `GearRules` (the slot list, nine by default), `GearDefinition` (an item id, a type,
+a slot, modifiers, wearers) and `GearDb` (gear by item id, from `data/gear/`). One component,
+`GearSet` in `src/gameplay/combat/gear/`: `wear`, `take_off`, `worn`, `slot_of`, `worn_ids`,
+`refusal` and `refresh`. Saved the owner's weapon idea list as
+`docs/reference/weapon_ideas.csv` (the image columns dropped) and added the mechanism catalogue
+to `GEAR.md`.
+
+**Why.** The C7.1 row was about thirteen files, so it was split at the layer line: the data
+and the worn set now, the fight wiring (C7.1b) next. The owner also said, mid-task, to build
+mechanisms that combine and not every weapon; the catalogue records that as the rule.
+
+**Connects.** Upstream `ItemDefinition`, `Inventory` (`inventory_changed`), `Flags`,
+`ContentScan`; `Combatant.sheet` and `StatSheet.remove_from`; `Events.game_started` and
+`game_loaded`.
+
+**Decided.** The flag's value is the slot name, so a ring remembers which of two slots it is
+in. A fighter with no bag wears what it is given. No `gear_changed` signal yet: nothing draws
+gear until C7.7. `element`, `attack_tags`, `two_handed`, rarity and kits are left for the rows
+that read them.
+
+**Verified.** `tests/unit/gear_test.gd`, 28 assertions; with `GearSet._apply` stubbed out,
+seven of them fail. Boot, the suite, the seven checkers and the stripped run, as in the PR.
+
+**Gaps.** Nothing in a fight builds a `GearSet` yet (C7.1b). No screen (C7.7).
+
+**Unblocks.** C7.1b, C7.2, C7.3.
