@@ -3154,3 +3154,31 @@ is next.
 **Gaps.** No HUD line says "blocked" in the field. A plain form toggles, so using a timed guard
 while it is still up lowers it; the short status duration is the intended way round that. A
 move wrapping a skill still gives poise and push through a block (as in C6.6a).
+
+## 2026-11-10 — C7.0 · Gear, battlefields and transformations, designed
+
+**Did.** Wrote `docs/GEAR.md`, documents only. Part 1: gear as an upstream `ItemDefinition`
+plus a `GearDefinition`, worn through a fork `GearSet`; gear types, slots as data, rarity, loot
+tables, special gear that grants a `PowerKit`, sets, sockets, upgrading, crafting, screens.
+Part 2: IXA, Owl and Ea mode by mode, the other heroes' weapons, twelve armours. Part 3: the
+battlefield (M4 widened) with every variation as data, and M15 `plant`. Part 4: transformations
+with a dummy look. Part 5: a survey of combat mechanics against what is built. The board gained
+C6.5d, C6.9a–d, C6.26, C7.1–C7.10 and C8.1–C8.9.
+
+**Why.** The owner asked for all of it on 2026-11-10 in three messages. One design first keeps
+the parts on the same seams: a weapon's modes are forms, its powers are a kit, a battlefield is
+a form with a place.
+
+**Connects.** Upstream `Inventory`, `ItemDefinition` and `Flags`; `StatSheet` sources;
+`PowerSet`, `FormMechanism`, `BarrierMechanism`; `Rewards.give`.
+
+**Decided.** A fork `GearSet`, not upstream's `Equipment`: its slot enum is upstream's and has
+no weapon slot by rule. `PowerSet` will hold several kits by source. A look is a tint, a size
+and a label until art exists.
+
+**Verified.** Boot, the suite, the seven checkers and the stripped run, as listed in the PR.
+
+**Gaps.** The fandom wikis were blocked by this session's network policy, so Part 2 rests on
+search summaries; uncertain details are marked "(reading)". Numbers are first passes.
+
+**Unblocks.** C7.1.

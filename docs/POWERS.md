@@ -103,6 +103,11 @@ greyed out with its `PowerUse.Reason` in words, and costs shown as `SkillUse.cos
 
 ## The fourteen shared mechanisms
 
+**Widened by C7.0 ([`GEAR.md`](GEAR.md)):** M4 `domain` is designed in full there as the
+`battlefield` (Part 3); a fifteenth mechanism, M15 `plant` (left in the ground, set off later),
+is designed there too; and a form gains a look, a name and battle commands (Part 4). Arima's
+Owl quinque, IXA's modes and Ea are in its Part 2, and they are worn as gear.
+
 **Battle** means the turn-based formula (`Battle`). **Field** means the action and hybrid
 formulas (`ActionFighter`, `CombatClock`).
 

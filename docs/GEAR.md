@@ -1,0 +1,578 @@
+# Gear, battlefields and transformations: the design (C7.0)
+
+**Read this before building any C7 row, C6.5d, C6.9a–d or C6.26.** It is the design the owner
+asked for on 2026-11-10 in three messages. Nothing here is built yet; each part names the board
+row that builds it. The hero powers it leans on are in [`POWERS.md`](POWERS.md).
+
+**What the owner asked for, in plain words:**
+
+1. The heroes' signature weapons inside the game (Arima's IXA and Owl, Gilgamesh's Ea), the
+   best-known fictional armours, and the systems under them: gear, gear types, special gear,
+   rarity and crafting.
+2. The Owl quinque done properly: it throws projectiles, and what it leaves behind can be set
+   off from a distance into big spikes.
+3. IXA's modes done properly.
+4. Ea "shatters reality": a reusable mechanic for abilities that change the battleground or
+   take the fight somewhere else (domain expansions, reality marbles, marble phantasms), with
+   every variation of buff, debuff, damage and duration as data.
+5. Transformations: a change of form that changes abilities and stats, and updates the menu,
+   the screen, the sheet and the sprite. Code now with dummy looks; the sprites come later.
+6. A survey of the combat mechanics popular games and stories use, so the missing ones can be
+   built.
+
+## The rules in one screen
+
+- **Everything is data.** A new weapon, armour, rarity, recipe, battlefield or transformation is
+  a `.tres` file and CSV rows. Code under `src/` never names one.
+- **Real names for now** (IXA, Ea, Berserker Armor), in `data/` and `localization/strings.csv`
+  only. § Renaming lists where each name lives.
+- **Gear builds on what exists.** An item of gear is still an upstream `ItemDefinition` in the
+  bag. Its stats are `StatModifier`s on the `StatSheet`. Its powers are a `PowerKit`. Its modes
+  are forms (M5). Nothing gets a second system.
+- **Both formulas.** Every part works in a turn-based battle and in the field, as the powers do.
+  Durations are in turns in a battle and in seconds in the field.
+- **Art is deferred.** A look is a colour and a size on the placeholder sprite until the owner
+  adds sprites.
+- **One row at a time**, about 8 files or fewer, red first, with the full ladder.
+
+## Part 1 · Gear
+
+### What upstream already gives
+
+| Part | Where | What it does | Gap for combat gear |
+|---|---|---|---|
+| `ItemDefinition` | `src/content/items/` | An item: id, name key, category, stack size, `equip_slot` | No stats, no rarity |
+| `Inventory` | `src/gameplay/character/` | Counts of items, saved | None: gear lives here |
+| `Equipment` | `src/gameplay/character/` | What a carrier holds ready, as `Flags` `equip/<wearer>/<item>` | Its slots are upstream's enum `EquipSlot { NONE, LIGHT, TOOL, GARMENT, TRINKET }`, with no weapon or armour slot on purpose |
+| `Rewards.give` | `src/gameplay/combat/` | Gives a list of item ids as loot | No drop chances |
+
+**Decision: gear gets its own worn-set component, `GearSet`, in the fork.** Upstream's
+`EquipSlot` is an upstream file with a "no weapon slot" rule, and the fork may not edit it. So:
+
+- A piece of gear is an `ItemDefinition` (so the bag, saves, pickups and gates all work) **plus**
+  a `GearDefinition` naming that item. An item with no `GearDefinition` is not gear.
+- `GearSet` is `Equipment`'s twin and follows the same three rules: the slots live in `Flags`
+  (`gear/<wearer>/<item id>`, so they are saved for free), the item stays in the bag while
+  worn, and losing the item takes it off.
+- Upstream's `Equipment` keeps doing what it does (a lantern, a tool). The two do not touch.
+
+### The shapes (content, `src/content/combat/gear/`)
+
+**`GearDefinition`** (one per piece, `data/gear/<name>.tres`):
+
+| Field | Meaning |
+|---|---|
+| `item_id` | The `ItemDefinition` this is (`item/ixa`) |
+| `slot` | Where it is worn: a `StringName` from the slot list below |
+| `type` | A `GearType` (below) |
+| `rarity` | A `Rarity` id (`rarity/legendary`) |
+| `modifiers` | `StatModifier`s while worn (`attack` +12, `resist_fire` +0.2) |
+| `element` | What the wearer's plain ATTACK counts as (a weapon) |
+| `attack_tags` | Tags the wearer's attacks carry (`sword`, `quinque`), for weaknesses |
+| `moves` | A `MoveSet` played in the field while worn (a weapon's swing chain) |
+| `kit` | A `PowerKit` granted while worn: special gear (§ Special gear) |
+| `passives` | Statuses held while worn |
+| `wearers` | Combatant ids that may wear it; empty means anyone |
+| `needs_level`, `needs_stats` | Requirements to wear it |
+| `set_id` | The set it belongs to (§ Sets) |
+| `sockets` | How many gems it holds (§ Sockets) |
+| `max_upgrade`, `upgrade` | The upgrade track (§ Upgrading) |
+| `two_handed` | A weapon that also fills the off hand |
+| `cursed` | Cannot be taken off in the ordinary way |
+
+**Slots** are data, a list on one `GearRules` resource (`[combat] gear/rules`), so a game
+changes them without code. The default:
+
+| Slot | Holds |
+|---|---|
+| `weapon` | The main weapon |
+| `offhand` | A shield, a second weapon, a focus |
+| `head`, `body`, `hands`, `feet` | Armour pieces |
+| `accessory_1`, `accessory_2` | Rings, charms, cloaks |
+| `relic` | One special slot for signature gear that is neither weapon nor armour |
+
+**`GearType`** (`data/gear_types/<name>.tres`) is the kind of thing a piece is. It carries the
+defaults every piece of that type shares, so a sword does not repeat them:
+
+| Field | Meaning |
+|---|---|
+| `id`, `name_key` | `gear_type/lance`, its name |
+| `family` | WEAPON, ARMOUR, ACCESSORY or SPECIAL |
+| `slots` | The slots it may go in |
+| `attack_tags` | Tags every piece of this type adds (`pierce` for a lance) |
+| `moves` | The default field chain for this type |
+| `weight` | LIGHT, MEDIUM or HEAVY armour, as modifiers (`speed`, `evasion`) |
+| `two_handed` | The default |
+
+The default types the demo ships:
+
+- **Weapons:** sword, greatsword, katana, dagger, lance, spear, axe, hammer, bow, gun, staff,
+  tome, gauntlets, scythe, whip, chain.
+- **Armour:** helm, hat, plate, mail, robe, gauntlets, bracers, greaves, boots, shield.
+- **Accessories:** ring, amulet, charm, cloak, belt.
+- **Special families**, each a `GearType` like any other, with a mechanism behind it:
+  quinque (Tokyo Ghoul), noble phantasm (Type-Moon), devil arm (Devil May Cry), sacred treasure
+  (Seven Deadly Sins), cursed tool (Jujutsu Kaisen), spirit weapon (Bleach), relic armour.
+
+### Worn gear in a fight (`GearSet`, `src/gameplay/combat/gear/`)
+
+- `GearSet.of(body)`, `wear(item_id)`, `take_off(item_id)`, `worn(slot)`, `can_wear(item_id)`
+  with a reason (wrong wearer, level too low, cursed piece in the slot).
+- On wear, the piece's modifiers go on the wearer's `StatSheet` with the source
+  `gear/<item id>`, and come off by that source. This is how a status's modifiers work.
+- `Combatant` reads the worn weapon for its attack element and tags, on top of its own.
+- `PowerSet.moves_over` (the hook forms use) also asks the worn weapon for its chain, so a
+  weapon changes the swing and a form on top of it still wins.
+- `BattleSetup` and `ActionHost` build a `GearSet` for a fighter whose `CombatantDef` lists
+  `gear` (its starting pieces). An enemy can wear gear the same way, and drop it.
+- A party switch carries the `GearSet` with the body's other parts (`FieldParty._identity`).
+
+### Rarity (`Rarity`, `data/rarities/<name>.tres`)
+
+| Field | Meaning |
+|---|---|
+| `id`, `name_key` | `rarity/epic`, "Epic" |
+| `rank` | Order, 0 upward |
+| `color` | Shown on the name everywhere |
+| `stat_scale` | Multiplies the piece's modifiers (1.0, 1.15, 1.3 …) |
+| `affixes` | How many random extra modifiers a dropped piece rolls |
+| `sockets` | Extra sockets |
+| `drop_weight` | How often it drops |
+| `max_upgrade` | Upgrade cap for this rarity |
+
+The default tiers: Common, Uncommon, Rare, Epic, Legendary, Mythic and **Signature** (one of a
+kind, never dropped at random, never dismantled: IXA, Ea).
+
+**Drops.** `LootTable` (content): entries of item id, weight, count range and a condition
+(`Flags` key), plus `rolls`. `Encounter.loot` stays as the guaranteed list; a new
+`Encounter.loot_table` and `CombatantDef.loot_table` add the rolled part through
+`Rewards.give`, with the seeded `rng`.
+
+**Affixes.** An `Affix` is a named extra modifier with a range ("of Embers": `fire_power`
++5 to +10 %). A rolled piece's affixes are saved in `Flags` under the piece's instance key.
+Unique pieces (max stack 1) can roll; stacked pieces cannot. Built last (C7.2b), because it
+needs per-instance state.
+
+### Special gear: gear that grants powers
+
+A piece with a `kit` gives its powers while worn. This is how every signature weapon works.
+
+- **`PowerSet` holds more than one kit** (today it holds one). Each kit is equipped under a
+  source: the character's own (`kit/<id>`) and one per worn piece (`gear/<item id>`). Powers,
+  passives, gauges and stat bonuses of every kit are live; quick slots list the character's
+  kit first, then gear kits in slot order.
+- **A weapon's modes are forms.** IXA's lance and shield are `FormMechanism`s in IXA's kit, in
+  one `exclusive_group`, so the mode keys, the mode's own quick slots and saving all come from
+  C6.5 with no new code.
+- **A power can need a piece:** `Power.requires_gear` (an item id or a `GearType` id). Yamato's
+  Judgment Cut needs a katana in hand.
+- **Charges.** A piece can carry a pool (`max_<pool>` in its modifiers), so a weapon has its own
+  ammunition or heat (Owl's Rc cells, Ea's wind-up).
+
+### Sets, sockets, upgrading
+
+- **Sets.** `GearSetBonus` (content): `set_id`, and thresholds (2 pieces: modifiers; 4 pieces: a
+  status or a kit). `GearSet` counts worn pieces per `set_id` and holds the bonuses under the
+  source `set/<id>`.
+- **Sockets.** A gem is an item with a `GemDefinition` (modifiers, or an element for the
+  weapon). `GearSet.socket(piece, gem)`; the gem is used up, and a remover item gives it back.
+- **Upgrading.** `UpgradeTrack` (content): per level, the cost (items and money) and the gain
+  (a scale on the piece's modifiers, and at named levels a new modifier, a socket or an
+  unlocked power in its kit, through `Power.requires_upgrade`). The level is saved per piece.
+- **Awakening.** At the track's cap, a recipe may turn the piece into another piece (Yukimura
+  1/3 into a finished blade). It is a recipe whose input is the capped piece.
+
+### Crafting
+
+**`Recipe`** (`data/recipes/<name>.tres`):
+
+| Field | Meaning |
+|---|---|
+| `id`, `name_key` | `recipe/steel_lance` |
+| `inputs` | Item id → count |
+| `output`, `count` | What it makes |
+| `station` | Where: `forge`, `quinque_lab`, `treasury`, or empty for anywhere |
+| `needs_flag` | Known only once a `Flags` key is set (a found blueprint) |
+| `cost` | Money, if the game has it |
+| `rarity_chances` | Optional: a chance to come out a tier higher |
+| `kind` | CRAFT, UPGRADE, AWAKEN, DISMANTLE or TRANSMUTE (materials into better ones) |
+
+`Crafting` (gameplay, static): `known(inventory)`, `can_make(recipe, inventory)` with a
+reason, `make(recipe, inventory, rng)`. A `CraftStation` interactable opens the craft screen
+for its `station`. **Dismantling** gives back part of a piece's recipe, by rarity. A quinque
+recipe takes a "kakuhou" material that a named foe drops, which is how the Owl is made.
+
+### Screens
+
+- **Gear screen** (from the pause menu): each party member's slots, the bag's pieces for the
+  chosen slot, and a compare panel (each stat with its change in green or red, the granted
+  powers, the set progress). Names are drawn in their rarity colour.
+- **Craft screen** (from a station): known recipes, what is missing, the result compared with
+  what is worn.
+- **In a fight:** the field HUD and the battle screen show the weapon's name beside the
+  fighter, and the current mode (form) of the weapon.
+
+## Part 2 · The signature weapons
+
+Sources are in § Sources. Where the source is thin, the game reading is my choice and is marked
+**(reading)**.
+
+### IXA (Arima) · `item/ixa`, type quinque, slot `weapon`, Signature
+
+**Source.** A koukaku quinque, rated around S+. It is a lance on a gun-sword grip with a spiked
+pommel, able to drive through a ghoul's body and to stretch its reach. In its defensive mode it
+opens into a wide shield, like petals, that has held against the kagune of many strong ghouls;
+the One-Eyed Owl once broke that shield and damaged the weapon. Its remote activation strikes
+from under the ground at a distance, and Arima has used it to keep up a barrage while fighting
+with a second quinque. Kaneki destroyed it.
+
+| Mode or power | Built from | Numbers (first pass) |
+|---|---|---|
+| **Lance mode** (default) | M5 `form`, group `ixa`. A long thrust chain from the weapon's `moves`; `attack_tags [pierce, quinque]` | poise ×2, reach 2.4 m |
+| Extend | A move with a long, thin hitbox and forward travel; in a battle a skill that hits the front foe and the one behind it **(reading)** | 6 MP, 3 s |
+| **Shield mode** | M5 `form`, group `ixa`, with M3 `barrier` TIMED_BLOCK then REDUCE ×0.4, `scope` ALLIES behind it | upkeep 2 MP/s or 4 MP/turn |
+| Shield durability | The barrier's `cost_pool` is the weapon's own pool `ixa_guard`; at 0 the shield breaks and the mode is locked for a while (a status that blocks the form) | 60 points, back after 12 s or 3 turns |
+| **Remote activation** | M15 `plant` (below), FROM_GROUND under the locked target; usable in either mode and while another weapon is in hand | 8 MP, 5 s |
+| Remote barrage | The same power held: a spike every 0.4 s along the target's path; in a battle 3 hits | 3 MP per spike |
+| Mine | M15 `plant` with `trigger` PROXIMITY: IXA left in the ground strikes whoever steps near **(reading; one source calls it landmine-like)** | 10 MP, one at a time |
+| Broken IXA | When the weapon's pool `ixa_guard` is broken three times in a fight, the piece's modifiers halve until repaired at a station **(reading)** | — |
+
+### Owl (Arima) · `item/owl`, type quinque, slot `weapon`, Signature
+
+**Source.** The only known SSS-rated quinque, an ukaku type, made from the kakuhou torn from
+the One-Eyed Owl while the ghoul still lived. It has a long handle and a large jagged blade,
+and three modes: **Blade**, **Firing** and **Trap**. As an ukaku it shoots concentrated Rc-cell
+projectiles of various sizes. Arima can release and switch it off, then switch it back on from
+somewhere else, so it works as a hidden trap that lets him strike from the foe's side. It cut
+through Kaneki's kakuja. Kaneki destroyed it, and Arima fought on with what was left.
+
+| Mode or power | Built from | Numbers (first pass) |
+|---|---|---|
+| **Blade mode** (default) | M5 `form`, group `owl`. A wide, fast chain; `attack_tags [slash, quinque]`; cuts guards: its hits carry `bypass` for REDUCE barriers **(reading, from cutting the kakuja)** | attack +30 |
+| **Firing mode** | M5 `form`, group `owl`. The attack button fires: M1 `barrage` LINE, sizes from a list (small fast shards, a large slow bolt on a held press) | 2 `rc` per shard, 8 per bolt |
+| Shard storm | M1 `barrage` RAIN over an area. **Every shard that misses stays in the ground as a planted shard** (M15) | 14 `rc`, 8 s |
+| **Trap mode: remote activation** | M15 `plant`, `trigger` REMOTE: one press turns every planted shard into a tall spike, each hitting what stands on or beside it. More shards, more spikes | 6 MP, 2 s |
+| Leave the blade | M15 `plant` of the weapon itself: the wearer drops Owl (and may draw IXA); on the remote press it erupts where it lies, and a M9 `blink` brings the wearer to it **(reading of "appears at the foe's side")** | 12 MP, 15 s |
+| `rc` gauge | A weapon pool, `max_rc` 100, +4 per blade hit, +2 per second | — |
+| Remains of Owl | When the weapon breaks it becomes `item/owl_remains`: blade mode only, attack halved, usable to the end of the fight | — |
+
+### Ea, the Sword of Rupture (Gilgamesh) · `item/ea`, type noble phantasm, slot `relic`, Signature
+
+**Source.** The sword that "cleaves the world". Its attack, Enuma Elish, is an Anti-World
+Noble Phantasm of rank EX; it is the attack's name that is called, not the weapon's. It
+compresses and tears space, leaving a void that swallows what was there. It tore apart
+Iskandar's Reality Marble and the army inside it, and reduced the plain to nothing. Avalon can
+stop it. The Gate of Babylon can add to its power. It cannot be copied.
+
+| Power | Built from | Numbers (first pass) |
+|---|---|---|
+| Wind-up | A weapon pool `rupture` (0–100): +10 per second or +34 per turn while Ea is drawn (a form, group `gilgamesh_hand`); the Gate's barrage adds +3 per hit | — |
+| **Enuma Elish** | M2 `finisher` with the tags `anti_world` and `sure_hit`, element `rupture`, hitting every foe in the fight. **It breaks every battlefield in reach** (Part 3: `broken_by_tags`), and gains power for each one broken | all of `rupture`, 30 s |
+| The rupture left behind | M4 `battlefield` "Torn Sky", cast by the finisher: the place's look changes to the void; everyone but the wearer takes rupture damage every 2 s or each turn and has defence −30 %; it ends after 10 s or 3 turns | — |
+| Cannot be copied | The piece is Signature with `wearers [gilgamesh]`; M10 `clone` and M12 `grant` skip powers from a piece tagged `uncopyable` | — |
+| What stops it | A barrier with `absorb_tags [anti_world]` (Avalon, below). Nothing else: `sure_hit` passes NULLIFY and dodges | — |
+
+### The other heroes' weapons (each a piece that grants part of the kit in `POWERS.md`)
+
+| Piece | Hero | Type | What wearing it gives |
+|---|---|---|---|
+| Narukami | Arima | quinque | The homing lightning barrage, and the lightning redirect |
+| Yukimura 1/3 | Arima | quinque | A fast 5-hit chain; awakens through the upgrade track |
+| Gate of Babylon (key) | Gilgamesh | noble phantasm | The barrage; a `relic` |
+| Enkidu | Gilgamesh | noble phantasm | The binding chain |
+| Rhitta | Escanor | sacred treasure | Stores sun power (a pool) and releases it; too heavy for anyone else (`wearers`) |
+| Yamato | Vergil | devil arm | Judgment Cut and the dimension slash; `requires_gear` for the katana powers |
+| Rebellion, Ebony & Ivory | Dante | devil arm | The sword chain and the guns; styles stay on the character |
+| Zantetsuken, Gungnir | Odin | eikon arm | The gauge finisher and the counter spear |
+| Sankt Bogen | Yhwach | spirit weapon | The arrow barrage |
+| Isliid's three swords, Roland's blade | Isliid, Roland | relic weapons | Their form cycles |
+
+When a hero's kit and their weapon both exist, the powers that are the weapon's move to the
+weapon's kit, so another character holding the weapon gets them and the hero without it does
+not. Each kit row (C6.14 onward) decides its split.
+
+### The armours
+
+| Piece | From | Slot | The idea as game rules |
+|---|---|---|---|
+| Berserker Armor | Berserk | `body`, set of 3, cursed | A transformation (Part 4): attack ×1.6, no flinch (`knockback_taken` −1), pain ignored (`damage_taken` −20 %), but it drains HP each second or turn, the wearer cannot be given orders from the menu while it rages (auto-battle brain), and it cannot be taken off mid-fight |
+| Avalon | Fate | `relic` | Strong HP regen; a barrier that absorbs `anti_world` hits and NULLIFIES for one turn or 3 s on use |
+| Golden Armor of the King | Fate | `body` | High defence, `resist_ailment` +0.5 |
+| Kavacha and Kundala | Fate / Mahabharata | `body` | Damage taken ×0.1; can be given up (destroyed) for one use of a god-slaying spear |
+| Gold Cloth | Saint Seiya | set of 5 | A set bonus per piece; the full set unlocks a "seventh sense" transformation |
+| Heaven's Wheel, Flame Empress, Adamantine (Requip) | Fairy Tail | armours as forms | Each armour is a transformation the wearer swaps to mid-fight: a blade barrage, fire resistance, a great shield |
+| Havel's Set | Dark Souls | set of 4, HEAVY | Huge defence and poise, slow, no dodge roll |
+| Daedric Armor | The Elder Scrolls | set of 5 | The top craftable tier: a recipe needing a rare heart material |
+| Mjolnir Armor | Halo | `body` | A recharging energy shield: a second HP pool that refills when not hit for 4 s |
+| Mark-series suit | Iron Man | set, transformation | Flight (`blink` UP), a beam finisher from a charge pool |
+| Varia Suit | Metroid | `body` | Immunity to heat battlefields (`resist_field_heat` 1) |
+| Susanoo | Naruto | a transformation, no item | An armour of energy: a barrier and giant-blade moves while a pool drains |
+
+## Part 3 · Battlefields (M4, widened)
+
+**In plain words:** a battlefield is a rule laid over the fight for a while. It can change how
+the place looks, move the fighters somewhere else, help one side, hurt the other, and deal
+damage on a clock. Domain expansions, reality marbles, marble phantasms, bounded fields, auras,
+weather magic and terrain are all the same thing with different data.
+
+**Source rules worth keeping:**
+
+- **Domain Expansion (Jujutsu Kaisen).** A barrier closes around the fighters and the caster's
+  technique cannot miss inside it. Two domains at once clash, and the more refined one wins.
+  It can be answered with a Simple Domain, which cancels only the sure-hit and is hard to hold.
+  A barrierless domain (Malevolent Shrine) has no wall, so it reaches further and can be walked
+  out of. It is costly, and the caster's technique is burnt out for a while afterwards.
+- **Reality Marble (Type-Moon).** The caster's inner world replaces the real one and brings
+  everyone inside (Unlimited Blade Works' field of swords, Ionioi Hetairoi's desert and army).
+  The World pushes back, so it costs mana every moment it stands. Another marble can overwrite
+  it. An Anti-World attack (Ea) destroys it.
+- **Marble Phantasm (Tsukihime).** Nature itself is reshaped as the caster wishes; only
+  natural things can be changed, and nobody is moved anywhere.
+
+### The shapes
+
+**`BattlefieldMechanism`** (content, extends `FormMechanism`, `kind() -> &"battlefield"`). It is
+a form because it has the same life: used to raise it, a status on the caster while it stands,
+a drain as upkeep, ended by use, by a cure, by the status running out, or by the pool running
+dry. What it adds:
+
+| Field | Meaning | Examples |
+|---|---|---|
+| **Where** | | |
+| `shape` | WHOLE_FIGHT, SPHERE (`radius`, centred on the caster or the target), FOLLOWS_CASTER (an aura), LINE or ZONE (a patch of ground) | A domain is SPHERE; an aura is FOLLOWS_CASTER |
+| `closed` | True: nobody inside can leave and nobody outside can enter or aim in (a barrier). False: it can be walked out of | Unlimited Void closed; Malevolent Shrine open |
+| `moves_fight` | The fighters inside are taken to another place until it ends; the rest of the fight waits outside | A reality marble; a boss's arena |
+| `place` | A `PlaceLook` id: what the ground, sky and light become (Part 4's dummy rule: a tint and a name until art exists) | "Torn Sky", "Field of Swords" |
+| `weather` | An upstream `Weather` state to hold while it stands | A marble phantasm: storm |
+| **Who and what** | | |
+| `effects` | A list of `BattlefieldEffect`s, below | |
+| `sure_hit` | The caster's side cannot miss inside, and their hits carry the tag `domain` | Domain expansion |
+| `hit_tags` | Extra tags the caster's hits carry inside (to pass a named barrier) | `domain` passes Infinity |
+| `caster_kit` | A `PowerKit` the caster holds only while it stands | UBW: the sword barrage |
+| `summons` | Fighters that join the caster's side while it stands | Ionioi Hetairoi's army |
+| **How long** | | |
+| `seconds`, `turns` | How long it stands in the field and in a battle. 0 means until ended | 0.2 s; 5 turns; infinite |
+| (inherited) drain | `drain_pool` with a rate per second, per turn or per action: the upkeep | Mana while a marble stands |
+| `ends_when` | Extra endings: CASTER_FALLS (default), CASTER_HIT (count), CASTER_LEAVES, ALL_FOES_LEFT | |
+| `aftermath` | A status put on the caster when it ends | Burnout: NO_SKILLS for 2 turns |
+| **Against other battlefields** | | |
+| `refinement` | A number; scaled by a stat if named | |
+| `clash` | What happens when two overlap: STRONGER_WINS (the weaker ends; equal means both), BOTH_END, OVERWRITE (the newer replaces the older), BOTH_STAND (terrain under a domain) | |
+| `layer` | Battlefields in different layers never clash (TERRAIN, WEATHER, DOMAIN) | |
+| `broken_by_tags` | A hit with one of these tags ends it at once | `anti_world` |
+| `cancelled_by` | A status on a fighter that removes only the sure-hit for them | Simple Domain |
+
+**`BattlefieldEffect`** (content): one rule for one group.
+
+| Field | Meaning |
+|---|---|
+| `who` | CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE, EVERYONE_BUT_CASTER, or fighters with a tag |
+| `modifiers` | `StatModifier`s while inside: `attack`, `defence`, `damage_dealt`, `damage_taken`, `speed`, `regen_<pool>`, `cost_mult_<pool>`, `resist_<tag>`, `cooldown_rate` |
+| `statuses` | Statuses held while inside, removed on leaving (a buff, a debuff, SKIP_TURN for Unlimited Void) |
+| `on_enter` | `SkillEffect`s once, when it rises or when a fighter walks in (instant damage, a dispel) |
+| `on_exit` | `SkillEffect`s when it ends or the fighter leaves |
+| `tick` | `SkillEffect`s on a clock: damage, healing, a pool drained or filled, a status stacked |
+| `tick_seconds` | The field clock: every N seconds |
+| `tick_turns` | The battle clock: every N of the fighter's own turns (1 is every turn) |
+| `tick_grows` | Each tick is this much stronger than the last (a domain that closes in) |
+| `pull`, `push` | Field: drawn toward or away from the centre each second |
+| `immune_tags` | Fighters with these tags, or the stat `resist_field_<id>` at 1, are untouched |
+
+Damage "at once" is `on_enter`. Damage "over time" is `tick` with `tick_seconds`. Damage "per
+turn" is `tick` with `tick_turns`. Damage "per N seconds" is the same `tick_seconds` with a
+bigger N. A duration is `seconds` and `turns`, or 0 for infinite.
+
+**New stats this needs:** `damage_dealt` (a stage in the formula beside `damage_taken`), and
+`resist_field_<id>`.
+
+### How the examples come out
+
+| Battlefield | Data |
+|---|---|
+| Unlimited Void (Gojo) | SPHERE, closed, `sure_hit`; OTHER_SIDE: SKIP_TURN status; 0.2 s to 5 s or 2 turns; aftermath burnout |
+| Malevolent Shrine (Sukuna) | SPHERE with a big radius, open, `sure_hit`; EVERYONE_BUT_CASTER: slash damage every 0.5 s or each turn; high refinement |
+| Unlimited Blade Works | `moves_fight`, place "Field of Swords", `caster_kit` the sword barrage, mana drain per second; OVERWRITE; broken by `anti_world` |
+| Ionioi Hetairoi | `moves_fight`, `summons` the army, ends when the summons fall below half **(reading)** |
+| Torn Sky (after Enuma Elish) | WHOLE_FIGHT, EVERYONE_BUT_CASTER: rupture tick and defence −30 %; 10 s or 3 turns |
+| Escanor's heat | FOLLOWS_CASTER, open; EVERYONE_BUT_CASTER: fire tick scaled by the clock; infinite at noon |
+| A marble phantasm | WHOLE_FIGHT, `weather` storm, layer WEATHER; lightning `tick` on a random foe |
+| Burning ground, a healing circle | ZONE, layer TERRAIN, BOTH_STAND; a tick for whoever stands in it |
+| Simple Domain | A status with `cancelled_by` meaning; upkeep per second, breaks when hit |
+
+### The runtime (`src/gameplay/combat/powers/mechanisms/battlefield_run.gd` and a `Battlefields` helper)
+
+- One list of standing battlefields per fight. A battle keeps it on the `Battle`; the field
+  keeps it in a group of `BattlefieldZone` nodes (an `Area3D` for SPHERE and ZONE).
+- Raising one: check clashes by `layer`, apply `on_enter`, hold the statuses and modifiers
+  under the source `field/<power id>`.
+- Each second or turn: run the ticks, the pull, the upkeep, the count-down.
+- Ending one: remove everything by its source, run `on_exit`, apply `aftermath`, restore the
+  place.
+- `Combatant.hit` asks it for `sure_hit` and `hit_tags`; `Combatant.receive` tells it about a
+  hit with a breaking tag.
+- `Events.battlefield_raised(by, power_id)` and `battlefield_ended(by, power_id, why)`; the
+  battle log and the HUD show its name and time left.
+
+## The planted strike (M15 `plant`, new)
+
+**In plain words:** something is left in the ground now and goes off later. The Owl's shards,
+IXA's remote activation and mine, a time bomb, a rune trap and a delayed spell are all this.
+
+**`PlantMechanism`** (content, `kind() -> &"plant"`):
+
+| Field | Meaning |
+|---|---|
+| `where` | AT_TARGET, UNDER_TARGET, AT_USER, AHEAD (`distance`), or WHERE_PROJECTILES_LAND (a barrage's misses) |
+| `count`, `max_standing` | How many one use plants, and the most that may stand |
+| `trigger` | REMOTE (a second press of the same power, or a named power), PROXIMITY (`radius`), TIMER (`seconds` or `turns`), ON_HIT (when the planted thing is struck) |
+| `eruption` | The `ActionMove` or `Skill` each plant performs when it goes off (a tall spike: a vertical hitbox, launch) |
+| `chain_delay` | Seconds between one plant going off and the next, so a line ripples |
+| `lifetime` | A plant not set off is lost after this |
+| `visible_to_foes` | A hidden trap or a marked one |
+| `recall` | The user may blink to a plant when it goes off |
+
+- **Field:** a `Planted` node at a point, with a marker; on its trigger it plays its eruption
+  through a `Hitbox`.
+- **Battle:** a plant is a mark on a foe (a status with no effect of its own). The remote use
+  hits every marked foe, harder per mark; PROXIMITY goes off when the marked foe next attacks;
+  TIMER goes off after N turns.
+
+## Part 4 · Transformations
+
+**In plain words:** a transformation is a form (M5, built) that the player can see. Today a
+form already changes stats (its status's modifiers), the field's moves, and which powers fill
+the quick slots. Three things are missing, and C6.5d adds them:
+
+| Missing | What is added |
+|---|---|
+| **The look** | `FormMechanism.look`: a `LookDef` id. While the form is held, the fighter is drawn with that look |
+| **The battle's commands** | `FormMechanism.commands`: the command list the battle menu and the field menu offer while in the form (empty keeps the fighter's own). `FormMechanism.replaces_attack`: the skill the plain ATTACK command becomes |
+| **The name and the sheet** | `FormMechanism.name_key`: shown beside the fighter's name on the battle screen, the HUD, the party sheet and the status screen ("Dante · Devil Trigger"); the stat sheet shows the form's changes in colour |
+
+**`LookDef`** (content, `data/looks/<name>.tres`): `id`, `tint`, `scale`, `label` (a short
+tag drawn over the placeholder), and the art slots filled later: `sprite_frames`, `portrait`,
+`aura_scene`. **Until art exists a look is a tint, a size and a label**, so every
+transformation is visible now and the owner only drops sprites in. `Events.look_changed(who,
+look)`; a small `LookSwap` node beside the `Combatant` applies it to the body's
+`CharacterVisual` in the field and to the fighter's row and portrait on the battle screen.
+
+**The kinds of transformation popular games use, and how each is authored:**
+
+| Kind | Seen in | Authored as |
+|---|---|---|
+| A gauge super mode: fill a meter, transform, it drains | Devil Trigger, Trance (FF9), Limit Form, Rage of the Gods, Super Saiyan games | A form needing `requires_pool` at a fraction, with `drain_per_second` and `drain_per_turn` |
+| A once-per-battle power-up | Mega Evolution, Terastallization | A form whose power has a cooldown longer than the fight (`once_per_battle`) |
+| A timed giant form | Dynamax, Susanoo, an Eikon | A form with a timed status (3 turns), `scale` on the look, its own commands |
+| A stance or style swap, free and often | Dante's styles, Vergil's weapons, Xenoblade stances | Forms in one `exclusive_group`, no cost |
+| A job or class change mid-fight | FF X-2 dresspheres, Bravely Default jobs, Requip | A cycle or group of forms, each with its own `commands`, look and stats |
+| A persona or summon swap | Persona, FF10 aeons | A form that swaps `commands`, weaknesses (`weak_to` through the status) and the look |
+| A phase change at low HP | Boss second forms, Barnabas into Odin | The brain uses the form power when HP falls below a fraction; `revert` false |
+| A berserk form the player loses control of | Berserker Armor, Trance in some games | A form whose status sets the fighter to auto-battle |
+| A fusion of two fighters | Fusion (Dragon Ball), Chrono Trigger's dual forms | A form that needs an ally (`requires_ally`), removes them from the line while held, and adds their stats |
+| A form with a price | Bankai burnout, Gear Fourth | `aftermath`: a status when the form ends |
+| A layered form (a form on a form) | Sin Devil Trigger on Devil Trigger, Super Saiyan 2 | A form that `requires_statuses` the lower form, in another group |
+| A permanent evolution | Awakenings in gacha games | An upgrade track on the character, not a form |
+
+New small fields these need: `once_per_battle` on `Power`; `aftermath` and `requires_ally` on
+`FormMechanism`; a `control` setting on `StatusEffect` (PLAYER or AUTO).
+
+## Part 5 · The mechanics survey
+
+What combat systems in well-known games do, and where this base stands. **Have** means built
+and merged. **Row** names the board row that builds it.
+
+| Mechanic | Seen in | Status |
+|---|---|---|
+| Turn order by speed, and by a delay queue (CTB) | Final Fantasy X, Octopath | Have (C2) |
+| ATB gauges, wait and active | Final Fantasy IV–IX, VII Remake | Have (C4) |
+| Real-time action with combos, dodges and lock-on | Devil May Cry, Ys, Tales | Have (C3) |
+| Symbol encounters, mixed formulas | Chrono Trigger, Persona | Have (C5.1) |
+| Elements, weakness, shield break, stagger, pressure | Octopath, FF VII Remake, FF XIII | Have (C2.17, C4.6) |
+| Buffs, debuffs, ailments, resistances, dispel, revive, drain | Everywhere | Have (C2.13–14) |
+| Miss, crit, counter, reflect | Everywhere | Have (C2.15) |
+| Boost points, limit gauge, stances | Octopath, Final Fantasy VII | Have (C2.16) |
+| Timed hits and timed blocks | Super Mario RPG, Clair Obscur, Royal Guard | Have (C4.10, C6.6b) |
+| Forms and styles | Devil May Cry | Have (C6.5) |
+| Barriers | Infinity, Blut Vene | Have (C6.6a) |
+| Perfect dodge with a reward | Bayonetta's Witch Time, FF XVI | Row C6.6c |
+| Counter stance and parry | Sekiro, Royal Guard | Row C6.6d |
+| Projectile barrages | Gate of Babylon | Row C6.7 |
+| Charged finishers | Zantetsuken | Row C6.8 |
+| Planted and delayed strikes | Owl, time bombs, rune traps | Row C6.26 (new) |
+| Battlefields: domains, terrain, weather, auras | JJK, Fate, Pokémon weather and terrain, Divinity's surfaces | Rows C6.9a–d (widened) |
+| Foresight, command, blink, clone, sacrifice, grant, refresh | The kits in `POWERS.md` | Rows C6.10–C6.13 |
+| Transformations with a look | The table above | Row C6.5d (new) |
+| Gear, rarity, sets, sockets, upgrading, crafting | Diablo, Monster Hunter, Souls games | Rows C7.1–C7.9 |
+| **An extra turn for hitting a weakness** | Press Turn (Shin Megami Tensei), One More (Persona) | Row C8.1 (new) |
+| **Team attacks**: all-out attack, chain and link attacks, dual and triple techs | Persona, Xenoblade, Chrono Trigger | Row C8.2 (new) |
+| **Follow-up and assist attacks** from a waiting ally | Honkai: Star Rail, Trails | Row C8.2 |
+| **Summons** that fight beside or in place of the party | Final Fantasy, Persona | Row C8.3 (new); a battlefield's `summons` uses it |
+| **Swapping party members mid-battle**, with a reserve line | Final Fantasy X, Octopath II | Row C8.3 |
+| **Elemental reactions**: two elements on one target make a third effect | Genshin Impact, Divinity | Row C8.4 (new) |
+| **Combos between powers** (prime and detonate) | Mass Effect, Hollow Purple | Have, as `requires_statuses` and `consumes_statuses` |
+| **Rows and positions**: front and back, a grid, knock-back into hazards | Final Fantasy, Darkest Dungeon, tactics games | Row C8.5 (new) |
+| **Aggro and taunt**: who the enemy picks | MMO-style RPGs, Xenoblade | Row C8.6 (new) |
+| **A second health layer**: armour, overshield, guard gauge | Halo, Mass Effect, Sekiro posture | Row C8.6; the Mjolnir piece needs it |
+| **Steal, scan, capture, mug** | Final Fantasy, Pokémon | Row C8.7 (new) |
+| **Instant death, doom counters, petrify, charm, confusion** | Final Fantasy, Dragon Quest | Row C8.7; charm is M8 `command` |
+| **Style rank and combo counter** rewards | Devil May Cry | Row C6.22 with Dante's kit (a gauge) |
+| **Hit stop, slow motion, launch and juggle** | Character action games | Slow motion: have (`CombatClock`). Launch and juggle: row C8.8 (new) |
+| **Quick-time prompts and button mashing** | God of War, Yakuza | Row C8.8, on `TimedWindow` |
+| **Interrupts and cast bars**: stop an enemy's wind-up | FF XIV, Xenoblade | Row C8.8; a finisher's charge already breaks on a strong hit |
+| **Environmental objects**: explosive barrels, things to throw | Divinity, Yakuza | Row C8.9 (new), on M15 `plant` |
+| **Morale, fear, surrender, talk to the enemy** | Shin Megami Tensei, Undertale | Game choice; M8 `command` covers FORGET |
+| **Classes, jobs, skill trees, a bestiary** | Many | Game choices, as before; forms cover an in-fight job change |
+
+## Board rows (the order to build in)
+
+Gear first, as the owner asked, then the mechanisms the signature weapons need, then the
+weapons themselves.
+
+| Row | Builds | Needs |
+|---|---|---|
+| C7.1 | Gear as data, worn: `GearDefinition`, `GearType`, `GearRules`, `GearSet`; modifiers, element and tags in both formulas; starting gear on a `CombatantDef` | — |
+| C7.2 | Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
+| C7.3 | Special gear: `PowerSet` holds several kits by source; a piece's `kit`, `passives` and `moves`; `Power.requires_gear`; weapon pools | C7.1 |
+| C6.5d | Transformations: `LookDef`, `LookSwap`, a form's `look`, `name_key`, `commands`, `replaces_attack`, `aftermath`, `once_per_battle`; shown on the battle screen, HUD and sheet with dummy looks | C6.5 |
+| C6.6c, C6.6d | As on the board | |
+| C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |
+| C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading | C6.7 |
+| C6.8 | Finisher | |
+| C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt` | C6.6 |
+| C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity | C6.9a |
+| C6.9c | Battlefields against each other: `sure_hit` and `hit_tags`, `closed`, layers, the four clash rules, `broken_by_tags`, `cancelled_by`, `aftermath` | C6.9b |
+| C6.9d | The place: `PlaceLook`, `moves_fight`, `weather`, `caster_kit`, `summons`; the log and HUD readout | C6.9c, C6.5d |
+| C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |
+| C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |
+| C7.6 | Crafting, the logic: `Recipe`, `Crafting`, dismantle and transmute | C7.2 |
+| C7.7 | The gear screen: slots, compare, rarity colours; weapon and mode on the HUD and battle screen | C7.3 |
+| C7.8 | The craft screen and `CraftStation` | C7.6, C7.7 |
+| C7.2b | Affixes on dropped pieces (per-piece saved state) | C7.5 |
+| C7.9 | The armoury, weapons: IXA, Owl, Ea and the other heroes' weapons as data, a probe and captures | C6.26, C6.9, C7.5 |
+| C7.10 | The armoury, armours: the table above as data; `AUTHORING.md` § Gear, Battlefields and Transformations | C7.9, C8.6 |
+| C8.1–C8.9 | The survey's new mechanics, one row each, in the order of the table | |
+
+## Renaming
+
+| Name | Lives in |
+|---|---|
+| A piece's name | `localization/strings.csv` (`item.<name>.name`), `data/items/<name>.tres`, `data/gear/<name>.tres` |
+| A gear type, a rarity | `data/gear_types/`, `data/rarities/` and their CSV rows |
+| A battlefield, a form, a look | The kit file in `data/powers/`, `data/looks/`, and their CSV rows |
+| A recipe, a station | `data/recipes/` and CSV rows |
+
+Renaming a `.tres` changes a saved id, as upstream's `Equipment` header explains: a worn piece
+comes back in the bag, not lost.
+
+## Sources
+
+The fandom wikis (tokyoghoul, typemoon, jujutsu-kaisen `.fandom.com`) are not reachable from
+this build session, so the facts above come from search summaries of them and of the pages
+below. Details marked **(reading)** are the game's interpretation, not canon.
+
+- IXA: tokyoghoul.fandom.com/wiki/IXA and /Chapter_139 (through search); vsbattles.fandom.com/wiki/Kishou_Arima; dandwiki.com/wiki/Weapons_(Tokyo_Ghoul_Supplement); echo-from-the-void.tumblr.com/post/144287832024 (the "landmine" reading).
+- Owl: tokyoghoul.fandom.com/wiki/Owl_(Quinque) and /Kishou_Arima (through search); vsbattles.fandom.com/wiki/Kishou_Arima; daddyjim.ai/tokyo-ghoul/group/Owl-Quinque.
+- Ea: zh.moegirl.org.cn (乖离剑); cbr.com/fate-gilgamesh-ea-sword-how-strong; giantbomb.com (Gilgamesh).
+- Domain Expansion: sportskeeda.com (domain expansion, anti-domain techniques); escapistmagazine.com/jujutsu-kaisen-domain-expansions-explained; deltiasgaming.com.
+- Reality Marble and Marble Phantasm: zh.moegirl.org.cn (无限剑制, 空想具现化); tvtropes.org (Fate/stay night).
+- Transformations and combat systems: tvtropes.org/pmwiki/pmwiki.php/SuperMode/VideoGames; consolepulse.com (Mega Evolution); samurai-gamers.com (FF XVI limit break, FF VII Rebirth battle system); finalfantasy7remake.wiki.fextralife.com/Combat; blazblue.jp manual (Overdrive).

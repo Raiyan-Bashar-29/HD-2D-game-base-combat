@@ -9,16 +9,16 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C6.6b, the timed block. A `BarrierMechanism` with mode
-  TIMED_BLOCK reads its `timing` (a `TimedWindow`) from the moment the guard goes up: a hit
-  inside it takes nothing and is stored in `store_pool`; a later one pays and leaves `factor`.
-  A hit stopped whole now emits `Events.attack_blocked` (not 0 damage), and the battle log says
-  so. Before it, C6.6a built the barrier and `PowerSet.guard`, the one hook hero powers have in
-  the damage path.
-- **Next: C7.0, the gear design** (`docs/GEAR.md`). The owner asked on 2026-11-10 for signature
-  weapons (IXA, Ea), armour, gear types, special gear, rarity and crafting; the rows are C7.0
-  to C7.6 on the board. Then back to C6.6c (perfect dodge, `knockback_taken`) and C6.6d (the
-  counter stance).
+- **Last finished package:** C7.0, the gear design, documents only: **[`GEAR.md`](GEAR.md)**.
+  It designs gear on upstream's items (`GearDefinition`, `GearSet`, rarity, sets, sockets,
+  upgrading, crafting), the signature weapons (IXA, Owl, Ea) and armours, battlefields (domains
+  and reality marbles: M4 widened, rows C6.9a–d), the planted strike (M15, row C6.26),
+  transformations with a look (row C6.5d), and a survey of mechanics (rows C8.1–C8.9). Before
+  it, C6.6b built the timed block.
+- **Next: C7.1, gear as data, worn.** The build order is the table at the foot of `GEAR.md`:
+  C7.1, C7.2, C7.3, then C6.5d, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
+  The fandom wikis were not reachable when C7.0 was written; if they are now, check the
+  "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
   `tests/test_runner.gd`, whose own list had reached its line budget.
   Before it, C6.5b, a form plays its own moves: while held, its `attack_chain`
