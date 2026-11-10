@@ -127,6 +127,26 @@ The default types the demo ships:
   `gear` (its starting pieces). An enemy can wear gear the same way, and drop it.
 - A party switch carries the `GearSet` with the body's other parts (`FieldParty._identity`).
 
+**As built (C7.1b).** `GearSet.fit(body, def, keep)` is the one way a fight gives a fighter its
+worn set. The rules:
+
+- **Starting pieces go on once.** `CombatantDef.gear` lists item ids. The first time a party
+  member is built, they are worn and the flag `gear_started/<wearer id>` is set. After that
+  the player's choices stand: a piece taken off stays off. A new game clears the flag, so they
+  go on again.
+- **A starting piece is the fighter's own.** It need not be in the bag (`GearSet.innate`), so
+  a party member keeps its sword whoever carries the bag. A piece from the bag still comes
+  off when the item leaves the bag.
+- **A foe leaves no trace.** A set built with `keep` false remembers what it wears itself and
+  writes no flag. A foe with no starting gear gets no set at all.
+- **A party member's battle copy wears what its field body wears,** because both read the
+  same flags.
+- **The slot list** is the `GearRules` file named in `[combat] gear/rules`; with no setting,
+  the nine defaults.
+
+Still to come: the weapon's element and tags on attacks, and two-handed weapons (C7.1c); the
+weapon's own attack chain (with special gear, C7.3); a foe dropping what it wears (C7.2).
+
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
 | Field | Meaning |
@@ -538,7 +558,7 @@ for ideas before searching the web. Its eleven mechanic groups map onto the mech
 | Group in the list (count) | What such weapons do | Built from | Row |
 |---|---|---|---|
 | Energy / Tech (484) | Beams, blasts, satellite panels, charged shots | M1 `barrage` + `Projectile`; a charge is a gauge (C6.4) | C6.7 |
-| Elemental (396) | Fire, ice, lightning on the blade or as spells | Gear `element` and `attack_tags`; statuses; weakness and Break | C7.1b, built |
+| Elemental (396) | Fire, ice, lightning on the blade or as spells | Gear `element` and `attack_tags`; statuses; weakness and Break | C7.1c |
 | Transformation (317) | A weapon with modes; a suitcase that opens into a weapon; armour that changes the wearer | M5 `form` with a look and its own moves; **deploy** below | C6.5, C6.5d |
 | Projectile (236) | Thrown knives, arrows, volleys, returning throws | M1 `barrage`; M15 `plant` for ones that stay and trigger later | C6.7, C6.26 |
 | Curse / Rule (235) | "It always hits", "cannot be healed", binding chains, contract breakers | `sure_hit`; statuses with `blocks`; DISPEL; M9 `command`; rule tags a barrier reads | C6.10 on, C8 |
@@ -561,7 +581,8 @@ weapons themselves.
 | Row | Builds | Needs |
 |---|---|---|
 | C7.1a | Gear as data, worn (built): `GearDefinition`, `GearType`, `GearRules`, `GearDb`, `GearSet`; modifiers on the wearer; saved in `Flags` | — |
-| C7.1b | Gear in a fight: starting gear on a `CombatantDef`; `BattleSetup`, `ActionHost` and a party switch carry the `GearSet`; the weapon's `element` and `attack_tags`; `two_handed`; the `[combat] gear/rules` setting | C7.1a |
+| C7.1b | Gear in a fight (built): starting gear on a `CombatantDef`; `GearSet.fit` in `BattleSetup`, `ActionHost` and `ActionEnemy`; a party switch carries the `GearSet`; a foe's gear is not saved; the `[combat] gear/rules` setting | C7.1a |
+| C7.1c | The worn weapon on attacks: `element` and `attack_tags` lent to the wearer's plain attack in both formulas; `two_handed` | C7.1b |
 | C7.2 | Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
 | C7.3 | Special gear: `PowerSet` holds several kits by source; a piece's `kit`, `passives` and `moves`; `Power.requires_gear`; weapon pools | C7.1 |
 | C6.5d | Transformations: `LookDef`, `LookSwap`, a form's `look`, `name_key`, `commands`, `replaces_attack`, `aftermath`, `once_per_battle`; shown on the battle screen, HUD and sheet with dummy looks | C6.5 |

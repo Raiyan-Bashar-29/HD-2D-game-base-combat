@@ -17,6 +17,9 @@ extends RefCounted
 ## HERO POWERS (C6.2a): a definition with a `power_kit` gets a `PowerSet` with that kit equipped,
 ## on either side. Its cooldowns start fresh each battle; the battle counts them in turns.
 ##
+## GEAR (C7.1b): every party member gets a `GearSet`, and wears what the field body with the same
+## id wears. An enemy gets one only when its definition lists starting gear, and it is not saved.
+##
 ## IN PLAIN WORDS: the factory. Give it an encounter file and the party, and it makes one
 ## fighter node per combatant, picks the turn order the encounter asked for, and starts the
 ## `Battle`. `release` cleans everything up afterwards.
@@ -80,7 +83,7 @@ static func release(battle: Battle) -> void:
 
 
 # One fighter = a plain Node with three children: Vitals (HP/MP), StatusSet, Combatant, and a
-# fourth, a PowerSet, when it has hero powers.
+# fourth, a PowerSet, when it has hero powers, and a GearSet for what it wears.
 static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: bool) -> Combatant:
 	var actor := Node.new()
 	actor.name = String(id)
@@ -104,6 +107,8 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 		var powers := PowerSet.new()
 		actor.add_child(powers)
 		powers.equip(def.power_kit)
+	# Gear after the Combatant too: a party member's is saved, an enemy's is not.
+	GearSet.fit(actor, def, not fresh)
 	# Enemies always start at full HP, even if an old flag says otherwise.
 	if fresh:
 		_forget_pools(combatant)
