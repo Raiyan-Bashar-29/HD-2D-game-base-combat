@@ -523,6 +523,36 @@ and merged. **Row** names the board row that builds it.
 | **Morale, fear, surrender, talk to the enemy** | Shin Megami Tensei, Undertale | Game choice; M8 `command` covers FORGET |
 | **Classes, jobs, skill trees, a bestiary** | Many | Game choices, as before; forms cover an in-fight job change |
 
+## The mechanism catalogue (the owner's rule, 2026-11-10)
+
+**The rule: build mechanisms, not weapons.** The owner's words: write the code for the possible
+powers, sorted, named and commented, so that weapons can be put together from them later. So a
+weapon is never code. It is a data file that combines mechanisms, and the code rows build each
+mechanism once. The armoury rows (C7.9, C7.10) make only a few sample weapons, as proof that
+the parts combine.
+
+**The idea list.** [`reference/weapon_ideas.csv`](reference/weapon_ideas.csv) is the owner's
+list of 2,058 fictional weapons (name, franchise, mechanic group, one-line description). Read it
+for ideas before searching the web. Its eleven mechanic groups map onto the mechanisms like this:
+
+| Group in the list (count) | What such weapons do | Built from | Row |
+|---|---|---|---|
+| Energy / Tech (484) | Beams, blasts, satellite panels, charged shots | M1 `barrage` + `Projectile`; a charge is a gauge (C6.4) | C6.7 |
+| Elemental (396) | Fire, ice, lightning on the blade or as spells | Gear `element` and `attack_tags`; statuses; weakness and Break | C7.1b, built |
+| Transformation (317) | A weapon with modes; a suitcase that opens into a weapon; armour that changes the wearer | M5 `form` with a look and its own moves; **deploy** below | C6.5, C6.5d |
+| Projectile (236) | Thrown knives, arrows, volleys, returning throws | M1 `barrage`; M15 `plant` for ones that stay and trigger later | C6.7, C6.26 |
+| Curse / Rule (235) | "It always hits", "cannot be healed", binding chains, contract breakers | `sure_hit`; statuses with `blocks`; DISPEL; M9 `command`; rule tags a barrier reads | C6.10 on, C8 |
+| Soul / Death (163) | Instant death chance, poison, ignores toughness | A status chance; `bypass` tags through a barrier; `resist_<tag>` | built, C8 |
+| Space / Reality (77) | Tears space, erases, rewrites the place | M4 battlefield; a finisher with `anti_world` | C6.8, C6.9a–d |
+| Defense (70) | Shields, unbreakable blades, healing scabbards | M3 `barrier`, the timed block, regen stats on gear | built, C7.1 |
+| Summon (56) | A giant, a beast, smoke soldiers that fight beside you | Battlefield `summons`; a follower body with a brain (C4.9) | C6.9d, C8 |
+| Time (23) | Stop, slow, foresight, rewind | `CombatClock`; M10 foresight; M14 `refresh` | C6.11 on |
+
+**Deploy (the quinque suitcase).** A carried weapon can start closed. Deploying it is entering
+a form: the closed state has no moves of its own and a "case" look; the open state brings the
+weapon's moves, its powers and its look. That is M5 with a look (C6.5d), so it needs no new
+mechanism, only a `deploy` power on the piece's kit (C7.3) and, later, an opening animation.
+
 ## Board rows (the order to build in)
 
 Gear first, as the owner asked, then the mechanisms the signature weapons need, then the
@@ -530,7 +560,8 @@ weapons themselves.
 
 | Row | Builds | Needs |
 |---|---|---|
-| C7.1 | Gear as data, worn: `GearDefinition`, `GearType`, `GearRules`, `GearSet`; modifiers, element and tags in both formulas; starting gear on a `CombatantDef` | — |
+| C7.1a | Gear as data, worn (built): `GearDefinition`, `GearType`, `GearRules`, `GearDb`, `GearSet`; modifiers on the wearer; saved in `Flags` | — |
+| C7.1b | Gear in a fight: starting gear on a `CombatantDef`; `BattleSetup`, `ActionHost` and a party switch carry the `GearSet`; the weapon's `element` and `attack_tags`; `two_handed`; the `[combat] gear/rules` setting | C7.1a |
 | C7.2 | Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
 | C7.3 | Special gear: `PowerSet` holds several kits by source; a piece's `kit`, `passives` and `moves`; `Power.requires_gear`; weapon pools | C7.1 |
 | C6.5d | Transformations: `LookDef`, `LookSwap`, a form's `look`, `name_key`, `commands`, `replaces_attack`, `aftermath`, `once_per_battle`; shown on the battle screen, HUD and sheet with dummy looks | C6.5 |

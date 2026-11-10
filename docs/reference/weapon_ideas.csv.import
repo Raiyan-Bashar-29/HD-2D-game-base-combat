@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c4j70x3o7ousx"
+
+[deps]
+
+files=["res://docs/reference/weapon_ideas.name.translation", "res://docs/reference/weapon_ideas.franchise.translation", "res://docs/reference/weapon_ideas.medium.translation", "res://docs/reference/weapon_ideas.mechanic.translation", "res://docs/reference/weapon_ideas.kind.translation", "res://docs/reference/weapon_ideas.description.translation"]
+
+source_file="res://docs/reference/weapon_ideas.csv"
+dest_files=["res://docs/reference/weapon_ideas.name.translation", "res://docs/reference/weapon_ideas.franchise.translation", "res://docs/reference/weapon_ideas.medium.translation", "res://docs/reference/weapon_ideas.mechanic.translation", "res://docs/reference/weapon_ideas.kind.translation", "res://docs/reference/weapon_ideas.description.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -9,14 +9,18 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C7.0, the gear design, documents only: **[`GEAR.md`](GEAR.md)**.
-  It designs gear on upstream's items (`GearDefinition`, `GearSet`, rarity, sets, sockets,
-  upgrading, crafting), the signature weapons (IXA, Owl, Ea) and armours, battlefields (domains
-  and reality marbles: M4 widened, rows C6.9a–d), the planted strike (M15, row C6.26),
-  transformations with a look (row C6.5d), and a survey of mechanics (rows C8.1–C8.9). Before
-  it, C6.6b built the timed block.
-- **Next: C7.1, gear as data, worn.** The build order is the table at the foot of `GEAR.md`:
-  C7.1, C7.2, C7.3, then C6.5d, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
+- **Last finished package:** C7.1a, gear as data, worn. A piece of gear is an upstream item
+  plus a `GearDefinition` (`data/gear/`); a `GearSet` beside a fighter's `Combatant` wears it,
+  one piece per slot, puts its stat changes on the wearer, and keeps what is worn in `Flags`.
+  Code: `src/content/combat/gear/` and `src/gameplay/combat/gear/`. Before it, C7.0 designed
+  gear, battlefields, the planted strike, transformations and the mechanics survey in
+  **[`GEAR.md`](GEAR.md)**.
+- **The owner's rule (2026-11-10): build mechanisms, not weapons.** A weapon is a data file
+  that combines mechanisms. `GEAR.md` § The mechanism catalogue maps the owner's idea list,
+  `docs/reference/weapon_ideas.csv` (2,058 weapons), onto the mechanisms. Read that list
+  before searching the web.
+- **Next: C7.1b, gear in a fight.** The build order is the table at the foot of `GEAR.md`:
+  C7.1b, C7.2, C7.3, then C6.5d, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
