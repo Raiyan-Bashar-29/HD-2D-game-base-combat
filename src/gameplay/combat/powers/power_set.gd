@@ -19,6 +19,8 @@ extends Node
 ##   form's cycle can move on after a finisher.
 ## - in the field, the fighter plays the moves its running mechanisms hand it (`moves_over`,
 ##   C6.5b): a form's own attack chain and dodge.
+## - a hit about to land on the fighter, or on an ally, is shown to every running mechanism
+##   first (`guard` and `intercept_incoming`, C6.6a), so a barrier can stop or soften it.
 ##
 ## A KILL WITHOUT A LOOKUP: `Combatant.receive` changes the pool first, which announces
 ## `combatant_defeated`, and then announces `combatant_damaged`. So the id that just fell is
@@ -75,6 +77,27 @@ static func passive_of(who: Node, status_id: StringName) -> StatusEffect:
 	if powers == null or powers.kit == null:
 		return null
 	return powers.kit.status(status_id)
+
+
+## The hit `result`, thrown by `from`, is about to land on `target` (`Combatant.receive`): the
+## barriers of its own kit see it first, then those of each ally living on the same clock (a
+## field body never guards a battle fighter). It stops once a barrier has blocked the hit.
+static func guard(target: Combatant, result: DamageResult, from: StringName) -> void:
+	var own: PowerSet = of(target.get_parent())
+	if own != null:
+		own.intercept_incoming(target, result, from)
+	if not target.is_inside_tree():
+		return
+	for node: Node in target.get_tree().get_nodes_in_group(Combatant.GROUP):
+		var ally: Combatant = node as Combatant
+		if result.blocked:
+			return
+		if ally == null or ally == target or ally.real_time != target.real_time \
+				or not ally.can_target(target, FactionTable.Target.ALLY):
+			continue
+		var theirs: PowerSet = of(ally.get_parent())
+		if theirs != null:
+			theirs.intercept_incoming(target, result, from)
 
 
 func _physics_process(delta: float) -> void:
@@ -228,6 +251,16 @@ func moves_over(base: MoveSet) -> MoveSet:
 		if running != null:
 			out = running.moves(out)
 	return out
+
+
+## Shows a hit about to land on `target` to each running mechanism, in the kit's order (C6.6a).
+func intercept_incoming(target: Combatant, result: DamageResult, from: StringName) -> void:
+	if kit == null:
+		return
+	for power: Power in kit.powers:
+		var running: PowerExecutor = executor(power.power_id) if power != null else null
+		if running != null:
+			running.intercept_incoming(target, result, from)
 
 
 ## The fighter paid `amount` points of `pool` as a cost: `SkillUse.pay` says so.

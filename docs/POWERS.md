@@ -54,7 +54,7 @@ Do not invent substitute names.
 C6.1a built the content classes below except `GaugeRule`, which C6.4a built with `KitGauges`,
 the part of `PowerSet` that runs it (time, hits landed and taken, dodges, misses, `levels`,
 `blocked_by_tags`, and `regen_<pool>` by the second in the field); C6.4b adds the other events. C6.1b built the gameplay classes; their executors have `use`, `tick`, `end` and (C6.5a)
-`power_used`, which hears every power of the kit used, and each later row adds the hook its seam needs (`intercept_incoming` with C6.6).
+`power_used`, which hears every power of the kit used, and each later row adds the hook its seam needs (`intercept_incoming` came with C6.6a).
 C6.2a put kits into a turn-based battle. A fighter's kit is `CombatantDef.power_kit`, the one
 kit field for both formulas (the field reads its loadout's `fighter`). In battle a cooldown counts
 down at the start of each of the holder's turns, beside its statuses, asleep or not. C6.2b put
@@ -148,6 +148,17 @@ formulas (`ActionFighter`, `CombatClock`).
   move started (never a dodge; the player only, since followers do not report moves). **C6.5c:** `PowerMechanism.statuses()`
   lists what a mechanism puts on (a form: its stage statuses) and `PowerKit.status(id)` finds
   it, so a form held at save time loads again.
+- **M3 `barrier`, as built (C6.6a):** `BarrierMechanism` EXTENDS `FormMechanism`, so "a form with
+  a barrier" is one mechanism on one power: it is entered, left and grouped like a form, its
+  status is held while it is up, and the form's drain is its upkeep. With no status and no
+  cycle it is always up (put it on a passive power). Its executor `BarrierRun` answers the hook
+  `intercept_incoming`, which `Combatant.receive` reaches through `PowerSet.guard`: the
+  target's own kit first, then each ally's on the same clock. In order: a `bypass_tags` hit
+  goes through; an `absorb_elements` hit is added to the guard's `store_pool` and takes nothing;
+  `cost_per_block` of `cost_pool` is paid, or the barrier comes down and the hit lands; then
+  NULLIFY or REDUCE (`factor`). A barrier that only absorbs is REDUCE with factor 1. A hit's
+  tags are its skill's `tags`, plus `sure_hit`. A hit stopped whole is `blocked`: no shield
+  chip, and from a plain move no poise and no push. TIMED_BLOCK is C6.6b.
 - a power that only works in one form: `requires_statuses [<form status>]`. **As built (C6.5c): the quick
   slots skip a power whose required status is one the kit grants and is not held, so each form
   has its own four slots.** A status from elsewhere does not hide the power; it shows its reason.
@@ -499,7 +510,7 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | C6.3 | Quick slots and the HUD: four rebindable `combat_power_N` actions; the slot, cooldown and gauge readout | C6.2 |
 | C6.4 | M6 `gauge` running: every `GaugeRule` event, `levels` | C6.1 |
 | C6.5 | M5 `form` | C6.2 |
-| C6.6 | M3 `barrier` and the incoming guard in `Combatant.receive`; M13 `counter_stance` | C6.1 |
+| C6.6 | M3 `barrier` and the incoming guard in `Combatant.receive` (C6.6a, built); the timed block, perfect dodge and `knockback_taken` (C6.6b); M13 `counter_stance` (C6.6c) | C6.1 |
 | C6.7 | M1 `barrage` and the `Projectile` node | C6.2 |
 | C6.8 | M2 `finisher` (charge, hold, flourish) | C6.4 |
 | C6.9 | M4 `domain` (including clash and pull) | C6.6 |

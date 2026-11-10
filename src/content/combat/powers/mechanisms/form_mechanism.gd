@@ -81,9 +81,14 @@ func moves_of(stage: int) -> FormMechanism:
 	return picked
 
 
+# True when a form with no status and no cycle is a mistake. A barrier that is always up says no.
+func _needs_status() -> bool:
+	return true
+
+
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = super.problems(context)
-	if status == null and cycle.is_empty():
+	if status == null and cycle.is_empty() and _needs_status():
 		found.append("%s is a form with no status and no cycle" % context)
 	if status != null:
 		found.append_array(status.problems())

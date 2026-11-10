@@ -18,7 +18,8 @@ extends RefCounted
 ##   a form can hand over its own attack chain and dodge. The base hands back what it was given.
 ## - `moved`: the fighter started a move in the field, other than its dodge (`PowerSet.moved`,
 ##   C6.5b), so a form can drain per action.
-## Later rows add the hooks their seams need: the incoming-hit guard in C6.6, gauges in C6.4.
+## - `intercept_incoming`: a hit is about to land on this fighter or on one of its allies
+##   (`PowerSet.guard`, from `Combatant.receive`, C6.6a), so a barrier can stop or soften it.
 ##
 ## OWNS: the running state of one mechanism on one fighter.
 ## MUST NOT: name a character, or be looked up by anything but its `kind`.
@@ -53,6 +54,12 @@ func moves(base: MoveSet) -> MoveSet:
 
 ## The fighter started `_move` in the field (never its dodge).
 func moved(_move: ActionMove) -> void:
+	pass
+
+
+## A resolved hit, `result`, thrown by `_from`, is about to land on `_target`: this fighter
+## itself, or one of its allies. Change `result` to stop or soften it; leave it alone otherwise.
+func intercept_incoming(_target: Combatant, _result: DamageResult, _from: StringName) -> void:
 	pass
 
 

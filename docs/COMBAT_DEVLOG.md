@@ -3092,3 +3092,35 @@ runner now differs from upstream by ten lines, not fifty-five, so merges touch i
 combat cases now run after all of upstream's, not in the middle; the suite passed unchanged.
 
 **Gaps.** None new. Still open from C6.5b: a follower's form does not drain per action.
+
+## 2026-11-10 — C6.6a · The barrier, and the guard in the damage path
+
+**Did.** `Combatant.receive` hands each resolved hit to the new `PowerSet.guard` before it
+lands. `guard` shows it to the target's own running mechanisms (`PowerSet.intercept_incoming`,
+the new executor hook), then to those of each ally living on the same clock, and stops once the
+hit is blocked. `BarrierMechanism` (content) extends `FormMechanism` and adds `mode` NULLIFY or
+REDUCE with `factor`, `cost_pool` and `cost_per_block`, `bypass_tags`, `absorb_elements` into
+`store_pool`, and `scope` SELF or ALLIES; `BarrierRun` (a `FormRun`) runs it. `DamageResult`
+gains `tags` and `blocked`; `Combatant.hit` takes `tags`, and `SkillUse` passes the skill's.
+
+**Why.** Infinity, Blut Vene, IXA's shield and Rhitta's heat all step in between a hit being
+resolved and it landing, and nothing could. The design sheet writes "a form with a barrier" as
+one power, and a power has one mechanism, so a barrier IS a form: entering, leaving, the
+exclusive group, the held status and the upkeep drain are all `FormRun`'s, unchanged. The old
+C6.6 row was about 14 files, so it is split: C6.6a the barrier, C6.6b the timed block, perfect
+dodge and `knockback_taken`, C6.6c the counter stance.
+
+**Connects.** `Combatant.receive` -> `PowerSet.guard` -> each `PowerExecutor.intercept_incoming`.
+`Hurtbox._resolve` and `SkillUse._hit` skip the weakness check for a `blocked` hit, so a
+nullified swing chips no shield and gives no poise or push. `FormMechanism.problems` asks
+`_needs_status`, which a barrier answers no (no status means always up).
+
+**Verified.** Red first: with `BarrierRun.intercept_incoming` stubbed to do nothing, 9 of the 21
+new assertions in `power_barrier_test.gd` failed. Then the suite passed with 0 failed, all seven
+checkers exited 0, boot showed 0 warnings and 0 errors, and the stripped run passed.
+
+**Unblocks.** C6.6b and C6.6c; the domain (C6.9) and foresight (C6.10), which use the same hook.
+
+**Gaps.** A nullified hit is still announced as 0 damage, so the battle log reads "takes 0"; a
+"blocked" line comes with C6.6b. A move that wraps a skill does not report a blocked hit, so
+its poise and push still apply through a barrier. A field body never guards a battle fighter.
