@@ -1293,6 +1293,10 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
    - Give each enemy a `brain` (weighted `BrainEntry`s with a target rule and optional
      conditions), or leave it null to just attack.
    - Set `turn_order` (ROUNDS or CTB), `can_flee`, `experience` and `loot` (item ids).
+   - For loot that is rolled, not guaranteed, give the encounter or an enemy a `loot_table`
+     (C7.2): each `LootEntry` has an item id (empty for "nothing"), a weight, a count range and
+     an optional flag; `rolls` is how many lines are picked. A field enemy's fighter can carry
+     one too. Rarity tiers live in `data/rarities/`; see `GEAR.md` § Rarity.
    - Optionally set `music`, an audio stream: it plays while the fight is open, and the area's
      own music returns afterwards. Left empty, the field's music keeps playing.
 4. **The trigger**: place `encounter_point.tscn` under `Interactables`. Set its `object_id`, its

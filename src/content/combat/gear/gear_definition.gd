@@ -18,6 +18,10 @@ extends ContentEntry
 ## A two-handed sword blocks the off hand: putting it on empties the off hand, and putting a
 ## shield there takes the sword off. Any slot can be blocked, not only the off hand.
 ##
+## RARITY (C7.2): `rarity` names a tier, such as `rarity/rare`. The tier's `stat_scale`
+## multiplies every stat change the piece gives, and its `drop_weight` makes the piece rarer in
+## rolled loot. Empty means plain: nothing is scaled.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -38,6 +42,8 @@ extends ContentEntry
 @export var attack_tags: Array[StringName] = []
 ## Slots this piece takes up besides the one it is worn in, on top of the type's.
 @export var blocks: Array[StringName] = []
+## The rarity tier, by id (`rarity/<name>`). Empty means none.
+@export var rarity: StringName = &""
 
 
 ## The slots this piece may be worn in, in the order to try them.
@@ -49,12 +55,19 @@ func slots() -> Array[StringName]:
 	return type.slots.duplicate()
 
 
-## Every stat change wearing this piece gives: the type's, then its own.
+## Every stat change wearing this piece gives: the type's, then its own, each at the size its
+## rarity makes it.
 func all_modifiers() -> Array[StatModifier]:
-	var out: Array[StatModifier] = []
+	var plain: Array[StatModifier] = []
 	if type != null:
-		out.append_array(type.modifiers)
-	out.append_array(modifiers)
+		plain.append_array(type.modifiers)
+	plain.append_array(modifiers)
+	var tier: Rarity = RarityDb.of(rarity)
+	if tier == null:
+		return plain
+	var out: Array[StatModifier] = []
+	for modifier: StatModifier in plain:
+		out.append(tier.scaled(modifier))
 	return out
 
 
@@ -95,6 +108,8 @@ func problems() -> PackedStringArray:
 			found.append("%s lists an empty modifier" % where)
 		elif modifier.stat == &"":
 			found.append("%s has a modifier with no stat" % where)
+	if rarity != &"" and RarityDb.of(rarity) == null:
+		found.append("%s names the rarity %s, which does not exist" % [where, rarity])
 	if attack_tags.has(&""):
 		found.append("%s lists an unnamed attack tag" % where)
 	for blocked: StringName in blocks:

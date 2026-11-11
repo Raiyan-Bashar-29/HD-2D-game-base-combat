@@ -3306,3 +3306,36 @@ check against their source. The fandom wikis are still blocked here.
 
 **Unblocks.** C7.2 (next), then the order at the foot of `GEAR.md`, which now ends with
 C8.10–C8.15.
+
+## 2026-11-11 — C7.2 · Rarity and drops
+
+**Did.** Added `Rarity` (a tier as data) and `RarityDb` (`data/rarities/`), and
+`GearDefinition.rarity`: the tier's `stat_scale` multiplies every stat change the piece gives.
+Added `LootTable` and `LootEntry` (content) and `LootRoll` (gameplay): weighted lines with a
+count range, a `Flags` condition and a "nothing" line; a gear line's weight is multiplied by
+its tier's `drop_weight`. `Encounter.loot_table` and `CombatantDef.loot_table` are rolled in
+`Rewards.grant` with the battle's random numbers, and a falling `ActionEnemy` rolls its
+fighter's table into the loot it announces. Seven sample tiers ship in `data/rarities/`, with
+`ui.rarity.*` names. Combat 0.67.0.
+
+**Why.** The owner's gear request (rarity, drops) and the owner's rule: the mechanism once, as
+data. No code names a tier or an item.
+
+**Decided.** The content layer may not read `Flags`, so the table is data and `LootRoll` does
+the drawing. `Rewards.give` keeps its signature: the callers add the rolled ids to the list
+they hand in, so the field's signal and `ActionHost.reward` are unchanged. A tier with
+`drop_weight` 0 is how "never dropped at random" is said, with no special case. A multiplier
+is scaled by its distance from 1, so a x1.2 piece at scale 1.5 is x1.3 and not x1.8.
+`color`, `affixes`, `sockets` and `max_upgrade` are declared now and read by later rows.
+
+**Connects.** `GearSet._apply` (reads `all_modifiers`), `Rewards`, `BattleScreen` (lists what
+was given), `ActionHost` (field reward), `Flags` (line conditions), `GEAR.md` § Rarity.
+
+**Verified.** Red first: with `LootRoll.roll` and `Rarity.scaled` stubbed, eight of the new
+assertions failed. Then boot, the suite, the seven checkers and the stripped run, as in the PR.
+
+**Gaps.** No luck stat on the weights. No money drops. The tier's colour is not drawn yet
+(C7.5). Affixes are C7.2b. The demo has no gear files, so the sample tiers are not yet used
+by a piece in the running game.
+
+**Unblocks.** C7.3 (special gear), C7.6 (crafting), C7.2b (affixes).

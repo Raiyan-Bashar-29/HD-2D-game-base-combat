@@ -32,6 +32,9 @@ extends Resource
 ## The gear this fighter starts with, by item id (C7.1b). Each needs a gear file. A party member
 ## puts them on once and may change them after; a foe wears them every fight. Empty means none.
 @export var gear: Array[StringName] = []
+## Loot this fighter drops when beaten, rolled each time (C7.2): in a battle on top of the
+## encounter's, in the field on top of the enemy's own `loot`. Null means none.
+@export var loot_table: LootTable
 ## How a party member grows with experience. Null means it never levels: an enemy, or a guest.
 @export var level_curve: LevelCurve
 
@@ -57,4 +60,6 @@ func problems(context: String) -> PackedStringArray:
 	for item_id: StringName in gear:
 		if GearDb.for_item(item_id) == null:
 			found.append("%s starts with '%s', which has no gear file" % [where, item_id])
+	if loot_table != null:
+		found.append_array(loot_table.problems(where))
 	return found

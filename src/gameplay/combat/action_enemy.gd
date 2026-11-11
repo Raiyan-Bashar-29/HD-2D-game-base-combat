@@ -21,6 +21,7 @@ extends CharacterBody3D
 ## has none, so a test or a bare area still works.
 ##
 ## WHEN IT FALLS (C3.8) it announces `field_enemy_defeated` with its `experience` and `loot`
+## (plus whatever its fighter's `loot_table` rolls this time, C7.2)
 ## once, lies there `linger` seconds, then is removed. Re-entering the area builds it afresh,
 ## unless `remember_defeat` keeps it gone for good through a flag.
 ##
@@ -202,7 +203,8 @@ func _fall() -> void:
 	_fallen = true
 	_gone_in = linger
 	var mine: Combatant = Combatant.of(self)
-	Events.field_enemy_defeated.emit(mine.combatant_id if mine != null else &"", experience, loot)
+	var rolled: Array[StringName] = LootRoll.roll(fighter.loot_table if fighter != null else null, rng)
+	Events.field_enemy_defeated.emit(mine.combatant_id if mine != null else &"", experience, loot + rolled)
 	if remember_defeat:
 		Flags.set_flag(defeat_flag(), true)
 
