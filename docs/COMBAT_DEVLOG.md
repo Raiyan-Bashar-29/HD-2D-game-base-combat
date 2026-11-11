@@ -3480,3 +3480,31 @@ refusal on the next turn and a new battle allowing it again. Suite, seven checke
 run green.
 
 **Unblocks.** C6.6c (next). **Gaps.** None new.
+
+## 2026-11-11 — C6.6c · Perfect dodge and no flinch
+
+**Did.** `ActionMove.perfect_window` (a problem when below 0 or longer than the i-frames) and
+`MoveTimeline.perfectly()`: untouchable and still inside the window. `Hurtbox.take` sends the new
+`Events.perfect_dodge(who, by)` right after `attack_dodged` when the dodge was perfect.
+`GaugeRule.Event.PERFECT_DODGE` and `on_perfect_dodge`, which `PowerSet` pays on that event, on
+top of `on_dodge`. `Hurtbox._push` scales the push by 1 plus the target's `knockback_taken`
+stat and sends nothing at 0 or below. The demo's two dodges got a 0.1 s window. Combat 0.72.0.
+
+**Why.** Board row C6.6c: Vergil's Concentration pays for perfect dodges, and Escanor, Roland
+and the Will Not Flinch status need super armor.
+
+**Connects.** The player (`ActionFighter`), enemies (`ActionEnemy`) and followers
+(`PartyFollower`) flinch only on `knockback_requested`, so stopping the push at its one source
+covers all three with no change to them. A perfect dodge is a dodge too, so ATB and `on_dodge`
+still pay. A future Witch Time slow-down can listen to `perfect_dodge`.
+
+**Decided.** A new signal, not a third argument on `attack_dodged`, so its listeners and tests
+are unchanged. The window is data on the move (0 = none), so a form's own dodge can have its own.
+
+**Verified.** Red first: with `perfectly` stubbed to false and the push unscaled, 6 assertions
+failed. New `tests/unit/perfect_dodge_test.gd` (11 assertions): problems; the window early and
+late; a perfect and a plain dodge through `Hurtbox.take` and the gauge (2 + 5, then + 2); pushes
+at 0, −0.5 and −1; an equipped player stunned by a push and not stunned at −1. Suite, seven
+checkers and stripped run green.
+
+**Unblocks.** C6.6d (next). **Gaps.** A battle has no dodge moves, so no perfect dodge there.

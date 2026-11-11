@@ -43,8 +43,11 @@ between them, written in plain words.
 - **C6.5f is done (0.71.0): once per battle.** `Power.once_per_battle` refuses a power after
   one use until the next battle, or the next area in the field (`OnceLedger` on `PowerSet.once`).
   The form's name on a party sheet waits for C7.7, the gear screen.
-- **Next: C6.6c, perfect dodge and no flinch.** The build order is
-  the table at the foot of `GEAR.md`: C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
+- **C6.6c is done (0.72.0): perfect dodge and no flinch.** A dodge's `perfect_window` makes a
+  hit dodged early a perfect dodge (`Events.perfect_dodge`, `GaugeRule.on_perfect_dodge`); the
+  `knockback_taken` stat scales a push, and −1 means no push and no flinch.
+- **Next: C6.6d, the counter stance.** The build order is
+  the table at the foot of `GEAR.md`: C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's

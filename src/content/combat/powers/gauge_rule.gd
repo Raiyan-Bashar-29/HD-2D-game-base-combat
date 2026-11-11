@@ -17,7 +17,8 @@ extends Resource
 ## falling (`on_ally_defeated`), a move started that differs from the one before (`on_new_move`,
 ## as a style rank counts; the field only, a battle has no moves), and points of another pool
 ## paid as a cost (`on_spent` for each point of `spent_pool`: "+1 true arts per 3 arts spent" is
-## `spent_pool arts`, `on_spent 0.3334`).
+## `spent_pool arts`, `on_spent 0.3334`). A PERFECT DODGE (C6.6c, the field only) gives
+## `on_perfect_dodge` on top of `on_dodge`, since it is a dodge too.
 ##
 ## RUNNING: `per_running_second` is ADDED to `per_moving_second` while the player runs, because a
 ## run is a fast move. "+4 walking, -15 running" is `per_moving_second 4`, `per_running_second -19`.
@@ -29,7 +30,7 @@ extends Resource
 ## MUST NOT: hold a fighter's current fill. The pool is in `Vitals`; `KitGauges` moves it.
 
 ## The happenings a rule can answer, besides the passing of time.
-enum Event {HIT_DEALT, HIT_TAKEN, DODGE, MISS, KILL, ALLY_DEFEATED, NEW_MOVE}
+enum Event {HIT_DEALT, HIT_TAKEN, DODGE, MISS, KILL, ALLY_DEFEATED, NEW_MOVE, PERFECT_DODGE}
 
 ## The pool this rule moves.
 @export var pool: StringName = &""
@@ -49,6 +50,8 @@ enum Event {HIT_DEALT, HIT_TAKEN, DODGE, MISS, KILL, ALLY_DEFEATED, NEW_MOVE}
 @export var on_hit_taken: float = 0.0
 ## Points for each attack the holder dodges.
 @export var on_dodge: float = 0.0
+## Points for each attack the holder dodges perfectly, on top of `on_dodge`.
+@export var on_perfect_dodge: float = 0.0
 ## Points for each attack of the holder's that misses.
 @export var on_miss: float = 0.0
 ## Points for each foe the holder's hit defeats.
@@ -84,6 +87,8 @@ func amount(event: Event) -> float:
 			return on_ally_defeated
 		Event.NEW_MOVE:
 			return on_new_move
+		Event.PERFECT_DODGE:
+			return on_perfect_dodge
 	return 0.0
 
 

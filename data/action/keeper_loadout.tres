@@ -88,6 +88,7 @@ startup = 0.0
 active = 0.3
 recovery = 0.2
 iframes_to = 0.3
+perfect_window = 0.1
 travel_speed = 5.0
 
 [sub_resource type="Resource" id="moves"]
