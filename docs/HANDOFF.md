@@ -46,8 +46,11 @@ between them, written in plain words.
 - **C6.6c is done (0.72.0): perfect dodge and no flinch.** A dodge's `perfect_window` makes a
   hit dodged early a perfect dodge (`Events.perfect_dodge`, `GaugeRule.on_perfect_dodge`); the
   `knockback_taken` stat scales a push, and −1 means no push and no flinch.
-- **Next: C6.6d, the counter stance.** The build order is
-  the table at the foot of `GEAR.md`: C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
+- **C6.6d is done (0.73.0): the counter stance.** A COUNTER status may name a `counter_move`:
+  in the field the holder swings it at whoever hit it, without flinching; in a battle the
+  counter strikes with its numbers. On a timed-block barrier, that is a parry.
+- **Next: C6.7, the barrage.** The build order is
+  the table at the foot of `GEAR.md`: C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
@@ -126,8 +129,14 @@ between them, written in plain words.
 
 ## Working rhythm (the owner's standing preference)
 
-- **One package at a time, all the way to done:** tested, committed, pushed, and the PR merged
-  on green.
+- **One package at a time, all the way to done:** tested and verified locally, committed, and
+  pushed.
+- **Pull requests come in batches (owner, 2026-11-11, to save the GitHub Actions quota):**
+  the ladder runs on pull requests and on `main` only, so a push to a working branch costs
+  nothing. Push each finished package at once (the container is temporary), but open the draft
+  PR only when a batch is complete: about three packages, or sooner when a group of rows closes.
+  Merge it on green CI. Between packages of one batch, keep working on the same branch (merge
+  `template/main` in); restart from `origin/main` only after the batch's PR has merged.
 - **Then stop and report,** ending the report with **"Good time to /compact now."**
 - The owner runs `/compact`. In Claude Code, a `PostCompact` hook in the owner's user settings
   wakes the session, and the next package starts without anyone typing "continue". With no
@@ -260,5 +269,5 @@ header before the code.
    how it was verified, what it unblocks, and its gaps.
 5. **This page's "Where things stand" block is updated.**
 6. New code has plain comments wherever the reason is not obvious from the line itself.
-7. Commit, push, open a pull request, wait for green CI, then merge. Only then start the next
-   row.
+7. Commit and push (a working branch runs no CI). Open a pull request when the batch is
+   complete (§ Working rhythm), wait for green CI, then merge.

@@ -624,7 +624,7 @@ and merged. **Row** names the board row that builds it.
 | Forms and styles | Devil May Cry | Have (C6.5) |
 | Barriers | Infinity, Blut Vene | Have (C6.6a) |
 | Perfect dodge with a reward | Bayonetta's Witch Time, FF XVI | Built (C6.6c): `perfect_window`, `Events.perfect_dodge`, a gauge's `on_perfect_dodge`; a slow-down reward can listen to the event |
-| Counter stance and parry | Sekiro, Royal Guard | Row C6.6d |
+| Counter stance and parry | Sekiro, Royal Guard | Built (C6.6d): a COUNTER status with a `counter_move` on a form or a timed-block barrier |
 | Projectile barrages | Gate of Babylon | Row C6.7 |
 | Charged finishers | Zantetsuken | Row C6.8 |
 | Planted and delayed strikes | Owl, time bombs, rune traps | Row C6.26 (new) |
@@ -699,7 +699,7 @@ weapons themselves.
 | C6.5e | **DONE.** A form's own commands: `commands`, `replaces_attack`, `aftermath` | C6.5d |
 | C6.5f | **DONE.** `Power.once_per_battle` (the sheet name moved to C7.7) | C6.5e |
 | C6.6c | **DONE.** Perfect dodge (`perfect_window`, `Events.perfect_dodge`, `on_perfect_dodge`) and `knockback_taken` | C6.6 |
-| C6.6d | As on the board | |
+| C6.6d | **DONE.** Counter stance: `StatusEffect.counter_move`, the field counter in `Hurtbox` | C6.6 |
 | C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading | C6.7 |
 | C6.8 | Finisher | |

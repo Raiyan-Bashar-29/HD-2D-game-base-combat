@@ -10,7 +10,8 @@ extends RefCounted
 ## WHAT ANSWERS A HIT LIVES HERE TOO (C2.15). A target holding a REFLECT status sends a skill
 ## with the matching tag back to its user, inside `apply`. `counter` is the other answer: the
 ## caller asks for it after a plain attack lands, because only the caller knows it WAS a plain
-## attack and not a skill.
+## attack and not a skill. `counter_stance` and `answer` are its two halves, so the field's
+## `Hurtbox` can ask the same question and swing a counter MOVE instead (C6.6d).
 ##
 ## THE CALLER DECIDES WHO AND WHEN. Checking a target is legal, spending an item and pushing a
 ## CTB turn back are the caller's, because each formula has its own rules for them.
@@ -87,24 +88,48 @@ static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
 				statuses.apply(status, rng)
 
 
-## `defender` strikes back at `attacker` with a plain hit when it holds a COUNTER status, the
-## attack `landed` (a miss is not answered), both are standing, and the defender is not asleep
-## or stunned. Rolls `reaction_chance` only when it is below 1. True when it struck back.
+## `defender` strikes back at `attacker` when the attack `landed` (a miss is not answered) and
+## `counter_stance` answers. A battle calls this after a plain ATTACK. True when it struck back.
 static func counter(attacker: Combatant, defender: Combatant, landed: DamageResult,
 		rng: RandomNumberGenerator) -> bool:
 	if landed == null or landed.missed:
 		return false
-	if _vitals(attacker).is_defeated() or _vitals(defender).is_defeated():
+	var stance: StatusEffect = counter_stance(attacker, defender, rng)
+	if stance == null:
 		return false
-	var statuses: StatusSet = StatusSet.of(defender.get_parent())
-	if statuses == null or statuses.blocker(StatusEffect.Block.SKIP_TURN) != &"":
-		return false
-	var stance: StatusEffect = statuses.reactor(StatusEffect.Reaction.COUNTER)
-	if stance == null or not _fires(stance, rng):
-		return false
-	defender.hit(attacker, 0.0, &"", rng)
+	answer(defender, attacker, stance.counter_move, rng)
 	Events.countered.emit(defender.combatant_id, attacker.combatant_id)
 	return true
+
+
+## The COUNTER status `defender` answers `attacker` with now, or null: both must be standing,
+## the defender not asleep or stunned, and the status's `reaction_chance` must roll true (it
+## draws only when below 1). The field's `Hurtbox` asks this too (C6.6d).
+static func counter_stance(attacker: Combatant, defender: Combatant,
+		rng: RandomNumberGenerator) -> StatusEffect:
+	if _vitals(attacker).is_defeated() or _vitals(defender).is_defeated():
+		return null
+	var statuses: StatusSet = StatusSet.of(defender.get_parent())
+	if statuses == null or statuses.blocker(StatusEffect.Block.SKIP_TURN) != &"":
+		return null
+	var stance: StatusEffect = statuses.reactor(StatusEffect.Reaction.COUNTER)
+	if stance == null or not _fires(stance, rng):
+		return null
+	return stance
+
+
+## `defender` strikes `attacker` at once with `move`'s numbers (C6.6d): its skill, at no cost;
+## else `hits` hits of its `power` with its element (or the worn weapon's). A null move is one
+## plain hit with the defender's attack, the counter C2.15 always had.
+static func answer(defender: Combatant, attacker: Combatant, move: ActionMove,
+		rng: RandomNumberGenerator) -> void:
+	if move == null:
+		defender.hit(attacker, 0.0, &"", rng)
+	elif move.skill != null:
+		apply(defender, move.skill, [attacker], rng)
+	else:
+		for i: int in maxi(1, move.hits):
+			defender.hit(attacker, move.power, defender.strike_element(move.element), rng)
 
 
 ## Who `skill` really lands on when aimed at `target`: the user, if the target is standing,

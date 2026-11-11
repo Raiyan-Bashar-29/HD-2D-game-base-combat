@@ -19,6 +19,15 @@ extends Area3D
 ## armor, "will not flinch"). The player, enemies and followers all flinch only on that push, so
 ## this one place covers them all.
 ##
+## COUNTER (C6.6d, M13 counter stance): when a hit lands, or a barrier blocks it, on a fighter
+## holding a COUNTER status (`SkillUse.counter_stance` says whether it answers), the fighter
+## answers. With the status's `counter_move` and a `timeline`, that move starts on the fighter's
+## own clock, so its own hitbox swings it; otherwise the attacker is struck at once
+## (`SkillUse.answer`). A countered hit does not push (the stance stands firm, and a push would
+## cancel the counter), and a hit arriving while that counter already plays is not answered
+## again. `Events.countered` is announced either way. A parry is a timed block whose status
+## counters: the perfect press stops the hit, and the counter answers it.
+##
 ## `timeline` is set by whoever runs this fighter's moves (C3.4's fighter, C3.7's enemy), so a
 ## dodge's i-frames are read from the same clock that plays the dodge.
 ##
@@ -29,6 +38,9 @@ extends Area3D
 ## Every hurtbox in the tree joins this group, so a `LockOn` can find targets without
 ## asking the physics engine (C3.5).
 const GROUP: StringName = &"combat_hurtboxes"
+
+## What became of a hit: every hit missed, at least one was blocked and none landed, or one landed.
+enum Outcome { MISSED, BLOCKED, LANDED }
 
 ## The clock of this fighter's own moves; null means it never has i-frames.
 var timeline: MoveTimeline
@@ -84,33 +96,57 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 		if timeline.perfectly():
 			Events.perfect_dodge.emit(target.combatant_id, attacker.combatant_id)
 		return true
-	var landed: bool = _resolve(attacker, move, target, rng)
-	if landed:
+	var outcome: Outcome = _resolve(attacker, move, target, rng)
+	var countered: bool = outcome != Outcome.MISSED and _counter(attacker, target, rng)
+	if outcome == Outcome.LANDED:
 		Weakness.wear(target, move.poise)
-		_push(target, move, from)
+		if not countered:
+			_push(target, move, from)
 	return true
 
 
-## Resolves the hit itself. True when at least one hit landed (did not miss).
+## `target` answers `attacker` when it holds a counter stance that fires (C6.6d). True when it did.
+func _counter(attacker: Combatant, target: Combatant, rng: RandomNumberGenerator) -> bool:
+	var stance: StatusEffect = SkillUse.counter_stance(attacker, target, rng)
+	if stance == null:
+		return false
+	var move: ActionMove = stance.counter_move
+	if move != null and timeline != null:
+		# Already swinging this counter: the stance holds, and the counter is not begun again.
+		if timeline.busy() and timeline.move == move:
+			return true
+		timeline.start(move)
+	else:
+		# No clock to swing it on: the counter lands at once, with the move's numbers if it has one.
+		SkillUse.answer(target, attacker, move, rng)
+	Events.countered.emit(target.combatant_id, attacker.combatant_id)
+	return true
+
+
+## Resolves the hit itself, and says what became of it.
 func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
-		rng: RandomNumberGenerator) -> bool:
+		rng: RandomNumberGenerator) -> Outcome:
 	if move.skill != null:
 		# A skill lands the way it does in a battle: power, effects, statuses, reflect and all.
 		# It does not report misses one by one, so poise and knockback treat it as landed.
 		SkillUse.apply(attacker, move.skill, [target], rng)
-		return true
+		return Outcome.LANDED
 	# A move with no element of its own takes the worn weapon's, and its tags too (C7.1c).
 	var element: StringName = attacker.strike_element(move.element)
 	var keys: Array[StringName] = [element]
 	keys.append_array(attacker.strike_tags())
-	var landed: bool = false
+	var outcome: Outcome = Outcome.MISSED
 	for i: int in maxi(1, move.hits):
 		var result: DamageResult = attacker.hit(target, move.power, element, rng)
+		if result == null or result.missed:
+			continue
 		# A hit a barrier stopped whole did not land: no shield chip, no poise, no push (C6.6a).
-		if result != null and not result.missed and not result.blocked:
-			landed = true
+		if result.blocked:
+			outcome = maxi(outcome, Outcome.BLOCKED) as Outcome
+		else:
+			outcome = Outcome.LANDED
 			Weakness.strike(target, keys)
-	return landed
+	return outcome
 
 
 ## Asks for a push away from `from`, flat on the ground, `move.knockback` metres long times

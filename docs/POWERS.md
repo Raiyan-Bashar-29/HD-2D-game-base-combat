@@ -130,7 +130,7 @@ formulas (`ActionFighter`, `CombatClock`).
 | M10 | `clone` | A double who repeats your moves | The next `actions` actions happen twice at `power_fraction` | A ghost that replays the user's `MoveTimeline` `delay` s later with its own hitbox, for `lifetime` s | Doppelganger, Dancing Steel |
 | M11 | `sacrifice` | Take from your own side to grow | Takes `fraction` of each ally's HP (and optionally their buffs) and gives it to the user, plus a status | The same, within `radius` | Auswählen |
 | M12 | `grant` | Give a power to an ally | Applies a status, or equips a power, on an ally for `turns` | The same, in seconds | The Almighty's gift of a Schrift, Lelouch's tactics |
-| M13 | `counter_stance` | Hold a stance and answer a hit | A status with the COUNTER reaction (C2.15) at chance 1 for one turn | Hold to keep the stance (pool upkeep); a hit received becomes a counter move, and a perfect press is a parry | Gungnir, Royal Guard's Release timing, Arima's counters |
+| M13 | `counter_stance` | Hold a stance and answer a hit | A status with the COUNTER reaction (C2.15) at chance 1 for one turn; the counter strikes with its `counter_move`'s numbers | Hold to keep the stance (pool upkeep); a hit received becomes a counter move, and a perfect press is a parry. **Built in C6.6d as data, with no class of its own:** a form or a TIMED_BLOCK barrier whose status carries COUNTER and `counter_move` | Gungnir, Royal Guard's Release timing, Arima's counters |
 | M14 | `refresh` | Hurry your side's powers along (C6.0b) | Cuts each remaining cooldown of the user (`scope` SELF) or every ally (ALLIES) by `fraction` (0.5 halves it), rounded down in turns; optionally adds `pool_gain` to a named pool | The same in seconds, and an optional `speed` status (a `cooldown_rate` stat, read by `PowerSet`'s count-down) for `duration` s | Isliid's Super Arts (halves her cooldowns), Conquering Dark Bringer's ally speed-up |
 
 **No mechanism needed** (framework or existing parts alone):
@@ -528,7 +528,7 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | C6.3 | Quick slots and the HUD: four rebindable `combat_power_N` actions; the slot, cooldown and gauge readout | C6.2 |
 | C6.4 | M6 `gauge` running: every `GaugeRule` event, `levels` | C6.1 |
 | C6.5 | M5 `form` | C6.2 |
-| C6.6 | M3 `barrier` and the incoming guard in `Combatant.receive` (C6.6a, built); the timed block (C6.6b, built); the perfect dodge and `knockback_taken` (C6.6c); M13 `counter_stance` (C6.6d) | C6.1 |
+| C6.6 | M3 `barrier` and the incoming guard in `Combatant.receive` (C6.6a, built); the timed block (C6.6b, built); the perfect dodge and `knockback_taken` (C6.6c, built); M13 `counter_stance` (C6.6d, built as data) | C6.1 |
 | C6.7 | M1 `barrage` and the `Projectile` node | C6.2 |
 | C6.8 | M2 `finisher` (charge, hold, flourish) | C6.4 |
 | C6.9 | M4 `domain` (including clash and pull) | C6.6 |

@@ -3508,3 +3508,39 @@ at 0, −0.5 and −1; an equipped player stunned by a push and not stunned at �
 checkers and stripped run green.
 
 **Unblocks.** C6.6d (next). **Gaps.** A battle has no dodge moves, so no perfect dodge there.
+
+## 2026-11-11 — C6.6d · Counter stance
+
+**Did.** `StatusEffect.counter_move` (an `ActionMove`; a problem without the COUNTER reaction,
+and the move's own problems pass up). `SkillUse.counter` split into `counter_stance` (does this
+fighter answer now: both standing, not stunned, a COUNTER status, the chance rolls) and `answer`
+(strike with the move's numbers: its skill at no cost, or `hits` × `power`; no move is the old
+plain hit). `Hurtbox._resolve` now says MISSED, BLOCKED or LANDED, and `take` asks for a
+counter on BLOCKED or LANDED: with a move and a timeline the move starts on the holder's own
+clock (not begun again while it plays), else the attacker is struck at once; a countered hit is
+not pushed. `ActionFighter` turns to face whoever it counters (`Events.countered`, now sent in
+the field too). `ladder.yml` runs on pushes to `main` only, as well as on pull requests and by
+hand. Combat 0.73.0.
+
+**Why.** Board row C6.6d (M13): Gungnir, Royal Guard and Arima's counters. Owner, mid-row: push
+less, in bigger complete updates, to save the Actions quota.
+
+**Connects.** Hold the stance is a form (its drain is the upkeep); the parry is C6.6b's timed
+block, whose perfect press stops the hit, and the counter answers it. In a battle that already
+worked through C2.15's COUNTER; now it can be a flurry. Every field fighter keeps its timeline on
+its `Hurtbox` and refits its hitbox when `timeline.swing` changes, so the player, enemies and
+followers all swing a counter with no change to them.
+
+**Decided.** No `CounterMechanism` class: a counter stance is data on parts that already combine
+(the owner's rule). The field counters any move's hit; a battle still counters only a plain
+ATTACK (a skill meets REFLECT). Batches: about three rows per pull request.
+
+**Verified.** Red first: with `counter_stance` stubbed to null, 16 assertions failed. New
+`tests/unit/counter_stance_test.gd` (14): problems; a flurry counter beats a plain one; a skill
+counter; a battle parry through `BattleSetup` (no damage, the foe struck); a field counter with no
+push; no restart mid-counter; a bare stance strikes at once; a stunned holder is pushed and does
+not counter; a dodge is not countered; the player's parry (no damage, the move plays, facing the
+attacker) and a late block still countered. Suite, seven checkers and stripped run green.
+
+**Unblocks.** C6.7 (next). **Gaps.** No gauge `on_counter` yet (`power_set.gd` is at its line
+budget); enemies and followers counter the way they face, which is toward the hostile they chase.
