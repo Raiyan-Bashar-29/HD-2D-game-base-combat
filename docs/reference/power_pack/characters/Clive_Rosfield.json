@@ -1,0 +1,612 @@
+{
+  "id": "character-final-fantasy-xvi-clive-rosfield",
+  "name": "Clive Rosfield",
+  "aliases": [],
+  "universe": "Final Fantasy XVI",
+  "species_or_type": "human Dominant / Eikon vessel",
+  "canon_rank_or_title": "Ifrit Dominant",
+  "combat_roles": [
+    "swordfighter",
+    "elemental_controller",
+    "stance_switcher"
+  ],
+  "forms": [
+    {
+      "name": "base",
+      "canon_description": "Standard sword and Eikon abilities."
+    },
+    {
+      "name": "odin_stance",
+      "canon_description": "Arm of Darkness and Zantetsuken meter."
+    },
+    {
+      "name": "eikon_form",
+      "canon_description": "Story-specific Eikon transformation."
+    }
+  ],
+  "resource_model": {
+    "source": "Eikonic abilities / limit break / Zantetsuken gauge",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Uses powers from multiple Eikons"
+  ],
+  "abilities": [
+    {
+      "name": "Phoenix Shift",
+      "category": "gap_closer",
+      "canon_behavior": "Clive rapidly closes the distance to a target via the Phoenix blessing.",
+      "activation": "active",
+      "targeting": "target enemy",
+      "observed_effects": [
+        "Directed mobility"
+      ],
+      "suggested_game_logic": [
+        "Validate target lock.",
+        "Dash or blink to permitted point near enemy with safe collision.",
+        "Enter attack-ready recovery."
+      ],
+      "canon_limitations": "The move is principally a gap-closer, not a generic free teleport.",
+      "source_urls": [
+        "https://na.finalfantasyxvi.com/characters",
+        "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1832-phoenix-shift"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "space"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "spatial_barrier",
+        "mechanic_title": "Spatial constraint / field",
+        "semantic_route_evidence": "legacy_tag_fallback",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Clive rapidly closes the distance to a target via the Phoenix blessing.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Validate target lock. → Dash or blink to permitted point near enemy with safe collision. → Enter attack-ready recovery.",
+        "execution_steps": [
+          "CHARACTER: Clive Rosfield — Phoenix Shift",
+          "CANON BEHAVIOR: Clive rapidly closes the distance to a target via the Phoenix blessing.",
+          "FORM REQUIREMENT: none_specified",
+          "Validate target lock.",
+          "Dash or blink to permitted point near enemy with safe collision.",
+          "Enter attack-ready recovery.",
+          "IMPLEMENTATION FAMILY: Spatial constraint / field",
+          "zone = create_owner_linked_space_constraint(actor, shape)",
+          "on_movement_or_projectile_attempt(zone, lambda e: evaluate_space_rule(e))",
+          "block_redirect_or_distort_trajectory(e, configured_variant)",
+          "expire_and_restore_original_colliders(zone)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_phoenix_shift_final(ctx, actor, target, cfg):\n    # LORE INTENT: Clive rapidly closes the distance to a target via the Phoenix blessing.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    zone = create_owner_linked_space_constraint(actor, shape)\n    on_movement_or_projectile_attempt(zone, lambda e: evaluate_space_rule(e))\n    block_redirect_or_distort_trajectory(e, configured_variant)\n    expire_and_restore_original_colliders(zone)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "SpatialRuleZone",
+          "CollisionFilter"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "barrier_shape",
+          "bypass_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Differentiate Infinity-like slow from solid wall collision."
+        ],
+        "test_scenarios": [
+          "Phoenix Shift: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Phoenix Shift: executes the intended spatial constraint / field only for eligible targets.",
+          "Phoenix Shift: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Differentiate Infinity-like slow from solid wall collision."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Clive Rosfield",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://na.finalfantasyxvi.com/characters",
+          "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+        ],
+        "character_specific_initial_steps": [
+          "Validate target lock.",
+          "Dash or blink to permitted point near enemy with safe collision.",
+          "Enter attack-ready recovery."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Titanic Block",
+      "category": "defense",
+      "canon_behavior": "Clive uses Titan-aligned power to block incoming attacks.",
+      "activation": "hold_or_active",
+      "targeting": "self",
+      "observed_effects": [
+        "Damage interception"
+      ],
+      "suggested_game_logic": [
+        "Enter Titan guard state, apply frontal hit filter.",
+        "On guarded impact play defense response and optional perfect-block event."
+      ],
+      "canon_limitations": "Guard arc and timing are game design choices.",
+      "source_urls": [
+        "https://na.finalfantasyxvi.com/characters",
+        "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1844-titanic-block"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "shield",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "legacy_tag_fallback",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "Clive uses Titan-aligned power to block incoming attacks.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Enter Titan guard state, apply frontal hit filter. → On guarded impact play defense response and optional perfect-block event.",
+        "execution_steps": [
+          "CHARACTER: Clive Rosfield — Titanic Block",
+          "CANON BEHAVIOR: Clive uses Titan-aligned power to block incoming attacks.",
+          "FORM REQUIREMENT: none_specified",
+          "Enter Titan guard state, apply frontal hit filter.",
+          "On guarded impact play defense response and optional perfect-block event.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_titanic_block_final(ctx, actor, target, cfg):\n    # LORE INTENT: Clive uses Titan-aligned power to block incoming attacks.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "shield_modifier"
+        ],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "Titanic Block: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Titanic Block: executes the intended defensive interception or immunity only for eligible targets.",
+          "Titanic Block: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Clive Rosfield",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://na.finalfantasyxvi.com/characters",
+          "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+        ],
+        "character_specific_initial_steps": [
+          "Enter Titan guard state, apply frontal hit filter.",
+          "On guarded impact play defense response and optional perfect-block event."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Diamond Dust",
+      "category": "ice_aoe",
+      "canon_behavior": "Shiva-aligned Diamond Dust creates a freezing ice storm that impairs opponents.",
+      "activation": "active",
+      "targeting": "enemies in area",
+      "observed_effects": [
+        "Ice hits",
+        "Freeze / stagger"
+      ],
+      "suggested_game_logic": [
+        "Spawn frost AoE.",
+        "Apply hits and freeze/stagger effects per target resistance and hit timing."
+      ],
+      "canon_limitations": "Freeze duration is not universal outside FFXVI.",
+      "source_urls": [
+        "https://na.finalfantasyxvi.com/characters",
+        "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1854-diamond-dust"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "aoe",
+        "debuff",
+        "crowd_control"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "status_ailment",
+        "mechanic_title": "Timed ailment / movement restraint",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Shiva-aligned Diamond Dust creates a freezing ice storm that impairs opponents.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Spawn frost AoE. → Apply hits and freeze/stagger effects per target resistance and hit timing.",
+        "execution_steps": [
+          "CHARACTER: Clive Rosfield — Diamond Dust",
+          "CANON BEHAVIOR: Shiva-aligned Diamond Dust creates a freezing ice storm that impairs opponents.",
+          "FORM REQUIREMENT: none_specified",
+          "Spawn frost AoE.",
+          "Apply hits and freeze/stagger effects per target resistance and hit timing.",
+          "IMPLEMENTATION FAMILY: Timed ailment / movement restraint",
+          "if target_resists(status_kind, ability): return RESISTED",
+          "effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)",
+          "on_tick: apply_status_specific_periodic_effect_if_any(effect)",
+          "on_update: recompute_movement_ai_or_cast_permissions(target)",
+          "on_expiry_or_cleanse: remove_instance_and_recalculate(target)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_diamond_dust_final(ctx, actor, target, cfg):\n    # LORE INTENT: Shiva-aligned Diamond Dust creates a freezing ice storm that impairs opponents.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if target_resists(status_kind, ability): return RESISTED\n    effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)\n    on_tick: apply_status_specific_periodic_effect_if_any(effect)\n    on_update: recompute_movement_ai_or_cast_permissions(target)\n    on_expiry_or_cleanse: remove_instance_and_recalculate(target)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "StatusController",
+          "TickScheduler"
+        ],
+        "effect_tags_from_description": [
+          "status_effect",
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "status_kind",
+          "duration",
+          "stacking_rules",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "test_scenarios": [
+          "Diamond Dust: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Diamond Dust: executes the intended timed ailment / movement restraint only for eligible targets.",
+          "Diamond Dust: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Clive Rosfield",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://na.finalfantasyxvi.com/characters",
+          "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+        ],
+        "character_specific_initial_steps": [
+          "Spawn frost AoE.",
+          "Apply hits and freeze/stagger effects per target resistance and hit timing."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Arm of Darkness",
+      "category": "weapon_stance",
+      "canon_behavior": "Clive channels Odin through a dark blade and builds the Zantetsuken gauge through qualifying strikes.",
+      "activation": "active_stance",
+      "targeting": "self",
+      "observed_effects": [
+        "Weapon stance swap",
+        "Zantetsuken meter growth"
+      ],
+      "suggested_game_logic": [
+        "Equip Arm of Darkness stance and swap moveset.",
+        "On designated successful sword actions add to Zantetsuken gauge.",
+        "Expose charged finisher when gauge permits."
+      ],
+      "canon_limitations": "Precise gauge values depend on FFXVI mechanics and level.",
+      "source_urls": [
+        "https://na.finalfantasyxvi.com/characters",
+        "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1855-arm-of-darkness"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "weapon_mode",
+        "melee",
+        "resource",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Clive channels Odin through a dark blade and builds the Zantetsuken gauge through qualifying strikes.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Equip Arm of Darkness stance and swap moveset. → On designated successful sword actions add to Zantetsuken gauge. → Expose charged finisher when gauge permits.",
+        "execution_steps": [
+          "CHARACTER: Clive Rosfield — Arm of Darkness",
+          "CANON BEHAVIOR: Clive channels Odin through a dark blade and builds the Zantetsuken gauge through qualifying strikes.",
+          "FORM REQUIREMENT: none_specified",
+          "Equip Arm of Darkness stance and swap moveset.",
+          "On designated successful sword actions add to Zantetsuken gauge.",
+          "Expose charged finisher when gauge permits.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_arm_of_darkness_final(ctx, actor, target, cfg):\n    # LORE INTENT: Clive channels Odin through a dark blade and builds the Zantetsuken gauge through qualifying strikes.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Arm of Darkness: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Arm of Darkness: executes the intended melee animation with active frames only for eligible targets.",
+          "Arm of Darkness: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Clive Rosfield",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://na.finalfantasyxvi.com/characters",
+          "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+        ],
+        "character_specific_initial_steps": [
+          "Equip Arm of Darkness stance and swap moveset.",
+          "On designated successful sword actions add to Zantetsuken gauge.",
+          "Expose charged finisher when gauge permits."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Zantetsuken",
+      "category": "charged_finisher",
+      "canon_behavior": "Clive releases an Odin-powered sword finisher whose output scales with accumulated Zantetsuken gauge.",
+      "activation": "active_finisher",
+      "targeting": "enemies in finisher area",
+      "observed_effects": [
+        "Powerful multi-target slash"
+      ],
+      "suggested_game_logic": [
+        "Require gauge/stance state.",
+        "Consume or reset applicable gauge level.",
+        "Dispatch level-dependent attack hit events across the cinematic slash window."
+      ],
+      "canon_limitations": "Do not assume guaranteed instant death on all targets.",
+      "source_urls": [
+        "https://na.finalfantasyxvi.com/characters",
+        "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1858-zantetsuken"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "resource",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Clive releases an Odin-powered sword finisher whose output scales with accumulated Zantetsuken gauge.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Require gauge/stance state. → Consume or reset applicable gauge level. → Dispatch level-dependent attack hit events across the cinematic slash window.",
+        "execution_steps": [
+          "CHARACTER: Clive Rosfield — Zantetsuken",
+          "CANON BEHAVIOR: Clive releases an Odin-powered sword finisher whose output scales with accumulated Zantetsuken gauge.",
+          "FORM REQUIREMENT: none_specified",
+          "Require gauge/stance state.",
+          "Consume or reset applicable gauge level.",
+          "Dispatch level-dependent attack hit events across the cinematic slash window.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_zantetsuken_final(ctx, actor, target, cfg):\n    # LORE INTENT: Clive releases an Odin-powered sword finisher whose output scales with accumulated Zantetsuken gauge.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Zantetsuken: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Zantetsuken: executes the intended melee animation with active frames only for eligible targets.",
+          "Zantetsuken: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Clive Rosfield",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://na.finalfantasyxvi.com/characters",
+          "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+        ],
+        "character_specific_initial_steps": [
+          "Require gauge/stance state.",
+          "Consume or reset applicable gauge level.",
+          "Dispatch level-dependent attack hit events across the cinematic slash window."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://na.finalfantasyxvi.com/characters",
+    "https://www.powerpyx.com/final-fantasy-16-xvi-all-eikon-abilities/"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 5
+}

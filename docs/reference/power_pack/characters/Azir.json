@@ -1,0 +1,155 @@
+{
+  "id": "character-league-of-legends-runeterra-azir",
+  "name": "Azir",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "area_control",
+    "summoner",
+    "world_interaction"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Azir: Emperor's Divide",
+      "existing_atlas_entry_ids": [
+        "ability-2647-azir-emperor-s-divide"
+      ],
+      "canon_behavior": "Summons a wall of sand soldiers that charges forward and divides the battlefield.",
+      "classification": {
+        "combat_roles": [
+          "area_control",
+          "summoner",
+          "world_interaction"
+        ],
+        "mechanic_tags": [
+          "aoe",
+          "summon",
+          "environment"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "world_or_environment",
+        "delivery_hint": "area_or_field"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Create an area-shaped query or persistent effect zone around the cast point.",
+        "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "Validate summon slot, material and/or source requirement.",
+        "Spawn owned summon entities and register them with the owner/command AI.",
+        "Query weather, terrain, surface, region or nearby world objects.",
+        "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "summon_entities",
+        "mechanic_title": "Spawn owned companion(s)",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "owned_entity_spawn",
+        "explicit_goal": "Summons a wall of sand soldiers that charges forward and divides the battlefield.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Create an area-shaped query or persistent effect zone around the cast point. → Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "execution_steps": [
+          "CHARACTER: Azir — Azir: Emperor's Divide",
+          "CANON BEHAVIOR: Summons a wall of sand soldiers that charges forward and divides the battlefield.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Validate summon slot, material and/or source requirement.",
+          "Spawn owned summon entities and register them with the owner/command AI.",
+          "Query weather, terrain, surface, region or nearby world objects.",
+          "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Spawn owned companion(s)",
+          "if not summon_preconditions_pass(actor,target): return DENIED",
+          "for archetype in defined_summon_list(ability):",
+          "    entity = spawn_owned_entity_at_safe_location(archetype, actor)",
+          "    register_ai_team_and_lifetime(entity,actor)",
+          "on_despawn_or_owner_death: apply_defined_roster_policy()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_azir_emperor_s_divide_league(ctx, actor, target, cfg):\n    # LORE INTENT: Summons a wall of sand soldiers that charges forward and divides the battlefield.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not summon_preconditions_pass(actor,target): return DENIED\n    for archetype in defined_summon_list(ability):\n        entity = spawn_owned_entity_at_safe_location(archetype, actor)\n        register_ai_team_and_lifetime(entity,actor)\n    on_despawn_or_owner_death: apply_defined_roster_policy()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "EntitySpawner",
+          "SummonRegistry",
+          "OwnershipSystem"
+        ],
+        "effect_tags_from_description": [
+          "summon_entity",
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "summon_template",
+          "summon_count",
+          "cap",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Prevent infinite summon recursion or duplicate entities."
+        ],
+        "test_scenarios": [
+          "Azir: Emperor's Divide: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Azir: Emperor's Divide: executes the intended spawn owned companion(s) only for eligible targets.",
+          "Azir: Emperor's Divide: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Prevent infinite summon recursion or duplicate entities."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Azir",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Validate summon slot, material and/or source requirement.",
+          "Spawn owned summon entities and register them with the owner/command AI.",
+          "Query weather, terrain, surface, region or nearby world objects.",
+          "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

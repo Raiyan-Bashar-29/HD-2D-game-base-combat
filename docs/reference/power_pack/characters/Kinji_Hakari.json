@@ -1,0 +1,134 @@
+{
+  "id": "character-jujutsu-kaisen-kinji-hakari",
+  "name": "Kinji Hakari",
+  "aliases": [],
+  "universe": "Jujutsu Kaisen",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "support"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Idle Death Gamble",
+      "existing_atlas_entry_ids": [
+        "ability-1261-idle-death-gamble"
+      ],
+      "canon_behavior": "Hakari's pachinko-themed domain can award jackpot-based, temporarily overwhelming cursed energy and automatic healing.",
+      "classification": {
+        "combat_roles": [
+          "support"
+        ],
+        "mechanic_tags": [
+          "heal"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Validate that the selected recipient is eligible.",
+        "Restore health or repair qualifying injury and emit a heal event.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "heal",
+        "mechanic_title": "Healing and cleansing",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "health_delta",
+        "explicit_goal": "Hakari's pachinko-themed domain can award jackpot-based, temporarily overwhelming cursed energy and automatic healing.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Validate that the selected recipient is eligible. → Restore health or repair qualifying injury and emit a heal event.",
+        "execution_steps": [
+          "CHARACTER: Kinji Hakari — Idle Death Gamble",
+          "CANON BEHAVIOR: Hakari's pachinko-themed domain can award jackpot-based, temporarily overwhelming cursed energy and automatic healing.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Healing and cleansing",
+          "assert is_valid_heal_target(actor,target)",
+          "healed = clamp_healing_to_missing_health(target,configured_amount)",
+          "health.apply_healing(target,healed)",
+          "if specified: cleanse_selected_status_tags(target)",
+          "emit_health_change_and_heal_visuals()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_idle_death_gamble_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Hakari's pachinko-themed domain can award jackpot-based, temporarily overwhelming cursed energy and automatic healing.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert is_valid_heal_target(actor,target)\n    healed = clamp_healing_to_missing_health(target,configured_amount)\n    health.apply_healing(target,healed)\n    if specified: cleanse_selected_status_tags(target)\n    emit_health_change_and_heal_visuals()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "HealthSystem",
+          "StatusController"
+        ],
+        "effect_tags_from_description": [
+          "healing"
+        ],
+        "design_parameters_to_supply": [
+          "healing_amount",
+          "target_filter",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Healing should not revive dead actors without revival rules."
+        ],
+        "test_scenarios": [
+          "Idle Death Gamble: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Idle Death Gamble: executes the intended healing and cleansing only for eligible targets.",
+          "Idle Death Gamble: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Healing should not revive dead actors without revival rules."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kinji Hakari",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

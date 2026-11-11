@@ -618,6 +618,7 @@ weapons themselves.
 | C7.9 | The armoury, weapons: IXA, Owl, Ea and the other heroes' weapons as data, a probe and captures | C6.26, C6.9, C7.5 |
 | C7.10 | The armoury, armours: the table above as data; `AUTHORING.md` § Gear, Battlefields and Transformations | C7.9, C8.6 |
 | C8.1–C8.9 | The survey's new mechanics, one row each, in the order of the table | |
+| C8.10–C8.15 | The power atlas's new mechanisms ([`POWER_ATLAS.md`](POWER_ATLAS.md)): owned fighters, time, unseen, copy and seal, constructs, late outcomes. Each after the row it stands on | C6.12, C6.9a, C7.3, C6.26 |
 
 ## Renaming
 

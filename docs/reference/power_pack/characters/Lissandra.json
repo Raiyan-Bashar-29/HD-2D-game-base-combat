@@ -1,0 +1,134 @@
+{
+  "id": "character-league-of-legends-runeterra-lissandra",
+  "name": "Lissandra",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "area_control"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Lissandra: Frozen Tomb",
+      "existing_atlas_entry_ids": [
+        "ability-2643-lissandra-frozen-tomb"
+      ],
+      "canon_behavior": "Encases an enemy in ice or self-entombs for defense, producing an icy area that harms nearby foes.",
+      "classification": {
+        "combat_roles": [
+          "area_control"
+        ],
+        "mechanic_tags": [
+          "aoe"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "area_or_field"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Create an area-shaped query or persistent effect zone around the cast point.",
+        "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "status_ailment",
+        "mechanic_title": "Timed ailment / movement restraint",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Encases an enemy in ice or self-entombs for defense, producing an icy area that harms nearby foes.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Create an area-shaped query or persistent effect zone around the cast point. → Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "execution_steps": [
+          "CHARACTER: Lissandra — Lissandra: Frozen Tomb",
+          "CANON BEHAVIOR: Encases an enemy in ice or self-entombs for defense, producing an icy area that harms nearby foes.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Timed ailment / movement restraint",
+          "if target_resists(status_kind, ability): return RESISTED",
+          "effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)",
+          "on_tick: apply_status_specific_periodic_effect_if_any(effect)",
+          "on_update: recompute_movement_ai_or_cast_permissions(target)",
+          "on_expiry_or_cleanse: remove_instance_and_recalculate(target)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_lissandra_frozen_tomb_league(ctx, actor, target, cfg):\n    # LORE INTENT: Encases an enemy in ice or self-entombs for defense, producing an icy area that harms nearby foes.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if target_resists(status_kind, ability): return RESISTED\n    effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)\n    on_tick: apply_status_specific_periodic_effect_if_any(effect)\n    on_update: recompute_movement_ai_or_cast_permissions(target)\n    on_expiry_or_cleanse: remove_instance_and_recalculate(target)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "StatusController",
+          "TickScheduler"
+        ],
+        "effect_tags_from_description": [
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "status_kind",
+          "duration",
+          "stacking_rules",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "test_scenarios": [
+          "Lissandra: Frozen Tomb: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Lissandra: Frozen Tomb: executes the intended timed ailment / movement restraint only for eligible targets.",
+          "Lissandra: Frozen Tomb: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Lissandra",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

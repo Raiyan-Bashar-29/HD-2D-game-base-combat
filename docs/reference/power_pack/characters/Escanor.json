@@ -1,0 +1,133 @@
+{
+  "id": "character-the-seven-deadly-sins-escanor",
+  "name": "Escanor",
+  "aliases": [],
+  "universe": "The Seven Deadly Sins",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "unclassified"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Sunshine",
+      "existing_atlas_entry_ids": [
+        "ability-1547-sunshine"
+      ],
+      "canon_behavior": "Escanor's strength rises with the sun, reaching a peak around midday.",
+      "classification": {
+        "combat_roles": [
+          "unclassified"
+        ],
+        "mechanic_tags": [
+          "other"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Define a concrete trigger and observable output for this power.",
+        "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "information_sensor",
+        "mechanic_title": "Query and reveal information",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Escanor's strength rises with the sun, reaching a peak around midday.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Receive a matching passive/stat/observation/progression event or an explicit activation.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Define a concrete trigger and observable output for this power. → Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "execution_steps": [
+          "CHARACTER: Escanor — Sunshine",
+          "CANON BEHAVIOR: Escanor's strength rises with the sun, reaching a peak around midday.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Query and reveal information",
+          "candidates = query_observable_entities_or_events(actor, ability)",
+          "visible = filter_by_ability_sensing_and_occlusion(candidates)",
+          "facts = fetch_only_authorized_knowledge_fields(visible)",
+          "display_results_to_actor_or_ai(facts)",
+          "clear_overlay_or_expire_sensor_if_temporary()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_sunshine_the(ctx, actor, target, cfg):\n    # LORE INTENT: Escanor's strength rises with the sun, reaching a peak around midday.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    candidates = query_observable_entities_or_events(actor, ability)\n    visible = filter_by_ability_sensing_and_occlusion(candidates)\n    facts = fetch_only_authorized_knowledge_fields(visible)\n    display_results_to_actor_or_ai(facts)\n    clear_overlay_or_expire_sensor_if_temporary()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "PerceptionQuery",
+          "KnowledgeFilter",
+          "HUDOverlay"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "detection_range",
+          "reveal_fields",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Cannot reveal non-authored hidden facts."
+        ],
+        "test_scenarios": [
+          "Sunshine: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Sunshine: executes the intended query and reveal information only for eligible targets.",
+          "Sunshine: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Cannot reveal non-authored hidden facts."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Escanor",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

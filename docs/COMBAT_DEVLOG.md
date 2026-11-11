@@ -3271,3 +3271,38 @@ stubbed out, eleven fail. Boot, the suite, the seven checkers and the stripped r
 chain comes with special gear (C7.3). No screen (C7.7).
 
 **Unblocks.** C7.2, C7.3.
+
+## 2026-11-11 — C6.0c · The power atlas
+
+**Did.** Put the owner's powers pack (`Fictional_Powers_Execution_Logic_Claude_Pack.zip`) and
+full weapons list in `docs/reference/originals/`, unchanged, as the owner asked. Cut from the
+pack: `power_atlas.csv` (one row per power, 3,306), `power_handlers.csv` (one row per handler
+family, 116), the three guide pages and all character profiles (`power_pack/`). Wrote
+`docs/POWER_ATLAS.md`: every family in plain words, the mechanism that runs it here, and its
+state; the pack's engine contract mapped onto what exists; six new board rows, C8.10–C8.15.
+
+**Why.** The owner did the listing and asked for the powers to be categorised and coded by its
+logic. The pack itself says its logic is a proposal routed through shared handlers, so the
+honest way to "code them" is the owner's own rule: one mechanism per kind, coded once, combined
+as data.
+
+**Decided.** The zip is committed zipped (4.9 MB against 45 MB unpacked, which repeats the same
+data in five formats); `*.zip` is ignored upstream, so it was added with `git add -f` and not
+by editing `.gitignore`. The sorting: 34 families built or made from built parts (1,666
+powers), 40 on rows already planned (920), 36 on the six new rows (628), 6 out of scope as
+story or non-combat (92). Where the pack's profile of a hero differs from `POWERS.md`, the
+design in `POWERS.md` stands and the kit's entry notes the difference.
+
+**Connects.** `POWERS.md` (M1–M14), `GEAR.md` (M4 battlefield, M15 `plant`, transformations,
+the mechanics survey's C8.1–C8.9), every kit row from C6.14.
+
+**Verified.** The table script fails unless each of the 116 families appears exactly once and
+the counts add to 3,306. Boot, the suite and the seven checkers, as in the PR. No code under
+`src/` or `tests/` changed.
+
+**Gaps.** The sorting is by family, not power by power: a family's odd member may want a
+different mechanism, checked when a kit uses it. Most profiles are marked as needing a manual
+check against their source. The fandom wikis are still blocked here.
+
+**Unblocks.** C7.2 (next), then the order at the foot of `GEAR.md`, which now ends with
+C8.10–C8.15.

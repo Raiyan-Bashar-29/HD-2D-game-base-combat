@@ -1,0 +1,136 @@
+{
+  "id": "character-bleach-yamamoto",
+  "name": "Yamamoto",
+  "aliases": [],
+  "universe": "Bleach",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "melee_offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Zanka no Tachi",
+      "existing_atlas_entry_ids": [
+        "ability-1316-zanka-no-tachi"
+      ],
+      "canon_behavior": "Yamamoto's Bankai condenses extraordinary flame and heat into several terrifying sword abilities.",
+      "classification": {
+        "combat_roles": [
+          "melee_offense"
+        ],
+        "mechanic_tags": [
+          "melee"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "unspecified",
+        "delivery_hint": "melee_hitbox"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Run the attack animation and enable a hitbox only during its active frames.",
+        "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Yamamoto's Bankai condenses extraordinary flame and heat into several terrifying sword abilities.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Run the attack animation and enable a hitbox only during its active frames. → Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "execution_steps": [
+          "CHARACTER: Yamamoto — Zanka no Tachi",
+          "CANON BEHAVIOR: Yamamoto's Bankai condenses extraordinary flame and heat into several terrifying sword abilities.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Use fire/burn material tags; a damage-over-time status is optional unless explicitly described.",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_zanka_no_tachi_bleach(ctx, actor, target, cfg):\n    # LORE INTENT: Yamamoto's Bankai condenses extraordinary flame and heat into several terrifying sword abilities.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Zanka no Tachi: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Zanka no Tachi: executes the intended melee animation with active frames only for eligible targets.",
+          "Zanka no Tachi: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Yamamoto",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

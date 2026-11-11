@@ -1,0 +1,153 @@
+{
+  "id": "character-dota-2-winter-wyvern",
+  "name": "Winter Wyvern",
+  "aliases": [],
+  "universe": "Dota 2",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "area_control",
+    "control",
+    "offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Winter Wyvern: Winter's Curse",
+      "existing_atlas_entry_ids": [
+        "ability-2668-winter-wyvern-winter-s-curse"
+      ],
+      "canon_behavior": "Forces nearby enemies to attack a targeted unit instead of controlling their own actions.",
+      "classification": {
+        "combat_roles": [
+          "area_control",
+          "control",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "aoe",
+          "debuff",
+          "damage"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "area_or_field"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Create an area-shaped query or persistent effect zone around the cast point.",
+        "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "Attach a typed negative modifier to eligible targets.",
+        "Check resistance or immunity and clean up the modifier at expiry.",
+        "Resolve relevant hit targets and attack properties.",
+        "Apply typed damage through the combat resolver, then post impact events.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "status_ailment",
+        "mechanic_title": "Timed ailment / movement restraint",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Forces nearby enemies to attack a targeted unit instead of controlling their own actions.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Create an area-shaped query or persistent effect zone around the cast point. → Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "execution_steps": [
+          "CHARACTER: Winter Wyvern — Winter Wyvern: Winter's Curse",
+          "CANON BEHAVIOR: Forces nearby enemies to attack a targeted unit instead of controlling their own actions.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Attach a typed negative modifier to eligible targets.",
+          "Check resistance or immunity and clean up the modifier at expiry.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Timed ailment / movement restraint",
+          "if target_resists(status_kind, ability): return RESISTED",
+          "effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)",
+          "on_tick: apply_status_specific_periodic_effect_if_any(effect)",
+          "on_update: recompute_movement_ai_or_cast_permissions(target)",
+          "on_expiry_or_cleanse: remove_instance_and_recalculate(target)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_winter_wyvern_winter_s_curse_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Forces nearby enemies to attack a targeted unit instead of controlling their own actions.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if target_resists(status_kind, ability): return RESISTED\n    effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)\n    on_tick: apply_status_specific_periodic_effect_if_any(effect)\n    on_update: recompute_movement_ai_or_cast_permissions(target)\n    on_expiry_or_cleanse: remove_instance_and_recalculate(target)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "StatusController",
+          "TickScheduler"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "status_kind",
+          "duration",
+          "stacking_rules",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "test_scenarios": [
+          "Winter Wyvern: Winter's Curse: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Winter Wyvern: Winter's Curse: executes the intended timed ailment / movement restraint only for eligible targets.",
+          "Winter Wyvern: Winter's Curse: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Winter Wyvern",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Attach a typed negative modifier to eligible targets.",
+          "Check resistance or immunity and clean up the modifier at expiry.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

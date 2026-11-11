@@ -1,0 +1,502 @@
+{
+  "id": "character-kingdom-hearts-sora",
+  "name": "Sora",
+  "aliases": [],
+  "universe": "Kingdom Hearts",
+  "species_or_type": "human Keyblade wielder",
+  "canon_rank_or_title": "Hero / Keyblade wielder",
+  "combat_roles": [
+    "melee_combo",
+    "magic",
+    "mobility",
+    "transforming_weapon"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "Base Keyblade combat."
+    },
+    {
+      "name": "formchange",
+      "canon_description": "Equipped Keychain determines transformed attack set."
+    }
+  ],
+  "resource_model": {
+    "source": "magic points / focus / situation command",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Keyblade wielding",
+    "Magic casting"
+  ],
+  "abilities": [
+    {
+      "name": "Keyblade Formchange",
+      "category": "weapon_transform",
+      "canon_behavior": "Certain Keyblades can transform into alternative weapons and alter Sora’s combo and skill set.",
+      "activation": "situation_command",
+      "targeting": "self / equipped keyblade",
+      "observed_effects": [
+        "Weapon transformation",
+        "Alternative combat loadout"
+      ],
+      "suggested_game_logic": [
+        "Check equipped Keychain and available Situation Command.",
+        "Transition keyblade mesh, locomotion, combos and magic style together.",
+        "On form expiry restore original loadout."
+      ],
+      "canon_limitations": "Keychain-specific; not every Keyblade transforms into every weapon.",
+      "source_urls": [
+        "https://www.khwiki.com/Formchange",
+        "https://www.khwiki.com/Sora"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1869-keyblade-formchange"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "manipulation",
+        "transformation"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "transform_form",
+        "mechanic_title": "Form swap state machine",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "state_machine",
+        "explicit_goal": "Certain Keyblades can transform into alternative weapons and alter Sora’s combo and skill set.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Check equipped Keychain and available Situation Command. → Transition keyblade mesh, locomotion, combos and magic style together. → On form expiry restore original loadout.",
+        "execution_steps": [
+          "CHARACTER: Sora — Keyblade Formchange",
+          "CANON BEHAVIOR: Certain Keyblades can transform into alternative weapons and alter Sora’s combo and skill set.",
+          "FORM REQUIREMENT: none_specified",
+          "Check equipped Keychain and available Situation Command.",
+          "Transition keyblade mesh, locomotion, combos and magic style together.",
+          "On form expiry restore original loadout.",
+          "IMPLEMENTATION FAMILY: Form swap state machine",
+          "assert can_enter_form(actor,requested_form)",
+          "transition_actor_state(actor,TRANSFORMING)",
+          "swap_mesh_skeleton_collision_and_move_set(actor,requested_form)",
+          "apply_only_configured_form_stat_modifiers(actor)",
+          "on_form_end: revert_all_owned_form_changes()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_keyblade_formchange_kingdom(ctx, actor, target, cfg):\n    # LORE INTENT: Certain Keyblades can transform into alternative weapons and alter Sora’s combo and skill set.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert can_enter_form(actor,requested_form)\n    transition_actor_state(actor,TRANSFORMING)\n    swap_mesh_skeleton_collision_and_move_set(actor,requested_form)\n    apply_only_configured_form_stat_modifiers(actor)\n    on_form_end: revert_all_owned_form_changes()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "FormFSM",
+          "StatModifier",
+          "MoveSetLoader"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "form_change"
+        ],
+        "design_parameters_to_supply": [
+          "form_requirements",
+          "duration",
+          "stat_changes",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "test_scenarios": [
+          "Keyblade Formchange: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Keyblade Formchange: executes the intended form swap state machine only for eligible targets.",
+          "Keyblade Formchange: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sora",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.khwiki.com/Formchange",
+          "https://www.khwiki.com/Sora"
+        ],
+        "character_specific_initial_steps": [
+          "Check equipped Keychain and available Situation Command.",
+          "Transition keyblade mesh, locomotion, combos and magic style together.",
+          "On form expiry restore original loadout."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Shotlock",
+      "category": "target_lock_burst",
+      "canon_behavior": "Sora locks on to one or more enemies, then releases a high-impact Keyblade-dependent special attack.",
+      "activation": "charged_aim",
+      "targeting": "one or several lockable targets",
+      "observed_effects": [
+        "Lock-on multi-target burst"
+      ],
+      "suggested_game_logic": [
+        "While aiming, collect legal target IDs up to chosen limit.",
+        "Consume focus and execute an authored projectile/dash finisher.",
+        "Change variant based on equipped Keyblade/form."
+      ],
+      "canon_limitations": "Focus costs and maximum locks depend on game version and Keyblade.",
+      "source_urls": [
+        "https://www.khwiki.com/Formchange",
+        "https://www.khwiki.com/Sora"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1877-shotlock"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "conditional_rule",
+        "mechanic_title": "Conditional activation / pact",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Sora locks on to one or more enemies, then releases a high-impact Keyblade-dependent special attack.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "While aiming, collect legal target IDs up to chosen limit. → Consume focus and execute an authored projectile/dash finisher. → Change variant based on equipped Keyblade/form.",
+        "execution_steps": [
+          "CHARACTER: Sora — Shotlock",
+          "CANON BEHAVIOR: Sora locks on to one or more enemies, then releases a high-impact Keyblade-dependent special attack.",
+          "FORM REQUIREMENT: none_specified",
+          "While aiming, collect legal target IDs up to chosen limit.",
+          "Consume focus and execute an authored projectile/dash finisher.",
+          "Change variant based on equipped Keyblade/form.",
+          "IMPLEMENTATION FAMILY: Conditional activation / pact",
+          "predicate = compile_explicit_conditions(ability.conditions)",
+          "if not predicate(actor, target, world):",
+          "    apply_failure_consequence_if_specified(actor); return DENIED",
+          "register_authorized_effect(actor, target, ability)",
+          "expire_or_revoke_when_condition_breaks()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_shotlock_kingdom(ctx, actor, target, cfg):\n    # LORE INTENT: Sora locks on to one or more enemies, then releases a high-impact Keyblade-dependent special attack.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    predicate = compile_explicit_conditions(ability.conditions)\n    if not predicate(actor, target, world):\n        apply_failure_consequence_if_specified(actor); return DENIED\n    register_authorized_effect(actor, target, ability)\n    expire_or_revoke_when_condition_breaks()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "RulePredicate",
+          "ActivationGate",
+          "ConsequenceLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "trigger_conditions",
+          "penalty_conditions",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Never silently drop a lethal vow condition."
+        ],
+        "test_scenarios": [
+          "Shotlock: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shotlock: executes the intended conditional activation / pact only for eligible targets.",
+          "Shotlock: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never silently drop a lethal vow condition."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sora",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.khwiki.com/Formchange",
+          "https://www.khwiki.com/Sora"
+        ],
+        "character_specific_initial_steps": [
+          "While aiming, collect legal target IDs up to chosen limit.",
+          "Consume focus and execute an authored projectile/dash finisher.",
+          "Change variant based on equipped Keyblade/form."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Flowmotion",
+      "category": "mobility_combat",
+      "canon_behavior": "Sora uses environments and aerial maneuvers to gain momentum and attack dynamically.",
+      "activation": "contextual_movement",
+      "targeting": "self / nearby enemy",
+      "observed_effects": [
+        "Fast travel",
+        "Contextual movement attack"
+      ],
+      "suggested_game_logic": [
+        "Check nearby wall, pole or air-move context.",
+        "Enter movement state and conserve/redirect velocity.",
+        "Offer ability-specific attack branches."
+      ],
+      "canon_limitations": "Movement behavior changes between Kingdom Hearts titles.",
+      "source_urls": [
+        "https://www.khwiki.com/Formchange",
+        "https://www.khwiki.com/Sora"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1878-flowmotion"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "mobility",
+        "mechanic_title": "Movement controller override",
+        "semantic_route_evidence": "named_semantic_route",
+        "execution_delivery": "physics_motor",
+        "explicit_goal": "Sora uses environments and aerial maneuvers to gain momentum and attack dynamically.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Check nearby wall, pole or air-move context. → Enter movement state and conserve/redirect velocity. → Offer ability-specific attack branches.",
+        "execution_steps": [
+          "CHARACTER: Sora — Flowmotion",
+          "CANON BEHAVIOR: Sora uses environments and aerial maneuvers to gain momentum and attack dynamically.",
+          "FORM REQUIREMENT: none_specified",
+          "Check nearby wall, pole or air-move context.",
+          "Enter movement state and conserve/redirect velocity.",
+          "Offer ability-specific attack branches.",
+          "IMPLEMENTATION FAMILY: Movement controller override",
+          "if not movement_state_allows(actor,ability): return DENIED",
+          "trajectory = plan_movement_path(actor,aim_or_target,config)",
+          "for step in trajectory: move_with_swept_collision(actor,step)",
+          "handle_wall_floor_and_cancel_rules(actor)",
+          "restore_standard_movement_controller_after_action(actor)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_flowmotion_kingdom(ctx, actor, target, cfg):\n    # LORE INTENT: Sora uses environments and aerial maneuvers to gain momentum and attack dynamically.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not movement_state_allows(actor,ability): return DENIED\n    trajectory = plan_movement_path(actor,aim_or_target,config)\n    for step in trajectory: move_with_swept_collision(actor,step)\n    handle_wall_floor_and_cancel_rules(actor)\n    restore_standard_movement_controller_after_action(actor)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "MovementMotor",
+          "PhysicsSweep"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "movement_curve",
+          "speed",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Dash and sustained flight require different motor modes."
+        ],
+        "test_scenarios": [
+          "Flowmotion: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Flowmotion: executes the intended movement controller override only for eligible targets.",
+          "Flowmotion: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Dash and sustained flight require different motor modes."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sora",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.khwiki.com/Formchange",
+          "https://www.khwiki.com/Sora"
+        ],
+        "character_specific_initial_steps": [
+          "Check nearby wall, pole or air-move context.",
+          "Enter movement state and conserve/redirect velocity.",
+          "Offer ability-specific attack branches."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Summon Link",
+      "category": "summon_support",
+      "canon_behavior": "Sora invokes allies/Link Summons for powerful effects and sometimes recovery.",
+      "activation": "active",
+      "targeting": "self plus valid battle targets",
+      "observed_effects": [
+        "Companion effect",
+        "Version-specific support and damage"
+      ],
+      "suggested_game_logic": [
+        "Select learned Link command.",
+        "Spawn or simulate authored summon scene and outcome.",
+        "Resolve heal and damage as separate effect operations."
+      ],
+      "canon_limitations": "Exact summon roster and costs depend on Kingdom Hearts game.",
+      "source_urls": [
+        "https://www.khwiki.com/Formchange",
+        "https://www.khwiki.com/Sora"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1882-summon-link"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "summon",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "summon_entities",
+        "mechanic_title": "Spawn owned companion(s)",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "owned_entity_spawn",
+        "explicit_goal": "Sora invokes allies/Link Summons for powerful effects and sometimes recovery.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Select learned Link command. → Spawn or simulate authored summon scene and outcome. → Resolve heal and damage as separate effect operations.",
+        "execution_steps": [
+          "CHARACTER: Sora — Summon Link",
+          "CANON BEHAVIOR: Sora invokes allies/Link Summons for powerful effects and sometimes recovery.",
+          "FORM REQUIREMENT: none_specified",
+          "Select learned Link command.",
+          "Spawn or simulate authored summon scene and outcome.",
+          "Resolve heal and damage as separate effect operations.",
+          "IMPLEMENTATION FAMILY: Spawn owned companion(s)",
+          "if not summon_preconditions_pass(actor,target): return DENIED",
+          "for archetype in defined_summon_list(ability):",
+          "    entity = spawn_owned_entity_at_safe_location(archetype, actor)",
+          "    register_ai_team_and_lifetime(entity,actor)",
+          "on_despawn_or_owner_death: apply_defined_roster_policy()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_summon_link_kingdom(ctx, actor, target, cfg):\n    # LORE INTENT: Sora invokes allies/Link Summons for powerful effects and sometimes recovery.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not summon_preconditions_pass(actor,target): return DENIED\n    for archetype in defined_summon_list(ability):\n        entity = spawn_owned_entity_at_safe_location(archetype, actor)\n        register_ai_team_and_lifetime(entity,actor)\n    on_despawn_or_owner_death: apply_defined_roster_policy()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "EntitySpawner",
+          "SummonRegistry",
+          "OwnershipSystem"
+        ],
+        "effect_tags_from_description": [
+          "summon_entity"
+        ],
+        "design_parameters_to_supply": [
+          "summon_template",
+          "summon_count",
+          "cap",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Prevent infinite summon recursion or duplicate entities."
+        ],
+        "test_scenarios": [
+          "Summon Link: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Summon Link: executes the intended spawn owned companion(s) only for eligible targets.",
+          "Summon Link: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Prevent infinite summon recursion or duplicate entities."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sora",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.khwiki.com/Formchange",
+          "https://www.khwiki.com/Sora"
+        ],
+        "character_specific_initial_steps": [
+          "Select learned Link command.",
+          "Spawn or simulate authored summon scene and outcome.",
+          "Resolve heal and damage as separate effect operations."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://www.khwiki.com/Formchange",
+    "https://www.khwiki.com/Sora"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 4
+}

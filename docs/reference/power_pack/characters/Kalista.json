@@ -1,0 +1,135 @@
+{
+  "id": "character-league-of-legends-runeterra-kalista",
+  "name": "Kalista",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "ranged_offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Kalista: Fate's Call",
+      "existing_atlas_entry_ids": [
+        "ability-2651-kalista-fate-s-call"
+      ],
+      "canon_behavior": "Draws a magically bound allied partner into herself, then launches them for an impact engagement.",
+      "classification": {
+        "combat_roles": [
+          "ranged_offense"
+        ],
+        "mechanic_tags": [
+          "projectile"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "self_or_owner",
+        "delivery_hint": "projectile"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+        "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "conditional_rule",
+        "mechanic_title": "Conditional activation / pact",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Draws a magically bound allied partner into herself, then launches them for an impact engagement.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Spawn a projectile instance with owner, direction, collision mask and lifetime. → Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "execution_steps": [
+          "CHARACTER: Kalista — Kalista: Fate's Call",
+          "CANON BEHAVIOR: Draws a magically bound allied partner into herself, then launches them for an impact engagement.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Conditional activation / pact",
+          "predicate = compile_explicit_conditions(ability.conditions)",
+          "if not predicate(actor, target, world):",
+          "    apply_failure_consequence_if_specified(actor); return DENIED",
+          "register_authorized_effect(actor, target, ability)",
+          "expire_or_revoke_when_condition_breaks()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_kalista_fate_s_call_league(ctx, actor, target, cfg):\n    # LORE INTENT: Draws a magically bound allied partner into herself, then launches them for an impact engagement.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    predicate = compile_explicit_conditions(ability.conditions)\n    if not predicate(actor, target, world):\n        apply_failure_consequence_if_specified(actor); return DENIED\n    register_authorized_effect(actor, target, ability)\n    expire_or_revoke_when_condition_breaks()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "RulePredicate",
+          "ActivationGate",
+          "ConsequenceLedger"
+        ],
+        "effect_tags_from_description": [
+          "world_rule"
+        ],
+        "design_parameters_to_supply": [
+          "trigger_conditions",
+          "penalty_conditions",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Never silently drop a lethal vow condition."
+        ],
+        "test_scenarios": [
+          "Kalista: Fate's Call: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Kalista: Fate's Call: executes the intended conditional activation / pact only for eligible targets.",
+          "Kalista: Fate's Call: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never silently drop a lethal vow condition."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kalista",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

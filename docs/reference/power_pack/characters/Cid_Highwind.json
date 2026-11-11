@@ -1,0 +1,147 @@
+{
+  "id": "character-final-fantasy-vii-compilation-cid-highwind",
+  "name": "Cid Highwind",
+  "aliases": [],
+  "universe": "Final Fantasy VII / Compilation",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "ranged_offense",
+    "summoner"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Highwind Limit",
+      "existing_atlas_entry_ids": [
+        "ability-1762-highwind-limit"
+      ],
+      "canon_behavior": "Cid calls down multiple missiles from an airship to bombard opponents.",
+      "classification": {
+        "combat_roles": [
+          "ranged_offense",
+          "summoner"
+        ],
+        "mechanic_tags": [
+          "projectile",
+          "summon"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "projectile"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+        "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "Validate summon slot, material and/or source requirement.",
+        "Spawn owned summon entities and register them with the owner/command AI.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "volley_projectiles",
+        "mechanic_title": "Projectile fan, volley or barrage",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "projectile_fan",
+        "explicit_goal": "Cid calls down multiple missiles from an airship to bombard opponents.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Spawn a projectile instance with owner, direction, collision mask and lifetime. → Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "execution_steps": [
+          "CHARACTER: Cid Highwind — Highwind Limit",
+          "CANON BEHAVIOR: Cid calls down multiple missiles from an airship to bombard opponents.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Validate summon slot, material and/or source requirement.",
+          "Spawn owned summon entities and register them with the owner/command AI.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Projectile fan, volley or barrage",
+          "directions = generate_spread_vectors(aim,count,spread_angle)",
+          "for direction in directions:",
+          "    projectile = spawn_owned_projectile(actor,origin,direction)",
+          "    projectile.on_swept_collision = lambda hit: resolve_hit_with_hit_ledger(hit)",
+          "    destroy_on_impact_range_or_timeout(projectile)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_highwind_limit_final(ctx, actor, target, cfg):\n    # LORE INTENT: Cid calls down multiple missiles from an airship to bombard opponents.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    directions = generate_spread_vectors(aim,count,spread_angle)\n    for direction in directions:\n        projectile = spawn_owned_projectile(actor,origin,direction)\n        projectile.on_swept_collision = lambda hit: resolve_hit_with_hit_ledger(hit)\n        destroy_on_impact_range_or_timeout(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweepCollision",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "projectile_emission"
+        ],
+        "design_parameters_to_supply": [
+          "projectile_count",
+          "spread_angle",
+          "speed",
+          "damage",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Do not double-hit targets unless piercing/multihit is specified."
+        ],
+        "test_scenarios": [
+          "Highwind Limit: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Highwind Limit: executes the intended projectile fan, volley or barrage only for eligible targets.",
+          "Highwind Limit: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Do not double-hit targets unless piercing/multihit is specified."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Cid Highwind",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Validate summon slot, material and/or source requirement.",
+          "Spawn owned summon entities and register them with the owner/command AI.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

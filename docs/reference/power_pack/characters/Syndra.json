@@ -1,0 +1,133 @@
+{
+  "id": "character-league-of-legends-runeterra-syndra",
+  "name": "Syndra",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "ranged_offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Syndra: Unleashed Power",
+      "existing_atlas_entry_ids": [
+        "ability-2648-syndra-unleashed-power"
+      ],
+      "canon_behavior": "Hurls her controlled dark spheres at one target in rapid succession.",
+      "classification": {
+        "combat_roles": [
+          "ranged_offense"
+        ],
+        "mechanic_tags": [
+          "projectile"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "projectile"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+        "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "unresolved_special",
+        "mechanic_title": "Special scripted power (requires manual rules)",
+        "semantic_route_evidence": "manual_mechanic_definition_required",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Hurls her controlled dark spheres at one target in rapid succession.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Spawn a projectile instance with owner, direction, collision mask and lifetime. → Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "execution_steps": [
+          "CHARACTER: Syndra — Syndra: Unleashed Power",
+          "CANON BEHAVIOR: Hurls her controlled dark spheres at one target in rapid succession.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Special scripted power (requires manual rules)",
+          "define_explicit_trigger_and_target_predicates(ability)",
+          "implement_named_effect_as_custom_authoritative_state_transition()",
+          "register_interrupt_cleanup_and_conflict_resolution()",
+          "verify_against_original_scene_or_mechanics_before_shipping()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_syndra_unleashed_power_league(ctx, actor, target, cfg):\n    # LORE INTENT: Hurls her controlled dark spheres at one target in rapid succession.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    define_explicit_trigger_and_target_predicates(ability)\n    implement_named_effect_as_custom_authoritative_state_transition()\n    register_interrupt_cleanup_and_conflict_resolution()\n    verify_against_original_scene_or_mechanics_before_shipping()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CustomAbilityScript",
+          "RulePredicate",
+          "EventLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "precise_effect",
+          "target_eligibility",
+          "exception_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Reference is too terse to infer a reliable exact algorithm."
+        ],
+        "test_scenarios": [
+          "Syndra: Unleashed Power: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Syndra: Unleashed Power: executes the intended special scripted power (requires manual rules) only for eligible targets.",
+          "Syndra: Unleashed Power: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Reference is too terse to infer a reliable exact algorithm."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Syndra",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

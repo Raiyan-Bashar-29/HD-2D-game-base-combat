@@ -1,0 +1,132 @@
+{
+  "id": "character-that-time-i-got-reincarnated-as--rimuru",
+  "name": "Rimuru",
+  "aliases": [],
+  "universe": "That Time I Got Reincarnated as a Slime",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "unclassified"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Predator",
+      "existing_atlas_entry_ids": [
+        "ability-1403-predator"
+      ],
+      "canon_behavior": "Rimuru's early skill consumes targets and analyzes or stores what was absorbed.",
+      "classification": {
+        "combat_roles": [
+          "unclassified"
+        ],
+        "mechanic_tags": [
+          "other"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Define a concrete trigger and observable output for this power.",
+        "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "absorb_analyze_store",
+        "mechanic_title": "Consume, analyze and store",
+        "semantic_route_evidence": "curated_explicit_override",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Rimuru's early skill consumes targets and analyzes or stores what was absorbed.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Define a concrete trigger and observable output for this power. → Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "execution_steps": [
+          "CHARACTER: Rimuru — Predator",
+          "CANON BEHAVIOR: Rimuru's early skill consumes targets and analyzes or stores what was absorbed.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Consume, analyze and store",
+          "Run analysis on stored entities/materials, extracting only permitted skills and resources.",
+          "Update the owner's skill inventory/transform options and handle rejected or dangerous contents explicitly."
+        ],
+        "pseudocode": "def execute_predator_that(ctx, actor, target, cfg):\n    # LORE INTENT: Rimuru's early skill consumes targets and analyzes or stores what was absorbed.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    # Verify the target can be consumed and satisfies ingestion/capture conditions.\n    # Move the accepted target into a stored/removed state without producing duplicate loot.\n    # Run analysis on stored entities/materials, extracting only permitted skills and resources.\n    # Update the owner's skill inventory/transform options and handle rejected or dangerous contents explicitly.\n    candidate = validate_consumption_target(target)\n    if not absorption_is_permitted(candidate, rules): return DENIED\n    storage.transfer_without_duplication(candidate, actor)\n    traits = analyze_stored_contents(candidate, allowed_traits)\n    update_available_skills_and_forms(actor, traits)\n    tx.commit_if_valid(); ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ConsumptionResolver",
+          "StorageRegistry",
+          "SkillAnalysis"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "resource_transfer"
+        ],
+        "design_parameters_to_supply": [
+          "ingestion_conditions",
+          "extractable_traits",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Never delete unrelated inventory or duplicate absorbed entities."
+        ],
+        "test_scenarios": [
+          "Predator: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Predator: executes the intended consume, analyze and store only for eligible targets.",
+          "Predator: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never delete unrelated inventory or duplicate absorbed entities."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Rimuru",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

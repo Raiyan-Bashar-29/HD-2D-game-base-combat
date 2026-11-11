@@ -1,0 +1,482 @@
+{
+  "id": "character-final-fantasy-viii-squall-leonhart",
+  "name": "Squall Leonhart",
+  "aliases": [],
+  "universe": "Final Fantasy VIII",
+  "species_or_type": "human SeeD",
+  "canon_rank_or_title": "SeeD mercenary",
+  "combat_roles": [
+    "melee_dps",
+    "limit_finisher",
+    "resource_builder"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "Gunblade combat."
+    },
+    {
+      "name": "limit_break",
+      "canon_description": "Renzokuken command active."
+    }
+  ],
+  "resource_model": {
+    "source": "GF + drawn magic + Limit Break context",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Gunblade timing mechanics"
+  ],
+  "abilities": [
+    {
+      "name": "Draw",
+      "category": "resource_acquisition",
+      "canon_behavior": "Draw extracts stored magic from opponents or draw points for later casting or junctioning.",
+      "activation": "active",
+      "targeting": "eligible enemy / draw point",
+      "observed_effects": [
+        "Acquire magic stock"
+      ],
+      "suggested_game_logic": [
+        "Query source available spell table.",
+        "Run draw success and stock amount under chosen rules.",
+        "Add to inventory and update junction-stat derivations."
+      ],
+      "canon_limitations": "Not every enemy yields every spell.",
+      "source_urls": [
+        "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1770-draw"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "other"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "equipment_inventory",
+        "mechanic_title": "Equipment/inventory state operation",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Draw extracts stored magic from opponents or draw points for later casting or junctioning.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Query source available spell table. → Run draw success and stock amount under chosen rules. → Add to inventory and update junction-stat derivations.",
+        "execution_steps": [
+          "CHARACTER: Squall Leonhart — Draw",
+          "CANON BEHAVIOR: Draw extracts stored magic from opponents or draw points for later casting or junctioning.",
+          "FORM REQUIREMENT: none_specified",
+          "Query source available spell table.",
+          "Run draw success and stock amount under chosen rules.",
+          "Add to inventory and update junction-stat derivations.",
+          "IMPLEMENTATION FAMILY: Equipment/inventory state operation",
+          "item = resolve_owned_eligible_item_or_stock(actor,target)",
+          "validate_slot_weight_and_binding_rules(actor,item)",
+          "equip_store_recall_or_convert(item, selected_action)",
+          "recalculate_gear_contributed_stats_and_abilities(actor)",
+          "save_inventory_transaction_once()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_draw_final(ctx, actor, target, cfg):\n    # LORE INTENT: Draw extracts stored magic from opponents or draw points for later casting or junctioning.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    item = resolve_owned_eligible_item_or_stock(actor,target)\n    validate_slot_weight_and_binding_rules(actor,item)\n    equip_store_recall_or_convert(item, selected_action)\n    recalculate_gear_contributed_stats_and_abilities(actor)\n    save_inventory_transaction_once()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "InventoryRegistry",
+          "EquipmentSlots"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "eligible_items",
+          "slot_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "An item recall is not full actor teleportation."
+        ],
+        "test_scenarios": [
+          "Draw: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Draw: executes the intended equipment/inventory state operation only for eligible targets.",
+          "Draw: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "An item recall is not full actor teleportation."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Squall Leonhart",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+        ],
+        "character_specific_initial_steps": [
+          "Query source available spell table.",
+          "Run draw success and stock amount under chosen rules.",
+          "Add to inventory and update junction-stat derivations."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Junction",
+      "category": "stat_assignment",
+      "canon_behavior": "Squall can junction magic stock and Guardian Forces to modify attributes and enable abilities.",
+      "activation": "menu_configuration",
+      "targeting": "self",
+      "observed_effects": [
+        "Stat changes linked to equipped magic"
+      ],
+      "suggested_game_logic": [
+        "Store mappings stat-slot -> spell plus quantity.",
+        "Recalculate stats when spell stock or GF configuration changes.",
+        "Use reversible modifiers, not permanent stat corruption."
+      ],
+      "canon_limitations": "Exact junction formula belongs to FFVIII, do not assume it across series.",
+      "source_urls": [
+        "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1771-junction"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "other"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "equipment_spell_stat_binding",
+        "mechanic_title": "Stock-based stat junction",
+        "semantic_route_evidence": "curated_explicit_override",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Squall can junction magic stock and Guardian Forces to modify attributes and enable abilities.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Store mappings stat-slot -> spell plus quantity. → Recalculate stats when spell stock or GF configuration changes. → Use reversible modifiers, not permanent stat corruption.",
+        "execution_steps": [
+          "CHARACTER: Squall Leonhart — Junction",
+          "CANON BEHAVIOR: Squall can junction magic stock and Guardian Forces to modify attributes and enable abilities.",
+          "FORM REQUIREMENT: none_specified",
+          "Store mappings stat-slot -> spell plus quantity.",
+          "Recalculate stats when spell stock or GF configuration changes.",
+          "Use reversible modifiers, not permanent stat corruption.",
+          "IMPLEMENTATION FAMILY: Stock-based stat junction",
+          "Recalculate derived stats on equip, stock consumption and removal; clamp and save the new derived values.",
+          "Do not implement Junction as a temporary spell-cast buff."
+        ],
+        "pseudocode": "def execute_junction_final(ctx, actor, target, cfg):\n    # LORE INTENT: Squall can junction magic stock and Guardian Forces to modify attributes and enable abilities.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    # Store a list of equipped Guardian Forces and the abilities/stat slots they unlock.\n    # For each stat slot, select a spell stock and compute an edition-specific stat modifier from quantity and junction rules.\n    # Recalculate derived stats on equip, stock consumption and removal; clamp and save the new derived values.\n    # Do not implement Junction as a temporary spell-cast buff.\n    gf = load_equipped_guardian_forces(actor)\n    assign_spell_stock_to_stat_slot(actor, stat_slot, spell_id)\n    modifier = junction_formula(spell_id, stock_count, stat_slot)\n    recompute_derived_stat_from_base(actor, stat_slot, modifier)\n    on_stock_change(lambda: recompute_derived_stats(actor))\n    tx.commit_if_valid(); ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "EquipmentRegistry",
+          "DerivedStatSystem"
+        ],
+        "effect_tags_from_description": [
+          "shield_modifier"
+        ],
+        "design_parameters_to_supply": [
+          "spell_stock",
+          "stat_formula",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Never stack recalculations on already-modified values."
+        ],
+        "test_scenarios": [
+          "Junction: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Junction: executes the intended stock-based stat junction only for eligible targets.",
+          "Junction: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never stack recalculations on already-modified values."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Squall Leonhart",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+        ],
+        "character_specific_initial_steps": [
+          "Store mappings stat-slot -> spell plus quantity.",
+          "Recalculate stats when spell stock or GF configuration changes.",
+          "Use reversible modifiers, not permanent stat corruption."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Renzokuken",
+      "category": "timed_combo",
+      "canon_behavior": "Squall executes timed successive gunblade strikes and may finish with a specialized move.",
+      "activation": "limit_command",
+      "targeting": "enemy(s)",
+      "observed_effects": [
+        "Multi-hit slashes",
+        "Timing-based follow-up"
+      ],
+      "suggested_game_logic": [
+        "Enter limit-attack state with timed input windows.",
+        "For each successful timing event emit a strike.",
+        "Choose finisher from unlocked moves and encounter rules."
+      ],
+      "canon_limitations": "Availability and finisher outcomes depend on the original system.",
+      "source_urls": [
+        "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1773-renzokuken"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Squall executes timed successive gunblade strikes and may finish with a specialized move.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Enter limit-attack state with timed input windows. → For each successful timing event emit a strike. → Choose finisher from unlocked moves and encounter rules.",
+        "execution_steps": [
+          "CHARACTER: Squall Leonhart — Renzokuken",
+          "CANON BEHAVIOR: Squall executes timed successive gunblade strikes and may finish with a specialized move.",
+          "FORM REQUIREMENT: none_specified",
+          "Enter limit-attack state with timed input windows.",
+          "For each successful timing event emit a strike.",
+          "Choose finisher from unlocked moves and encounter rules.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_renzokuken_final(ctx, actor, target, cfg):\n    # LORE INTENT: Squall executes timed successive gunblade strikes and may finish with a specialized move.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Renzokuken: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Renzokuken: executes the intended melee animation with active frames only for eligible targets.",
+          "Renzokuken: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Squall Leonhart",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+        ],
+        "character_specific_initial_steps": [
+          "Enter limit-attack state with timed input windows.",
+          "For each successful timing event emit a strike.",
+          "Choose finisher from unlocked moves and encounter rules."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Lion Heart",
+      "category": "finisher",
+      "canon_behavior": "Squall unleashes many rapid cuts as a high-end Renzokuken finisher.",
+      "activation": "conditional_finisher",
+      "targeting": "target enemy",
+      "observed_effects": [
+        "High-hit-count sword assault"
+      ],
+      "suggested_game_logic": [
+        "Require Renzokuken finisher eligibility.",
+        "Execute locked multi-hit animation timeline.",
+        "Resolve each slash, then return to normal battle state."
+      ],
+      "canon_limitations": "Do not treat as a separate passive always available move.",
+      "source_urls": [
+        "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1774-lion-heart"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "legacy_tag_fallback",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Squall unleashes many rapid cuts as a high-end Renzokuken finisher.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Require Renzokuken finisher eligibility. → Execute locked multi-hit animation timeline. → Resolve each slash, then return to normal battle state.",
+        "execution_steps": [
+          "CHARACTER: Squall Leonhart — Lion Heart",
+          "CANON BEHAVIOR: Squall unleashes many rapid cuts as a high-end Renzokuken finisher.",
+          "FORM REQUIREMENT: none_specified",
+          "Require Renzokuken finisher eligibility.",
+          "Execute locked multi-hit animation timeline.",
+          "Resolve each slash, then return to normal battle state.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_lion_heart_final(ctx, actor, target, cfg):\n    # LORE INTENT: Squall unleashes many rapid cuts as a high-end Renzokuken finisher.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Lion Heart: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Lion Heart: executes the intended melee animation with active frames only for eligible targets.",
+          "Lion Heart: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Squall Leonhart",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+        ],
+        "character_specific_initial_steps": [
+          "Require Renzokuken finisher eligibility.",
+          "Execute locked multi-hit animation timeline.",
+          "Resolve each slash, then return to normal battle state."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://finalfantasy.fandom.com/wiki/Final_Fantasy_VIII"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 4
+}

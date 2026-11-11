@@ -1,0 +1,155 @@
+{
+  "id": "character-final-fantasy-vii-compilation-yuffie-kisaragi",
+  "name": "Yuffie Kisaragi",
+  "aliases": [],
+  "universe": "Final Fantasy VII / Compilation",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "ranged_offense",
+    "melee_offense",
+    "offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "All Creation",
+      "existing_atlas_entry_ids": [
+        "ability-1760-all-creation"
+      ],
+      "canon_behavior": "Yuffie releases a large beam-like attack that strikes the enemy party.",
+      "classification": {
+        "combat_roles": [
+          "ranged_offense",
+          "melee_offense",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "beam",
+          "melee",
+          "damage"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "beam"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Start a ray/beam or continuous swept hit volume while the ability is active.",
+        "Resolve hits along the beam and stop on obstruction according to design.",
+        "Run the attack animation and enable a hitbox only during its active frames.",
+        "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "Resolve relevant hit targets and attack properties.",
+        "Apply typed damage through the combat resolver, then post impact events.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "beam_hitscan",
+        "mechanic_title": "Line/beam attack",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "raycast_or_channel_volume",
+        "explicit_goal": "Yuffie releases a large beam-like attack that strikes the enemy party.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Start a ray/beam or continuous swept hit volume while the ability is active. → Resolve hits along the beam and stop on obstruction according to design.",
+        "execution_steps": [
+          "CHARACTER: Yuffie Kisaragi — All Creation",
+          "CANON BEHAVIOR: Yuffie releases a large beam-like attack that strikes the enemy party.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Start a ray/beam or continuous swept hit volume while the ability is active.",
+          "Resolve hits along the beam and stop on obstruction according to design.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Line/beam attack",
+          "ray = cast_ray_or_beam_volume(actor.cast_socket,aim,length,width)",
+          "for hit in order_hits_by_distance(ray):",
+          "    if hit_should_stop_beam(hit): break",
+          "    resolve_typed_hit_once_or_at_defined_tick(hit.target)",
+          "stop_beam_when_channel_finishes()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_all_creation_final(ctx, actor, target, cfg):\n    # LORE INTENT: Yuffie releases a large beam-like attack that strikes the enemy party.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    ray = cast_ray_or_beam_volume(actor.cast_socket,aim,length,width)\n    for hit in order_hits_by_distance(ray):\n        if hit_should_stop_beam(hit): break\n        resolve_typed_hit_once_or_at_defined_tick(hit.target)\n    stop_beam_when_channel_finishes()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "Raycast",
+          "DamageResolver",
+          "BeamVfx"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "beam_length",
+          "width",
+          "channel_duration",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Some beams are projectiles; define the intended travel model."
+        ],
+        "test_scenarios": [
+          "All Creation: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "All Creation: executes the intended line/beam attack only for eligible targets.",
+          "All Creation: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Some beams are projectiles; define the intended travel model."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Yuffie Kisaragi",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Start a ray/beam or continuous swept hit volume while the ability is active.",
+          "Resolve hits along the beam and stop on obstruction according to design.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

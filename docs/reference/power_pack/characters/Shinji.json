@@ -1,0 +1,140 @@
+{
+  "id": "character-bleach-shinji",
+  "name": "Shinji",
+  "aliases": [],
+  "universe": "Bleach",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "mental",
+    "recon"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Sakanade",
+      "existing_atlas_entry_ids": [
+        "ability-1318-sakanade"
+      ],
+      "canon_behavior": "Shinji's Shikai reverses a target's directional senses within an illusion-like effect.",
+      "classification": {
+        "combat_roles": [
+          "mental",
+          "recon"
+        ],
+        "mechanic_tags": [
+          "mind",
+          "information"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Check whether the recipient is susceptible to the cognition effect.",
+        "Apply behavior, perception or input restrictions without assuming player mind control.",
+        "Query the specific data the skill is permitted to reveal.",
+        "Present the result to the appropriate viewer without disclosing unrelated private/internal state.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "mental_status",
+        "mechanic_title": "Mind and perception effect",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Shinji's Shikai reverses a target's directional senses within an illusion-like effect.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Check whether the recipient is susceptible to the cognition effect. → Apply behavior, perception or input restrictions without assuming player mind control.",
+        "execution_steps": [
+          "CHARACTER: Shinji — Sakanade",
+          "CANON BEHAVIOR: Shinji's Shikai reverses a target's directional senses within an illusion-like effect.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Check whether the recipient is susceptible to the cognition effect.",
+          "Apply behavior, perception or input restrictions without assuming player mind control.",
+          "Query the specific data the skill is permitted to reveal.",
+          "Present the result to the appropriate viewer without disclosing unrelated private/internal state.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Mind and perception effect",
+          "assert target_has_compatible_mind_or_cognition(target)",
+          "if mental_resistance_blocks(target, ability): return RESISTED",
+          "apply_named_perception_or_control_modifier(target, payload)",
+          "update_ai_and_ui_perception_without_forcing_world_state_change()",
+          "on_dispel: restore_previous_cognitive_state()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_sakanade_bleach(ctx, actor, target, cfg):\n    # LORE INTENT: Shinji's Shikai reverses a target's directional senses within an illusion-like effect.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert target_has_compatible_mind_or_cognition(target)\n    if mental_resistance_blocks(target, ability): return RESISTED\n    apply_named_perception_or_control_modifier(target, payload)\n    update_ai_and_ui_perception_without_forcing_world_state_change()\n    on_dispel: restore_previous_cognitive_state()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "MentalStatusController",
+          "PerceptionLayer"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "mental_resistance",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Avoid confusing an illusion with a physical object."
+        ],
+        "test_scenarios": [
+          "Sakanade: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Sakanade: executes the intended mind and perception effect only for eligible targets.",
+          "Sakanade: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Avoid confusing an illusion with a physical object."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Shinji",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Check whether the recipient is susceptible to the cognition effect.",
+          "Apply behavior, perception or input restrictions without assuming player mind control.",
+          "Query the specific data the skill is permitted to reveal.",
+          "Present the result to the appropriate viewer without disclosing unrelated private/internal state.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

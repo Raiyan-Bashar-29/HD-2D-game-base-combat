@@ -1,0 +1,143 @@
+{
+  "id": "character-bleach-byakuya",
+  "name": "Byakuya",
+  "aliases": [],
+  "universe": "Bleach",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "melee_offense",
+    "area_control"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Senbonzakura Kageyoshi",
+      "existing_atlas_entry_ids": [
+        "ability-1314-senbonzakura-kageyoshi"
+      ],
+      "canon_behavior": "Byakuya's Bankai spreads countless tiny blade fragments directed like a storm of petals.",
+      "classification": {
+        "combat_roles": [
+          "melee_offense",
+          "area_control"
+        ],
+        "mechanic_tags": [
+          "melee",
+          "aoe"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "unspecified",
+        "delivery_hint": "melee_hitbox"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Run the attack animation and enable a hitbox only during its active frames.",
+        "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "Create an area-shaped query or persistent effect zone around the cast point.",
+        "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "persistent_field",
+        "mechanic_title": "Lingering region effect",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Byakuya's Bankai spreads countless tiny blade fragments directed like a storm of petals.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Run the attack animation and enable a hitbox only during its active frames. → Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "execution_steps": [
+          "CHARACTER: Byakuya — Senbonzakura Kageyoshi",
+          "CANON BEHAVIOR: Byakuya's Bankai spreads countless tiny blade fragments directed like a storm of petals.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Lingering region effect",
+          "zone = spawn_persistent_region(actor,target_point,shape)",
+          "while zone.is_active:",
+          "    occupants = query_entities_entering_or_inside(zone)",
+          "    apply_defined_effects_per_occupant_tick(occupants,zone)",
+          "on_exit_or_end: remove_only_owned_status_instances(zone)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_senbonzakura_kageyoshi_bleach(ctx, actor, target, cfg):\n    # LORE INTENT: Byakuya's Bankai spreads countless tiny blade fragments directed like a storm of petals.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    zone = spawn_persistent_region(actor,target_point,shape)\n    while zone.is_active:\n        occupants = query_entities_entering_or_inside(zone)\n        apply_defined_effects_per_occupant_tick(occupants,zone)\n    on_exit_or_end: remove_only_owned_status_instances(zone)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AreaVolume",
+          "EffectTicker"
+        ],
+        "effect_tags_from_description": [
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "radius",
+          "tick_interval",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "test_scenarios": [
+          "Senbonzakura Kageyoshi: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Senbonzakura Kageyoshi: executes the intended lingering region effect only for eligible targets.",
+          "Senbonzakura Kageyoshi: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Byakuya",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

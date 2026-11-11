@@ -1,0 +1,486 @@
+{
+  "id": "character-final-fantasy-vii-compilation-cloud-strife",
+  "name": "Cloud Strife",
+  "aliases": [],
+  "universe": "Final Fantasy VII / Compilation",
+  "species_or_type": "human enhanced by SOLDIER-related experiments",
+  "canon_rank_or_title": "Mercenary",
+  "combat_roles": [
+    "swordfighter",
+    "limit_finisher"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "Buster Sword/sword loadout."
+    },
+    {
+      "name": "limit",
+      "canon_description": "Special Limit Break attack."
+    }
+  ],
+  "resource_model": {
+    "source": "Limit gauge / materia",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Sword proficiency"
+  ],
+  "abilities": [
+    {
+      "name": "Braver",
+      "category": "melee_finisher",
+      "canon_behavior": "Cloud performs a forceful overhead sword attack.",
+      "activation": "limit_command",
+      "targeting": "target enemy",
+      "observed_effects": [
+        "Heavy single strike"
+      ],
+      "suggested_game_logic": [
+        "Lock target, launch jump/overhead swing animation.",
+        "Activate timed sword hitbox and register strike."
+      ],
+      "canon_limitations": "Exact damage varies by FFVII version.",
+      "source_urls": [
+        "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1751-braver"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "persistent_field",
+        "mechanic_title": "Lingering region effect",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Cloud performs a forceful overhead sword attack.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Lock target, launch jump/overhead swing animation. → Activate timed sword hitbox and register strike.",
+        "execution_steps": [
+          "CHARACTER: Cloud Strife — Braver",
+          "CANON BEHAVIOR: Cloud performs a forceful overhead sword attack.",
+          "FORM REQUIREMENT: none_specified",
+          "Lock target, launch jump/overhead swing animation.",
+          "Activate timed sword hitbox and register strike.",
+          "IMPLEMENTATION FAMILY: Lingering region effect",
+          "zone = spawn_persistent_region(actor,target_point,shape)",
+          "while zone.is_active:",
+          "    occupants = query_entities_entering_or_inside(zone)",
+          "    apply_defined_effects_per_occupant_tick(occupants,zone)",
+          "on_exit_or_end: remove_only_owned_status_instances(zone)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_braver_final(ctx, actor, target, cfg):\n    # LORE INTENT: Cloud performs a forceful overhead sword attack.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    zone = spawn_persistent_region(actor,target_point,shape)\n    while zone.is_active:\n        occupants = query_entities_entering_or_inside(zone)\n        apply_defined_effects_per_occupant_tick(occupants,zone)\n    on_exit_or_end: remove_only_owned_status_instances(zone)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AreaVolume",
+          "EffectTicker"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "radius",
+          "tick_interval",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "test_scenarios": [
+          "Braver: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Braver: executes the intended lingering region effect only for eligible targets.",
+          "Braver: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Cloud Strife",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+        ],
+        "character_specific_initial_steps": [
+          "Lock target, launch jump/overhead swing animation.",
+          "Activate timed sword hitbox and register strike."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Cross-Slash",
+      "category": "multi_hit_melee",
+      "canon_behavior": "Cloud makes a sequence of crossing slashes, with paralysis tied to certain versions.",
+      "activation": "limit_command",
+      "targeting": "target enemy",
+      "observed_effects": [
+        "Multi-hit attack",
+        "Version-specific paralysis"
+      ],
+      "suggested_game_logic": [
+        "Run three or more authored slash beats (count should match selected game).",
+        "Apply paralysis only if using original version rules."
+      ],
+      "canon_limitations": "Do not apply paralysis in every remake/continuity automatically.",
+      "source_urls": [
+        "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1752-cross-slash"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Cloud makes a sequence of crossing slashes, with paralysis tied to certain versions.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Run three or more authored slash beats (count should match selected game). → Apply paralysis only if using original version rules.",
+        "execution_steps": [
+          "CHARACTER: Cloud Strife — Cross-Slash",
+          "CANON BEHAVIOR: Cloud makes a sequence of crossing slashes, with paralysis tied to certain versions.",
+          "FORM REQUIREMENT: none_specified",
+          "Run three or more authored slash beats (count should match selected game).",
+          "Apply paralysis only if using original version rules.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_cross_slash_final(ctx, actor, target, cfg):\n    # LORE INTENT: Cloud makes a sequence of crossing slashes, with paralysis tied to certain versions.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "status_effect"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Cross-Slash: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Cross-Slash: executes the intended melee animation with active frames only for eligible targets.",
+          "Cross-Slash: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Cloud Strife",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+        ],
+        "character_specific_initial_steps": [
+          "Run three or more authored slash beats (count should match selected game).",
+          "Apply paralysis only if using original version rules."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Blade Beam",
+      "category": "ranged_slash",
+      "canon_behavior": "Cloud releases a cutting energy wave that can spread to other enemies.",
+      "activation": "limit_command",
+      "targeting": "enemy and optional secondary opponents",
+      "observed_effects": [
+        "Primary ranged wave",
+        "Chained secondary hits"
+      ],
+      "suggested_game_logic": [
+        "Fire moving cutting-wave hit volume.",
+        "On primary impact use target finder to select eligible secondary actors."
+      ],
+      "canon_limitations": "Secondary targeting depends on version.",
+      "source_urls": [
+        "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1753-blade-beam"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "beam",
+        "melee",
+        "aoe"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "beam_hitscan",
+        "mechanic_title": "Line/beam attack",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "raycast_or_channel_volume",
+        "explicit_goal": "Cloud releases a cutting energy wave that can spread to other enemies.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Fire moving cutting-wave hit volume. → On primary impact use target finder to select eligible secondary actors.",
+        "execution_steps": [
+          "CHARACTER: Cloud Strife — Blade Beam",
+          "CANON BEHAVIOR: Cloud releases a cutting energy wave that can spread to other enemies.",
+          "FORM REQUIREMENT: none_specified",
+          "Fire moving cutting-wave hit volume.",
+          "On primary impact use target finder to select eligible secondary actors.",
+          "IMPLEMENTATION FAMILY: Line/beam attack",
+          "ray = cast_ray_or_beam_volume(actor.cast_socket,aim,length,width)",
+          "for hit in order_hits_by_distance(ray):",
+          "    if hit_should_stop_beam(hit): break",
+          "    resolve_typed_hit_once_or_at_defined_tick(hit.target)",
+          "stop_beam_when_channel_finishes()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_blade_beam_final(ctx, actor, target, cfg):\n    # LORE INTENT: Cloud releases a cutting energy wave that can spread to other enemies.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    ray = cast_ray_or_beam_volume(actor.cast_socket,aim,length,width)\n    for hit in order_hits_by_distance(ray):\n        if hit_should_stop_beam(hit): break\n        resolve_typed_hit_once_or_at_defined_tick(hit.target)\n    stop_beam_when_channel_finishes()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "Raycast",
+          "DamageResolver",
+          "BeamVfx"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "beam_length",
+          "width",
+          "channel_duration",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Some beams are projectiles; define the intended travel model."
+        ],
+        "test_scenarios": [
+          "Blade Beam: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Blade Beam: executes the intended line/beam attack only for eligible targets.",
+          "Blade Beam: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Some beams are projectiles; define the intended travel model."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Cloud Strife",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+        ],
+        "character_specific_initial_steps": [
+          "Fire moving cutting-wave hit volume.",
+          "On primary impact use target finder to select eligible secondary actors."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Omnislash",
+      "category": "multi_hit_finisher",
+      "canon_behavior": "Cloud delivers a fast barrage of sword cuts to selected opponents.",
+      "activation": "limit_command",
+      "targeting": "enemy / group depending on version",
+      "observed_effects": [
+        "Numerous rapid sword strikes"
+      ],
+      "suggested_game_logic": [
+        "Enter cinematic limit state and temporarily control animation pacing.",
+        "Execute authored sequence of separate strike events.",
+        "End on final heavy hit and return control."
+      ],
+      "canon_limitations": "Exact hit count, reach and damage change with specific game.",
+      "source_urls": [
+        "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1750-omnislash"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Cloud delivers a fast barrage of sword cuts to selected opponents.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Enter cinematic limit state and temporarily control animation pacing. → Execute authored sequence of separate strike events. → End on final heavy hit and return control.",
+        "execution_steps": [
+          "CHARACTER: Cloud Strife — Omnislash",
+          "CANON BEHAVIOR: Cloud delivers a fast barrage of sword cuts to selected opponents.",
+          "FORM REQUIREMENT: none_specified",
+          "Enter cinematic limit state and temporarily control animation pacing.",
+          "Execute authored sequence of separate strike events.",
+          "End on final heavy hit and return control.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_omnislash_final(ctx, actor, target, cfg):\n    # LORE INTENT: Cloud delivers a fast barrage of sword cuts to selected opponents.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Omnislash: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Omnislash: executes the intended melee animation with active frames only for eligible targets.",
+          "Omnislash: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Cloud Strife",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+        ],
+        "character_specific_initial_steps": [
+          "Enter cinematic limit state and temporarily control animation pacing.",
+          "Execute authored sequence of separate strike events.",
+          "End on final heavy hit and return control."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://finalfantasy.fandom.com/wiki/Limit_(Final_Fantasy_VII)"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 4
+}

@@ -1,0 +1,159 @@
+{
+  "id": "character-league-of-legends-runeterra-senna",
+  "name": "Senna",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "ranged_offense",
+    "area_control",
+    "offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Senna: Dawning Shadow",
+      "existing_atlas_entry_ids": [
+        "ability-2646-senna-dawning-shadow"
+      ],
+      "canon_behavior": "Fires a cross-map beam that damages enemy champions while shielding allies in the beam's area.",
+      "classification": {
+        "combat_roles": [
+          "ranged_offense",
+          "area_control",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "projectile",
+          "beam",
+          "aoe",
+          "damage"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "allies_or_group",
+        "delivery_hint": "projectile"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+        "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "Start a ray/beam or continuous swept hit volume while the ability is active.",
+        "Resolve hits along the beam and stop on obstruction according to design.",
+        "Create an area-shaped query or persistent effect zone around the cast point.",
+        "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "Resolve relevant hit targets and attack properties.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "Fires a cross-map beam that damages enemy champions while shielding allies in the beam's area.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Spawn a projectile instance with owner, direction, collision mask and lifetime. → Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "execution_steps": [
+          "CHARACTER: Senna — Senna: Dawning Shadow",
+          "CANON BEHAVIOR: Fires a cross-map beam that damages enemy champions while shielding allies in the beam's area.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Start a ray/beam or continuous swept hit volume while the ability is active.",
+          "Resolve hits along the beam and stop on obstruction according to design.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Resolve relevant hit targets and attack properties.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_senna_dawning_shadow_league(ctx, actor, target, cfg):\n    # LORE INTENT: Fires a cross-map beam that damages enemy champions while shielding allies in the beam's area.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "shield_modifier",
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "Senna: Dawning Shadow: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Senna: Dawning Shadow: executes the intended defensive interception or immunity only for eligible targets.",
+          "Senna: Dawning Shadow: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Senna",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Start a ray/beam or continuous swept hit volume while the ability is active.",
+          "Resolve hits along the beam and stop on obstruction according to design.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Resolve relevant hit targets and attack properties.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

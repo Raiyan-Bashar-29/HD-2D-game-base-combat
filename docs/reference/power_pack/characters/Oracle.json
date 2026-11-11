@@ -1,0 +1,140 @@
+{
+  "id": "character-dota-2-oracle",
+  "name": "Oracle",
+  "aliases": [],
+  "universe": "Dota 2",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "support",
+    "offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Oracle: False Promise",
+      "existing_atlas_entry_ids": [
+        "ability-2669-oracle-false-promise"
+      ],
+      "canon_behavior": "Delays damage and healing calculations on an ally, resolving them together after the effect ends.",
+      "classification": {
+        "combat_roles": [
+          "support",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "heal",
+          "damage"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Validate that the selected recipient is eligible.",
+        "Restore health or repair qualifying injury and emit a heal event.",
+        "Resolve relevant hit targets and attack properties.",
+        "Apply typed damage through the combat resolver, then post impact events.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "damage_heal_escrow",
+        "mechanic_title": "Defer and reconcile hit events",
+        "semantic_route_evidence": "curated_explicit_override",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Delays damage and healing calculations on an ally, resolving them together after the effect ends.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Validate that the selected recipient is eligible. → Restore health or repair qualifying injury and emit a heal event.",
+        "execution_steps": [
+          "CHARACTER: Oracle — Oracle: False Promise",
+          "CANON BEHAVIOR: Delays damage and healing calculations on an ally, resolving them together after the effect ends.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Defer and reconcile hit events",
+          "When duration ends, combine recorded values according to the ability's intended order and multiplier rules.",
+          "Apply the resulting net outcome once; clear ledger and ensure death/disconnect does not duplicate resolution."
+        ],
+        "pseudocode": "def execute_oracle_false_promise_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Delays damage and healing calculations on an ally, resolving them together after the effect ends.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    # Attach an escrow ledger to the ally for the effect duration.\n    # Intercept incoming healing and damage before health commit; record them without applying immediately under configured exceptions.\n    # When duration ends, combine recorded values according to the ability's intended order and multiplier rules.\n    # Apply the resulting net outcome once; clear ledger and ensure death/disconnect does not duplicate resolution.\n    ledger = open_escrow(target, duration)\n    on_damage_or_heal(target, lambda event: ledger.defer(event))\n    on_effect_end(lambda: settle_ledger_once(ledger, ordered_resolution))\n    apply_final_delta_with_death_rules(target, ledger.result)\n    close_and_unsubscribe(ledger)\n    tx.commit_if_valid(); ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatEventInterceptor",
+          "EscrowLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "healing"
+        ],
+        "design_parameters_to_supply": [
+          "effect_duration",
+          "settlement_rule",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Ensure a deferred lethal hit is resolved once."
+        ],
+        "test_scenarios": [
+          "Oracle: False Promise: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Oracle: False Promise: executes the intended defer and reconcile hit events only for eligible targets.",
+          "Oracle: False Promise: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Ensure a deferred lethal hit is resolved once."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Oracle",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

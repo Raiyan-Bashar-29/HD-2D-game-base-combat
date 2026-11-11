@@ -1,0 +1,163 @@
+{
+  "id": "character-fire-emblem-engage-ike",
+  "name": "Ike",
+  "aliases": [],
+  "universe": "Fire Emblem — Engage",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "melee_offense",
+    "area_control",
+    "support",
+    "resource_management",
+    "offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Great Aether",
+      "existing_atlas_entry_ids": [
+        "ability-2081-great-aether"
+      ],
+      "canon_behavior": "Ike's move first braces against damage, then strikes an area and heals the user based on damage dealt.",
+      "classification": {
+        "combat_roles": [
+          "melee_offense",
+          "area_control",
+          "support",
+          "resource_management",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "melee",
+          "aoe",
+          "heal",
+          "resource",
+          "damage"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "self_or_owner",
+        "delivery_hint": "melee_hitbox"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Run the attack animation and enable a hitbox only during its active frames.",
+        "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "Create an area-shaped query or persistent effect zone around the cast point.",
+        "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "Validate that the selected recipient is eligible.",
+        "Restore health or repair qualifying injury and emit a heal event.",
+        "Check and consume the relevant power resource or material.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "heal",
+        "mechanic_title": "Healing and cleansing",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "health_delta",
+        "explicit_goal": "Ike's move first braces against damage, then strikes an area and heals the user based on damage dealt.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Run the attack animation and enable a hitbox only during its active frames. → Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "execution_steps": [
+          "CHARACTER: Ike — Great Aether",
+          "CANON BEHAVIOR: Ike's move first braces against damage, then strikes an area and heals the user based on damage dealt.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Check and consume the relevant power resource or material.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Healing and cleansing",
+          "assert is_valid_heal_target(actor,target)",
+          "healed = clamp_healing_to_missing_health(target,configured_amount)",
+          "health.apply_healing(target,healed)",
+          "if specified: cleanse_selected_status_tags(target)",
+          "emit_health_change_and_heal_visuals()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_great_aether_fire(ctx, actor, target, cfg):\n    # LORE INTENT: Ike's move first braces against damage, then strikes an area and heals the user based on damage dealt.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert is_valid_heal_target(actor,target)\n    healed = clamp_healing_to_missing_health(target,configured_amount)\n    health.apply_healing(target,healed)\n    if specified: cleanse_selected_status_tags(target)\n    emit_health_change_and_heal_visuals()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "HealthSystem",
+          "StatusController"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "healing",
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "healing_amount",
+          "target_filter",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Healing should not revive dead actors without revival rules."
+        ],
+        "test_scenarios": [
+          "Great Aether: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Great Aether: executes the intended healing and cleansing only for eligible targets.",
+          "Great Aether: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Healing should not revive dead actors without revival rules."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ike",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Check and consume the relevant power resource or material.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

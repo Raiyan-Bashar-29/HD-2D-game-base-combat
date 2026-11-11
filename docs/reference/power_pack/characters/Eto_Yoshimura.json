@@ -1,0 +1,960 @@
+{
+  "id": "character-tokyo-ghoul-eto-yoshimura",
+  "name": "Eto Yoshimura",
+  "aliases": [
+    "Sen Takatsuki",
+    "One-Eyed Owl"
+  ],
+  "universe": "Tokyo Ghoul",
+  "species_or_type": "natural one-eyed ghoul",
+  "canon_rank_or_title": "SSS-rated (One-Eyed Owl)",
+  "combat_roles": [
+    "ranged_burst",
+    "melee_bruiser",
+    "transformation_boss",
+    "sustain"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "Humanlike form; can manifest and reshape ukaku kagune."
+    },
+    {
+      "name": "kagune_manifested",
+      "canon_description": "Multiple back-mounted kagune appendages; projectile and appendage attacks."
+    },
+    {
+      "name": "kakuja_form",
+      "canon_description": "Massive Owl-like kakuja form; retains tactical awareness."
+    }
+  ],
+  "resource_model": {
+    "canon_source": "RC cells / kakuhou",
+    "numeric_pool": null,
+    "gameplay_note": "Do not invent an RC point budget; choose it during balancing."
+  },
+  "passive_traits": [
+    "Ghoul physiology",
+    "High-speed movement",
+    "Unusual durability",
+    "Extreme regeneration",
+    "Creative kagune shape control"
+  ],
+  "abilities": [
+    {
+      "name": "Ukaku RC Shard Volley",
+      "category": "ranged_attack",
+      "canon_behavior": "Eto uses her ukaku kagune to fire destructive Rc-cell projectiles from her kagune, suited to middle and longer ranges.",
+      "activation": "active",
+      "targeting": "visible foe(s) in front / ranged line",
+      "observed_effects": [
+        "Multiple fast penetrating-looking projectiles",
+        "Pressure on blocking opponents"
+      ],
+      "suggested_game_logic": [
+        "Confirm the kagune is manifested.",
+        "Play windup from back appendages; release several owned RC-shard projectiles.",
+        "On each projectile hit, use collision resolver; allow separate hit behavior per target.",
+        "Enter attack recovery without automatically disabling the kagune."
+      ],
+      "canon_limitations": "Number, spread, speed and damage of projectiles are NOT specified as fixed canonical values.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1465-ukaku-kagune"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "ukaku_projectiles",
+        "mechanic_title": "Ukaku RC shard volley",
+        "semantic_route_evidence": "named_semantic_route",
+        "execution_delivery": "kagune_shard_projectiles",
+        "explicit_goal": "Eto uses her ukaku kagune to fire destructive Rc-cell projectiles from her kagune, suited to middle and longer ranges.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Confirm the kagune is manifested. → Play windup from back appendages; release several owned RC-shard projectiles. → On each projectile hit, use collision resolver; allow separate hit behavior per target. → Enter attack recovery without automatically disabling the kagune.",
+        "execution_steps": [
+          "CHARACTER: Eto Yoshimura — Ukaku RC Shard Volley",
+          "CANON BEHAVIOR: Eto uses her ukaku kagune to fire destructive Rc-cell projectiles from her kagune, suited to middle and longer ranges.",
+          "FORM REQUIREMENT: none_specified",
+          "Confirm the kagune is manifested.",
+          "Play windup from back appendages; release several owned RC-shard projectiles.",
+          "On each projectile hit, use collision resolver; allow separate hit behavior per target.",
+          "Enter attack recovery without automatically disabling the kagune.",
+          "IMPLEMENTATION FAMILY: Ukaku RC shard volley",
+          "assert actor.has_kagune_type(UKAKU) and actor.kagune_is_active",
+          "for direction in spread_vectors(aim, shard_count, spread_angle):",
+          "    shard = spawn_rc_shard(actor.kagune_socket, direction, owner=actor)",
+          "    shard.on_collision = lambda target: hit_resolver.resolve(shard, target)",
+          "    shard.expire_after(range_or_lifetime)",
+          "Use fire/burn material tags; a damage-over-time status is optional unless explicitly described.",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ukaku_rc_shard_volley_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Eto uses her ukaku kagune to fire destructive Rc-cell projectiles from her kagune, suited to middle and longer ranges.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert actor.has_kagune_type(UKAKU) and actor.kagune_is_active\n    for direction in spread_vectors(aim, shard_count, spread_angle):\n        shard = spawn_rc_shard(actor.kagune_socket, direction, owner=actor)\n        shard.on_collision = lambda target: hit_resolver.resolve(shard, target)\n        shard.expire_after(range_or_lifetime)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "KaguneState",
+          "ProjectilePool",
+          "SweepHitResolver"
+        ],
+        "effect_tags_from_description": [
+          "projectile_emission",
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "shard_count",
+          "spread_angle",
+          "range",
+          "projectile_speed",
+          "cooldown",
+          "resource_cost",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Kagune remains manifested after volley unless another rule retracts it."
+        ],
+        "test_scenarios": [
+          "Ukaku RC Shard Volley: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Ukaku RC Shard Volley: executes the intended ukaku rc shard volley only for eligible targets.",
+          "Ukaku RC Shard Volley: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Kagune remains manifested after volley unless another rule retracts it."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Eto Yoshimura",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Confirm the kagune is manifested.",
+          "Play windup from back appendages; release several owned RC-shard projectiles.",
+          "On each projectile hit, use collision resolver; allow separate hit behavior per target.",
+          "Enter attack recovery without automatically disabling the kagune."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Adaptive Kagune Appendages",
+      "category": "morphing_melee",
+      "canon_behavior": "Eto reshapes her kagune into grotesque limbs, eyes, mouths and other appendages; her shapes are not constrained to a simple wing.",
+      "activation": "active_or_continuous",
+      "targeting": "self / nearby enemies",
+      "observed_effects": [
+        "Change appendage geometry",
+        "Reach, strike, grasp and sensory-form expression"
+      ],
+      "suggested_game_logic": [
+        "Represent kagune as attachable segments with form variants.",
+        "State-driven shape transitions: limb, jaw/mouth, sensory eye, strike arm.",
+        "Move hitboxes with rigged segments; activate grapples and strikes only on qualifying animation frames."
+      ],
+      "canon_limitations": "Speaking mouths and unusual forms are depicted; assigning independent vision or sentient AI to each appendage requires separate design choice.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Eto reshapes her kagune into grotesque limbs, eyes, mouths and other appendages; her shapes are not constrained to a simple wing.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Represent kagune as attachable segments with form variants. → State-driven shape transitions: limb, jaw/mouth, sensory eye, strike arm. → Move hitboxes with rigged segments; activate grapples and strikes only on qualifying animation frames.",
+        "execution_steps": [
+          "CHARACTER: Eto Yoshimura — Adaptive Kagune Appendages",
+          "CANON BEHAVIOR: Eto reshapes her kagune into grotesque limbs, eyes, mouths and other appendages; her shapes are not constrained to a simple wing.",
+          "FORM REQUIREMENT: none_specified",
+          "Represent kagune as attachable segments with form variants.",
+          "State-driven shape transitions: limb, jaw/mouth, sensory eye, strike arm.",
+          "Move hitboxes with rigged segments; activate grapples and strikes only on qualifying animation frames.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_adaptive_kagune_appendages_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Eto reshapes her kagune into grotesque limbs, eyes, mouths and other appendages; her shapes are not constrained to a simple wing.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Adaptive Kagune Appendages: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Adaptive Kagune Appendages: executes the intended melee animation with active frames only for eligible targets.",
+          "Adaptive Kagune Appendages: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Eto Yoshimura",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Represent kagune as attachable segments with form variants.",
+          "State-driven shape transitions: limb, jaw/mouth, sensory eye, strike arm.",
+          "Move hitboxes with rigged segments; activate grapples and strikes only on qualifying animation frames."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Kakuja: One-Eyed Owl",
+      "category": "transformation",
+      "canon_behavior": "Eto can deploy a monstrous armored kakuja body while retaining consciousness, increasing reach and access to large close-range attacks.",
+      "activation": "active_transformation",
+      "targeting": "self",
+      "observed_effects": [
+        "Large transformed body",
+        "Altered armor/model and melee techniques",
+        "Retains conscious tactical control"
+      ],
+      "suggested_game_logic": [
+        "Check if transformation is allowed, transition normal -> kakuja.",
+        "Swap rigs, collision capsules/hitbox sets, attack loadout and animations.",
+        "Do not assume the transformation causes loss of player/AI control.",
+        "Leave transformation when explicitly canceled or story/game state requires."
+      ],
+      "canon_limitations": "Transformation prerequisites, duration and cooldown are not canonically quantified.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1469-kakuja"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "manipulation",
+        "melee",
+        "transformation",
+        "mind"
+      ],
+      "form_requirement": "normal_or_kagune_manifested",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "transform_form",
+        "mechanic_title": "Form swap state machine",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "state_machine",
+        "explicit_goal": "Eto can deploy a monstrous armored kakuja body while retaining consciousness, increasing reach and access to large close-range attacks.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Check if transformation is allowed, transition normal -> kakuja. → Swap rigs, collision capsules/hitbox sets, attack loadout and animations. → Do not assume the transformation causes loss of player/AI control. → Leave transformation when explicitly canceled or story/game state requires.",
+        "execution_steps": [
+          "CHARACTER: Eto Yoshimura — Kakuja: One-Eyed Owl",
+          "CANON BEHAVIOR: Eto can deploy a monstrous armored kakuja body while retaining consciousness, increasing reach and access to large close-range attacks.",
+          "FORM REQUIREMENT: normal_or_kagune_manifested",
+          "Check if transformation is allowed, transition normal -> kakuja.",
+          "Swap rigs, collision capsules/hitbox sets, attack loadout and animations.",
+          "Do not assume the transformation causes loss of player/AI control.",
+          "Leave transformation when explicitly canceled or story/game state requires.",
+          "IMPLEMENTATION FAMILY: Form swap state machine",
+          "assert can_enter_form(actor,requested_form)",
+          "transition_actor_state(actor,TRANSFORMING)",
+          "swap_mesh_skeleton_collision_and_move_set(actor,requested_form)",
+          "apply_only_configured_form_stat_modifiers(actor)",
+          "on_form_end: revert_all_owned_form_changes()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_kakuja_one_eyed_owl_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Eto can deploy a monstrous armored kakuja body while retaining consciousness, increasing reach and access to large close-range attacks.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert can_enter_form(actor,requested_form)\n    transition_actor_state(actor,TRANSFORMING)\n    swap_mesh_skeleton_collision_and_move_set(actor,requested_form)\n    apply_only_configured_form_stat_modifiers(actor)\n    on_form_end: revert_all_owned_form_changes()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "FormFSM",
+          "StatModifier",
+          "MoveSetLoader"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "form_requirements",
+          "duration",
+          "stat_changes",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "test_scenarios": [
+          "Kakuja: One-Eyed Owl: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Kakuja: One-Eyed Owl: executes the intended form swap state machine only for eligible targets.",
+          "Kakuja: One-Eyed Owl: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Eto Yoshimura",
+        "form_requirements": "normal_or_kagune_manifested",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Check if transformation is allowed, transition normal -> kakuja.",
+          "Swap rigs, collision capsules/hitbox sets, attack loadout and animations.",
+          "Do not assume the transformation causes loss of player/AI control.",
+          "Leave transformation when explicitly canceled or story/game state requires."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Kakuja Heavy Cleave",
+      "category": "melee_attack",
+      "canon_behavior": "Eto uses the large, reshaped kakuja body to cut down nearby opponents with close-range attacks.",
+      "activation": "active",
+      "targeting": "short-range enemies near front arc",
+      "observed_effects": [
+        "Large melee damage zone",
+        "Heavy knockback only if separately designed"
+      ],
+      "suggested_game_logic": [
+        "Require kakuja_form.",
+        "Select heavy-swing animation and trace a broad moving hitbox.",
+        "Resolve contacts once per swing; allow collision with environment if configured."
+      ],
+      "canon_limitations": "No fixed numeric hitbox size, knockback or damage is provided by canon.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "aoe",
+        "transformation",
+        "crowd_control",
+        "damage"
+      ],
+      "form_requirement": "kakuja_form",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "transform_form",
+        "mechanic_title": "Form swap state machine",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "state_machine",
+        "explicit_goal": "Eto uses the large, reshaped kakuja body to cut down nearby opponents with close-range attacks.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Require kakuja_form. → Select heavy-swing animation and trace a broad moving hitbox. → Resolve contacts once per swing; allow collision with environment if configured.",
+        "execution_steps": [
+          "CHARACTER: Eto Yoshimura — Kakuja Heavy Cleave",
+          "CANON BEHAVIOR: Eto uses the large, reshaped kakuja body to cut down nearby opponents with close-range attacks.",
+          "FORM REQUIREMENT: kakuja_form",
+          "Require kakuja_form.",
+          "Select heavy-swing animation and trace a broad moving hitbox.",
+          "Resolve contacts once per swing; allow collision with environment if configured.",
+          "IMPLEMENTATION FAMILY: Form swap state machine",
+          "assert can_enter_form(actor,requested_form)",
+          "transition_actor_state(actor,TRANSFORMING)",
+          "swap_mesh_skeleton_collision_and_move_set(actor,requested_form)",
+          "apply_only_configured_form_stat_modifiers(actor)",
+          "on_form_end: revert_all_owned_form_changes()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_kakuja_heavy_cleave_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Eto uses the large, reshaped kakuja body to cut down nearby opponents with close-range attacks.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert can_enter_form(actor,requested_form)\n    transition_actor_state(actor,TRANSFORMING)\n    swap_mesh_skeleton_collision_and_move_set(actor,requested_form)\n    apply_only_configured_form_stat_modifiers(actor)\n    on_form_end: revert_all_owned_form_changes()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "FormFSM",
+          "StatModifier",
+          "MoveSetLoader"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "form_requirements",
+          "duration",
+          "stat_changes",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "test_scenarios": [
+          "Kakuja Heavy Cleave: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Kakuja Heavy Cleave: executes the intended form swap state machine only for eligible targets.",
+          "Kakuja Heavy Cleave: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Eto Yoshimura",
+        "form_requirements": "kakuja_form",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Require kakuja_form.",
+          "Select heavy-swing animation and trace a broad moving hitbox.",
+          "Resolve contacts once per swing; allow collision with environment if configured."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Detached Kagune Restraint",
+      "category": "remote_control",
+      "canon_behavior": "Eto detaches pieces of kagune that can act away from her body and restrain or manipulate a target.",
+      "activation": "active",
+      "targeting": "selected nearby or remotely reachable enemy",
+      "observed_effects": [
+        "Detach and animate kagune fragment",
+        "Remote grapple or bind"
+      ],
+      "suggested_game_logic": [
+        "Spawn an owned detachable kagune entity rather than a simple thrown item.",
+        "Give it travel, seek or placed behavior and a restraint collision trigger.",
+        "While attached, apply movement/action restrictions and enable escape/counter rules if game design allows.",
+        "Clean up fragment if destroyed or recalled."
+      ],
+      "canon_limitations": "Exact autonomy, lifetime, target range and escape threshold remain unspecified.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "crowd_control"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "construct_matter",
+        "mechanic_title": "Shape existing or created substance",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "matter_instance_mutation",
+        "explicit_goal": "Eto detaches pieces of kagune that can act away from her body and restrain or manipulate a target.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Spawn an owned detachable kagune entity rather than a simple thrown item. → Give it travel, seek or placed behavior and a restraint collision trigger. → While attached, apply movement/action restrictions and enable escape/counter rules if game design allows. → Clean up fragment if destroyed or recalled.",
+        "execution_steps": [
+          "CHARACTER: Eto Yoshimura — Detached Kagune Restraint",
+          "CANON BEHAVIOR: Eto detaches pieces of kagune that can act away from her body and restrain or manipulate a target.",
+          "FORM REQUIREMENT: none_specified",
+          "Spawn an owned detachable kagune entity rather than a simple thrown item.",
+          "Give it travel, seek or placed behavior and a restraint collision trigger.",
+          "While attached, apply movement/action restrictions and enable escape/counter rules if game design allows.",
+          "Clean up fragment if destroyed or recalled.",
+          "IMPLEMENTATION FAMILY: Shape existing or created substance",
+          "material = locate_or_generate_allowed_substance(material_kind, actor)",
+          "if material is None: return NO_VALID_MATERIAL",
+          "apply_named_transformation_or_force(material, target_shape_or_motion)",
+          "update_collision_mass_and_attached_effects(material)",
+          "on_release: settle_construct_under_world_physics(material)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_detached_kagune_restraint_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Eto detaches pieces of kagune that can act away from her body and restrain or manipulate a target.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    material = locate_or_generate_allowed_substance(material_kind, actor)\n    if material is None: return NO_VALID_MATERIAL\n    apply_named_transformation_or_force(material, target_shape_or_motion)\n    update_collision_mass_and_attached_effects(material)\n    on_release: settle_construct_under_world_physics(material)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "MatterRegistry",
+          "ConstructRig",
+          "PhysicsConstraints"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "material_kind",
+          "control_radius",
+          "mass_limit",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Material source and transmutation rules vary by ability."
+        ],
+        "test_scenarios": [
+          "Detached Kagune Restraint: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Detached Kagune Restraint: executes the intended shape existing or created substance only for eligible targets.",
+          "Detached Kagune Restraint: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Material source and transmutation rules vary by ability."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Eto Yoshimura",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Spawn an owned detachable kagune entity rather than a simple thrown item.",
+          "Give it travel, seek or placed behavior and a restraint collision trigger.",
+          "While attached, apply movement/action restrictions and enable escape/counter rules if game design allows.",
+          "Clean up fragment if destroyed or recalled."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Kagune Transplant / RC Alteration",
+      "category": "biological_modification",
+      "canon_behavior": "Eto is shown introducing kagune tissue into others and altering their physiology; mechanism and outcomes are unusually complex and case-specific.",
+      "activation": "special_scripted_interaction",
+      "targeting": "specific other individual",
+      "observed_effects": [
+        "Possible physiological alteration / RC-pattern influence"
+      ],
+      "suggested_game_logic": [
+        "Do not implement as an unconditional damaging projectile.",
+        "Treat as a scripted target-dependent transformation with explicit permission, scenario and valid recipients.",
+        "Model the result as a status/character modification only when the game designer defines which characters are eligible."
+      ],
+      "canon_limitations": "Not a universally confirmed instant conversion ability; exact mechanics are uncertain and must not be generalized.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "passive_trait"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "fate_outcome",
+        "mechanic_title": "Causal / probability rule",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "outcome_interceptor",
+        "explicit_goal": "Eto is shown introducing kagune tissue into others and altering their physiology; mechanism and outcomes are unusually complex and case-specific.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Do not implement as an unconditional damaging projectile. → Treat as a scripted target-dependent transformation with explicit permission, scenario and valid recipients. → Model the result as a status/character modification only when the game designer defines which characters are eligible.",
+        "execution_steps": [
+          "CHARACTER: Eto Yoshimura — Kagune Transplant / RC Alteration",
+          "CANON BEHAVIOR: Eto is shown introducing kagune tissue into others and altering their physiology; mechanism and outcomes are unusually complex and case-specific.",
+          "FORM REQUIREMENT: none_specified",
+          "Do not implement as an unconditional damaging projectile.",
+          "Treat as a scripted target-dependent transformation with explicit permission, scenario and valid recipients.",
+          "Model the result as a status/character modification only when the game designer defines which characters are eligible.",
+          "IMPLEMENTATION FAMILY: Causal / probability rule",
+          "event = capture_qualifying_outcome_before_commit(world)",
+          "possibilities = derive_legal_outcomes(event, scoped_rules)",
+          "selected = choose_or_bias_outcome(possibilities, owner, rng)",
+          "commit_single_selected_outcome(selected)",
+          "log_causal_branch_for_replay()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_kagune_transplant_rc_alteration_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Eto is shown introducing kagune tissue into others and altering their physiology; mechanism and outcomes are unusually complex and case-specific.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    event = capture_qualifying_outcome_before_commit(world)\n    possibilities = derive_legal_outcomes(event, scoped_rules)\n    selected = choose_or_bias_outcome(possibilities, owner, rng)\n    commit_single_selected_outcome(selected)\n    log_causal_branch_for_replay()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "EventInterception",
+          "SeededRng",
+          "OutcomeSelector"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "trigger_predicate",
+          "eligible_outcomes",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Cross-continuity absolute fate claims need handcrafted rules."
+        ],
+        "test_scenarios": [
+          "Kagune Transplant / RC Alteration: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Kagune Transplant / RC Alteration: executes the intended causal / probability rule only for eligible targets.",
+          "Kagune Transplant / RC Alteration: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Cross-continuity absolute fate claims need handcrafted rules."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Eto Yoshimura",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Do not implement as an unconditional damaging projectile.",
+          "Treat as a scripted target-dependent transformation with explicit permission, scenario and valid recipients.",
+          "Model the result as a status/character modification only when the game designer defines which characters are eligible."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Ghoul Regeneration",
+      "category": "passive_sustain",
+      "canon_behavior": "Eto survives extreme bodily injury and regenerates significant portions of her body under story-specific conditions.",
+      "activation": "passive",
+      "targeting": "self",
+      "observed_effects": [
+        "Recover serious injuries",
+        "Regrow damaged tissue"
+      ],
+      "suggested_game_logic": [
+        "Use a dedicated regen component attached to her ghoul biology.",
+        "Expose regen rate and what injuries are repairable as tunable parameters.",
+        "Tie extreme events to scripted regeneration states rather than instant immortality."
+      ],
+      "canon_limitations": "Do not infer infinite regeneration, zero cost or invulnerability.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "regeneration"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "regeneration",
+        "mechanic_title": "Self or target tissue repair",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "body_part_health_tick",
+        "explicit_goal": "Eto survives extreme bodily injury and regenerates significant portions of her body under story-specific conditions.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Use a dedicated regen component attached to her ghoul biology. → Expose regen rate and what injuries are repairable as tunable parameters. → Tie extreme events to scripted regeneration states rather than instant immortality.",
+        "execution_steps": [
+          "CHARACTER: Eto Yoshimura — Ghoul Regeneration",
+          "CANON BEHAVIOR: Eto survives extreme bodily injury and regenerates significant portions of her body under story-specific conditions.",
+          "FORM REQUIREMENT: none_specified",
+          "Use a dedicated regen component attached to her ghoul biology.",
+          "Expose regen rate and what injuries are repairable as tunable parameters.",
+          "Tie extreme events to scripted regeneration states rather than instant immortality.",
+          "IMPLEMENTATION FAMILY: Self or target tissue repair",
+          "if not eligible_to_regenerate(target): return",
+          "repairable = classify_injury_parts(target)",
+          "per_tick = compute_regeneration_amount(ability,delta_time)",
+          "restore_health_and_allowed_body_parts(target,repairable,per_tick)",
+          "stop_when_defeated_or_regeneration_is_suppressed()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ghoul_regeneration_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Eto survives extreme bodily injury and regenerates significant portions of her body under story-specific conditions.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not eligible_to_regenerate(target): return\n    repairable = classify_injury_parts(target)\n    per_tick = compute_regeneration_amount(ability,delta_time)\n    restore_health_and_allowed_body_parts(target,repairable,per_tick)\n    stop_when_defeated_or_regeneration_is_suppressed()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "HealthComponent",
+          "BodyPartRegistry"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "healing"
+        ],
+        "design_parameters_to_supply": [
+          "heal_rate",
+          "injury_types",
+          "suppression_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Limb reconstruction requires a body-part model."
+        ],
+        "test_scenarios": [
+          "Ghoul Regeneration: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Ghoul Regeneration: executes the intended self or target tissue repair only for eligible targets.",
+          "Ghoul Regeneration: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Limb reconstruction requires a body-part model."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Eto Yoshimura",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Use a dedicated regen component attached to her ghoul biology.",
+          "Expose regen rate and what injuries are repairable as tunable parameters.",
+          "Tie extreme events to scripted regeneration states rather than instant immortality."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Superhuman Speed and Resilience",
+      "category": "passive_stats",
+      "canon_behavior": "Eto moves too quickly for some opponents to visually track and endures extremely serious impacts.",
+      "activation": "passive",
+      "targeting": "self",
+      "observed_effects": [
+        "Enhanced mobility",
+        "High durability and evasive performance"
+      ],
+      "suggested_game_logic": [
+        "Apply character movement and hit-reaction modifiers as a stat profile.",
+        "Allow tactical AI reposition and evasive movement."
+      ],
+      "canon_limitations": "Canon does not supply numeric speed/durability multipliers.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "passive_trait"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "mobility",
+        "mechanic_title": "Movement controller override",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "physics_motor",
+        "explicit_goal": "Eto moves too quickly for some opponents to visually track and endures extremely serious impacts.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Apply character movement and hit-reaction modifiers as a stat profile. → Allow tactical AI reposition and evasive movement.",
+        "execution_steps": [
+          "CHARACTER: Eto Yoshimura — Superhuman Speed and Resilience",
+          "CANON BEHAVIOR: Eto moves too quickly for some opponents to visually track and endures extremely serious impacts.",
+          "FORM REQUIREMENT: none_specified",
+          "Apply character movement and hit-reaction modifiers as a stat profile.",
+          "Allow tactical AI reposition and evasive movement.",
+          "IMPLEMENTATION FAMILY: Movement controller override",
+          "if not movement_state_allows(actor,ability): return DENIED",
+          "trajectory = plan_movement_path(actor,aim_or_target,config)",
+          "for step in trajectory: move_with_swept_collision(actor,step)",
+          "handle_wall_floor_and_cancel_rules(actor)",
+          "restore_standard_movement_controller_after_action(actor)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_superhuman_speed_and_resilience_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Eto moves too quickly for some opponents to visually track and endures extremely serious impacts.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not movement_state_allows(actor,ability): return DENIED\n    trajectory = plan_movement_path(actor,aim_or_target,config)\n    for step in trajectory: move_with_swept_collision(actor,step)\n    handle_wall_floor_and_cancel_rules(actor)\n    restore_standard_movement_controller_after_action(actor)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "MovementMotor",
+          "PhysicsSweep"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "movement_curve",
+          "speed",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Dash and sustained flight require different motor modes."
+        ],
+        "test_scenarios": [
+          "Superhuman Speed and Resilience: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Superhuman Speed and Resilience: executes the intended movement controller override only for eligible targets.",
+          "Superhuman Speed and Resilience: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Dash and sustained flight require different motor modes."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Eto Yoshimura",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Apply character movement and hit-reaction modifiers as a stat profile.",
+          "Allow tactical AI reposition and evasive movement."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://tokyoghoul.fandom.com/wiki/Eto_Yoshimura",
+    "https://tokyoghoul.fandom.com/wiki/Kagune"
+  ],
+  "source_notes": "Eto is specifically listed as UKAKU and SSS as the One-Eyed Owl. Do not mislabel her as a confirmed Rinkaku hybrid; kakuja is a state, not her base RC type.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 8
+}

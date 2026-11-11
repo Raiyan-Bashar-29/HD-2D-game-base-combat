@@ -1,0 +1,137 @@
+{
+  "id": "character-demon-slayer-kokushibo",
+  "name": "Kokushibo",
+  "aliases": [],
+  "universe": "Demon Slayer",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "melee_offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Moon Breathing",
+      "existing_atlas_entry_ids": [
+        "ability-1530-moon-breathing"
+      ],
+      "canon_behavior": "Kokushibo's sword style is augmented by actual supernatural crescent-shaped Blood Demon Art attacks.",
+      "classification": {
+        "combat_roles": [
+          "melee_offense"
+        ],
+        "mechanic_tags": [
+          "melee"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "unspecified",
+        "delivery_hint": "melee_hitbox"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Run the attack animation and enable a hitbox only during its active frames.",
+        "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "construct_matter",
+        "mechanic_title": "Shape existing or created substance",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "matter_instance_mutation",
+        "explicit_goal": "Kokushibo's sword style is augmented by actual supernatural crescent-shaped Blood Demon Art attacks.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Run the attack animation and enable a hitbox only during its active frames. → Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "execution_steps": [
+          "CHARACTER: Kokushibo — Moon Breathing",
+          "CANON BEHAVIOR: Kokushibo's sword style is augmented by actual supernatural crescent-shaped Blood Demon Art attacks.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Shape existing or created substance",
+          "material = locate_or_generate_allowed_substance(material_kind, actor)",
+          "if material is None: return NO_VALID_MATERIAL",
+          "apply_named_transformation_or_force(material, target_shape_or_motion)",
+          "update_collision_mass_and_attached_effects(material)",
+          "on_release: settle_construct_under_world_physics(material)",
+          "Set material or effect tags to the exact substances named in this ability; enforce their specific environmental dependencies.",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_moon_breathing_demon(ctx, actor, target, cfg):\n    # LORE INTENT: Kokushibo's sword style is augmented by actual supernatural crescent-shaped Blood Demon Art attacks.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    material = locate_or_generate_allowed_substance(material_kind, actor)\n    if material is None: return NO_VALID_MATERIAL\n    apply_named_transformation_or_force(material, target_shape_or_motion)\n    update_collision_mass_and_attached_effects(material)\n    on_release: settle_construct_under_world_physics(material)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "MatterRegistry",
+          "ConstructRig",
+          "PhysicsConstraints"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "material_kind",
+          "control_radius",
+          "mass_limit",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Material source and transmutation rules vary by ability."
+        ],
+        "test_scenarios": [
+          "Moon Breathing: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Moon Breathing: executes the intended shape existing or created substance only for eligible targets.",
+          "Moon Breathing: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Material source and transmutation rules vary by ability."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kokushibo",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

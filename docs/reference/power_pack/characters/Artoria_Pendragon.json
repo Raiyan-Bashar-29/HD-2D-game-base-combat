@@ -1,0 +1,255 @@
+{
+  "id": "character-fate-type-moon-artoria-pendragon",
+  "name": "Artoria Pendragon",
+  "aliases": [],
+  "universe": "Fate / TYPE-MOON",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "ranged_offense",
+    "melee_offense",
+    "unclassified"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Excalibur",
+      "existing_atlas_entry_ids": [
+        "ability-1206-excalibur"
+      ],
+      "canon_behavior": "Artoria's holy sword releases a devastating concentrated beam of light as an Anti-Fortress Noble Phantasm.",
+      "classification": {
+        "combat_roles": [
+          "ranged_offense",
+          "melee_offense"
+        ],
+        "mechanic_tags": [
+          "beam",
+          "melee"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "unspecified",
+        "delivery_hint": "beam"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Start a ray/beam or continuous swept hit volume while the ability is active.",
+        "Resolve hits along the beam and stop on obstruction according to design.",
+        "Run the attack animation and enable a hitbox only during its active frames.",
+        "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "beam_hitscan",
+        "mechanic_title": "Line/beam attack",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "raycast_or_channel_volume",
+        "explicit_goal": "Artoria's holy sword releases a devastating concentrated beam of light as an Anti-Fortress Noble Phantasm.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Start a ray/beam or continuous swept hit volume while the ability is active. → Resolve hits along the beam and stop on obstruction according to design.",
+        "execution_steps": [
+          "CHARACTER: Artoria Pendragon — Excalibur",
+          "CANON BEHAVIOR: Artoria's holy sword releases a devastating concentrated beam of light as an Anti-Fortress Noble Phantasm.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Start a ray/beam or continuous swept hit volume while the ability is active.",
+          "Resolve hits along the beam and stop on obstruction according to design.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Line/beam attack",
+          "ray = cast_ray_or_beam_volume(actor.cast_socket,aim,length,width)",
+          "for hit in order_hits_by_distance(ray):",
+          "    if hit_should_stop_beam(hit): break",
+          "    resolve_typed_hit_once_or_at_defined_tick(hit.target)",
+          "stop_beam_when_channel_finishes()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_excalibur_fate(ctx, actor, target, cfg):\n    # LORE INTENT: Artoria's holy sword releases a devastating concentrated beam of light as an Anti-Fortress Noble Phantasm.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    ray = cast_ray_or_beam_volume(actor.cast_socket,aim,length,width)\n    for hit in order_hits_by_distance(ray):\n        if hit_should_stop_beam(hit): break\n        resolve_typed_hit_once_or_at_defined_tick(hit.target)\n    stop_beam_when_channel_finishes()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "Raycast",
+          "DamageResolver",
+          "BeamVfx"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "beam_length",
+          "width",
+          "channel_duration",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Some beams are projectiles; define the intended travel model."
+        ],
+        "test_scenarios": [
+          "Excalibur: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Excalibur: executes the intended line/beam attack only for eligible targets.",
+          "Excalibur: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Some beams are projectiles; define the intended travel model."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Artoria Pendragon",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Start a ray/beam or continuous swept hit volume while the ability is active.",
+          "Resolve hits along the beam and stop on obstruction according to design.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    },
+    {
+      "name": "Avalon",
+      "existing_atlas_entry_ids": [
+        "ability-1207-avalon"
+      ],
+      "canon_behavior": "Artoria's sheath provides extraordinary protection, including isolation from external interference when its true defense is activated.",
+      "classification": {
+        "combat_roles": [
+          "unclassified"
+        ],
+        "mechanic_tags": [
+          "other"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Define a concrete trigger and observable output for this power.",
+        "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "Artoria's sheath provides extraordinary protection, including isolation from external interference when its true defense is activated.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Define a concrete trigger and observable output for this power. → Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "execution_steps": [
+          "CHARACTER: Artoria Pendragon — Avalon",
+          "CANON BEHAVIOR: Artoria's sheath provides extraordinary protection, including isolation from external interference when its true defense is activated.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_avalon_fate(ctx, actor, target, cfg):\n    # LORE INTENT: Artoria's sheath provides extraordinary protection, including isolation from external interference when its true defense is activated.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [
+          "shield_modifier"
+        ],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "Avalon: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Avalon: executes the intended defensive interception or immunity only for eligible targets.",
+          "Avalon: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Artoria Pendragon",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 2
+}

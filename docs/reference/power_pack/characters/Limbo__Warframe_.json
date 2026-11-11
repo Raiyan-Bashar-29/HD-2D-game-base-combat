@@ -1,0 +1,388 @@
+{
+  "id": "character-warframe-limbo-warframe",
+  "name": "Limbo (Warframe)",
+  "aliases": [
+    "Limbo"
+  ],
+  "universe": "Warframe",
+  "species_or_type": "Warframe",
+  "canon_rank_or_title": "Rift walker",
+  "combat_roles": [
+    "dimensional_controller",
+    "crowd_control",
+    "defense"
+  ],
+  "forms": [
+    {
+      "name": "material_plane",
+      "canon_description": "Normal plane."
+    },
+    {
+      "name": "rift_plane",
+      "canon_description": "Rift dimension state."
+    },
+    {
+      "name": "cataclysm_active",
+      "canon_description": "Localized dimensional bubble."
+    }
+  ],
+  "resource_model": {
+    "source": "Warframe energy",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Rift-state awareness"
+  ],
+  "abilities": [
+    {
+      "name": "Banish",
+      "category": "dimensional_shift",
+      "canon_behavior": "Limbo moves targeted allies or enemies between the material and Rift planes, damaging hostiles and altering their ability to interact across planes.",
+      "activation": "active",
+      "targeting": "selected nearby entities",
+      "observed_effects": [
+        "Rift phase change",
+        "Plane-dependent hit eligibility"
+      ],
+      "suggested_game_logic": [
+        "Give every actor a plane flag: MATERIAL or RIFT.",
+        "Apply Banish only to eligible target; perform permitted damage/transition.",
+        "During every collision and attack check plane compatibility."
+      ],
+      "canon_limitations": "Banish is not ordinary teleport; phase-dependent interactions must be consistent.",
+      "source_urls": [
+        "https://www.warframe.com/en/game/warframes/limbo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-2247-limbo-banish"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "other"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "teleport",
+        "mechanic_title": "Safe destination relocation",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Limbo moves targeted allies or enemies between the material and Rift planes, damaging hostiles and altering their ability to interact across planes.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Give every actor a plane flag: MATERIAL or RIFT. → Apply Banish only to eligible target; perform permitted damage/transition. → During every collision and attack check plane compatibility.",
+        "execution_steps": [
+          "CHARACTER: Limbo (Warframe) — Banish",
+          "CANON BEHAVIOR: Limbo moves targeted allies or enemies between the material and Rift planes, damaging hostiles and altering their ability to interact across planes.",
+          "FORM REQUIREMENT: none_specified",
+          "Give every actor a plane flag: MATERIAL or RIFT.",
+          "Apply Banish only to eligible target; perform permitted damage/transition.",
+          "During every collision and attack check plane compatibility.",
+          "IMPLEMENTATION FAMILY: Safe destination relocation",
+          "destination = resolve_valid_destination(target_or_point)",
+          "if not permitted_by_spatial_rules(actor,destination): return DENIED",
+          "safe_destination = find_collision_free_placement(actor,destination)",
+          "move_actor_atomically(actor,safe_destination)",
+          "replicate_teleport_with_visual_event(actor)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_banish_warframe(ctx, actor, target, cfg):\n    # LORE INTENT: Limbo moves targeted allies or enemies between the material and Rift planes, damaging hostiles and altering their ability to interact across planes.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    destination = resolve_valid_destination(target_or_point)\n    if not permitted_by_spatial_rules(actor,destination): return DENIED\n    safe_destination = find_collision_free_placement(actor,destination)\n    move_actor_atomically(actor,safe_destination)\n    replicate_teleport_with_visual_event(actor)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "SpatialTargetResolver",
+          "TeleportService"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "range",
+          "line_of_sight",
+          "allowed_destinations",
+          "cooldown",
+          "resource_cost",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Do not teleport into unloaded chunks or solid walls."
+        ],
+        "test_scenarios": [
+          "Banish: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Banish: executes the intended safe destination relocation only for eligible targets.",
+          "Banish: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Do not teleport into unloaded chunks or solid walls."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Limbo (Warframe)",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.warframe.com/en/game/warframes/limbo"
+        ],
+        "character_specific_initial_steps": [
+          "Give every actor a plane flag: MATERIAL or RIFT.",
+          "Apply Banish only to eligible target; perform permitted damage/transition.",
+          "During every collision and attack check plane compatibility."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Stasis",
+      "category": "conditional_freeze",
+      "canon_behavior": "Limbo freezes enemies currently in the Rift; Rift-bound enemy projectiles are suspended until Stasis ends.",
+      "activation": "active_toggle",
+      "targeting": "Rift-plane enemies and projectiles",
+      "observed_effects": [
+        "Rift-only immobilization",
+        "Projectile pause/resume"
+      ],
+      "suggested_game_logic": [
+        "Iterate Rift-associated actors only.",
+        "Suspend movement/AI and snapshot in-flight projectiles.",
+        "Resume queued motion on expiry, retaining pre-stasis trajectory."
+      ],
+      "canon_limitations": "Do not freeze every entity in the world.",
+      "source_urls": [
+        "https://www.warframe.com/en/game/warframes/limbo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-2248-limbo-stasis"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile",
+        "crowd_control",
+        "time"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "status_ailment",
+        "mechanic_title": "Timed ailment / movement restraint",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Limbo freezes enemies currently in the Rift; Rift-bound enemy projectiles are suspended until Stasis ends.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Iterate Rift-associated actors only. → Suspend movement/AI and snapshot in-flight projectiles. → Resume queued motion on expiry, retaining pre-stasis trajectory.",
+        "execution_steps": [
+          "CHARACTER: Limbo (Warframe) — Stasis",
+          "CANON BEHAVIOR: Limbo freezes enemies currently in the Rift; Rift-bound enemy projectiles are suspended until Stasis ends.",
+          "FORM REQUIREMENT: none_specified",
+          "Iterate Rift-associated actors only.",
+          "Suspend movement/AI and snapshot in-flight projectiles.",
+          "Resume queued motion on expiry, retaining pre-stasis trajectory.",
+          "IMPLEMENTATION FAMILY: Timed ailment / movement restraint",
+          "if target_resists(status_kind, ability): return RESISTED",
+          "effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)",
+          "on_tick: apply_status_specific_periodic_effect_if_any(effect)",
+          "on_update: recompute_movement_ai_or_cast_permissions(target)",
+          "on_expiry_or_cleanse: remove_instance_and_recalculate(target)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_stasis_warframe(ctx, actor, target, cfg):\n    # LORE INTENT: Limbo freezes enemies currently in the Rift; Rift-bound enemy projectiles are suspended until Stasis ends.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if target_resists(status_kind, ability): return RESISTED\n    effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)\n    on_tick: apply_status_specific_periodic_effect_if_any(effect)\n    on_update: recompute_movement_ai_or_cast_permissions(target)\n    on_expiry_or_cleanse: remove_instance_and_recalculate(target)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "StatusController",
+          "TickScheduler"
+        ],
+        "effect_tags_from_description": [
+          "projectile_emission",
+          "status_effect"
+        ],
+        "design_parameters_to_supply": [
+          "status_kind",
+          "duration",
+          "stacking_rules",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "test_scenarios": [
+          "Stasis: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Stasis: executes the intended timed ailment / movement restraint only for eligible targets.",
+          "Stasis: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Limbo (Warframe)",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.warframe.com/en/game/warframes/limbo"
+        ],
+        "character_specific_initial_steps": [
+          "Iterate Rift-associated actors only.",
+          "Suspend movement/AI and snapshot in-flight projectiles.",
+          "Resume queued motion on expiry, retaining pre-stasis trajectory."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Cataclysm",
+      "category": "dimensional_zone",
+      "canon_behavior": "Limbo opens a temporary Rift pocket in a large area, with an opening and closing blast.",
+      "activation": "active",
+      "targeting": "area around designated point",
+      "observed_effects": [
+        "Temporary planar bubble",
+        "Opening/closing damage"
+      ],
+      "suggested_game_logic": [
+        "Spawn a bubble zone; apply inside/outside plane transitions.",
+        "Track entering/exiting actors and validate cross-boundary attacks.",
+        "On expiration collapse bubble and handle final damage."
+      ],
+      "canon_limitations": "Boundary interaction is more important than a generic AoE damage volume.",
+      "source_urls": [
+        "https://www.warframe.com/en/game/warframes/limbo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-2249-limbo-cataclysm"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "aoe",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Limbo opens a temporary Rift pocket in a large area, with an opening and closing blast.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Spawn a bubble zone; apply inside/outside plane transitions. → Track entering/exiting actors and validate cross-boundary attacks. → On expiration collapse bubble and handle final damage.",
+        "execution_steps": [
+          "CHARACTER: Limbo (Warframe) — Cataclysm",
+          "CANON BEHAVIOR: Limbo opens a temporary Rift pocket in a large area, with an opening and closing blast.",
+          "FORM REQUIREMENT: none_specified",
+          "Spawn a bubble zone; apply inside/outside plane transitions.",
+          "Track entering/exiting actors and validate cross-boundary attacks.",
+          "On expiration collapse bubble and handle final damage.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_cataclysm_warframe(ctx, actor, target, cfg):\n    # LORE INTENT: Limbo opens a temporary Rift pocket in a large area, with an opening and closing blast.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "Cataclysm: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Cataclysm: executes the intended single or repeated moving shot only for eligible targets.",
+          "Cataclysm: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Limbo (Warframe)",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.warframe.com/en/game/warframes/limbo"
+        ],
+        "character_specific_initial_steps": [
+          "Spawn a bubble zone; apply inside/outside plane transitions.",
+          "Track entering/exiting actors and validate cross-boundary attacks.",
+          "On expiration collapse bubble and handle final damage."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://www.warframe.com/en/game/warframes/limbo"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 3
+}

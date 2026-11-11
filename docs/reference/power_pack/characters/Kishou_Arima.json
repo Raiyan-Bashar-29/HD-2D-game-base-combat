@@ -1,0 +1,700 @@
+{
+  "id": "character-tokyo-ghoul-kishou-arima",
+  "name": "Kishou Arima",
+  "aliases": [
+    "CCG Reaper"
+  ],
+  "universe": "Tokyo Ghoul",
+  "species_or_type": "half-human CCG investigator",
+  "canon_rank_or_title": "Special Class investigator",
+  "combat_roles": [
+    "weapon_specialist",
+    "counterfighter",
+    "ranged_offense"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "Uses equipped quinque weapon forms."
+    }
+  ],
+  "resource_model": {
+    "source": "quinque weapons",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Exceptional reaction speed",
+    "Elite swordsmanship",
+    "Strategic combat reading"
+  ],
+  "abilities": [
+    {
+      "name": "IXA: Spear Form",
+      "category": "weapon_mode",
+      "canon_behavior": "Arima wields IXA as a lance-like koukaku quinque for piercing close combat.",
+      "activation": "active",
+      "targeting": "melee foe",
+      "observed_effects": [
+        "Thrust / pierce"
+      ],
+      "suggested_game_logic": [
+        "Equip IXA; switch to spear form.",
+        "Use a narrow forward swept thrust collider during attack frames."
+      ],
+      "canon_limitations": "IXA mode changes should be animated; numeric reach is design-specific.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1473-ixa"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "weapon_mode",
+        "melee"
+      ],
+      "form_requirement": "ixa_spear",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Arima wields IXA as a lance-like koukaku quinque for piercing close combat.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Equip IXA; switch to spear form. → Use a narrow forward swept thrust collider during attack frames.",
+        "execution_steps": [
+          "CHARACTER: Kishou Arima — IXA: Spear Form",
+          "CANON BEHAVIOR: Arima wields IXA as a lance-like koukaku quinque for piercing close combat.",
+          "FORM REQUIREMENT: ixa_spear",
+          "Equip IXA; switch to spear form.",
+          "Use a narrow forward swept thrust collider during attack frames.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ixa_spear_form_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Arima wields IXA as a lance-like koukaku quinque for piercing close combat.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "IXA: Spear Form: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "IXA: Spear Form: executes the intended single or repeated moving shot only for eligible targets.",
+          "IXA: Spear Form: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kishou Arima",
+        "form_requirements": "ixa_spear",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+        ],
+        "character_specific_initial_steps": [
+          "Equip IXA; switch to spear form.",
+          "Use a narrow forward swept thrust collider during attack frames."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "IXA: Shield Form",
+      "category": "weapon_mode",
+      "canon_behavior": "IXA transforms into a robust shield capable of blocking powerful attacks.",
+      "activation": "active_or_hold",
+      "targeting": "self / incoming attack",
+      "observed_effects": [
+        "Interception / block"
+      ],
+      "suggested_game_logic": [
+        "Transition IXA to shield state.",
+        "Rotate block volume toward threat; evaluate block arc and hit resistance."
+      ],
+      "canon_limitations": "A universal 360-degree invulnerability shield is not established.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1473-ixa"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "transformation",
+        "shield"
+      ],
+      "form_requirement": "ixa_shield",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "IXA transforms into a robust shield capable of blocking powerful attacks.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Transition IXA to shield state. → Rotate block volume toward threat; evaluate block arc and hit resistance.",
+        "execution_steps": [
+          "CHARACTER: Kishou Arima — IXA: Shield Form",
+          "CANON BEHAVIOR: IXA transforms into a robust shield capable of blocking powerful attacks.",
+          "FORM REQUIREMENT: ixa_shield",
+          "Transition IXA to shield state.",
+          "Rotate block volume toward threat; evaluate block arc and hit resistance.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ixa_shield_form_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: IXA transforms into a robust shield capable of blocking powerful attacks.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "form_change",
+          "shield_modifier"
+        ],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "IXA: Shield Form: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "IXA: Shield Form: executes the intended defensive interception or immunity only for eligible targets.",
+          "IXA: Shield Form: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kishou Arima",
+        "form_requirements": "ixa_shield",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+        ],
+        "character_specific_initial_steps": [
+          "Transition IXA to shield state.",
+          "Rotate block volume toward threat; evaluate block arc and hit resistance."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "IXA: Pursuing Tentacles",
+      "category": "weapon_mode",
+      "canon_behavior": "IXA can deploy a second offensive configuration with targeting tentacle-like branches for piercing enemies.",
+      "activation": "active",
+      "targeting": "selected opponent",
+      "observed_effects": [
+        "Pursuing pierce attacks"
+      ],
+      "suggested_game_logic": [
+        "Enter extended IXA offense state.",
+        "Spawn controlled extending weapon segments that follow a target within chosen constraints.",
+        "Resolve piercing hit then retract segments."
+      ],
+      "canon_limitations": "Speed, lock-on angle and range unspecified.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1473-ixa"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "other"
+      ],
+      "form_requirement": "ixa_tendrils",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "IXA can deploy a second offensive configuration with targeting tentacle-like branches for piercing enemies.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Enter extended IXA offense state. → Spawn controlled extending weapon segments that follow a target within chosen constraints. → Resolve piercing hit then retract segments.",
+        "execution_steps": [
+          "CHARACTER: Kishou Arima — IXA: Pursuing Tentacles",
+          "CANON BEHAVIOR: IXA can deploy a second offensive configuration with targeting tentacle-like branches for piercing enemies.",
+          "FORM REQUIREMENT: ixa_tendrils",
+          "Enter extended IXA offense state.",
+          "Spawn controlled extending weapon segments that follow a target within chosen constraints.",
+          "Resolve piercing hit then retract segments.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ixa_pursuing_tentacles_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: IXA can deploy a second offensive configuration with targeting tentacle-like branches for piercing enemies.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "IXA: Pursuing Tentacles: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "IXA: Pursuing Tentacles: executes the intended melee animation with active frames only for eligible targets.",
+          "IXA: Pursuing Tentacles: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kishou Arima",
+        "form_requirements": "ixa_tendrils",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+        ],
+        "character_specific_initial_steps": [
+          "Enter extended IXA offense state.",
+          "Spawn controlled extending weapon segments that follow a target within chosen constraints.",
+          "Resolve piercing hit then retract segments."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Narukami: Guided RC Lightning",
+      "category": "ranged_attack",
+      "canon_behavior": "Narukami fires condensed Rc-cell bolts with a lightning-like appearance that can home toward targets.",
+      "activation": "active",
+      "targeting": "enemy lock-on",
+      "observed_effects": [
+        "Tracking RC bolt damage"
+      ],
+      "suggested_game_logic": [
+        "Switch Narukami to firing mode.",
+        "Acquire target and spawn guiding projectiles using a steering controller.",
+        "On contact apply physical/RC damage; do not assume ordinary electrical physics."
+      ],
+      "canon_limitations": "Appearance resembles lightning; its origin is an ukaku quinque and condensed RC cells.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1471-narukami"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile",
+        "damage"
+      ],
+      "form_requirement": "narukami_ranged",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "Narukami fires condensed Rc-cell bolts with a lightning-like appearance that can home toward targets.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Switch Narukami to firing mode. → Acquire target and spawn guiding projectiles using a steering controller. → On contact apply physical/RC damage; do not assume ordinary electrical physics.",
+        "execution_steps": [
+          "CHARACTER: Kishou Arima — Narukami: Guided RC Lightning",
+          "CANON BEHAVIOR: Narukami fires condensed Rc-cell bolts with a lightning-like appearance that can home toward targets.",
+          "FORM REQUIREMENT: narukami_ranged",
+          "Switch Narukami to firing mode.",
+          "Acquire target and spawn guiding projectiles using a steering controller.",
+          "On contact apply physical/RC damage; do not assume ordinary electrical physics.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_narukami_guided_rc_lightning_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Narukami fires condensed Rc-cell bolts with a lightning-like appearance that can home toward targets.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "Narukami: Guided RC Lightning: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Narukami: Guided RC Lightning: executes the intended defensive interception or immunity only for eligible targets.",
+          "Narukami: Guided RC Lightning: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kishou Arima",
+        "form_requirements": "narukami_ranged",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+        ],
+        "character_specific_initial_steps": [
+          "Switch Narukami to firing mode.",
+          "Acquire target and spawn guiding projectiles using a steering controller.",
+          "On contact apply physical/RC damage; do not assume ordinary electrical physics."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Narukami: Blade Form",
+      "category": "weapon_mode",
+      "canon_behavior": "The satellite panels combine into a rapier-like melee blade.",
+      "activation": "active",
+      "targeting": "close-range enemy",
+      "observed_effects": [
+        "Melee slash / pierce"
+      ],
+      "suggested_game_logic": [
+        "Join weapon pieces into sword mesh.",
+        "Switch from projectile to melee attack set."
+      ],
+      "canon_limitations": "Use a separate state from Narukami ranged mode.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1471-narukami"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "narukami_blade",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "legacy_tag_fallback",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "The satellite panels combine into a rapier-like melee blade.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Join weapon pieces into sword mesh. → Switch from projectile to melee attack set.",
+        "execution_steps": [
+          "CHARACTER: Kishou Arima — Narukami: Blade Form",
+          "CANON BEHAVIOR: The satellite panels combine into a rapier-like melee blade.",
+          "FORM REQUIREMENT: narukami_blade",
+          "Join weapon pieces into sword mesh.",
+          "Switch from projectile to melee attack set.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_narukami_blade_form_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: The satellite panels combine into a rapier-like melee blade.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Narukami: Blade Form: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Narukami: Blade Form: executes the intended melee animation with active frames only for eligible targets.",
+          "Narukami: Blade Form: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kishou Arima",
+        "form_requirements": "narukami_blade",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+        ],
+        "character_specific_initial_steps": [
+          "Join weapon pieces into sword mesh.",
+          "Switch from projectile to melee attack set."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Owl Quinque",
+      "category": "weapon_attack",
+      "canon_behavior": "Arima uses a large ukaku quinque blade that can also release concentrated Rc projectiles and remote attacks.",
+      "activation": "active",
+      "targeting": "enemy / ground position",
+      "observed_effects": [
+        "Large blade strikes",
+        "RC projectile variants"
+      ],
+      "suggested_game_logic": [
+        "Select melee or projectile subaction.",
+        "Use remote blade object state only on its specifically configured ability."
+      ],
+      "canon_limitations": "Not the same entity as Eto herself.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1472-owl"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile",
+        "weapon_mode",
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Arima uses a large ukaku quinque blade that can also release concentrated Rc projectiles and remote attacks.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Select melee or projectile subaction. → Use remote blade object state only on its specifically configured ability.",
+        "execution_steps": [
+          "CHARACTER: Kishou Arima — Owl Quinque",
+          "CANON BEHAVIOR: Arima uses a large ukaku quinque blade that can also release concentrated Rc projectiles and remote attacks.",
+          "FORM REQUIREMENT: none_specified",
+          "Select melee or projectile subaction.",
+          "Use remote blade object state only on its specifically configured ability.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_owl_quinque_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Arima uses a large ukaku quinque blade that can also release concentrated Rc projectiles and remote attacks.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [
+          "projectile_emission",
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "Owl Quinque: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Owl Quinque: executes the intended single or repeated moving shot only for eligible targets.",
+          "Owl Quinque: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kishou Arima",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+        ],
+        "character_specific_initial_steps": [
+          "Select melee or projectile subaction.",
+          "Use remote blade object state only on its specifically configured ability."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://tokyoghoul.fandom.com/wiki/Kishou_Arima"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 6
+}

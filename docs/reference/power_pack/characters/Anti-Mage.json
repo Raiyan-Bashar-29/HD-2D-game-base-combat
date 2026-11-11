@@ -1,0 +1,147 @@
+{
+  "id": "character-dota-2-anti-mage",
+  "name": "Anti-Mage",
+  "aliases": [],
+  "universe": "Dota 2",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "resource_management",
+    "offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Anti-Mage: Mana Void",
+      "existing_atlas_entry_ids": [
+        "ability-2661-anti-mage-mana-void"
+      ],
+      "canon_behavior": "Detonates damage around an enemy based on the mana that enemy is missing.",
+      "classification": {
+        "combat_roles": [
+          "resource_management",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "resource",
+          "damage"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Check and consume the relevant power resource or material.",
+        "Update the character state and user interface.",
+        "Resolve relevant hit targets and attack properties.",
+        "Apply typed damage through the combat resolver, then post impact events.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "explosion_aoe",
+        "mechanic_title": "Radial wave or explosion",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "radius_query",
+        "explicit_goal": "Detonates damage around an enemy based on the mana that enemy is missing.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Check and consume the relevant power resource or material. → Update the character state and user interface.",
+        "execution_steps": [
+          "CHARACTER: Anti-Mage — Anti-Mage: Mana Void",
+          "CANON BEHAVIOR: Detonates damage around an enemy based on the mana that enemy is missing.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Check and consume the relevant power resource or material.",
+          "Update the character state and user interface.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Radial wave or explosion",
+          "center = determine_impact_or_cast_center(actor,target)",
+          "targets = unique_targets_in_radius(center,radius)",
+          "for entity in targets:",
+          "    strength = compute_optional_distance_falloff(entity,center)",
+          "    apply_named_impact_knockback_or_damage(entity,strength)",
+          "spawn_one_off_environment_visual(center)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_anti_mage_mana_void_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Detonates damage around an enemy based on the mana that enemy is missing.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    center = determine_impact_or_cast_center(actor,target)\n    targets = unique_targets_in_radius(center,radius)\n    for entity in targets:\n        strength = compute_optional_distance_falloff(entity,center)\n        apply_named_impact_knockback_or_damage(entity,strength)\n    spawn_one_off_environment_visual(center)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AoEQuery",
+          "Falloff",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "radius",
+          "damage_falloff",
+          "environment_effect",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Protect from duplicate hits on overlapping colliders."
+        ],
+        "test_scenarios": [
+          "Anti-Mage: Mana Void: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Anti-Mage: Mana Void: executes the intended radial wave or explosion only for eligible targets.",
+          "Anti-Mage: Mana Void: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Protect from duplicate hits on overlapping colliders."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Anti-Mage",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Check and consume the relevant power resource or material.",
+          "Update the character state and user interface.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

@@ -1,0 +1,135 @@
+{
+  "id": "character-hellsing-anderson",
+  "name": "Anderson",
+  "aliases": [],
+  "universe": "Hellsing",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "support"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Regenerator's Blessing",
+      "existing_atlas_entry_ids": [
+        "ability-2956-regenerator-s-blessing"
+      ],
+      "canon_behavior": "Anderson's sacred weapon augmentation drives extreme healing in battle.",
+      "classification": {
+        "combat_roles": [
+          "support"
+        ],
+        "mechanic_tags": [
+          "heal"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Validate that the selected recipient is eligible.",
+        "Restore health or repair qualifying injury and emit a heal event.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "regeneration",
+        "mechanic_title": "Self or target tissue repair",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "body_part_health_tick",
+        "explicit_goal": "Anderson's sacred weapon augmentation drives extreme healing in battle.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Validate that the selected recipient is eligible. → Restore health or repair qualifying injury and emit a heal event.",
+        "execution_steps": [
+          "CHARACTER: Anderson — Regenerator's Blessing",
+          "CANON BEHAVIOR: Anderson's sacred weapon augmentation drives extreme healing in battle.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Self or target tissue repair",
+          "if not eligible_to_regenerate(target): return",
+          "repairable = classify_injury_parts(target)",
+          "per_tick = compute_regeneration_amount(ability,delta_time)",
+          "restore_health_and_allowed_body_parts(target,repairable,per_tick)",
+          "stop_when_defeated_or_regeneration_is_suppressed()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_regenerator_s_blessing_hellsing(ctx, actor, target, cfg):\n    # LORE INTENT: Anderson's sacred weapon augmentation drives extreme healing in battle.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not eligible_to_regenerate(target): return\n    repairable = classify_injury_parts(target)\n    per_tick = compute_regeneration_amount(ability,delta_time)\n    restore_health_and_allowed_body_parts(target,repairable,per_tick)\n    stop_when_defeated_or_regeneration_is_suppressed()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "HealthComponent",
+          "BodyPartRegistry"
+        ],
+        "effect_tags_from_description": [
+          "healing"
+        ],
+        "design_parameters_to_supply": [
+          "heal_rate",
+          "injury_types",
+          "suppression_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Limb reconstruction requires a body-part model."
+        ],
+        "test_scenarios": [
+          "Regenerator's Blessing: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Regenerator's Blessing: executes the intended self or target tissue repair only for eligible targets.",
+          "Regenerator's Blessing: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Limb reconstruction requires a body-part model."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Anderson",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

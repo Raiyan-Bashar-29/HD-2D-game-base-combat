@@ -1,0 +1,374 @@
+{
+  "id": "character-fate-type-moon-gilgamesh",
+  "name": "Gilgamesh",
+  "aliases": [],
+  "universe": "Fate / TYPE-MOON",
+  "species_or_type": "Heroic Spirit / Servant (Archer)",
+  "canon_rank_or_title": "King of Heroes",
+  "combat_roles": [
+    "ranged_weapon_barrage",
+    "binding",
+    "finisher"
+  ],
+  "forms": [
+    {
+      "name": "standard",
+      "canon_description": "Treasury access via portals."
+    },
+    {
+      "name": "ea_active",
+      "canon_description": "Anti-World Noble Phantasm activated."
+    }
+  ],
+  "resource_model": {
+    "source": "magical energy / Noble Phantasm activation",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Treasury containing many legendary weapons"
+  ],
+  "abilities": [
+    {
+      "name": "Gate of Babylon",
+      "category": "weapon_portal_barrage",
+      "canon_behavior": "Gilgamesh opens golden portals from a treasury and fires stored weapons at opponents.",
+      "activation": "active",
+      "targeting": "one or multiple enemies",
+      "observed_effects": [
+        "Portal spawned weapons",
+        "Projectile barrages"
+      ],
+      "suggested_game_logic": [
+        "Instantiate weapon-portals with placement offsets.",
+        "Spawn owned treasury-weapon projectiles in selected patterns.",
+        "Apply hit logic for each weapon and clean up portals."
+      ],
+      "canon_limitations": "Stored weapon composition and firing rates vary by depiction.",
+      "source_urls": [
+        "https://typemoon.fandom.com/wiki/Noble_Phantasm"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1204-gate-of-babylon"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile",
+        "teleport",
+        "space"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "portal_link",
+        "mechanic_title": "Paired spatial portal",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "linked_collision_portals",
+        "explicit_goal": "Gilgamesh opens golden portals from a treasury and fires stored weapons at opponents.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Instantiate weapon-portals with placement offsets. → Spawn owned treasury-weapon projectiles in selected patterns. → Apply hit logic for each weapon and clean up portals.",
+        "execution_steps": [
+          "CHARACTER: Gilgamesh — Gate of Babylon",
+          "CANON BEHAVIOR: Gilgamesh opens golden portals from a treasury and fires stored weapons at opponents.",
+          "FORM REQUIREMENT: none_specified",
+          "Instantiate weapon-portals with placement offsets.",
+          "Spawn owned treasury-weapon projectiles in selected patterns.",
+          "Apply hit logic for each weapon and clean up portals.",
+          "IMPLEMENTATION FAMILY: Paired spatial portal",
+          "entry, exit = validate_portal_anchors(actor, points)",
+          "pair = portal_registry.create_bidirectional_or_oneway(entry, exit)",
+          "on_entity_cross(pair.entry, lambda e: portal_transform(e, pair.exit))",
+          "transform_velocity_and_orientation_consistently(e)",
+          "on_close: unregister_both_portal_surfaces(pair)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_gate_of_babylon_fate(ctx, actor, target, cfg):\n    # LORE INTENT: Gilgamesh opens golden portals from a treasury and fires stored weapons at opponents.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    entry, exit = validate_portal_anchors(actor, points)\n    pair = portal_registry.create_bidirectional_or_oneway(entry, exit)\n    on_entity_cross(pair.entry, lambda e: portal_transform(e, pair.exit))\n    transform_velocity_and_orientation_consistently(e)\n    on_close: unregister_both_portal_surfaces(pair)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "PortalRegistry",
+          "CollisionTransport"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "exit_location",
+          "lifetime",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Avoid portal-recursion when exits overlap."
+        ],
+        "test_scenarios": [
+          "Gate of Babylon: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Gate of Babylon: executes the intended paired spatial portal only for eligible targets.",
+          "Gate of Babylon: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Avoid portal-recursion when exits overlap."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Gilgamesh",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://typemoon.fandom.com/wiki/Noble_Phantasm"
+        ],
+        "character_specific_initial_steps": [
+          "Instantiate weapon-portals with placement offsets.",
+          "Spawn owned treasury-weapon projectiles in selected patterns.",
+          "Apply hit logic for each weapon and clean up portals."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Ea — Enuma Elish",
+      "category": "anti_world_finisher",
+      "canon_behavior": "Gilgamesh invokes Ea to release a violent reality-rending Anti-World attack.",
+      "activation": "special_activation",
+      "targeting": "target space / opponent",
+      "observed_effects": [
+        "Large destructive spatial attack"
+      ],
+      "suggested_game_logic": [
+        "Require Ea equipped and its specific charge/activation sequence.",
+        "Create large directed slash/field event with world-affecting VFX and restricted collision behavior."
+      ],
+      "canon_limitations": "Anti-World designation should not be treated as unrestricted multiverse deletion.",
+      "source_urls": [
+        "https://typemoon.fandom.com/wiki/Noble_Phantasm"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1203-ea-enuma-elish"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "space",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "world_rending_burst",
+        "mechanic_title": "Ultimate directional discharge",
+        "semantic_route_evidence": "curated_explicit_override",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Gilgamesh invokes Ea to release a violent reality-rending Anti-World attack.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Require Ea equipped and its specific charge/activation sequence. → Create large directed slash/field event with world-affecting VFX and restricted collision behavior.",
+        "execution_steps": [
+          "CHARACTER: Gilgamesh — Ea — Enuma Elish",
+          "CANON BEHAVIOR: Gilgamesh invokes Ea to release a violent reality-rending Anti-World attack.",
+          "FORM REQUIREMENT: none_specified",
+          "Require Ea equipped and its specific charge/activation sequence.",
+          "Create large directed slash/field event with world-affecting VFX and restricted collision behavior.",
+          "IMPLEMENTATION FAMILY: Ultimate directional discharge",
+          "Spawn a directional world-rending discharge with an area/volume query, not literal universe deletion by default.",
+          "Resolve each target through a configured anti-world resistance/counter rule; apply damage and world-visual distortion.",
+          "Record affected targets once per intended hit and clear discharge objects after the active window."
+        ],
+        "pseudocode": "def execute_ea_enuma_elish_fate(ctx, actor, target, cfg):\n    # LORE INTENT: Gilgamesh invokes Ea to release a violent reality-rending Anti-World attack.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    # Validate the equipped Noble Phantasm and special-attack state; do not treat the sword as a mundane melee slash.\n    # Start multi-stage rotating-sword windup; set interruption and resource rules in the game design.\n    # Spawn a directional world-rending discharge with an area/volume query, not literal universe deletion by default.\n    # Resolve each target through a configured anti-world resistance/counter rule; apply damage and world-visual distortion.\n    # Record affected targets once per intended hit and clear discharge objects after the active window.\n    assert can_cast(actor, ability, state)\n    area = sweep_volumetric_discharge(actor.cast_origin, aim, range_cfg)\n    for target in sorted_targets(area):\n        apply_typed_hit_once(target, ability, damage_cfg, bypass_rules)\n    emit_world_distortion_visuals(area); end_cast(actor, ability)\n    tx.commit_if_valid(); ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "UltimateState",
+          "AreaQuery",
+          "TypedDamage",
+          "WorldEffect"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "world_rule"
+        ],
+        "design_parameters_to_supply": [
+          "cast_eligibility",
+          "area_shape",
+          "resistance_exceptions",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Targets are resolved once despite lingering visual effects."
+        ],
+        "test_scenarios": [
+          "Ea — Enuma Elish: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Ea — Enuma Elish: executes the intended ultimate directional discharge only for eligible targets.",
+          "Ea — Enuma Elish: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Targets are resolved once despite lingering visual effects."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Gilgamesh",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://typemoon.fandom.com/wiki/Noble_Phantasm"
+        ],
+        "character_specific_initial_steps": [
+          "Require Ea equipped and its specific charge/activation sequence.",
+          "Create large directed slash/field event with world-affecting VFX and restricted collision behavior."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Enkidu Chains",
+      "category": "binding",
+      "canon_behavior": "Chains associated with Enkidu bind targets and are especially effective against divine beings under TYPE-MOON rules.",
+      "activation": "active",
+      "targeting": "chosen target",
+      "observed_effects": [
+        "Bind/immobilize",
+        "Trait-sensitive effectiveness"
+      ],
+      "suggested_game_logic": [
+        "Spawn chain projectiles or tether volumes.",
+        "Check target divine trait and apply special strength modifier if applicable.",
+        "Bind until break/release condition."
+      ],
+      "canon_limitations": "Trait interaction is more specific than generic root/stun.",
+      "source_urls": [
+        "https://typemoon.fandom.com/wiki/Noble_Phantasm"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1216-enkidu-chains-of-heaven"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "crowd_control"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "status_ailment",
+        "mechanic_title": "Timed ailment / movement restraint",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Chains associated with Enkidu bind targets and are especially effective against divine beings under TYPE-MOON rules.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Spawn chain projectiles or tether volumes. → Check target divine trait and apply special strength modifier if applicable. → Bind until break/release condition.",
+        "execution_steps": [
+          "CHARACTER: Gilgamesh — Enkidu Chains",
+          "CANON BEHAVIOR: Chains associated with Enkidu bind targets and are especially effective against divine beings under TYPE-MOON rules.",
+          "FORM REQUIREMENT: none_specified",
+          "Spawn chain projectiles or tether volumes.",
+          "Check target divine trait and apply special strength modifier if applicable.",
+          "Bind until break/release condition.",
+          "IMPLEMENTATION FAMILY: Timed ailment / movement restraint",
+          "if target_resists(status_kind, ability): return RESISTED",
+          "effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)",
+          "on_tick: apply_status_specific_periodic_effect_if_any(effect)",
+          "on_update: recompute_movement_ai_or_cast_permissions(target)",
+          "on_expiry_or_cleanse: remove_instance_and_recalculate(target)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_enkidu_chains_fate(ctx, actor, target, cfg):\n    # LORE INTENT: Chains associated with Enkidu bind targets and are especially effective against divine beings under TYPE-MOON rules.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if target_resists(status_kind, ability): return RESISTED\n    effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)\n    on_tick: apply_status_specific_periodic_effect_if_any(effect)\n    on_update: recompute_movement_ai_or_cast_permissions(target)\n    on_expiry_or_cleanse: remove_instance_and_recalculate(target)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "StatusController",
+          "TickScheduler"
+        ],
+        "effect_tags_from_description": [
+          "status_effect"
+        ],
+        "design_parameters_to_supply": [
+          "status_kind",
+          "duration",
+          "stacking_rules",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "test_scenarios": [
+          "Enkidu Chains: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Enkidu Chains: executes the intended timed ailment / movement restraint only for eligible targets.",
+          "Enkidu Chains: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Gilgamesh",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://typemoon.fandom.com/wiki/Noble_Phantasm"
+        ],
+        "character_specific_initial_steps": [
+          "Spawn chain projectiles or tether volumes.",
+          "Check target divine trait and apply special strength modifier if applicable.",
+          "Bind until break/release condition."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://typemoon.fandom.com/wiki/Noble_Phantasm"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 3
+}

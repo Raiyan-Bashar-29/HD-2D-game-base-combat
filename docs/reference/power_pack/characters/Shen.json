@@ -1,0 +1,135 @@
+{
+  "id": "character-league-of-legends-runeterra-shen",
+  "name": "Shen",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "defense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Shen: Stand United",
+      "existing_atlas_entry_ids": [
+        "ability-2638-shen-stand-united"
+      ],
+      "canon_behavior": "Shields a distant ally, then teleports to that ally to protect them.",
+      "classification": {
+        "combat_roles": [
+          "defense"
+        ],
+        "mechanic_tags": [
+          "shield"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "defense_field"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Create or enable a defensive volume or temporary defense modifier.",
+        "Intercept eligible incoming hits and process block, reflect or mitigation logic.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "teleport",
+        "mechanic_title": "Safe destination relocation",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Shields a distant ally, then teleports to that ally to protect them.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Create or enable a defensive volume or temporary defense modifier. → Intercept eligible incoming hits and process block, reflect or mitigation logic.",
+        "execution_steps": [
+          "CHARACTER: Shen — Shen: Stand United",
+          "CANON BEHAVIOR: Shields a distant ally, then teleports to that ally to protect them.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create or enable a defensive volume or temporary defense modifier.",
+          "Intercept eligible incoming hits and process block, reflect or mitigation logic.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Safe destination relocation",
+          "destination = resolve_valid_destination(target_or_point)",
+          "if not permitted_by_spatial_rules(actor,destination): return DENIED",
+          "safe_destination = find_collision_free_placement(actor,destination)",
+          "move_actor_atomically(actor,safe_destination)",
+          "replicate_teleport_with_visual_event(actor)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_shen_stand_united_league(ctx, actor, target, cfg):\n    # LORE INTENT: Shields a distant ally, then teleports to that ally to protect them.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    destination = resolve_valid_destination(target_or_point)\n    if not permitted_by_spatial_rules(actor,destination): return DENIED\n    safe_destination = find_collision_free_placement(actor,destination)\n    move_actor_atomically(actor,safe_destination)\n    replicate_teleport_with_visual_event(actor)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "SpatialTargetResolver",
+          "TeleportService"
+        ],
+        "effect_tags_from_description": [
+          "teleportation",
+          "shield_modifier"
+        ],
+        "design_parameters_to_supply": [
+          "range",
+          "line_of_sight",
+          "allowed_destinations",
+          "cooldown",
+          "resource_cost",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Do not teleport into unloaded chunks or solid walls."
+        ],
+        "test_scenarios": [
+          "Shen: Stand United: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shen: Stand United: executes the intended safe destination relocation only for eligible targets.",
+          "Shen: Stand United: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Do not teleport into unloaded chunks or solid walls."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Shen",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create or enable a defensive volume or temporary defense modifier.",
+          "Intercept eligible incoming hits and process block, reflect or mitigation logic.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

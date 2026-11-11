@@ -1,0 +1,134 @@
+{
+  "id": "character-league-of-legends-runeterra-kindred",
+  "name": "Kindred",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "area_control"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Kindred: Lamb's Respite",
+      "existing_atlas_entry_ids": [
+        "ability-2635-kindred-lamb-s-respite"
+      ],
+      "canon_behavior": "Creates a zone where units cannot fall below a lethal-health threshold until the effect ends.",
+      "classification": {
+        "combat_roles": [
+          "area_control"
+        ],
+        "mechanic_tags": [
+          "aoe"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "area_or_field"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Create an area-shaped query or persistent effect zone around the cast point.",
+        "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "heal",
+        "mechanic_title": "Healing and cleansing",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "health_delta",
+        "explicit_goal": "Creates a zone where units cannot fall below a lethal-health threshold until the effect ends.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Create an area-shaped query or persistent effect zone around the cast point. → Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "execution_steps": [
+          "CHARACTER: Kindred — Kindred: Lamb's Respite",
+          "CANON BEHAVIOR: Creates a zone where units cannot fall below a lethal-health threshold until the effect ends.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Healing and cleansing",
+          "assert is_valid_heal_target(actor,target)",
+          "healed = clamp_healing_to_missing_health(target,configured_amount)",
+          "health.apply_healing(target,healed)",
+          "if specified: cleanse_selected_status_tags(target)",
+          "emit_health_change_and_heal_visuals()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_kindred_lamb_s_respite_league(ctx, actor, target, cfg):\n    # LORE INTENT: Creates a zone where units cannot fall below a lethal-health threshold until the effect ends.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert is_valid_heal_target(actor,target)\n    healed = clamp_healing_to_missing_health(target,configured_amount)\n    health.apply_healing(target,healed)\n    if specified: cleanse_selected_status_tags(target)\n    emit_health_change_and_heal_visuals()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "HealthSystem",
+          "StatusController"
+        ],
+        "effect_tags_from_description": [
+          "healing"
+        ],
+        "design_parameters_to_supply": [
+          "healing_amount",
+          "target_filter",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Healing should not revive dead actors without revival rules."
+        ],
+        "test_scenarios": [
+          "Kindred: Lamb's Respite: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Kindred: Lamb's Respite: executes the intended healing and cleansing only for eligible targets.",
+          "Kindred: Lamb's Respite: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Healing should not revive dead actors without revival rules."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Kindred",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}
