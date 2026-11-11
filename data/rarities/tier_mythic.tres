@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Rarity" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/gear/rarity.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"rarity/tier_mythic"
+name_key = "ui.rarity.mythic"
+rank = 5
+color = Color(0.95, 0.3, 0.3, 1)
+stat_scale = 2.0
+drop_weight = 0.01
+affixes = 5
+sockets = 3
+max_upgrade = 15

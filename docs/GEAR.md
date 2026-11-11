@@ -160,7 +160,7 @@ worn set. The rules:
   piece on empties those slots; putting a piece into one of them takes the blocker off. A
   two-handed sword is `blocks = [offhand]`. A file that blocks its own slot is a problem.
 
-Still to come: the weapon's own attack chain (with special gear, C7.3); a foe dropping what it wears (C7.2).
+Still to come: the weapon's own attack chain (with special gear, C7.3). A foe drops what it wears when its `loot_table` lists the piece (C7.2).
 
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
@@ -182,6 +182,33 @@ kind, never dropped at random, never dismantled: IXA, Ea).
 (`Flags` key), plus `rolls`. `Encounter.loot` stays as the guaranteed list; a new
 `Encounter.loot_table` and `CombatantDef.loot_table` add the rolled part through
 `Rewards.give`, with the seeded `rng`.
+
+**As built (C7.2, combat 0.67.0).**
+
+- **A tier is a file**, `data/rarities/<name>.tres`, id `rarity/<name>`, found through
+  `RarityDb`. Seven sample tiers ship, as `tier_common.tres` and so on (the `tier_` prefix
+  keeps a plain word like "common" from counting as a demo name in `check_boundary`) (Common 1.0, Uncommon 1.15, Rare 1.3, Epic 1.5,
+  Legendary 1.75, Mythic 2.0, and Signature with `drop_weight` 0). No code names a tier; a
+  game edits, adds or deletes the files.
+- **A piece names its tier** in `GearDefinition.rarity`. Empty means plain.
+- **`stat_scale` is live.** `GearDefinition.all_modifiers()` returns every stat change at the
+  tier's size: an added amount is multiplied, a multiplier keeps its distance from 1
+  multiplied (x1.2 at scale 1.5 is x1.3), an override is left alone.
+- **`drop_weight` is live.** In a rolled table, a gear line's weight is multiplied by its
+  tier's `drop_weight`. 0 means the piece is never rolled; a guaranteed `loot` list still
+  gives it.
+- **`color`, `affixes`, `sockets` and `max_upgrade` are declared and not yet read:** the gear
+  screen (C7.5), affixes (C7.2b) and sockets and upgrading (C7.4) read them.
+- **A `LootTable`** has `rolls` and `entries`. Each `LootEntry` has `item_id` (empty means
+  "nothing this time"), `weight`, `min_count` to `max_count`, and `needs_flag` (the line is in
+  the table only while that flag is true).
+- **`LootRoll.roll(table, rng)`** draws one line per roll by weight and returns one item id per
+  item. It uses the `rng` it is handed, so a seeded fight drops the same things.
+- **Where tables go:** `Encounter.loot_table` (rolled on a win), `CombatantDef.loot_table`
+  (rolled on a win for each enemy of the encounter, and by a field enemy when it falls, added
+  to its own `loot`). `Rewards.grant` gives the guaranteed list first, then the encounter's
+  roll, then each enemy's.
+- **Not built here:** a luck stat on the weights, and money drops (C7.6 brings money).
 
 **Affixes.** An `Affix` is a named extra modifier with a range ("of Embers": `fire_power`
 +5 to +10 %). A rolled piece's affixes are saved in `Flags` under the piece's instance key.
@@ -598,7 +625,7 @@ weapons themselves.
 | C7.1a | Gear as data, worn (built): `GearDefinition`, `GearType`, `GearRules`, `GearDb`, `GearSet`; modifiers on the wearer; saved in `Flags` | — |
 | C7.1b | Gear in a fight (built): starting gear on a `CombatantDef`; `GearSet.fit` in `BattleSetup`, `ActionHost` and `ActionEnemy`; a party switch carries the `GearSet`; a foe's gear is not saved; the `[combat] gear/rules` setting | C7.1a |
 | C7.1c | The worn weapon on attacks (built): `element` and `attack_tags` lent to the wearer's plain attack in both formulas; `blocks` for two-handed | C7.1b |
-| C7.2 | Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
+| C7.2 | **DONE.** Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
 | C7.3 | Special gear: `PowerSet` holds several kits by source; a piece's `kit`, `passives` and `moves`; `Power.requires_gear`; weapon pools | C7.1 |
 | C6.5d | Transformations: `LookDef`, `LookSwap`, a form's `look`, `name_key`, `commands`, `replaces_attack`, `aftermath`, `once_per_battle`; shown on the battle screen, HUD and sheet with dummy looks | C6.5 |
 | C6.6c, C6.6d | As on the board | |

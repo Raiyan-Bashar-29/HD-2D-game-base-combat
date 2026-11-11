@@ -27,6 +27,9 @@ enum TurnOrder { ROUNDS, CTB }
 ## Item ids added to the player's inventory on a win, one each. An item that does not fit is
 ## left behind and reported, `Inventory.add`'s all-or-nothing rule.
 @export var loot: Array[StringName] = []
+## Loot that is rolled on a win, on top of `loot` (C7.2). Each enemy's own `loot_table` is
+## rolled too. Null means none.
+@export var loot_table: LootTable
 
 
 func problems() -> PackedStringArray:
@@ -43,4 +46,6 @@ func problems() -> PackedStringArray:
 			found.append("%s lists an empty enemy" % where)
 		else:
 			found.append_array(enemy.problems(where))
+	if loot_table != null:
+		found.append_array(loot_table.problems(where))
 	return found

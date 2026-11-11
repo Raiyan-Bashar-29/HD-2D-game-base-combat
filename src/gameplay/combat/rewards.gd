@@ -9,6 +9,10 @@ extends RefCounted
 ## A FIELD KILL (C3.8) rewards through `give`, which needs no battle: the real-time formula has
 ## none, and the rule is the same one.
 ##
+## ROLLED LOOT (C7.2): on top of the encounter's guaranteed `loot`, a won battle rolls the
+## encounter's `loot_table` and each enemy's own, with the battle's random numbers. A field
+## enemy rolls its own table when it falls and hands the result in as part of `loot`.
+##
 ## OWNS: the template's reward rule, and the summary of one grant.
 ## MUST NOT: choose the encounter, draw anything, or decide what losing means.
 
@@ -29,7 +33,11 @@ static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) ->
 		var def: CombatantDef = battle.defs.get(fighter.combatant_id, null)
 		if def != null and not Vitals.of(fighter.get_parent()).is_defeated():
 			standing.append(def)
-	return give(encounter.experience, encounter.loot, standing, inventory)
+	var tables: Array[LootTable] = [encounter.loot_table]
+	for enemy: CombatantDef in encounter.enemies:
+		if enemy != null:
+			tables.append(enemy.loot_table)
+	return give(encounter.experience, encounter.loot + LootRoll.all(tables, battle.rng), standing, inventory)
 
 
 ## The reward itself, with no battle (C3.8): `experience` to each of `members` (the caller
