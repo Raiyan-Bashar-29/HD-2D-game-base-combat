@@ -31,6 +31,7 @@ enum Reason {
 	POOL,  ## Its `requires_pool` is not full enough.
 	BLOCKED,  ## A status forbids skills (a silence).
 	COST,  ## The user cannot pay its skill's cost.
+	GEAR,  ## The piece or kind of gear it needs is not worn (C7.3).
 }
 
 
@@ -48,6 +49,8 @@ static func refusal(user: Combatant, power: Power, hour: float = -1.0) -> Reason
 		return Reason.COOLDOWN
 	if not power.active_at(_hour(hour)):
 		return Reason.HOURS
+	if power.requires_gear != &"" and not GearSet.wearing(body, power.requires_gear):
+		return Reason.GEAR
 	var statuses: StatusSet = StatusSet.of(body)
 	for status_id: StringName in power.requires_statuses:
 		if statuses == null or statuses.stacks(status_id) == 0:

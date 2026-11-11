@@ -3339,3 +3339,46 @@ assertions failed. Then boot, the suite, the seven checkers and the stripped run
 by a piece in the running game.
 
 **Unblocks.** C7.3 (special gear), C7.6 (crafting), C7.2b (affixes).
+
+## 2026-11-11 — C7.3 · Special gear: a worn piece lends powers
+
+**Did.** `GearDefinition.kit`: a piece of gear can carry a `PowerKit`. `PowerSet` now holds
+several kits: the fighter's own (`equip`, as before) and any number lent by worn gear (`lend`),
+with `kits()`, `powers()` and `status()` reading across all of them. Each kit is put on and
+taken off by itself (`_put_on`, `_take_off`), and the gauges are rebuilt from every kit's
+rules. `GearSet._lend` hands the worn kits over in slot order after every change.
+`Power.requires_gear`, `GearSet.wearing`, `PowerUse.Reason.GEAR` and the menu words
+`ui.battle.reason.needs_gear`. `PowerMenu` and `PowerSlots` list `powers()`. The static guard
+hook moved from `PowerSet.guard` to the new `PowerGuard.incoming`. Combat 0.68.0.
+
+**Why.** The owner's gear request: signature weapons that give their wielder powers. By the
+owner's rule this is one mechanism (a piece lends a kit), not a weapon.
+
+**Decided.**
+- Kits are added and removed one at a time, not merged into one kit and re-equipped. A merge
+  would end every running form and reset every cooldown each time any piece changed.
+- `lend` takes the whole wanted list each time and works out the difference, so `GearSet`
+  needs no bookkeeping and the order of the list is the menu order.
+- A lent kit's stat bonuses use the source `gear_kit/<item id>`, because `gear/<item id>`
+  already holds the piece's own stat changes.
+- A fighter with no powers gets its `PowerSet` when the worn set is put under the body
+  (`NOTIFICATION_PARENTED`), if a worn or starting piece has a kit. A body that enters the
+  scene whole cannot be given a child while its children are being set up; the first try
+  failed exactly there, and a test now covers it.
+- The design's `passives` field on a piece was dropped (a kit has passives), and `moves` on a
+  piece became row C7.3b by the 8-file rule.
+- `PowerGuard` was split out because `power_set.gd` went over its 250-line budget.
+
+**Connects.** `GearSet` -> `PowerSet.lend`; `PowerUse.refusal` -> `GearSet.wearing`;
+`PowerMenu`, `PowerSlots`, `Battle` and `FieldCommands` (unchanged: they already go through
+`PowerUse`); `Combatant.receive` -> `PowerGuard.incoming`; `StatusSet` -> `PowerSet.passive_of`.
+
+**Verified.** Red first: with `lend` doing nothing and the gear check off, 18 of the 26 new
+assertions failed. Then boot, the suite, the seven checkers and the stripped run, as in the PR.
+
+**Gaps.** Two kits on one fighter must not share a power id or a passive's status id. A form
+of a gear kit held at save time is found on load only if the piece is still worn then. The
+worn weapon's own swing chain is C7.3b. The demo has no gear with a kit.
+
+**Unblocks.** C7.3b, C7.4 (a set bonus can lend a kit the same way), C7.5, C7.7, and every
+signature weapon in `GEAR.md` Part 2.

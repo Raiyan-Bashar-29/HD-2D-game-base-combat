@@ -4,7 +4,7 @@ extends TestCase
 ## cost is paid per block, and the barrier comes down when it cannot be; an ALLIES barrier guards
 ## allies on the same clock; and a barrier with no status is always up.
 ##
-## OWNS: assertions about `BarrierMechanism`, `BarrierRun`, `PowerSet.guard` and the guard hook
+## OWNS: assertions about `BarrierMechanism`, `BarrierRun`, `PowerGuard.incoming` and the guard hook
 ## in `Combatant.receive`.
 ## MUST NOT: name a game's kits, powers or characters, or wait for frames.
 

@@ -4,7 +4,7 @@ extends FormRun
 ## are a `BarrierMechanism`; read its header for the rules, in order.
 ##
 ## IN PLAIN WORDS: it is a form (`FormRun` does the entering, leaving, group and upkeep), plus
-## one thing: `intercept_incoming`, which `Combatant.receive` reaches through `PowerSet.guard`
+## one thing: `intercept_incoming`, which `Combatant.receive` reaches through `PowerGuard.incoming`
 ## just before a hit lands on this fighter or on one of its allies. While the barrier is up it
 ## lets a bypassing hit through, drinks an absorbed element into a pool, pays its cost per block
 ## (and comes down when it cannot), and then nullifies or reduces the hit.

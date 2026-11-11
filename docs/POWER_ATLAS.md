@@ -47,7 +47,7 @@ The pack describes the services a power engine needs. Most exist here under anot
 | `HitResolver` (factions, defences, hit once) | `Hurtbox` (once per swing), `Combatant.can_target`, `Combatant.receive` with the guard hook, `DamageFormula` | Built |
 | `StatusController` | `StatusSet` | Built |
 | `TransformStateMachine` | `FormMechanism` + `FormRun` | Built; the look is C6.5d |
-| `EventBus` (before and after a hit) | `Events`; the one guard hook in `Combatant.receive` (`PowerSet.guard`) | Built |
+| `EventBus` (before and after a hit) | `Events`; the one guard hook in `Combatant.receive` (`PowerGuard.incoming`) | Built |
 | `EffectTransaction` (pay once, never twice) | `PowerUse.use` refuses before it pays; single-player, so no network retries | Built |
 | `OwnedEntityRegistry` (summons that know their owner) | Nothing yet | **New, C8.10** |
 | `TemporalBuffer` (a record of the past) | Nothing yet | **New, C8.11** |

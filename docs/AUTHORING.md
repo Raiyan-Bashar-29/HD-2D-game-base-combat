@@ -1297,6 +1297,9 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      (C7.2): each `LootEntry` has an item id (empty for "nothing"), a weight, a count range and
      an optional flag; `rolls` is how many lines are picked. A field enemy's fighter can carry
      one too. Rarity tiers live in `data/rarities/`; see `GEAR.md` § Rarity.
+   - Gear that grants powers (C7.3): give a `GearDefinition` a `kit` (a `PowerKit`). The wearer
+     has its powers while the piece is worn. A power that needs a weapon in hand sets
+     `requires_gear` to the item id, or to a gear type's id. See `GEAR.md` § Special gear.
    - Optionally set `music`, an audio stream: it plays while the fight is open, and the area's
      own music returns afterwards. Left empty, the field's music keeps playing.
 4. **The trigger**: place `encounter_point.tscn` under `Interactables`. Set its `object_id`, its

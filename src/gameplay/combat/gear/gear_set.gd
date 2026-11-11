@@ -34,6 +34,11 @@ extends Node
 ## (`lent_element`, `lent_tags`). Pieces are read in the slot list's order, so the weapon comes
 ## first: the first piece with an element decides it, and every piece's tags are joined.
 ##
+## SPECIAL GEAR (C7.3). A piece with a `kit` lends the wearer hero powers while it is worn. This
+## set hands the worn pieces' kits to the wearer's `PowerSet` after every change, in the slot
+## list's order, so the weapon's powers are listed before an accessory's. A kit that stays worn
+## is left alone, so its cooldowns keep counting.
+##
 ## A PIECE CAN TAKE UP MORE SLOTS (C7.1c). A piece that `blocks` a slot empties it when put on
 ## (a two-handed sword empties the off hand), and a piece put into a blocked slot takes the
 ## blocker off (a shield takes the two-handed sword off).
@@ -61,6 +66,9 @@ const CATEGORY: String = "gear"
 const PREFIX: String = "gear/"
 ## The flag that says a fighter's starting pieces were already put on: `gear_started/<wearer id>`.
 const STARTED_PREFIX: String = "gear_started/"
+## The source a worn piece's kit is held under in the wearer's `PowerSet`: `gear_kit/<item id>`.
+## It is not `gear/<item id>`, which holds the piece's stat changes on the sheet.
+const KIT_PREFIX: String = "gear_kit/"
 ## The project setting naming a game's `GearRules` file.
 const RULES_SETTING: String = "combat/gear/rules"
 
@@ -86,6 +94,19 @@ func _ready() -> void:
 
 # Connected on entering the tree and not in `_ready`, because a party switch moves this node to
 # another body, and that leaves the tree and enters it again.
+# Just put under a body. A body that is still being set up cannot be given another child a
+# moment later, when this set reads what is worn. So if a piece worn now, or a starting piece,
+# lends a kit and the body has no `PowerSet`, it gets one here, while that is still allowed.
+func _notification(what: int) -> void:
+	if what != NOTIFICATION_PARENTED or PowerSet.of(get_parent()) != null:
+		return
+	for item_id: StringName in worn_ids() + innate:
+		var piece: GearDefinition = GearDb.for_item(item_id)
+		if piece != null and piece.kit != null:
+			get_parent().add_child(PowerSet.new())
+			return
+
+
 func _enter_tree() -> void:
 	if not Events.game_started.is_connected(_on_game_started):
 		Events.game_started.connect(_on_game_started)
@@ -122,6 +143,19 @@ static func fit(body: Node, def: CombatantDef, keep: bool) -> GearSet:
 	gear.innate.assign(def.gear)
 	body.add_child(gear)
 	return gear
+
+
+## True when the fighter under `body` wears the piece `wanted` (an item id), or any piece whose
+## type is `wanted` (a gear type's id). A power that needs gear asks (`Power.requires_gear`).
+static func wearing(body: Node, wanted: StringName) -> bool:
+	var gear: GearSet = of(body)
+	if gear == null:
+		return false
+	for item_id: StringName in gear.worn_ids():
+		var piece: GearDefinition = GearDb.for_item(item_id)
+		if item_id == wanted or (piece != null and piece.type != null and piece.type.type_id == wanted):
+			return true
+	return false
 
 
 ## The slot list every fighter uses: the file named in `[combat] gear/rules`, else the defaults.
@@ -296,15 +330,26 @@ func _lend() -> void:
 		return
 	fighter.lent_element = &""
 	fighter.lent_tags.clear()
+	var kits: Dictionary[StringName, PowerKit] = {}
 	for slot: StringName in rules.slots:
 		var piece: GearDefinition = GearDb.for_item(worn(slot))
 		if piece == null:
 			continue
+		if piece.kit != null:
+			kits[StringName(KIT_PREFIX + String(piece.item_id))] = piece.kit
 		if fighter.lent_element == &"":
 			fighter.lent_element = piece.strike_element()
 		for tag: StringName in piece.all_attack_tags():
 			if not fighter.lent_tags.has(tag):
 				fighter.lent_tags.append(tag)
+	# The wearer's `PowerSet` holds the kits. A fighter with no powers of its own gets a set the
+	# first time a piece lends it a kit.
+	var powers: PowerSet = PowerSet.of(get_parent())
+	if powers == null and not kits.is_empty():
+		powers = PowerSet.new()
+		get_parent().add_child(powers)
+	if powers != null:
+		powers.lend(kits)
 
 
 func _apply(item_id: StringName, piece: GearDefinition) -> void:

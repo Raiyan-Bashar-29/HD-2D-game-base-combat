@@ -20,7 +20,7 @@ extends Node
 ## - in the field, the fighter plays the moves its running mechanisms hand it (`moves_over`,
 ##   C6.5b): a form's own attack chain and dodge.
 ## - a hit about to land on the fighter, or on an ally, is shown to every running mechanism
-##   first (`guard` and `intercept_incoming`, C6.6a), so a barrier can stop or soften it.
+##   first (`PowerGuard.incoming`, then `intercept_incoming` here, C6.6a), so a barrier can stop or soften it.
 ##
 ## A KILL WITHOUT A LOOKUP: `Combatant.receive` changes the pool first, which announces
 ## `combatant_defeated`, and then announces `combatant_damaged`. So the id that just fell is
@@ -45,10 +45,19 @@ extends Node
 ## leave the tree and enter again. So its mechanisms end only when it is freed, not when it
 ## leaves the tree.
 ##
-## OWNS: which kit is equipped, its cooldowns, its running executors, and its gauges.
+## SEVERAL KITS AT ONCE (C7.3). The fighter's own kit is `kit`, put on with `equip`. A worn piece
+## of gear can lend one more kit each (`lend`, called by `GearSet`), held under its own source.
+## Every kit's powers, passives, gauges and stat bonuses are live together, the fighter's own
+## first. Taking one kit off removes only that kit's parts. Two kits on one fighter should not
+## share a power id or a passive: the set tells them apart by those ids.
+##
+## OWNS: which kits are on, their cooldowns, its running executors, and its gauges.
 ## MUST NOT: decide whether a power may be used, or use one. `PowerUse` does both.
 
+## The fighter's own kit, from its definition. Null when it has none.
 var kit: PowerKit
+# Kits lent by what the fighter wears (C7.3): source -> kit, in the order their powers are listed.
+var _lent: Dictionary[StringName, PowerKit] = {}
 var _cooling: Dictionary[StringName, float] = {}
 var _running: Dictionary[StringName, PowerExecutor] = {}
 var _passives: Array[StringName] = []
@@ -69,35 +78,12 @@ static func of(who: Node) -> PowerSet:
 	return null
 
 
-## The status `status_id` granted by the kit worn under `who`, or null: a passive, or a form's
+## The status `status_id` granted by a kit worn under `who`, or null: a passive, or a form's
 ## status (C6.5c). Such a status lives only in its kit file, so `StatusSet` finds it here when it
 ## loads a save (C6.2b), and a form held when the game was saved is held again.
 static func passive_of(who: Node, status_id: StringName) -> StatusEffect:
 	var powers: PowerSet = of(who)
-	if powers == null or powers.kit == null:
-		return null
-	return powers.kit.status(status_id)
-
-
-## The hit `result`, thrown by `from`, is about to land on `target` (`Combatant.receive`): the
-## barriers of its own kit see it first, then those of each ally living on the same clock (a
-## field body never guards a battle fighter). It stops once a barrier has blocked the hit.
-static func guard(target: Combatant, result: DamageResult, from: StringName) -> void:
-	var own: PowerSet = of(target.get_parent())
-	if own != null:
-		own.intercept_incoming(target, result, from)
-	if not target.is_inside_tree():
-		return
-	for node: Node in target.get_tree().get_nodes_in_group(Combatant.GROUP):
-		var ally: Combatant = node as Combatant
-		if result.blocked:
-			return
-		if ally == null or ally == target or ally.real_time != target.real_time \
-				or not ally.can_target(target, FactionTable.Target.ALLY):
-			continue
-		var theirs: PowerSet = of(ally.get_parent())
-		if theirs != null:
-			theirs.intercept_incoming(target, result, from)
+	return powers.status(status_id) if powers != null else null
 
 
 func _physics_process(delta: float) -> void:
@@ -139,23 +125,82 @@ func _notification(what: int) -> void:
 			executor.end()
 
 
-## Puts `new_kit` on, taking off whatever kit was on first. Null just takes the old one off.
+## Puts `new_kit` on as the fighter's own kit, taking off whatever own kit was on first. Null
+## just takes the old one off. Kits lent by gear stay as they are.
 func equip(new_kit: PowerKit) -> void:
 	unequip()
-	if new_kit == null:
-		return
 	kit = new_kit
+	if kit != null:
+		_put_on(kit, kit.kit_id)
+
+
+## Takes the fighter's own kit off: its stat bonuses, passives, executors and cooldowns.
+func unequip() -> void:
+	if kit == null:
+		return
+	var old: PowerKit = kit
+	kit = null
+	_take_off(old, old.kit_id)
+
+
+## Sets the kits lent by what the fighter wears (C7.3): `wanted` is source -> kit, in the order
+## their powers should be listed. A kit already lent under the same source is left alone, so
+## its cooldowns and forms carry on; one no longer wanted comes off; a new one goes on.
+func lend(wanted: Dictionary[StringName, PowerKit]) -> void:
+	for source: StringName in _lent.keys():
+		if wanted.get(source) != _lent[source]:
+			var old: PowerKit = _lent[source]
+			_lent.erase(source)
+			_take_off(old, source)
+	var before: Dictionary[StringName, PowerKit] = _lent
+	_lent = {}
+	for source: StringName in wanted:
+		if wanted[source] != null:
+			_lent[source] = wanted[source]
+	for source: StringName in _lent:
+		if not before.has(source):
+			_put_on(_lent[source], source)
+
+
+## Every kit on the fighter: its own first, then each lent one, in order.
+func kits() -> Array[PowerKit]:
+	var out: Array[PowerKit] = []
+	if kit != null:
+		out.append(kit)
+	out.append_array(_lent.values())
+	return out
+
+
+## Every power of every kit on the fighter, in the order menus and quick slots list them.
+func powers() -> Array[Power]:
+	var out: Array[Power] = []
+	for held: PowerKit in kits():
+		for power: Power in held.powers:
+			if power != null:
+				out.append(power)
+	return out
+
+
+## The status `status_id` granted by any kit on the fighter (a passive or a form's), or null.
+func status(status_id: StringName) -> StatusEffect:
+	for held: PowerKit in kits():
+		var found: StatusEffect = held.status(status_id)
+		if found != null:
+			return found
+	return null
+
+
+# Puts one kit's parts on the fighter. Its stat bonuses are held under `source`, so taking the
+# kit off removes exactly these.
+func _put_on(added: PowerKit, source: StringName) -> void:
 	var sheet: StatSheet = _sheet()
 	if sheet != null:
-		for bonus: StatModifier in kit.stat_bonuses:
-			# Re-sourced to the kit's id, so taking the kit off removes exactly these.
+		for bonus: StatModifier in added.stat_bonuses:
 			if bonus != null:
-				sheet.add(StatModifier.of(bonus.stat, bonus.op, bonus.value, kit.kit_id))
+				sheet.add(StatModifier.of(bonus.stat, bonus.op, bonus.value, source))
 	_hold_passives()
-	gauges = KitGauges.new(kit.gauges)
-	for pool: StringName in gauges.pools():
-		gauges.refresh_levels(get_parent(), pool)
-	for power: Power in kit.powers:
+	_regauge()
+	for power: Power in added.powers:
 		if power == null or power.mechanism == null:
 			continue
 		var executor: PowerExecutor = PowerMechanisms.make(power.mechanism)
@@ -165,34 +210,44 @@ func equip(new_kit: PowerKit) -> void:
 			_running[power.power_id] = executor
 
 
-## Takes the kit off: its stat bonuses, the passives it put on, its executors and cooldowns.
-func unequip() -> void:
-	if kit == null:
-		return
+# Takes one kit's parts off again, and nothing of any other kit.
+func _take_off(removed: PowerKit, source: StringName) -> void:
 	var sheet: StatSheet = _sheet()
 	if sheet != null:
-		sheet.remove_from(kit.kit_id)
+		sheet.remove_from(source)
 	var statuses: StatusSet = StatusSet.of(get_parent())
-	if statuses != null:
-		for status_id: StringName in _passives:
-			statuses.cure(status_id)
-	for executor: PowerExecutor in _running.values():
-		executor.end()
+	for passive: StatusEffect in removed.passives:
+		if passive != null and _passives.has(passive.id):
+			_passives.erase(passive.id)
+			if statuses != null:
+				statuses.cure(passive.id)
+	for power: Power in removed.powers:
+		if power == null:
+			continue
+		if _running.has(power.power_id):
+			_running[power.power_id].end()
+			_running.erase(power.power_id)
+		# Its cooldown goes with the kit, and is announced as over once it is gone.
+		var left: float = cooldown_left(power.power_id)
+		_cooling.erase(power.power_id)
+		_announce(power.power_id, left, 0.0)
+	_regauge()
+
+
+# Builds the gauges again from every kit on the fighter. The gauge pools keep their points.
+func _regauge() -> void:
 	gauges.clear(get_parent())
-	gauges = KitGauges.new()
-	_passives.clear()
-	_running.clear()
-	# Every cooldown goes with the kit, so each one is announced as over, once it is gone.
-	var cooled: Dictionary[StringName, float] = _cooling.duplicate()
-	_cooling.clear()
-	for power_id: StringName in cooled:
-		_announce(power_id, cooled[power_id], 0.0)
-	kit = null
+	var rules: Array[GaugeRule] = []
+	for held: PowerKit in kits():
+		rules.append_array(held.gauges)
+	gauges = KitGauges.new(rules)
+	for pool: StringName in gauges.pools():
+		gauges.refresh_levels(get_parent(), pool)
 
 
-## True when `power` is one of the equipped kit's own.
+## True when `power` belongs to a kit on the fighter, its own or a lent one.
 func has(power: Power) -> bool:
-	return kit != null and power != null and kit.powers.has(power)
+	return power != null and powers().has(power)
 
 
 ## How long before `power_id` can be used again: seconds in the field, turns in a battle.
@@ -244,10 +299,8 @@ func moved(move: ActionMove) -> void:
 ## mechanism in the kit's order, so a form can put its own chain and dodge in (C6.5b).
 func moves_over(base: MoveSet) -> MoveSet:
 	var out: MoveSet = base
-	if kit == null:
-		return out
-	for power: Power in kit.powers:
-		var running: PowerExecutor = executor(power.power_id) if power != null else null
+	for power: Power in powers():
+		var running: PowerExecutor = executor(power.power_id)
 		if running != null:
 			out = running.moves(out)
 	return out
@@ -255,10 +308,8 @@ func moves_over(base: MoveSet) -> MoveSet:
 
 ## Shows a hit about to land on `target` to each running mechanism, in the kit's order (C6.6a).
 func intercept_incoming(target: Combatant, result: DamageResult, from: StringName) -> void:
-	if kit == null:
-		return
-	for power: Power in kit.powers:
-		var running: PowerExecutor = executor(power.power_id) if power != null else null
+	for power: Power in powers():
+		var running: PowerExecutor = executor(power.power_id)
 		if running != null:
 			running.intercept_incoming(target, result, from)
 
@@ -289,19 +340,20 @@ func _count_down(amount: float) -> void:
 		running.tick(amount)
 
 
-# Puts each of the kit's passives on, unless it is already held (a save that kept it), and
+# Puts the passives of every kit on, unless it is already held (a save that kept it), and
 # remembers it so `unequip` takes it off again.
 func _hold_passives() -> void:
 	var statuses: StatusSet = StatusSet.of(get_parent())
-	if kit == null or statuses == null:
+	if statuses == null:
 		return
-	for passive: StatusEffect in kit.passives:
-		if passive == null:
-			continue
-		if statuses.stacks(passive.id) == 0:
-			statuses.apply(passive)
-		if statuses.stacks(passive.id) > 0 and not _passives.has(passive.id):
-			_passives.append(passive.id)
+	for held: PowerKit in kits():
+		for passive: StatusEffect in held.passives:
+			if passive == null:
+				continue
+			if statuses.stacks(passive.id) == 0:
+				statuses.apply(passive)
+			if statuses.stacks(passive.id) > 0 and not _passives.has(passive.id):
+				_passives.append(passive.id)
 
 
 # Called after the cooldown has changed, so a listener reading `cooldown_left` sees the new value.

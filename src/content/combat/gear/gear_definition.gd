@@ -22,6 +22,10 @@ extends ContentEntry
 ## multiplies every stat change the piece gives, and its `drop_weight` makes the piece rarer in
 ## rolled loot. Empty means plain: nothing is scaled.
 ##
+## SPECIAL GEAR (C7.3): a piece with a `kit` gives the wearer that kit's powers, passives,
+## gauges and stat bonuses for as long as it is worn. A weapon's modes are the kit's forms, and
+## a weapon's own ammunition is a pool: give the piece a `max_<pool>` modifier.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -44,6 +48,8 @@ extends ContentEntry
 @export var blocks: Array[StringName] = []
 ## The rarity tier, by id (`rarity/<name>`). Empty means none.
 @export var rarity: StringName = &""
+## Hero powers the wearer has while this is worn (C7.3). Null means none.
+@export var kit: PowerKit
 
 
 ## The slots this piece may be worn in, in the order to try them.
@@ -110,6 +116,8 @@ func problems() -> PackedStringArray:
 			found.append("%s has a modifier with no stat" % where)
 	if rarity != &"" and RarityDb.of(rarity) == null:
 		found.append("%s names the rarity %s, which does not exist" % [where, rarity])
+	if kit != null:
+		found.append_array(kit.problems(where))
 	if attack_tags.has(&""):
 		found.append("%s lists an unnamed attack tag" % where)
 	for blocked: StringName in blocks:
