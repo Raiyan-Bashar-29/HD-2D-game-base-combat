@@ -3415,3 +3415,38 @@ tagged body (`tests/unit/form_look_test.gd`, 17 assertions).
 
 **Gaps.** A battle body has no `CharacterVisual`, so in a battle only the name shows. The party
 sheet and status screen do not name the form yet (C6.5e).
+
+## 2026-11-11 — C6.5e · A form's own commands
+
+**Did.** A form (M5) now changes what the fighter can do, not only how it looks:
+- `FormMechanism.commands`, `replaces_attack` and `aftermath`, with `commands_at(stage)` and
+  `attack_at(stage)` (a cycle stage's own, else the cycle's). Problems cover an empty command,
+  each command's own problems, the skill's and the aftermath's. `statuses()` lists the aftermath,
+  so a save finds it.
+- `FormRun.held_in(body)` (moved from `LookSwap._held_runs`), `commands_of(body)` and
+  `attack_of(body)`: the first held form in kit order that has one.
+- `PowerMenu.with_powers`: while a held form has commands, they stand in for the menu's own; while
+  one replaces the Attack, the Attack row takes the skill's name. Both menus (the battle screen and
+  the field overlay) already go through it.
+- `Battle._as_done`: a plain ATTACK made while a form replaces it is aimed (`targets_for`), paid and
+  done as that skill (`act`). Statuses still judge it as an Attack (`allows` runs first).
+- The aftermath: `FormRun._finish` (used again, drained dry) and `_on_expired` (its timed status
+  running out) put it on. `StatusSet.running_out` is new: true only while a status is taken off
+  because its time ran out, so a listener can tell that from a cure.
+- The row was about 13 files with `once_per_battle` and the sheet name, so it split: C6.5f takes those.
+
+**Why.** The owner asked for transformations that change abilities and the menus; `GEAR.md` Part 4
+lists the job change, the persona swap and the form with a price.
+
+**Connects.** No new signal: the menus and the battle ask `FormRun` each time, so a cure, a timer, a
+load or a party switch changes the menu at once, as the look does.
+
+**Verified.** Red first: with `commands_of`, `attack_of` and the aftermath stubbed out, 6 assertions
+failed. Then the suite (0 failed), the seven checkers, and the stripped run
+(`tests/unit/form_commands_test.gd`, 16 assertions). There is no capture: no new kind of row is drawn.
+
+**Unblocks.** C6.5f, and every hero kit whose forms swap commands (Dante's styles, an Eikon).
+
+**Gaps.** `replaces_attack` is battle-only (the field's attack is the form's `attack_chain`). The
+Attack row shows no cost for its skill. A form's commands in the field still follow the field's own
+rules: an ATTACK, DEFEND or FLEE there is refused.

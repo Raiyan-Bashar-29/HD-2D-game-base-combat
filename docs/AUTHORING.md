@@ -1304,6 +1304,11 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle
      screen and HUD show the name. A cycle stage with none of its own shows the cycle's.
+   - A form's own commands (C6.5e): `commands` is the menu offered while the form is held (empty
+     keeps the fighter's own; its powers always follow); `replaces_attack` is the skill a
+     battle's Attack becomes; `aftermath` is a status put on when the form ends by being used
+     again, drained dry or timing out (a burnout, a price). A cycle stage with none of its own
+     uses the cycle's commands and attack.
    - Optionally set `music`, an audio stream: it plays while the fight is open, and the area's
      own music returns afterwards. Left empty, the field's music keeps playing.
 4. **The trigger**: place `encounter_point.tscn` under `Interactables`. Set its `object_id`, its

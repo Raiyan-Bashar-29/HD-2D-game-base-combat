@@ -33,7 +33,7 @@ var _base_scale: Vector3 = Vector3.ONE
 
 ## The look of the first held form on `body` that has one, in kit order, or null.
 static func look_of(body: Node) -> LookDef:
-	for run: FormRun in _held_runs(body):
+	for run: FormRun in FormRun.held_in(body):
 		var look: LookDef = (run.mechanism as FormMechanism).look_at(run.stage)
 		if look != null:
 			return look
@@ -42,7 +42,7 @@ static func look_of(body: Node) -> LookDef:
 
 ## The name key of the first held form on `body` that has one, in kit order, or "".
 static func form_name_key(body: Node) -> String:
-	for run: FormRun in _held_runs(body):
+	for run: FormRun in FormRun.held_in(body):
 		var key: String = (run.mechanism as FormMechanism).name_at(run.stage)
 		if key != "":
 			return key
@@ -68,19 +68,6 @@ func watch() -> void:
 		else:
 			_apply(visual, wanted)
 	current = wanted
-
-
-# The forms held on `body` now, in kit order (each one's `stage` read fresh).
-static func _held_runs(body: Node) -> Array[FormRun]:
-	var out: Array[FormRun] = []
-	var powers: PowerSet = PowerSet.of(body)
-	if powers == null:
-		return out
-	for power: Power in powers.powers():
-		var run: FormRun = powers.executor(power.power_id) as FormRun
-		if run != null and run.held() >= 0:
-			out.append(run)
-	return out
 
 
 func _remember(visual: CharacterVisual) -> void:

@@ -29,6 +29,18 @@ extends PowerMechanism
 ## battle screen and the HUD. A cycle stage with no look or name of its own shows the cycle's
 ## (`look_at`, `name_at`).
 ##
+## `commands`, `replaces_attack` and `aftermath` (C6.5e) are what the form lets the fighter DO:
+## - `commands`: while the form is held, the battle menu and the field menu offer these in place
+##   of the fighter's own (its hero powers still follow). Empty keeps the fighter's own.
+## - `replaces_attack`: a skill the plain Attack becomes in a battle while the form is held, paid
+##   and aimed as that skill. In the field the attack is a button, so `attack_chain` does this.
+## - A cycle stage with no commands or attack of its own uses the cycle's (`commands_at`,
+##   `attack_at`), as its look does.
+## - `aftermath`: a status put on when the form ENDS by its own rules: used again to leave it, its
+##   drain running dry, or its own timed status running out. A rival form of its group replacing
+##   it is a switch, not an end, and a cure, a new game, a load or the kit coming off is no end
+##   either, so none of those gives it. The cycle's own counts, never a stage's.
+##
 ## OWNS: the shape of a form.
 ## MUST NOT: hold running state. `FormRun` (gameplay) runs it.
 
@@ -51,6 +63,12 @@ extends PowerMechanism
 @export var look: LookDef
 ## The form's name, shown beside the fighter's (C6.5d). Empty: no name shown.
 @export var name_key: String = ""
+## The menu offered while in the form, in place of the fighter's own (C6.5e). Empty: its own.
+@export var commands: Array[BattleCommand] = []
+## The skill a battle's plain Attack becomes while in the form (C6.5e). Null: a plain attack.
+@export var replaces_attack: Skill
+## Put on when the form ends by its own rules (C6.5e), the price of a form. Null: none.
+@export var aftermath: StatusEffect
 
 
 func kind() -> StringName:
@@ -68,12 +86,15 @@ func stage_statuses() -> Array[StatusEffect]:
 	return out
 
 
-## Every status this form can put on: its own, or each stage's, with no gaps.
+## Every status this form can put on: its own, or each stage's, and its aftermath, with no gaps.
+## A save finds a held one through this (`PowerKit.status`).
 func statuses() -> Array[StatusEffect]:
 	var out: Array[StatusEffect] = []
 	for held: StatusEffect in stage_statuses():
 		if held != null:
 			out.append(held)
+	if aftermath != null:
+		out.append(aftermath)
 	return out
 
 
@@ -102,6 +123,18 @@ func name_at(stage: int) -> String:
 	return held.name_key if held != null and held.name_key != "" else name_key
 
 
+## The commands offered at `stage`: the stage's own, else the cycle's. A plain form's are its own.
+func commands_at(stage: int) -> Array[BattleCommand]:
+	var held: FormMechanism = _stage(stage)
+	return held.commands if held != null and not held.commands.is_empty() else commands
+
+
+## The skill Attack becomes at `stage`: the stage's own, else the cycle's. Null: a plain attack.
+func attack_at(stage: int) -> Skill:
+	var held: FormMechanism = _stage(stage)
+	return held.replaces_attack if held != null and held.replaces_attack != null else replaces_attack
+
+
 # The cycle stage at `index`, or null for a plain form or an index out of range.
 func _stage(index: int) -> FormMechanism:
 	return cycle[index] if index >= 0 and index < cycle.size() else null
@@ -120,6 +153,15 @@ func problems(context: String) -> PackedStringArray:
 		found.append_array(status.problems())
 	if look != null:
 		found.append_array(look.problems(context))
+	if aftermath != null:
+		found.append_array(aftermath.problems())
+	if replaces_attack != null:
+		found.append_array(replaces_attack.problems())
+	for i: int in commands.size():
+		if commands[i] == null:
+			found.append("%s has an empty command %d" % [context, i])
+		else:
+			found.append_array(commands[i].problems("%s command %d" % [context, i]))
 	if not advance_after.is_empty() and cycle.is_empty():
 		found.append("%s advances after a power but is not a cycle" % context)
 	if drain_pool == &"" and (drain_per_second != 0.0 or drain_per_turn != 0.0 \

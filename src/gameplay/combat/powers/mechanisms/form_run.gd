@@ -16,6 +16,12 @@ extends PowerExecutor
 ##   of the fighter's own. The set built is kept, so nothing is made anew each frame.
 ## - `moved` (C6.5b): each move the fighter starts in the field drains `drain_per_action`.
 ## - `held` (C6.5d): which stage is held now, for `LookSwap` to show its look and name.
+## - `held_in`, `commands_of`, `attack_of` (C6.5e): what the forms held on a body change, asked
+##   by `LookSwap`, `PowerMenu` (the menus) and `Battle` (the plain Attack).
+## - the aftermath (C6.5e): when the form ends by its own rules (used again, drained dry, or its
+##   timed status running out, heard through `status_expired` while `StatusSet.running_out`),
+##   the form's `aftermath` goes on. A rival of its group, a cure, a new game or the kit coming
+##   off ends it with no aftermath.
 ## - `end`: the kit came off, so the form ends (its status comes off with it).
 ##
 ## OWNS: entering, leaving and draining one form on one fighter.
@@ -29,13 +35,45 @@ var _owed: float = 0.0
 var _built: Dictionary[int, MoveSet] = {}
 
 
+## The forms held on `body` now, in kit order, each one's `stage` read fresh. Empty with no kit.
+static func held_in(body: Node) -> Array[FormRun]:
+	var out: Array[FormRun] = []
+	var powers: PowerSet = PowerSet.of(body)
+	if powers == null:
+		return out
+	for power: Power in powers.powers():
+		var run: FormRun = powers.executor(power.power_id) as FormRun
+		if run != null and run.held() >= 0:
+			out.append(run)
+	return out
+
+
+## The menu the first held form with commands offers on `body`, in kit order. Empty: none does,
+## so the fighter's own menu stands.
+static func commands_of(body: Node) -> Array[BattleCommand]:
+	for run: FormRun in held_in(body):
+		var offered: Array[BattleCommand] = (run.mechanism as FormMechanism).commands_at(run.stage)
+		if not offered.is_empty():
+			return offered
+	return []
+
+
+## The skill the plain Attack becomes on `body`: the first held form's that has one. Null: none.
+static func attack_of(body: Node) -> Skill:
+	for run: FormRun in held_in(body):
+		var skill: Skill = (run.mechanism as FormMechanism).attack_at(run.stage)
+		if skill != null:
+			return skill
+	return null
+
+
 func use(_user: Combatant, _targets: Array[Combatant], _rng: RandomNumberGenerator) -> void:
 	_sync()
 	var form: FormMechanism = mechanism as FormMechanism
 	if not form.cycle.is_empty():
 		_enter((stage + 1) % form.cycle.size())
 	elif stage >= 0:
-		leave()
+		_finish()
 	else:
 		_enter(0)
 
@@ -75,6 +113,8 @@ func power_used(used: Power) -> void:
 
 
 func end() -> void:
+	if Events.status_expired.is_connected(_on_expired):
+		Events.status_expired.disconnect(_on_expired)
 	# Freed with the body, there is no status left to take off; only the kit coming off cures it.
 	if holder != null and holder.is_inside_tree():
 		leave()
@@ -117,6 +157,8 @@ func _enter(index: int) -> void:
 	var entering: StatusEffect = _stage_status(index)
 	if entering != null and statuses.apply(entering):
 		stage = index
+		if not Events.status_expired.is_connected(_on_expired):
+			Events.status_expired.connect(_on_expired)
 	else:
 		stage = -1
 
@@ -161,7 +203,40 @@ func _drain(rate: float, amount: float) -> void:
 		_owed -= whole
 		vitals.change(form.drain_pool, -whole)
 	if vitals.current(form.drain_pool) <= 0:
-		leave()
+		_finish()
+
+
+# Ends the form by its own rules: it comes off, and its aftermath goes on.
+func _finish() -> void:
+	_sync()
+	var was_on: bool = stage >= 0
+	leave()
+	if was_on:
+		_aftermath()
+
+
+# A stage's timed status ran out on its own: the form ended by its own rules.
+func _on_expired(who: StringName, status_id: StringName) -> void:
+	var statuses: StatusSet = _statuses()
+	if statuses != null and statuses.running_out and who == statuses.owner_id \
+			and _known(status_id) != null:
+		_aftermath()
+
+
+# The stage status with `status_id`, or null.
+func _known(status_id: StringName) -> StatusEffect:
+	for held: StatusEffect in (mechanism as FormMechanism).stage_statuses():
+		if held != null and held.id == status_id:
+			return held
+	return null
+
+
+# The price of the form, put on as it ends.
+func _aftermath() -> void:
+	var price: StatusEffect = (mechanism as FormMechanism).aftermath
+	var statuses: StatusSet = _statuses()
+	if price != null and statuses != null:
+		statuses.apply(price)
 
 
 func _stage_status(index: int) -> StatusEffect:
