@@ -13,6 +13,8 @@ extends RefCounted
 ##
 ## THE RULES, each a template default:
 ## - ATTACK is a power-0 hit through the actor's formula, so the attack stat alone decides it.
+##   While a form says Attack becomes a skill (`FormMechanism.replaces_attack`, C6.5e), it is
+##   aimed, paid and done as that skill instead; statuses still treat it as an Attack.
 ##   It can miss against evasion, and a target holding a COUNTER status strikes back (C2.15).
 ## - SKILL and ITEM spend the cost (and, for ITEM, one item from `inventory`), then do what
 ##   `SkillUse.apply` says: power, effects, hits and statuses (C2.13). A reviving skill aims only
@@ -163,6 +165,7 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 	var out: Array[Combatant] = []
 	if _current == null or command == null:
 		return out
+	command = _as_done(_current, command)
 	# A plain ATTACK always aims at enemies; a skill or item says who it may aim at.
 	var filter: FactionTable.Target = FactionTable.Target.ENEMY
 	match command.kind:
@@ -210,6 +213,7 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 	if not allows(command) or not can_boost(command, boost):
 		return false
 	var actor: Combatant = _current
+	command = _as_done(actor, command)
 	match command.kind:
 		# A basic hit with no extra power: the attacker's attack stat against the target's defence.
 		# Each Boost level adds `attack_boost_hits` more swings.
@@ -302,6 +306,20 @@ func _power(actor: Combatant, command: BattleCommand, targets: Array[Combatant])
 	if skill != null and skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
 	return true
+
+
+# What `command` really does for `actor`: a plain ATTACK made while a form says it becomes a
+# skill (C6.5e) is that skill, paid and aimed as one. Anything else is itself.
+func _as_done(actor: Combatant, command: BattleCommand) -> BattleCommand:
+	var skill: Skill = FormRun.attack_of(actor.get_parent()) \
+			if command.kind == BattleCommand.Kind.ATTACK else null
+	if skill == null:
+		return command
+	var done := BattleCommand.new()
+	done.kind = BattleCommand.Kind.SKILL
+	done.skill = skill
+	done.label_key = skill.name_key
+	return done
 
 
 ## A ONE command needs exactly one allowed target; an ALL command ignores what it is given.

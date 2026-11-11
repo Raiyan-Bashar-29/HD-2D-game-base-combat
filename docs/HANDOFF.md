@@ -37,8 +37,11 @@ between them, written in plain words.
   tint, a size and a tag over the head) goes on the body while the form is held, through a
   `LookSwap` node on every field body that asks each frame; the battle screen and the HUD name
   the form.
-- **Next: C6.5e, a form's own commands.** The build order is
-  the table at the foot of `GEAR.md`: C6.5e, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
+- **C6.5e is done (0.70.0): a form's own commands.** While held, a form's `commands` stand in
+  for the fighter's menu, its `replaces_attack` turns a battle's Attack into a skill, and its
+  `aftermath` goes on when it ends by its own rules (used again, drained, timed out).
+- **Next: C6.5f, once per battle and the form on the party sheet.** The build order is
+  the table at the foot of `GEAR.md`: C6.5f, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's

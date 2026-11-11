@@ -41,6 +41,10 @@ class Held:
 	var carry: float = 0.0
 
 
+## True only while a status is being taken off because its time ran out, so a listener to
+## `status_expired` can tell running out from a cure (a form's aftermath, C6.5e).
+var running_out: bool = false
+
 ## Unique per combatant: it is the `who` in every signal. Vitals' rule.
 @export var owner_id: StringName = &"player"
 ## Unique per combatant, Inventory's rule: two sets sharing it means one never saves.
@@ -222,7 +226,7 @@ func tick_turn() -> void:
 		if held.effect.duration > 0.0:
 			held.remaining -= 1.0
 			if held.remaining <= 0.0:
-				_expire(status_id)
+				_run_out(status_id)
 
 
 ## `delta` seconds pass for every SECONDS status. Never ticks past its own expiry.
@@ -244,7 +248,7 @@ func tick_seconds(delta: float) -> void:
 		if lasting:
 			held.remaining -= step
 			if held.remaining <= 0.0:
-				_expire(status_id)
+				_run_out(status_id)
 
 
 func _ids() -> Array[StringName]:
@@ -276,6 +280,13 @@ func _add_modifiers(effect: StatusEffect) -> void:
 	for modifier: StatModifier in effect.modifiers:
 		# Tag each modifier with the status id, so removing the status removes exactly these.
 		target.add(StatModifier.of(modifier.stat, modifier.op, modifier.value, effect.id))
+
+
+# Takes a status off because its time ran out, saying so while it does.
+func _run_out(status_id: StringName) -> void:
+	running_out = true
+	_expire(status_id)
+	running_out = false
 
 
 func _expire(status_id: StringName) -> void:

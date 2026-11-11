@@ -581,6 +581,21 @@ line leads with the form. **Moved to C6.5e:** `commands`, `replaces_attack`, `af
 `once_per_battle`, and the name on the party sheet and status screen. A battle body has no
 `CharacterVisual` yet, so in a battle only the name shows.
 
+**As built (C6.5e, combat 0.70.0): the form's own commands.** `FormMechanism.commands` is the
+menu offered while the form is held, in place of the fighter's own, in a battle and in the
+field (`PowerMenu.with_powers` asks `FormRun.commands_of`; the hero powers still follow).
+`replaces_attack` is the skill a battle's plain Attack becomes: `Battle` aims, pays and does
+the Attack as that skill, statuses still treat it as an Attack, and the menu's Attack row takes
+the skill's name. In the field the attack is a button, so a form's `attack_chain` does this
+job. A cycle stage with none of its own uses the cycle's (`commands_at`, `attack_at`).
+`aftermath` is a status put on when the form ends **by its own rules**: used again, its drain
+running dry, or its timed status running out (`StatusSet.running_out` is true while a status
+is taken off because its time ran out, which tells that from a cure). A rival of its group
+replacing it is a switch, and a cure, a new game, a load or the kit coming off are no end, so
+none of those gives it. The aftermath is listed in the form's `statuses()`, so a save keeps it.
+**Moved to C6.5f:** `Power.once_per_battle` and the form's name on the party sheet and status
+screen.
+
 ## Part 5 · The mechanics survey
 
 What combat systems in well-known games do, and where this base stands. **Have** means built
@@ -606,7 +621,7 @@ and merged. **Row** names the board row that builds it.
 | Planted and delayed strikes | Owl, time bombs, rune traps | Row C6.26 (new) |
 | Battlefields: domains, terrain, weather, auras | JJK, Fate, Pokémon weather and terrain, Divinity's surfaces | Rows C6.9a–d (widened) |
 | Foresight, command, blink, clone, sacrifice, grant, refresh | The kits in `POWERS.md` | Rows C6.10–C6.13 |
-| Transformations with a look | The table above | Have, the look and name (C6.5d); commands in row C6.5e |
+| Transformations with a look | The table above | Have: the look and name (C6.5d), commands, the Attack and the aftermath (C6.5e); once per battle and the sheet in row C6.5f |
 | Gear, rarity, sets, sockets, upgrading, crafting | Diablo, Monster Hunter, Souls games | Rows C7.1–C7.9 |
 | **An extra turn for hitting a weakness** | Press Turn (Shin Megami Tensei), One More (Persona) | Row C8.1 (new) |
 | **Team attacks**: all-out attack, chain and link attacks, dual and triple techs | Persona, Xenoblade, Chrono Trigger | Row C8.2 (new) |
@@ -672,7 +687,8 @@ weapons themselves.
 | C7.3 | **DONE.** Special gear: `PowerSet` holds several kits; a piece's `kit`; `Power.requires_gear`; weapon pools | C7.1 |
 | C7.3b | A weapon's own swing chain: `moves` on a piece and on a type | C7.3 |
 | C6.5d | **DONE.** Transformations you can see: `LookDef`, `LookSwap`, a form's `look` and `name_key`; shown on the body, the battle screen and the HUD with dummy looks | C6.5 |
-| C6.5e | A form's own commands: `commands`, `replaces_attack`, `aftermath`, `Power.once_per_battle`; the name on the party sheet | C6.5d |
+| C6.5e | **DONE.** A form's own commands: `commands`, `replaces_attack`, `aftermath` | C6.5d |
+| C6.5f | `Power.once_per_battle`; the form's name on the party sheet and status screen | C6.5e |
 | C6.6c, C6.6d | As on the board | |
 | C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading | C6.7 |

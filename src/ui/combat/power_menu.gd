@@ -8,6 +8,7 @@ extends RefCounted
 ## - `commands`: one menu entry for each power in the fighter's equipped kit (passives are held,
 ##   never used, so they get no entry), all filed under one "Powers" category. `with_powers`
 ##   puts them after the menu's own commands, so `BattleMenu.top_level` shows one "Powers" row.
+##   While a held form offers its own commands, those stand in for the menu's own (C6.5e).
 ## - `reason_key`: why a power cannot be used now, as the localization key a player reads:
 ##   "ready in 2 turns" in a battle, "ready in 3s" in the field, "not at this hour", and so on.
 ## - `reason_args`: the blanks those words fill: the pool ("not enough MP", "SUN too low") and
@@ -45,9 +46,20 @@ static func commands(user: Combatant) -> Array[BattleCommand]:
 	return out
 
 
-## `offered` followed by `user`'s powers: what a menu lists.
+## `offered` followed by `user`'s powers: what a menu lists. While a held form has commands of
+## its own (C6.5e), they stand in for `offered`; while one turns the Attack into a skill, the
+## Attack row is named after that skill.
 static func with_powers(offered: Array[BattleCommand], user: Combatant) -> Array[BattleCommand]:
-	var out: Array[BattleCommand] = offered.duplicate()
+	var body: Node = user.get_parent() if user != null else null
+	var formed: Array[BattleCommand] = FormRun.commands_of(body) if body != null else []
+	var attack: Skill = FormRun.attack_of(body) if body != null else null
+	var out: Array[BattleCommand] = []
+	for command: BattleCommand in (formed if not formed.is_empty() else offered):
+		var listed: BattleCommand = command
+		if attack != null and command.kind == BattleCommand.Kind.ATTACK:
+			listed = command.duplicate() as BattleCommand
+			listed.label_key = attack.name_key
+		out.append(listed)
 	out.append_array(commands(user))
 	return out
 
