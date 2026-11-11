@@ -8,7 +8,7 @@ extends Node
 ## clamps to, and every signal names the same `who`. Nothing about the actor itself changes.
 ##
 ## A BARRIER STEPS IN BEFORE THE HIT LANDS (C6.6a). `receive` hands the resolved hit to
-## `PowerSet.guard`, the one hook the hero powers have in the damage path: a barrier may bring
+## `PowerGuard.incoming`, the one hook the hero powers have in the damage path: a barrier may bring
 ## it to nothing, make it smaller, or drink its element. A hit stopped whole is announced as
 ## `attack_blocked` and changes nothing (C6.6b).
 ##
@@ -155,7 +155,7 @@ func receive(result: DamageResult, from: StringName) -> int:
 		Events.attack_missed.emit(combatant_id, from)
 		return 0
 	# A barrier of this fighter's kit, or of an ally's, may stop or soften the hit first (C6.6a).
-	PowerSet.guard(self, result, from)
+	PowerGuard.incoming(self, result, from)
 	# A hit stopped whole is announced as blocked, not as 0 damage (C6.6b).
 	if result.blocked:
 		Events.attack_blocked.emit(combatant_id, from)

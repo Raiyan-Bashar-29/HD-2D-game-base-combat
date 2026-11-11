@@ -29,8 +29,12 @@ between them, written in plain words.
 - **C7.2 is done (0.67.0): rarity and drops.** A piece of gear names a `Rarity` tier
   (`data/rarities/`), which scales its stat changes and makes it rarer in rolled loot. A
   `LootTable` on an encounter or a fighter is rolled by `LootRoll` on a win or a field kill.
-- **Next: C7.3, special gear (gear that grants powers).** The build order is
-  the table at the foot of `GEAR.md`: C7.3, then C6.5d, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
+- **C7.3 is done (0.68.0): special gear.** A piece with a `kit` lends the wearer hero powers
+  while worn. `PowerSet` holds several kits at once (own first, then gear's in slot order), a
+  power can need a piece (`Power.requires_gear`), and a piece carries its own pool with a
+  `max_<pool>` modifier. The incoming-hit hook is now `PowerGuard.incoming`.
+- **Next: C6.5d, transformations.** The build order is
+  the table at the foot of `GEAR.md`: C6.5d, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's

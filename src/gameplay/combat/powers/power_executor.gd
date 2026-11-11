@@ -19,7 +19,7 @@ extends RefCounted
 ## - `moved`: the fighter started a move in the field, other than its dodge (`PowerSet.moved`,
 ##   C6.5b), so a form can drain per action.
 ## - `intercept_incoming`: a hit is about to land on this fighter or on one of its allies
-##   (`PowerSet.guard`, from `Combatant.receive`, C6.6a), so a barrier can stop or soften it.
+##   (`PowerGuard.incoming`, from `Combatant.receive`, C6.6a), so a barrier can stop or soften it.
 ##
 ## OWNS: the running state of one mechanism on one fighter.
 ## MUST NOT: name a character, or be looked up by anything but its `kind`.

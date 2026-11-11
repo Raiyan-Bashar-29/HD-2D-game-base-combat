@@ -71,7 +71,7 @@ row that builds it. The hero powers it leans on are in [`POWERS.md`](POWERS.md).
 | `attack_tags` | Tags the wearer's attacks carry (`sword`, `quinque`), for weaknesses |
 | `moves` | A `MoveSet` played in the field while worn (a weapon's swing chain) |
 | `kit` | A `PowerKit` granted while worn: special gear (§ Special gear) |
-| `passives` | Statuses held while worn |
+| `passives` | Dropped in C7.3: give the piece a `kit` and list them in the kit's `passives` |
 | `wearers` | Combatant ids that may wear it; empty means anyone |
 | `needs_level`, `needs_stats` | Requirements to wear it |
 | `set_id` | The set it belongs to (§ Sets) |
@@ -160,7 +160,7 @@ worn set. The rules:
   piece on empties those slots; putting a piece into one of them takes the blocker off. A
   two-handed sword is `blocks = [offhand]`. A file that blocks its own slot is a problem.
 
-Still to come: the weapon's own attack chain (with special gear, C7.3). A foe drops what it wears when its `loot_table` lists the piece (C7.2).
+Still to come: the weapon's own attack chain (C7.3b). A foe drops what it wears when its `loot_table` lists the piece (C7.2).
 
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
@@ -230,6 +230,32 @@ A piece with a `kit` gives its powers while worn. This is how every signature we
   Judgment Cut needs a katana in hand.
 - **Charges.** A piece can carry a pool (`max_<pool>` in its modifiers), so a weapon has its own
   ammunition or heat (Owl's Rc cells, Ea's wind-up).
+
+**As built (C7.3, combat 0.68.0).**
+
+- `GearDefinition.kit` is a `PowerKit`. While the piece is worn, the wearer has the kit's
+  powers, passives, gauges and stat bonuses. `problems()` checks the kit with the piece.
+- `PowerSet` holds the fighter's own kit (`kit`, put on with `equip`) and any number of lent
+  kits (`lend`). `kits()` lists them, own first; `powers()` is every power in menu order;
+  `status(id)` finds a passive or a form's status in any of them. Each kit goes on and comes
+  off alone, so the other kits' cooldowns, forms and passives carry on.
+- `GearSet` hands the worn pieces' kits to the wearer's `PowerSet` after every change, in the
+  slot list's order. A kit that stays worn is left alone. A fighter with no powers of its own
+  gets a `PowerSet` the first time a piece lends one.
+- **The sources.** A lent kit's stat bonuses sit on the sheet under `gear_kit/<item id>`. The
+  piece's own stat changes stay under `gear/<item id>`. (The design above said `gear/<item id>`
+  for both; they are kept apart so taking one off cannot remove the other.)
+- `Power.requires_gear` is an item id (that piece) or a gear type's id (any piece of that
+  kind). `GearSet.wearing(body, id)` answers it. Not worn: `PowerUse.Reason.GEAR`, shown as
+  "needs gear it is not wearing" (`ui.battle.reason.needs_gear`).
+- **Charges** need no code: a `max_<pool>` modifier on the piece gives the wearer that pool
+  while it is worn, and a power's skill spends it through `cost_pool`.
+- **`passives` on a piece was dropped.** A piece's kit already has `passives`, so a second
+  list would be the same thing twice.
+- **Rules for authors.** Two kits on one fighter must not share a power id or a passive's
+  status id; the set tells kits apart by those ids.
+- **Not built here:** the weapon's own swing chain (`moves`, C7.3b). A form of a gear kit held
+  at save time is found again on load only if the piece is still worn when the save is read.
 
 ### Sets, sockets, upgrading
 
@@ -626,7 +652,8 @@ weapons themselves.
 | C7.1b | Gear in a fight (built): starting gear on a `CombatantDef`; `GearSet.fit` in `BattleSetup`, `ActionHost` and `ActionEnemy`; a party switch carries the `GearSet`; a foe's gear is not saved; the `[combat] gear/rules` setting | C7.1a |
 | C7.1c | The worn weapon on attacks (built): `element` and `attack_tags` lent to the wearer's plain attack in both formulas; `blocks` for two-handed | C7.1b |
 | C7.2 | **DONE.** Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
-| C7.3 | Special gear: `PowerSet` holds several kits by source; a piece's `kit`, `passives` and `moves`; `Power.requires_gear`; weapon pools | C7.1 |
+| C7.3 | **DONE.** Special gear: `PowerSet` holds several kits; a piece's `kit`; `Power.requires_gear`; weapon pools | C7.1 |
+| C7.3b | A weapon's own swing chain: `moves` on a piece and on a type | C7.3 |
 | C6.5d | Transformations: `LookDef`, `LookSwap`, a form's `look`, `name_key`, `commands`, `replaces_attack`, `aftermath`, `once_per_battle`; shown on the battle screen, HUD and sheet with dummy looks | C6.5 |
 | C6.6c, C6.6d | As on the board | |
 | C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |

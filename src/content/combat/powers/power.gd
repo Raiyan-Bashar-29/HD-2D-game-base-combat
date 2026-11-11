@@ -7,8 +7,8 @@ extends Resource
 ## - a `move`: its real-time timing and hitbox in the field;
 ## - a `mechanism`: the one thing a skill cannot do (a barrage, a barrier, a domain...);
 ## - a `cooldown`: seconds in the field, turns in a battle;
-## - conditions: statuses it needs (and may use up), a pool that must be full enough, and the
-##   hours of the day it works (`active_hours`; `(0, 24)` is always, `(20, 4)` is night only);
+## - conditions: statuses it needs (and may use up), a pool that must be full enough, gear that
+##   must be worn (`requires_gear`), and the hours of the day it works (`active_hours`; `(0, 24)` is always, `(20, 4)` is night only);
 ## - `scaling`: rules that make it stronger or weaker by the situation.
 ## A `passive` power is never used; it is held while its kit is equipped.
 ##
@@ -39,6 +39,9 @@ extends Resource
 ## The hours it works, from x up to (not including) y. When x is after y, the window wraps past
 ## midnight. `(0, 24)` means always.
 @export var active_hours: Vector2 = Vector2(0.0, 24.0)
+## Gear the user must be wearing (C7.3): an item id for one piece, or a gear type's id for any
+## piece of that kind ("needs a katana in hand"). Empty means none.
+@export var requires_gear: StringName = &""
 @export var scaling: Array[PowerScaling] = []
 ## True for a power that is held, not used.
 @export var passive: bool = false

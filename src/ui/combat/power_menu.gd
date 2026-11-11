@@ -25,6 +25,7 @@ const COOLDOWN_SECONDS_KEY: String = "ui.battle.reason.cooldown_seconds"
 const HOURS_KEY: String = "ui.battle.reason.hours"
 const STATUS_KEY: String = "ui.battle.reason.needs_status"
 const POOL_KEY: String = "ui.battle.reason.pool_low"
+const GEAR_KEY: String = "ui.battle.reason.needs_gear"
 const NOT_EQUIPPED_KEY: String = "ui.battle.reason.not_equipped"
 
 
@@ -33,10 +34,10 @@ const NOT_EQUIPPED_KEY: String = "ui.battle.reason.not_equipped"
 static func commands(user: Combatant) -> Array[BattleCommand]:
 	var out: Array[BattleCommand] = []
 	var powers: PowerSet = PowerSet.of(user.get_parent()) if user != null else null
-	if powers == null or powers.kit == null:
+	if powers == null:
 		return out
-	for power: Power in powers.kit.powers:
-		if power == null or power.passive:
+	for power: Power in powers.powers():
+		if power.passive:
 			continue
 		var command := BattleCommand.for_power(power)
 		command.category = CATEGORY_KEY
@@ -69,6 +70,8 @@ static func reason_key(user: Combatant, power: Power) -> String:
 			return BattleMenu.BLOCKED_REASON_KEY
 		PowerUse.Reason.COST:
 			return BattleMenu.COST_REASON_KEY
+		PowerUse.Reason.GEAR:
+			return GEAR_KEY
 	return NOT_EQUIPPED_KEY
 
 

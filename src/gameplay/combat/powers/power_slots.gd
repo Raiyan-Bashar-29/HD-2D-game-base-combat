@@ -17,6 +17,9 @@ extends RefCounted
 ## A press goes through `FieldCommands`, so it follows the field's rules: no ATB cost, the
 ## power's own cooldown, cost and refusals.
 ##
+## GEAR'S POWERS COME AFTER (C7.3): the fighter's own kit fills the slots first, then the kits
+## lent by worn gear, in the gear slots' order (the weapon first).
+##
 ## OWNS: which power sits in which slot, and using it.
 ## MUST NOT: read input (the fighter does) or draw anything (the HUD's slot line, C6.3b).
 
@@ -29,20 +32,20 @@ const COUNT: int = 4
 static func powers(user: Combatant) -> Array[Power]:
 	var out: Array[Power] = []
 	var held: PowerSet = PowerSet.of(user.get_parent()) if user != null else null
-	if held == null or held.kit == null:
+	if held == null:
 		return out
 	var statuses: StatusSet = StatusSet.of(user.get_parent())
-	for power: Power in held.kit.powers:
-		if power != null and not power.passive and out.size() < COUNT \
-				and not _in_another_form(held.kit, statuses, power):
+	for power: Power in held.powers():
+		if not power.passive and out.size() < COUNT \
+				and not _in_another_form(held, statuses, power):
 			out.append(power)
 	return out
 
 
-# True when `power` needs a status that `kit` grants (a form of it) and the fighter is not in it.
-static func _in_another_form(kit: PowerKit, statuses: StatusSet, power: Power) -> bool:
+# True when `power` needs a status one of the fighter's kits grants (a form) and it is not held.
+static func _in_another_form(held: PowerSet, statuses: StatusSet, power: Power) -> bool:
 	for needed: StringName in power.requires_statuses:
-		if kit.status(needed) != null and (statuses == null or statuses.stacks(needed) == 0):
+		if held.status(needed) != null and (statuses == null or statuses.stacks(needed) == 0):
 			return true
 	return false
 

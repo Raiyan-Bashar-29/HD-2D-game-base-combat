@@ -162,7 +162,7 @@ formulas (`ActionFighter`, `CombatClock`).
   a barrier" is one mechanism on one power: it is entered, left and grouped like a form, its
   status is held while it is up, and the form's drain is its upkeep. With no status and no
   cycle it is always up (put it on a passive power). Its executor `BarrierRun` answers the hook
-  `intercept_incoming`, which `Combatant.receive` reaches through `PowerSet.guard`: the
+  `intercept_incoming`, which `Combatant.receive` reaches through `PowerGuard.incoming`: the
   target's own kit first, then each ally's on the same clock. In order: a `bypass_tags` hit
   goes through; an `absorb_elements` hit is added to the guard's `store_pool` and takes nothing;
   `cost_per_block` of `cost_pool` is paid, or the barrier comes down and the hit lands; then
