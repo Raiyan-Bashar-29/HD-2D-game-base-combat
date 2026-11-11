@@ -70,9 +70,10 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 
 ## Adds who `loadout`'s fighter is under `body`: `Vitals`, `StatusSet`, `Combatant`, a `PowerSet`
 ## wearing the fighter's `power_kit` when it has one (C6.2b), a `GearSet` (C7.1b), an `AtbMeter` when the loadout has
-## ATB rules, and a `Hurtbox` with a shape. The player's body gets this from
-## `equip`, and a party follower's from itself (C4.7). Every node but the hurtbox is the member
-## and moves with them on a party switch (`FieldParty`). Returns the combatant.
+## ATB rules, a `Hurtbox` with a shape, and a `LookSwap` that shows a form's look (C6.5d). The
+## player's body gets this from `equip`, and a party follower's from itself (C4.7). Every node but
+## the hurtbox and the look swap is the member and moves with them on a party switch
+## (`FieldParty`). Returns the combatant.
 static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 	var def: CombatantDef = loadout.fighter
 	body.add_child(Vitals.new())
@@ -109,6 +110,8 @@ static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 	shape.position = Vector3(0.0, 0.8, 0.0)
 	hurtbox.add_child(shape)
 	body.add_child(hurtbox)
+	# A form's look on the body (C6.5d). Like the hurtbox it stays with the body on a switch.
+	body.add_child(LookSwap.new())
 	return combatant
 
 

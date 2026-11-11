@@ -1300,6 +1300,10 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
    - Gear that grants powers (C7.3): give a `GearDefinition` a `kit` (a `PowerKit`). The wearer
      has its powers while the piece is worn. A power that needs a weapon in hand sets
      `requires_gear` to the item id, or to a gear type's id. See `GEAR.md` § Special gear.
+   - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
+     `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
+     `name_key`. While the form is held the body is tinted, sized and tagged, and the battle
+     screen and HUD show the name. A cycle stage with none of its own shows the cycle's.
    - Optionally set `music`, an audio stream: it plays while the fight is open, and the area's
      own music returns afterwards. Left empty, the field's music keeps playing.
 4. **The trigger**: place `encounter_point.tscn` under `Interactables`. Set its `object_id`, its

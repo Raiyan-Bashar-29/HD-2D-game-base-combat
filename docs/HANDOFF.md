@@ -33,8 +33,12 @@ between them, written in plain words.
   while worn. `PowerSet` holds several kits at once (own first, then gear's in slot order), a
   power can need a piece (`Power.requires_gear`), and a piece carries its own pool with a
   `max_<pool>` modifier. The incoming-hit hook is now `PowerGuard.incoming`.
-- **Next: C6.5d, transformations.** The build order is
-  the table at the foot of `GEAR.md`: C6.5d, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
+- **C6.5d is done (0.69.0): transformations you can see.** A form's `look` (a `LookDef`: a
+  tint, a size and a tag over the head) goes on the body while the form is held, through a
+  `LookSwap` node on every field body that asks each frame; the battle screen and the HUD name
+  the form.
+- **Next: C6.5e, a form's own commands.** The build order is
+  the table at the foot of `GEAR.md`: C6.5e, C6.6c, C6.6d, C6.7, C6.26, C6.8, C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's

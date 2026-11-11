@@ -564,6 +564,23 @@ look)`; a small `LookSwap` node beside the `Combatant` applies it to the body's
 New small fields these need: `once_per_battle` on `Power`; `aftermath` and `requires_ally` on
 `FormMechanism`; a `control` setting on `StatusEffect` (PLAYER or AUTO).
 
+**As built (C6.5d, combat 0.69.0): the look and the name.** `LookDef`
+(`src/content/combat/look_def.gd`) holds `look_id`, `tint`, `scale` and `label_key`; the art
+slots wait for the row that first reads them. `FormMechanism.look` names a `LookDef` directly
+(a `.tres` under `data/looks/` is dragged in; no database), and `FormMechanism.name_key` is the
+form's name; `look_at(stage)` and `name_at(stage)` give a cycle stage's own, else the cycle's.
+`LookSwap` (`src/gameplay/combat/powers/look_swap.gd`), added to every field body by
+`ActionHost.fit_identity`, asks each physics frame which form is held (`FormRun.held`) and only
+when the answer changes tints the `CharacterVisual`'s sprite, scales the visual and shows a
+`Label3D` tag over the head; with no form it puts the remembered tint and size back. There is no
+`Events.look_changed`: asking makes every way a form ends (a cure, a timer, a drain, a load, a
+new game, a party switch) show with no wiring. It stays with the body on a switch, so each body
+shows the member now on it. With forms of two groups held, the first in kit order with a look
+wins. The battle screen's `name_of` reads "Name · Form" (`ui.battle.form_title`) and the HUD's
+line leads with the form. **Moved to C6.5e:** `commands`, `replaces_attack`, `aftermath`,
+`once_per_battle`, and the name on the party sheet and status screen. A battle body has no
+`CharacterVisual` yet, so in a battle only the name shows.
+
 ## Part 5 · The mechanics survey
 
 What combat systems in well-known games do, and where this base stands. **Have** means built
@@ -589,7 +606,7 @@ and merged. **Row** names the board row that builds it.
 | Planted and delayed strikes | Owl, time bombs, rune traps | Row C6.26 (new) |
 | Battlefields: domains, terrain, weather, auras | JJK, Fate, Pokémon weather and terrain, Divinity's surfaces | Rows C6.9a–d (widened) |
 | Foresight, command, blink, clone, sacrifice, grant, refresh | The kits in `POWERS.md` | Rows C6.10–C6.13 |
-| Transformations with a look | The table above | Row C6.5d (new) |
+| Transformations with a look | The table above | Have, the look and name (C6.5d); commands in row C6.5e |
 | Gear, rarity, sets, sockets, upgrading, crafting | Diablo, Monster Hunter, Souls games | Rows C7.1–C7.9 |
 | **An extra turn for hitting a weakness** | Press Turn (Shin Megami Tensei), One More (Persona) | Row C8.1 (new) |
 | **Team attacks**: all-out attack, chain and link attacks, dual and triple techs | Persona, Xenoblade, Chrono Trigger | Row C8.2 (new) |
@@ -654,7 +671,8 @@ weapons themselves.
 | C7.2 | **DONE.** Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
 | C7.3 | **DONE.** Special gear: `PowerSet` holds several kits; a piece's `kit`; `Power.requires_gear`; weapon pools | C7.1 |
 | C7.3b | A weapon's own swing chain: `moves` on a piece and on a type | C7.3 |
-| C6.5d | Transformations: `LookDef`, `LookSwap`, a form's `look`, `name_key`, `commands`, `replaces_attack`, `aftermath`, `once_per_battle`; shown on the battle screen, HUD and sheet with dummy looks | C6.5 |
+| C6.5d | **DONE.** Transformations you can see: `LookDef`, `LookSwap`, a form's `look` and `name_key`; shown on the body, the battle screen and the HUD with dummy looks | C6.5 |
+| C6.5e | A form's own commands: `commands`, `replaces_attack`, `aftermath`, `Power.once_per_battle`; the name on the party sheet | C6.5d |
 | C6.6c, C6.6d | As on the board | |
 | C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading | C6.7 |

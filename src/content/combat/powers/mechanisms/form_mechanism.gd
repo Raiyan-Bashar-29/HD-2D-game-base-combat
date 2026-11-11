@@ -24,6 +24,11 @@ extends PowerMechanism
 ## moves (C6.5b); empty or null keeps the fighter's own. A cycle stage with no moves of its own
 ## plays the cycle's (`moves_of`).
 ##
+## `look` and `name_key` (C6.5d) are what the player sees while the form is held: a `LookDef`
+## (a tint, a size and a tag over the head) and a name shown beside the fighter's own on the
+## battle screen and the HUD. A cycle stage with no look or name of its own shows the cycle's
+## (`look_at`, `name_at`).
+##
 ## OWNS: the shape of a form.
 ## MUST NOT: hold running state. `FormRun` (gameplay) runs it.
 
@@ -42,6 +47,10 @@ extends PowerMechanism
 ## The form's own attack chain and dodge in the field. Empty or null: the fighter's own.
 @export var attack_chain: Array[ActionMove] = []
 @export var dodge: ActionMove
+## How the fighter looks while in the form (C6.5d). Null: unchanged.
+@export var look: LookDef
+## The form's name, shown beside the fighter's (C6.5d). Empty: no name shown.
+@export var name_key: String = ""
 
 
 func kind() -> StringName:
@@ -81,6 +90,23 @@ func moves_of(stage: int) -> FormMechanism:
 	return picked
 
 
+## The look shown at `stage`: the stage's own, else the cycle's. A plain form's is its own.
+func look_at(stage: int) -> LookDef:
+	var held: FormMechanism = _stage(stage)
+	return held.look if held != null and held.look != null else look
+
+
+## The name shown at `stage`: the stage's own, else the cycle's. A plain form's is its own.
+func name_at(stage: int) -> String:
+	var held: FormMechanism = _stage(stage)
+	return held.name_key if held != null and held.name_key != "" else name_key
+
+
+# The cycle stage at `index`, or null for a plain form or an index out of range.
+func _stage(index: int) -> FormMechanism:
+	return cycle[index] if index >= 0 and index < cycle.size() else null
+
+
 # True when a form with no status and no cycle is a mistake. A barrier that is always up says no.
 func _needs_status() -> bool:
 	return true
@@ -92,6 +118,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s is a form with no status and no cycle" % context)
 	if status != null:
 		found.append_array(status.problems())
+	if look != null:
+		found.append_array(look.problems(context))
 	if not advance_after.is_empty() and cycle.is_empty():
 		found.append("%s advances after a power but is not a cycle" % context)
 	if drain_pool == &"" and (drain_per_second != 0.0 or drain_per_turn != 0.0 \

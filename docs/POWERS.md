@@ -157,7 +157,9 @@ formulas (`ActionFighter`, `CombatClock`).
   `PowerSet.moves_over`, for the player and for followers; `drain_per_action` drains for each
   move started (never a dodge; the player only, since followers do not report moves). **C6.5c:** `PowerMechanism.statuses()`
   lists what a mechanism puts on (a form: its stage statuses) and `PowerKit.status(id)` finds
-  it, so a form held at save time loads again.
+  it, so a form held at save time loads again. **C6.5d:** a form's `look` (a `LookDef`: tint, size,
+  a tag) and `name_key` are shown while it is held: `LookSwap` on the field body, "Name · Form"
+  on the battle screen, and first on the HUD line (`GEAR.md` § Part 4).
 - **M3 `barrier`, as built (C6.6a):** `BarrierMechanism` EXTENDS `FormMechanism`, so "a form with
   a barrier" is one mechanism on one power: it is entered, left and grouped like a form, its
   status is held while it is up, and the form's drain is its upkeep. With no status and no
