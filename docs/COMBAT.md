@@ -7,7 +7,7 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-11-11 · **C6.5e complete: a form's own commands. While a form is held its `commands` stand in for the fighter's menu in a battle and the field (its hero powers still follow); its `replaces_attack` turns a battle's plain Attack into that skill (aimed and paid as it, the Attack row named after it); and its `aftermath` goes on when it ends by its own rules: used again, drained dry, or its timed status running out (`StatusSet.running_out` tells running out from a cure). A rival of its group, a cure or the kit coming off gives no aftermath. A cycle stage with no commands or attack uses the cycle's. `Power.once_per_battle` and the form's name on the party sheet moved to the new row C6.5f. Next: C6.5f, then the order at the foot of `GEAR.md`.** Combat `0.70.0`.
+**Last updated:** 2026-11-11 · **C6.5f complete: once per battle. A power marked `Power.once_per_battle` is refused with the new reason ONCE ("once per battle" in the menus) after its first use, until the next battle (each battle builds a fresh `PowerSet`) or, in the field, until the next area (`Events.area_entered`, which a new game and a load also send). Taking the kit off and on does not bring it back. The form's name on a party sheet moved to C7.7, the first screen that lists each member. Next: C6.6c, then the order at the foot of `GEAR.md`.** Combat `0.71.0`.
 full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, C2.6 builds a battle from an encounter, C2.7 draws it as a screen over the frozen field, C2.8 rewards a win and grows the party, and C2.9 puts a playable fight in the courtyard. **The turn-based formula is complete. The next row is C3.0, which plans the action formula.**
 
 ## How the two repositories relate
@@ -243,7 +243,9 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.70.0** — C6.5e. A form's own commands: `FormMechanism.commands`, `replaces_attack` and
+- **0.71.0** — C6.5f. Once per battle: `Power.once_per_battle`, `OnceLedger` (`PowerSet.once`,
+  wiped on `area_entered`), `PowerUse.Reason.ONCE` and its menu words `ui.battle.reason.once`.
+- `0.70.0` — C6.5e. A form's own commands: `FormMechanism.commands`, `replaces_attack` and
   `aftermath` (with `commands_at`/`attack_at`), `FormRun.held_in`/`commands_of`/`attack_of`,
   `PowerMenu.with_powers` offering a form's menu, `Battle`'s Attack becoming the form's skill, and
   `StatusSet.running_out`.
@@ -820,8 +822,8 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C6.6b | Timed block, and a blocked hit announced | **DONE**, combat `0.63.0`. `BarrierMechanism` mode TIMED_BLOCK with `timing`, C4.10's `TimedWindow` (new `inside`), counted from the moment the guard goes up (`BarrierRun._held`: seconds in the field; in a battle a block is perfect until the guard's own next turn). A perfect block takes 0, costs nothing and stores the hit in `store_pool`; a late one pays `cost_per_block` and leaves `factor`. Give the guard's status a short duration so each press raises it anew. New `Events.attack_blocked`: `Combatant.receive` emits it for a hit stopped whole, in place of `combatant_damaged` with 0, and the battle log writes "blocks the attack" |
 | C6.5d | Transformations with a look | DONE (0.69.0). The look and the name: `LookDef` (a tint, a size and a tag until sprites exist), a form's `look` and `name_key` (a cycle stage falls back to the cycle's), `LookSwap` on every field body (asks each frame, so every way a form ends shows), and the form's name on the battle screen and the HUD (`GEAR.md` § Part 4) |
 | C6.5e | A form's own commands | DONE (0.70.0). Split by the 8-file rule. `commands` (the battle and field menus offer them in place of the fighter's own while the form is held, through `PowerMenu.with_powers`), `replaces_attack` (a battle's Attack is done as that skill; the Attack row takes its name), `aftermath` (on when the form ends by its own rules: used again, drained, timed out; never by a rival, a cure or the kit coming off). A cycle stage falls back to the cycle's (`GEAR.md` § Part 4) |
-| C6.5f | Once per battle, and the form on the sheet | **Next.** `Power.once_per_battle` (a power used once is refused until the next battle; in the field, until the next area), its menu reason, and the form's name on the party sheet and the status screen (`GEAR.md` § Part 4) |
-| C6.6c | Perfect dodge, no flinch | TODO. A perfect dodge (a dodge started just before the hit) and `GaugeRule.on_perfect_dodge` (moved here from C6.4b); the `knockback_taken` stat (−1: no push, no flinch; C6.0b's Will Not Flinch and super armor) read by the player, enemies and followers |
+| C6.5f | Once per battle | DONE (0.71.0). `Power.once_per_battle`: after its first use a power is refused with `PowerUse.Reason.ONCE` (menu: "once per battle") until the next battle, which builds a fresh `PowerSet`, or in the field until the next area (`OnceLedger`, wiped on `Events.area_entered`). Unequipping does not wipe it. The form's name on the party sheet moved to C7.7: no party or status screen exists yet |
+| C6.6c | Perfect dodge, no flinch | **Next.** A perfect dodge (a dodge started just before the hit) and `GaugeRule.on_perfect_dodge` (moved here from C6.4b); the `knockback_taken` stat (−1: no push, no flinch; C6.0b's Will Not Flinch and super armor) read by the player, enemies and followers |
 | C6.6d | Counter stance (M13) | TODO. Hold a stance (pool upkeep); a hit received becomes a counter move; in a battle, a status with the COUNTER reaction at chance 1 for one turn; a perfect press is a parry |
 | C6.7 | Barrage (M1) | TODO. A `Projectile` node (a moving `Hitbox`), the five patterns, homing, per-shot elements; the battle reading (hits at random targets). Also the LINE beam, an instant line hit (`POWER_ATLAS.md`, `beam_hitscan`) |
 | C6.8 | Finisher (M2) | TODO. Charge or hold, a "charging" status in battle that a strong hit breaks, the `CombatClock` time-stop flourish, power from a pool |
@@ -857,7 +859,7 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C7.4 | Sets, sockets and requirements | TODO. `GearSetBonus`, `GemDefinition`, who may wear what |
 | C7.5 | Upgrading and awakening | TODO. `UpgradeTrack`, the level saved per piece, `Power.requires_upgrade` |
 | C7.6 | Crafting, the logic | TODO. `Recipe` (craft, upgrade, awaken, dismantle, transmute) and `Crafting` |
-| C7.7 | The gear screen | TODO. Slots, compare, rarity colours; the weapon and its mode on the HUD and the battle screen |
+| C7.7 | The gear screen | TODO. Slots, compare, rarity colours; the weapon and its mode on the HUD and the battle screen; the form's name beside each member (`LookSwap.form_name_key`, moved from C6.5f) |
 | C7.8 | The craft screen | TODO. The screen and the `CraftStation` interactable |
 | C7.2b | Affixes | TODO. Random extra modifiers on a dropped piece, saved per piece. Needs C7.5 |
 | C7.9 | The armoury: weapons | TODO. IXA, Owl, Ea and the other heroes' weapons as data, a probe and captures. Needs C6.26, C6.9, C7.5 |

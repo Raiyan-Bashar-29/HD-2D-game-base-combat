@@ -3450,3 +3450,33 @@ failed. Then the suite (0 failed), the seven checkers, and the stripped run
 **Gaps.** `replaces_attack` is battle-only (the field's attack is the form's `attack_chain`). The
 Attack row shows no cost for its skill. A form's commands in the field still follow the field's own
 rules: an ATTACK, DEFEND or FLEE there is refused.
+
+## 2026-11-11 — C6.5f · Once per battle
+
+**Did.** `Power.once_per_battle` (a passive with it is a problem). New `OnceLedger`
+(`src/gameplay/combat/powers/once_ledger.gd`): `spent`, `spend`, `forget`. `PowerSet.once` holds
+one and connects `once.forget` to `Events.area_entered`. `PowerUse.Reason.ONCE`, checked right
+after NOT_EQUIPPED, so the lasting reason shows before a cooldown; `PowerUse.use` writes the
+power down after starting its cooldown. `PowerMenu.ONCE_KEY` = `ui.battle.reason.once`
+("once per battle"). Combat 0.71.0.
+
+**Why.** Board row C6.5f; a finisher or a transformation that may be used once a fight (The
+One, a Devil Trigger burst) needs it.
+
+**Connects.** A battle needs no reset: `BattleSetup` builds a fresh `PowerSet` per battle. The
+field wipes on `area_entered`, which `Director` sends on every area load (new game and load
+included), so nothing is saved. The ledger is not wiped by `unequip` or by gear lending a kit
+again, so a swap cannot buy a second use; it moves with the member on a party switch.
+`PowerSet` was at 244/250 lines, so the record is its own small class.
+
+**Decided.** The form's name "on the party sheet and the status screen" is not built here:
+neither screen exists. It moved to C7.7, the gear screen, which reads
+`LookSwap.form_name_key`.
+
+**Verified.** Red first: with the ONCE check stubbed, 5 assertions failed. New
+`tests/unit/power_once_test.gd` (14 assertions): problems; field first use, refusal, past the
+cooldown, menu words, a plain power untouched, unequip and re-equip, `area_entered`; battle
+refusal on the next turn and a new battle allowing it again. Suite, seven checkers and stripped
+run green.
+
+**Unblocks.** C6.6c (next). **Gaps.** None new.

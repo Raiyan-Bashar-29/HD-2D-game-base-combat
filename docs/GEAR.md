@@ -596,6 +596,15 @@ none of those gives it. The aftermath is listed in the form's `statuses()`, so a
 **Moved to C6.5f:** `Power.once_per_battle` and the form's name on the party sheet and status
 screen.
 
+**As built (C6.5f, combat 0.71.0): once per battle.** `Power.once_per_battle` marks a power
+usable once per battle; in the field, once per area. `PowerUse.use` writes it into the user's
+`OnceLedger` (`PowerSet.once`), and `PowerUse.refusal` then answers ONCE ("once per battle" in
+both menus) before any cooldown. A battle builds fresh `PowerSet`s, so each battle starts clean;
+the field's set wipes the ledger on `Events.area_entered` (a new game and a load enter an area
+too). Taking a kit off and on, or swapping the gear that lends it, does not wipe it. No party
+sheet or status screen exists yet, so the form's name there moved to C7.7, the gear screen, the
+first screen that lists each member; it reads `LookSwap.form_name_key(body)`.
+
 ## Part 5 · The mechanics survey
 
 What combat systems in well-known games do, and where this base stands. **Have** means built
@@ -621,7 +630,7 @@ and merged. **Row** names the board row that builds it.
 | Planted and delayed strikes | Owl, time bombs, rune traps | Row C6.26 (new) |
 | Battlefields: domains, terrain, weather, auras | JJK, Fate, Pokémon weather and terrain, Divinity's surfaces | Rows C6.9a–d (widened) |
 | Foresight, command, blink, clone, sacrifice, grant, refresh | The kits in `POWERS.md` | Rows C6.10–C6.13 |
-| Transformations with a look | The table above | Have: the look and name (C6.5d), commands, the Attack and the aftermath (C6.5e); once per battle and the sheet in row C6.5f |
+| Transformations with a look | The table above | Have: the look and name (C6.5d), commands, the Attack and the aftermath (C6.5e); once per battle (C6.5f); the name on the gear screen in row C7.7 |
 | Gear, rarity, sets, sockets, upgrading, crafting | Diablo, Monster Hunter, Souls games | Rows C7.1–C7.9 |
 | **An extra turn for hitting a weakness** | Press Turn (Shin Megami Tensei), One More (Persona) | Row C8.1 (new) |
 | **Team attacks**: all-out attack, chain and link attacks, dual and triple techs | Persona, Xenoblade, Chrono Trigger | Row C8.2 (new) |
@@ -688,7 +697,7 @@ weapons themselves.
 | C7.3b | A weapon's own swing chain: `moves` on a piece and on a type | C7.3 |
 | C6.5d | **DONE.** Transformations you can see: `LookDef`, `LookSwap`, a form's `look` and `name_key`; shown on the body, the battle screen and the HUD with dummy looks | C6.5 |
 | C6.5e | **DONE.** A form's own commands: `commands`, `replaces_attack`, `aftermath` | C6.5d |
-| C6.5f | `Power.once_per_battle`; the form's name on the party sheet and status screen | C6.5e |
+| C6.5f | **DONE.** `Power.once_per_battle` (the sheet name moved to C7.7) | C6.5e |
 | C6.6c, C6.6d | As on the board | |
 | C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading | C6.7 |
@@ -700,7 +709,7 @@ weapons themselves.
 | C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |
 | C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |
 | C7.6 | Crafting, the logic: `Recipe`, `Crafting`, dismantle and transmute | C7.2 |
-| C7.7 | The gear screen: slots, compare, rarity colours; weapon and mode on the HUD and battle screen | C7.3 |
+| C7.7 | The gear screen: slots, compare, rarity colours; weapon and mode on the HUD and battle screen; the form's name beside each member | C7.3 |
 | C7.8 | The craft screen and `CraftStation` | C7.6, C7.7 |
 | C7.2b | Affixes on dropped pieces (per-piece saved state) | C7.5 |
 | C7.9 | The armoury, weapons: IXA, Owl, Ea and the other heroes' weapons as data, a probe and captures | C6.26, C6.9, C7.5 |
