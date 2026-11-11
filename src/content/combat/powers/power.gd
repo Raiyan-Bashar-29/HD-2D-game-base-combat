@@ -9,7 +9,9 @@ extends Resource
 ## - a `cooldown`: seconds in the field, turns in a battle;
 ## - conditions: statuses it needs (and may use up), a pool that must be full enough, gear that
 ##   must be worn (`requires_gear`), and the hours of the day it works (`active_hours`; `(0, 24)` is always, `(20, 4)` is night only);
-## - `scaling`: rules that make it stronger or weaker by the situation.
+## - `scaling`: rules that make it stronger or weaker by the situation;
+## - `once_per_battle` (C6.5f): once used, it is refused until the next battle (in the field,
+##   until the next area). `PowerSet.once` keeps the record.
 ## A `passive` power is never used; it is held while its kit is equipped.
 ##
 ## THE COST IS THE SKILL'S. A power that spends a kit gauge sets the skill's `cost_pool` to that
@@ -45,6 +47,8 @@ extends Resource
 @export var scaling: Array[PowerScaling] = []
 ## True for a power that is held, not used.
 @export var passive: bool = false
+## True for a power that can be used only once per battle; in the field, once per area.
+@export var once_per_battle: bool = false
 
 
 ## True when the clock's `hour` (0 to 24, fractions allowed) is inside `active_hours`.
@@ -67,6 +71,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has no name_key" % where)
 	if skill == null and mechanism == null and not passive:
 		found.append("%s does nothing: no skill and no mechanism" % where)
+	if passive and once_per_battle:
+		found.append("%s is passive, so once per battle means nothing" % where)
 	if cooldown < 0.0:
 		found.append("%s has a negative cooldown" % where)
 	if requires_fraction < 0.0 or requires_fraction > 1.0:

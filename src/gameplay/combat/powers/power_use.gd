@@ -10,7 +10,8 @@ extends RefCounted
 ##   battle the battle picks its targets, as it does for any skill.
 ## - `use`: does it. It pays the skill's cost (made cheaper by `cost_mult_<pool>`, C6.1a), makes
 ##   the skill stronger or weaker by the power's `scaling`, lands it through `SkillUse.apply`,
-##   runs the mechanism, starts the cooldown, and takes off the statuses the power uses up.
+##   runs the mechanism, starts the cooldown, and takes off the statuses the power uses up. A
+##   once-per-battle power is written down as spent (C6.5f), and refused with ONCE after that.
 ##
 ## SCALING NEVER CHANGES THE DATA. `scaled_skill` works on a copy, so the next use reads the
 ## kit's own numbers again.
@@ -32,6 +33,7 @@ enum Reason {
 	BLOCKED,  ## A status forbids skills (a silence).
 	COST,  ## The user cannot pay its skill's cost.
 	GEAR,  ## The piece or kind of gear it needs is not worn (C7.3).
+	ONCE,  ## A once-per-battle power already used in this battle, or in this area (C6.5f).
 }
 
 
@@ -45,6 +47,8 @@ static func refusal(user: Combatant, power: Power, hour: float = -1.0) -> Reason
 	var powers: PowerSet = PowerSet.of(body)
 	if powers == null or not powers.has(power):
 		return Reason.NOT_EQUIPPED
+	if power.once_per_battle and powers.once.spent(power.power_id):
+		return Reason.ONCE
 	if powers.cooldown_left(power.power_id) > 0.0:
 		return Reason.COOLDOWN
 	if not power.active_at(_hour(hour)):
@@ -93,6 +97,8 @@ static func use(user: Combatant, power: Power, aimed: Array[Combatant],
 	if running != null:
 		running.use(user, aimed, rng)
 	powers.start_cooldown(power)
+	if power.once_per_battle:
+		powers.once.spend(power.power_id)
 	powers.used(power)
 	var statuses: StatusSet = StatusSet.of(body)
 	if statuses != null:

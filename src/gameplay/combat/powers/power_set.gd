@@ -61,6 +61,10 @@ var _lent: Dictionary[StringName, PowerKit] = {}
 var _cooling: Dictionary[StringName, float] = {}
 var _running: Dictionary[StringName, PowerExecutor] = {}
 var _passives: Array[StringName] = []
+## The once-per-battle powers already used (C6.5f). Forgotten when an area is entered (which a
+## new game and a load also do); a battle builds a fresh set, so a new battle starts clean.
+## Taking a kit off does not forget it, so swapping gear cannot buy a second use.
+var once: OnceLedger = OnceLedger.new()
 ## The equipped kit's gauges. Empty, never null, with no kit.
 var gauges: KitGauges = KitGauges.new()
 # The id that fell a moment ago, until the next damage event says who felled it.
@@ -115,7 +119,8 @@ func _listens() -> Array[Array]:
 	return [[Events.game_started, _hold_passives], [Events.game_loaded, _on_game_loaded],
 		[Events.combatant_damaged, _on_damaged], [Events.attack_dodged, _on_dodged],
 		[Events.attack_missed, _on_missed], [Events.vitals_changed, _on_vitals_changed],
-		[Events.combatant_defeated, _on_defeated], [Events.combatant_revived, _on_revived]]
+		[Events.combatant_defeated, _on_defeated], [Events.combatant_revived, _on_revived],
+		[Events.area_entered, once.forget]]
 
 
 func _notification(what: int) -> void:

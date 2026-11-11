@@ -27,6 +27,7 @@ const HOURS_KEY: String = "ui.battle.reason.hours"
 const STATUS_KEY: String = "ui.battle.reason.needs_status"
 const POOL_KEY: String = "ui.battle.reason.pool_low"
 const GEAR_KEY: String = "ui.battle.reason.needs_gear"
+const ONCE_KEY: String = "ui.battle.reason.once"
 const NOT_EQUIPPED_KEY: String = "ui.battle.reason.not_equipped"
 
 
@@ -84,6 +85,8 @@ static func reason_key(user: Combatant, power: Power) -> String:
 			return BattleMenu.COST_REASON_KEY
 		PowerUse.Reason.GEAR:
 			return GEAR_KEY
+		PowerUse.Reason.ONCE:
+			return ONCE_KEY
 	return NOT_EQUIPPED_KEY
 
 
