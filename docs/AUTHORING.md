@@ -1416,9 +1416,10 @@ or `options_test` fails.
    | `startup`, `active`, `recovery` | Seconds before the hit, while the hitbox is live, and after it. |
    | `chain_after` | Seconds into recovery after which the next attack press continues the chain. A press before that is buffered for `MoveTimeline.buffer_window`. Must not exceed `recovery`. |
    | `iframes_from`, `iframes_to` | Seconds from the start of the move during which the mover cannot be hit. A dodge needs some, or `MoveSet.problems()` complains. |
+   | `perfect_window` | Seconds from the start of the i-frames in which a dodged hit is a **perfect dodge** (C6.6c): `Events.perfect_dodge` is sent and a gauge's `on_perfect_dodge` pays. 0 means none; it must fit inside the i-frames. |
    | `power`, `element`, `hits` | The hit, through the same damage formula as turn-based combat. |
    | `poise` | Shield points it takes from a fighter with `max_shield`, whether or not the hit matches a weakness. Breaking works as in turn-based combat. |
-   | `knockback` | How far a hit pushes its target back. |
+   | `knockback` | How far a hit pushes its target back, times 1 plus the target's `knockback_taken` stat (C6.6c). A fighter with `knockback_taken` −1 is not pushed and does not flinch (super armor). |
    | `skill` | Optional: the hit resolves as this `Skill` through the shared skill path, so a spell can be cast in real time. |
    | `hitbox_size`, `hitbox_offset` | The box the hit fills, in metres, relative to the mover's facing (`-z` is in front). Make it generous: the placeholder sprites are thin. |
    | `travel_speed` | Metres per second the mover slides forward while the move runs. A roll is a move with travel and i-frames and no power. |

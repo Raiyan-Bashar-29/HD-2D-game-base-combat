@@ -623,7 +623,7 @@ and merged. **Row** names the board row that builds it.
 | Timed hits and timed blocks | Super Mario RPG, Clair Obscur, Royal Guard | Have (C4.10, C6.6b) |
 | Forms and styles | Devil May Cry | Have (C6.5) |
 | Barriers | Infinity, Blut Vene | Have (C6.6a) |
-| Perfect dodge with a reward | Bayonetta's Witch Time, FF XVI | Row C6.6c |
+| Perfect dodge with a reward | Bayonetta's Witch Time, FF XVI | Built (C6.6c): `perfect_window`, `Events.perfect_dodge`, a gauge's `on_perfect_dodge`; a slow-down reward can listen to the event |
 | Counter stance and parry | Sekiro, Royal Guard | Row C6.6d |
 | Projectile barrages | Gate of Babylon | Row C6.7 |
 | Charged finishers | Zantetsuken | Row C6.8 |
@@ -698,7 +698,8 @@ weapons themselves.
 | C6.5d | **DONE.** Transformations you can see: `LookDef`, `LookSwap`, a form's `look` and `name_key`; shown on the body, the battle screen and the HUD with dummy looks | C6.5 |
 | C6.5e | **DONE.** A form's own commands: `commands`, `replaces_attack`, `aftermath` | C6.5d |
 | C6.5f | **DONE.** `Power.once_per_battle` (the sheet name moved to C7.7) | C6.5e |
-| C6.6c, C6.6d | As on the board | |
+| C6.6c | **DONE.** Perfect dodge (`perfect_window`, `Events.perfect_dodge`, `on_perfect_dodge`) and `knockback_taken` | C6.6 |
+| C6.6d | As on the board | |
 | C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading | C6.7 |
 | C6.8 | Finisher | |

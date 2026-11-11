@@ -109,6 +109,12 @@ func invulnerable() -> bool:
 	return elapsed >= move.iframes_from and elapsed < move.iframes_to
 
 
+## True while untouchable AND inside the move's `perfect_window` (C6.6c): a hit now is dodged
+## perfectly, because the dodge started only just before it.
+func perfectly() -> bool:
+	return invulnerable() and elapsed < move.iframes_from + move.perfect_window
+
+
 ## One transition if one is due; true when it happened, so `step` loops on.
 func _advance(entered: Array[int]) -> bool:
 	if phase == Phase.STARTUP and elapsed >= move.startup:

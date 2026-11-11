@@ -16,6 +16,8 @@ extends Resource
 ##
 ## A move with i-frames (`iframes_to` above `iframes_from`) makes its user untouchable from
 ## `iframes_from` to `iframes_to` seconds after the move starts. That is what a dodge is.
+## A PERFECT DODGE (C6.6c) is a hit dodged in the first `perfect_window` seconds of those
+## i-frames: the dodge was started just before the hit. 0 means this move has no perfect dodge.
 ##
 ## It is authored inline inside a `MoveSet`'s `.tres`, or as a file of its own when several
 ## move sets share it.
@@ -36,6 +38,8 @@ extends Resource
 ## Seconds after the move starts when its user becomes untouchable, and when that ends.
 @export var iframes_from: float = 0.0
 @export var iframes_to: float = 0.0
+## Seconds from the start of the i-frames in which a dodged hit counts as a perfect dodge.
+@export var perfect_window: float = 0.0
 @export_group("Hit")
 @export var power: float = 0.0
 @export var element: StringName = &""
@@ -72,6 +76,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has a chain_after outside its recovery" % context)
 	if iframes_to < iframes_from:
 		found.append("%s has i-frames that end before they start" % context)
+	if perfect_window < 0.0 or perfect_window > iframes_to - iframes_from:
+		found.append("%s has a perfect window outside its i-frames" % context)
 	if strikes() and (active <= 0.0 or hits < 1 or hitbox_size.length() <= 0.0):
 		found.append("%s strikes but has no active time, hits or hitbox" % context)
 	return found

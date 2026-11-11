@@ -11,10 +11,10 @@ extends Node
 ##   `Events.power_cooldown_changed` each time the whole number left changes (C6.3b), so the
 ##   HUD and the command menu can show "ready in 3s" without asking every frame.
 ## - its `gauges` (C6.4a) fill and drain by their rules, through a `KitGauges`: this set tells it
-##   when time passes and when the fighter lands a hit, takes one, dodges or misses, and every
-##   change to a gauge pool, whoever made it, moves that gauge's level status. Since C6.4b it
-##   also hears a kill, an ally falling, a new move (`moved`, from `ActionFighter`) and a cost
-##   paid (`spent`, from `SkillUse.pay`).
+##   when time passes and when the fighter lands a hit, takes one, dodges (perfectly too, C6.6c)
+##   or misses, and every change to a gauge pool, whoever made it, moves that gauge's level
+##   status. Since C6.4b it also hears a kill, an ally falling, a new move (`moved`, from
+##   `ActionFighter`) and a cost paid (`spent`, from `SkillUse.pay`).
 ## - every running mechanism hears of each power used (`used`, from `PowerUse.use`, C6.5a), so a
 ##   form's cycle can move on after a finisher.
 ## - in the field, the fighter plays the moves its running mechanisms hand it (`moves_over`,
@@ -120,7 +120,7 @@ func _listens() -> Array[Array]:
 		[Events.combatant_damaged, _on_damaged], [Events.attack_dodged, _on_dodged],
 		[Events.attack_missed, _on_missed], [Events.vitals_changed, _on_vitals_changed],
 		[Events.combatant_defeated, _on_defeated], [Events.combatant_revived, _on_revived],
-		[Events.area_entered, once.forget]]
+		[Events.area_entered, once.forget], [Events.perfect_dodge, _on_perfect_dodge]]
 
 
 func _notification(what: int) -> void:
@@ -408,6 +408,11 @@ func _on_revived(who: StringName) -> void:
 func _on_dodged(who: StringName, _by: StringName) -> void:
 	if who != &"" and who == _id():
 		gauges.happen(get_parent(), GaugeRule.Event.DODGE)
+
+
+func _on_perfect_dodge(who: StringName, _by: StringName) -> void:
+	if who != &"" and who == _id():
+		gauges.happen(get_parent(), GaugeRule.Event.PERFECT_DODGE)
 
 
 # `who` is the one the attack missed; `by` threw it.

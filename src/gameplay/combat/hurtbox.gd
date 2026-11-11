@@ -6,12 +6,18 @@ extends Area3D
 ## IN PLAIN WORDS: a `Hitbox` that touches this calls `take`, and `take` decides what the hit
 ## does. It refuses a hit from its own fighter, from an ally (by the faction table, as in a
 ## turn-based battle), or on a fighter already down. During i-frames it lets the hit pass and
-## announces a dodge. Otherwise it resolves the hit:
+## announces a dodge; inside the dodge's `perfect_window` it also announces a perfect dodge
+## (`Events.perfect_dodge`, C6.6c). Otherwise it resolves the hit:
 ## - a move wrapping a `Skill` goes through `SkillUse.apply`, exactly as in a turn-based battle;
 ## - a plain move hits `hits` times for its `power` and `element`, and each hit that lands chips
 ##   a matching weakness (`Weakness.strike`).
 ## Then, if anything landed, its `poise` wears the shield (`Weakness.wear`) and its `knockback`
 ## asks for a push away from where the hit came from (`Events.knockback_requested`).
+##
+## NO FLINCH (C6.6c): the push is scaled by 1 plus the target's `knockback_taken` stat, never
+## below 0. At -1 there is no push at all, so no stun either: the fighter keeps its swing (super
+## armor, "will not flinch"). The player, enemies and followers all flinch only on that push, so
+## this one place covers them all.
 ##
 ## `timeline` is set by whoever runs this fighter's moves (C3.4's fighter, C3.7's enemy), so a
 ## dodge's i-frames are read from the same clock that plays the dodge.
@@ -75,6 +81,8 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 		return false
 	if timeline != null and timeline.invulnerable():
 		Events.attack_dodged.emit(target.combatant_id, attacker.combatant_id)
+		if timeline.perfectly():
+			Events.perfect_dodge.emit(target.combatant_id, attacker.combatant_id)
 		return true
 	var landed: bool = _resolve(attacker, move, target, rng)
 	if landed:
@@ -105,13 +113,15 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 	return landed
 
 
-## Asks for a push away from `from`, flat on the ground, `move.knockback` metres long.
+## Asks for a push away from `from`, flat on the ground, `move.knockback` metres long times
+## 1 plus the target's `knockback_taken`. Nothing at all when that comes to 0 or less.
 func _push(target: Combatant, move: ActionMove, from: Vector3) -> void:
-	if move.knockback <= 0.0:
+	var distance: float = move.knockback * (1.0 + target.sheet.value(&"knockback_taken"))
+	if distance <= 0.0:
 		return
 	var away: Vector3 = global_position - from
 	away.y = 0.0
 	# Struck from exactly above or inside: push the way this hurtbox faces is away from.
 	if away.length_squared() < 0.0001:
 		away = global_transform.basis.z
-	Events.knockback_requested.emit(target.combatant_id, away.normalized() * move.knockback)
+	Events.knockback_requested.emit(target.combatant_id, away.normalized() * distance)
