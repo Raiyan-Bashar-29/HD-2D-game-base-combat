@@ -50,6 +50,8 @@ const FLED_KEY: String = "ui.battle.fled"
 const EXPERIENCE_KEY: String = "ui.battle.experience"
 const LEVEL_UP_KEY: String = "ui.battle.level_up"
 const FOUND_KEY: String = "ui.battle.found"
+## A fighter in a named form: "Name · Form" (C6.5d).
+const FORM_TITLE_KEY: String = "ui.battle.form_title"
 const LEFT_KEY: String = "ui.battle.left_behind"
 const COST_KEY: String = "ui.battle.cost"
 const UNAVAILABLE_KEY: String = "ui.battle.unavailable"
@@ -173,7 +175,9 @@ func name_of(fighter: Combatant) -> String:
 	if def == null or def.name_key == "":
 		return id
 	var suffix: String = id.trim_prefix(String(def.combatant_id))
-	return tr(def.name_key) + suffix.replace("_", " ")
+	var shown: String = tr(def.name_key) + suffix.replace("_", " ")
+	var form: String = LookSwap.form_name_key(fighter.get_parent())
+	return shown if form == "" else tr(FORM_TITLE_KEY).format({"name": shown, "form": tr(form)})
 
 
 # A fighter with no authored commands gets Attack, Defend and Flee. Either way, its hero powers

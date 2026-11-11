@@ -93,6 +93,10 @@ func _fighter_line(fighter: Combatant) -> String:
 	var held: String = _statuses_text(fighter)
 	if held != "":
 		parts.append(held)
+	# The form held now leads the line (C6.5d).
+	var form: String = LookSwap.form_name_key(fighter.get_parent())
+	if form != "":
+		parts.push_front(tr(form))
 	return "   ".join(parts)
 
 

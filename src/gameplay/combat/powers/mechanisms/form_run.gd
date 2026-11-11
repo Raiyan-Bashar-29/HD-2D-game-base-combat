@@ -15,6 +15,7 @@ extends PowerExecutor
 ## - `moves` (C6.5b): while on, the field plays the held stage's attack chain and dodge in place
 ##   of the fighter's own. The set built is kept, so nothing is made anew each frame.
 ## - `moved` (C6.5b): each move the fighter starts in the field drains `drain_per_action`.
+## - `held` (C6.5d): which stage is held now, for `LookSwap` to show its look and name.
 ## - `end`: the kit came off, so the form ends (its status comes off with it).
 ##
 ## OWNS: entering, leaving and draining one form on one fighter.
@@ -79,6 +80,12 @@ func end() -> void:
 		leave()
 	else:
 		stage = -1
+
+
+## The stage held now, read fresh from the statuses: -1 when off. `LookSwap` asks this (C6.5d).
+func held() -> int:
+	_sync()
+	return stage
 
 
 ## Leaves the form: its status comes off. Nothing happens when it is not held.

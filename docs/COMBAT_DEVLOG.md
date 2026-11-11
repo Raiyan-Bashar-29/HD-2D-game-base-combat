@@ -3382,3 +3382,36 @@ worn weapon's own swing chain is C7.3b. The demo has no gear with a kit.
 
 **Unblocks.** C7.3b, C7.4 (a set bonus can lend a kit the same way), C7.5, C7.7, and every
 signature weapon in `GEAR.md` Part 2.
+
+## 2026-11-11 — C6.5d · Transformations you can see
+
+**Did.** A form (M5) can now be seen:
+- `LookDef` (new, content): `look_id`, `tint`, `scale`, `label_key`, and `problems`. Until art
+  exists a look is a tint, a size and a tag; the art slots wait for the row that reads them.
+- `FormMechanism.look` and `name_key`, with `look_at(stage)` and `name_at(stage)`: a cycle stage
+  shows its own, else the cycle's. A form's problems include its look's.
+- `FormRun.held()`: the stage held now, read fresh from the statuses.
+- `LookSwap` (new, gameplay), added to every field body by `ActionHost.fit_identity`: each
+  physics frame it asks which form is held and, only when that changed, tints the
+  `CharacterVisual`'s sprite, scales the visual and shows a `Label3D` tag; with no form it puts
+  the remembered tint and size back. Statics `look_of` and `form_name_key` serve the screens.
+- `BattleScreen.name_of` reads "Name · Form" (`ui.battle.form_title`); the HUD's fighter line
+  leads with the form's name.
+- The C6.5d row was 14 files with the commands, so it split: C6.5e takes `commands`,
+  `replaces_attack`, `aftermath`, `Power.once_per_battle` and the name on the party sheet.
+
+**Why.** The owner asked for transformations that change the screen and the sprites, with dummy
+looks until the sprites come. A form already changed stats, moves and slots, but nothing showed.
+
+**Connects.** Asking rather than being told means no new signal and no wiring: a cure, a timed
+form, a drain, a load, a new game and a party switch all show right (the swap stays with the
+body like the hurtbox). The battle screen and the HUD ask the same statics.
+
+**Verified.** Red first: with `LookSwap._held_runs` returning nothing, 12 assertions failed. Then
+the suite, the seven checkers, the stripped run, and a windowed capture of a tinted, enlarged,
+tagged body (`tests/unit/form_look_test.gd`, 17 assertions).
+
+**Unblocks.** C6.5e (commands per form) and C6.9d (a place's look).
+
+**Gaps.** A battle body has no `CharacterVisual`, so in a battle only the name shows. The party
+sheet and status screen do not name the form yet (C6.5e).
