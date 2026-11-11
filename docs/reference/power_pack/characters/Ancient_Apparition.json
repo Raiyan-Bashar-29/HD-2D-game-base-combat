@@ -1,0 +1,155 @@
+{
+  "id": "character-dota-2-ancient-apparition",
+  "name": "Ancient Apparition",
+  "aliases": [],
+  "universe": "Dota 2",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "ranged_offense",
+    "support",
+    "offense"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Ancient Apparition: Ice Blast",
+      "existing_atlas_entry_ids": [
+        "ability-2671-ancient-apparition-ice-blast"
+      ],
+      "canon_behavior": "Launches a global-range ice effect that suppresses healing and can shatter sufficiently weakened victims.",
+      "classification": {
+        "combat_roles": [
+          "ranged_offense",
+          "support",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "projectile",
+          "heal",
+          "damage"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "unspecified",
+        "delivery_hint": "projectile"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+        "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "Validate that the selected recipient is eligible.",
+        "Restore health or repair qualifying injury and emit a heal event.",
+        "Resolve relevant hit targets and attack properties.",
+        "Apply typed damage through the combat resolver, then post impact events.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Launches a global-range ice effect that suppresses healing and can shatter sufficiently weakened victims.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Spawn a projectile instance with owner, direction, collision mask and lifetime. → Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+        "execution_steps": [
+          "CHARACTER: Ancient Apparition — Ancient Apparition: Ice Blast",
+          "CANON BEHAVIOR: Launches a global-range ice effect that suppresses healing and can shatter sufficiently weakened victims.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "On a valid hit, additionally apply ICE/FREEZE tags only if explicit in this power's description.",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ancient_apparition_ice_blast_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Launches a global-range ice effect that suppresses healing and can shatter sufficiently weakened victims.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [
+          "healing"
+        ],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "Ancient Apparition: Ice Blast: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Ancient Apparition: Ice Blast: executes the intended single or repeated moving shot only for eligible targets.",
+          "Ancient Apparition: Ice Blast: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ancient Apparition",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Spawn a projectile instance with owner, direction, collision mask and lifetime.",
+          "Advance projectile; on collision apply the recorded impact effect, then despawn/penetrate as designed.",
+          "Validate that the selected recipient is eligible.",
+          "Restore health or repair qualifying injury and emit a heal event.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

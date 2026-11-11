@@ -1,0 +1,598 @@
+{
+  "id": "character-solo-leveling-sung-jinwoo",
+  "name": "Sung Jinwoo",
+  "aliases": [
+    "Sung Jin-Woo"
+  ],
+  "universe": "Solo Leveling",
+  "species_or_type": "hunter / Shadow Monarch",
+  "canon_rank_or_title": "Shadow Monarch",
+  "combat_roles": [
+    "summoner",
+    "melee_assassin",
+    "teleportation",
+    "army_support"
+  ],
+  "forms": [
+    {
+      "name": "hunter",
+      "canon_description": "Early hunter skills and leveling."
+    },
+    {
+      "name": "shadow_monarch",
+      "canon_description": "Army and expanded shadow controls."
+    }
+  ],
+  "resource_model": {
+    "source": "mana / Shadow Monarch power",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Shadow soldier ownership",
+    "Personal leveling and skills"
+  ],
+  "abilities": [
+    {
+      "name": "Shadow Extraction",
+      "category": "corpse_to_summon",
+      "canon_behavior": "Jinwoo can turn eligible recently dead foes into loyal shadow soldiers; success depends on eligibility, strength and state.",
+      "activation": "active",
+      "targeting": "qualified corpse(s)",
+      "observed_effects": [
+        "Create shadow summon from dead target"
+      ],
+      "suggested_game_logic": [
+        "On corpse selected, validate eligible template, time since death and extraction rules.",
+        "Roll/resolve extraction success using source-specific restrictions.",
+        "On success, instantiate a persistent soldier based on corpse template and bind ownership."
+      ],
+      "canon_limitations": "Some beings resist or are ineligible; limited attempts apply in earlier depictions.",
+      "source_urls": [
+        "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1428-shadow-extraction"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "summon"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "corpse_to_summon",
+        "mechanic_title": "Necromantic extraction and roster",
+        "semantic_route_evidence": "curated_explicit_override",
+        "execution_delivery": "corpse_and_roster_transaction",
+        "explicit_goal": "Jinwoo can turn eligible recently dead foes into loyal shadow soldiers; success depends on eligibility, strength and state.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "On corpse selected, validate eligible template, time since death and extraction rules. → Roll/resolve extraction success using source-specific restrictions. → On success, instantiate a persistent soldier based on corpse template and bind ownership.",
+        "execution_steps": [
+          "CHARACTER: Sung Jinwoo — Shadow Extraction",
+          "CANON BEHAVIOR: Jinwoo can turn eligible recently dead foes into loyal shadow soldiers; success depends on eligibility, strength and state.",
+          "FORM REQUIREMENT: none_specified",
+          "On corpse selected, validate eligible template, time since death and extraction rules.",
+          "Roll/resolve extraction success using source-specific restrictions.",
+          "On success, instantiate a persistent soldier based on corpse template and bind ownership.",
+          "IMPLEMENTATION FAMILY: Necromantic extraction and roster",
+          "Create a shadow-soldier entity from a permitted archetype; register owner, faction and summon-capacity rules.",
+          "Add it to a persistent army roster; apply destruction/recall/respawn policies only where defined."
+        ],
+        "pseudocode": "def execute_shadow_extraction_solo(ctx, actor, target, cfg):\n    # LORE INTENT: Jinwoo can turn eligible recently dead foes into loyal shadow soldiers; success depends on eligibility, strength and state.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    # Check that the target is a valid dead entity with an extractable shadow, within configured constraints.\n    # Evaluate extraction success/failure and retry rules from the game's chosen interpretation.\n    # Create a shadow-soldier entity from a permitted archetype; register owner, faction and summon-capacity rules.\n    # Add it to a persistent army roster; apply destruction/recall/respawn policies only where defined.\n    corpse = validate_extractable_corpse(target)\n    if roll_extraction(corpse, actor, configured_rules):\n        soldier = spawn_shadow_archetype(corpse, owner=actor)\n        roster.register(soldier)\n        corpse.mark_extracted()  # prevents double extraction\n    tx.commit_if_valid(); ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CorpseRegistry",
+          "OwnedSummon",
+          "Roster"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "success_rules",
+          "roster_limit",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Define retry and corpse-persistence policies."
+        ],
+        "test_scenarios": [
+          "Shadow Extraction: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shadow Extraction: executes the intended necromantic extraction and roster only for eligible targets.",
+          "Shadow Extraction: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Define retry and corpse-persistence policies."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sung Jinwoo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+        ],
+        "character_specific_initial_steps": [
+          "On corpse selected, validate eligible template, time since death and extraction rules.",
+          "Roll/resolve extraction success using source-specific restrictions.",
+          "On success, instantiate a persistent soldier based on corpse template and bind ownership."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Shadow Preservation",
+      "category": "summon_storage",
+      "canon_behavior": "Jinwoo can retain and later summon shadow soldiers from an army roster.",
+      "activation": "active_management",
+      "targeting": "owned shadow entities",
+      "observed_effects": [
+        "Store / redeploy summons"
+      ],
+      "suggested_game_logic": [
+        "Serialize soldier type, progression and ownership into persistent roster.",
+        "Despawn from active world into storage; respawn on command if allowed."
+      ],
+      "canon_limitations": "Do not create duplicate soldiers when storing and redeploying.",
+      "source_urls": [
+        "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1429-shadow-preservation"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "summon"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "summon_entities",
+        "mechanic_title": "Spawn owned companion(s)",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "owned_entity_spawn",
+        "explicit_goal": "Jinwoo can retain and later summon shadow soldiers from an army roster.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Serialize soldier type, progression and ownership into persistent roster. → Despawn from active world into storage; respawn on command if allowed.",
+        "execution_steps": [
+          "CHARACTER: Sung Jinwoo — Shadow Preservation",
+          "CANON BEHAVIOR: Jinwoo can retain and later summon shadow soldiers from an army roster.",
+          "FORM REQUIREMENT: none_specified",
+          "Serialize soldier type, progression and ownership into persistent roster.",
+          "Despawn from active world into storage; respawn on command if allowed.",
+          "IMPLEMENTATION FAMILY: Spawn owned companion(s)",
+          "if not summon_preconditions_pass(actor,target): return DENIED",
+          "for archetype in defined_summon_list(ability):",
+          "    entity = spawn_owned_entity_at_safe_location(archetype, actor)",
+          "    register_ai_team_and_lifetime(entity,actor)",
+          "on_despawn_or_owner_death: apply_defined_roster_policy()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_shadow_preservation_solo(ctx, actor, target, cfg):\n    # LORE INTENT: Jinwoo can retain and later summon shadow soldiers from an army roster.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not summon_preconditions_pass(actor,target): return DENIED\n    for archetype in defined_summon_list(ability):\n        entity = spawn_owned_entity_at_safe_location(archetype, actor)\n        register_ai_team_and_lifetime(entity,actor)\n    on_despawn_or_owner_death: apply_defined_roster_policy()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "EntitySpawner",
+          "SummonRegistry",
+          "OwnershipSystem"
+        ],
+        "effect_tags_from_description": [
+          "summon_entity"
+        ],
+        "design_parameters_to_supply": [
+          "summon_template",
+          "summon_count",
+          "cap",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Prevent infinite summon recursion or duplicate entities."
+        ],
+        "test_scenarios": [
+          "Shadow Preservation: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shadow Preservation: executes the intended spawn owned companion(s) only for eligible targets.",
+          "Shadow Preservation: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Prevent infinite summon recursion or duplicate entities."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sung Jinwoo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+        ],
+        "character_specific_initial_steps": [
+          "Serialize soldier type, progression and ownership into persistent roster.",
+          "Despawn from active world into storage; respawn on command if allowed."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Shadow Exchange",
+      "category": "teleport",
+      "canon_behavior": "Earlier Shadow Exchange lets Jinwoo swap positions with an existing shadow soldier; later evolved use removes some of these restrictions.",
+      "activation": "active",
+      "targeting": "linked shadow anchor / destination",
+      "observed_effects": [
+        "Instant long-distance reposition"
+      ],
+      "suggested_game_logic": [
+        "Choose progression-specific rule set.",
+        "Early version: require a placed shadow soldier and validate cooldown; swap locations.",
+        "Evolved version: use the more flexible portal transport defined for that progression state."
+      ],
+      "canon_limitations": "Early and evolved versions have different requirements and cooldown rules.",
+      "source_urls": [
+        "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1430-shadow-exchange"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "teleport",
+        "mobility",
+        "space"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "owned_shadow_swap",
+        "mechanic_title": "Transfer through owned shadow",
+        "semantic_route_evidence": "curated_explicit_override",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Earlier Shadow Exchange lets Jinwoo swap positions with an existing shadow soldier; later evolved use removes some of these restrictions.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Choose progression-specific rule set. → Early version: require a placed shadow soldier and validate cooldown; swap locations. → Evolved version: use the more flexible portal transport defined for that progression state.",
+        "execution_steps": [
+          "CHARACTER: Sung Jinwoo — Shadow Exchange",
+          "CANON BEHAVIOR: Earlier Shadow Exchange lets Jinwoo swap positions with an existing shadow soldier; later evolved use removes some of these restrictions.",
+          "FORM REQUIREMENT: none_specified",
+          "Choose progression-specific rule set.",
+          "Early version: require a placed shadow soldier and validate cooldown; swap locations.",
+          "Evolved version: use the more flexible portal transport defined for that progression state.",
+          "IMPLEMENTATION FAMILY: Transfer through owned shadow",
+          "Atomically swap or transfer the owner's position to the shadow anchor, respecting the canon version selected.",
+          "Reparent camera/velocity state and broadcast teleport effect without duplicating either entity."
+        ],
+        "pseudocode": "def execute_shadow_exchange_solo(ctx, actor, target, cfg):\n    # LORE INTENT: Earlier Shadow Exchange lets Jinwoo swap positions with an existing shadow soldier; later evolved use removes some of these restrictions.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    # Select a valid owned shadow with a currently registered world position.\n    # Verify cooldown, destination safety and any range/dimension restrictions.\n    # Atomically swap or transfer the owner's position to the shadow anchor, respecting the canon version selected.\n    # Reparent camera/velocity state and broadcast teleport effect without duplicating either entity.\n    shadow = lookup_owned_active_shadow(actor, shadow_id)\n    destination = safe_anchor_location(shadow)\n    if not teleport_rules_permit(actor, destination): return DENIED\n    teleport_or_exchange_atomically(actor, shadow, mode)\n    replicate_transform_changes_to_clients()\n    tx.commit_if_valid(); ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "OwnershipIndex",
+          "SafeTeleport"
+        ],
+        "effect_tags_from_description": [
+          "teleportation"
+        ],
+        "design_parameters_to_supply": [
+          "shadow_range",
+          "swap_mode",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Avoid collision-stuck or stale summon anchors."
+        ],
+        "test_scenarios": [
+          "Shadow Exchange: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shadow Exchange: executes the intended transfer through owned shadow only for eligible targets.",
+          "Shadow Exchange: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Avoid collision-stuck or stale summon anchors."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sung Jinwoo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+        ],
+        "character_specific_initial_steps": [
+          "Choose progression-specific rule set.",
+          "Early version: require a placed shadow soldier and validate cooldown; swap locations.",
+          "Evolved version: use the more flexible portal transport defined for that progression state."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Monarch's Domain",
+      "category": "summon_buff",
+      "canon_behavior": "Jinwoo enhances the active members of his shadow army.",
+      "activation": "active_field",
+      "targeting": "own shadow units",
+      "observed_effects": [
+        "Army-wide damage/stat buff"
+      ],
+      "suggested_game_logic": [
+        "Create owner-linked battlefield effect region.",
+        "Apply modifier only to registered allied shadow soldiers in valid range."
+      ],
+      "canon_limitations": "Some sources quantify this effect in their own system, but do not transplant numbers blindly into another game engine.",
+      "source_urls": [
+        "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1431-monarch-s-domain"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "persistent_field",
+        "mechanic_title": "Lingering region effect",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Jinwoo enhances the active members of his shadow army.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Create owner-linked battlefield effect region. → Apply modifier only to registered allied shadow soldiers in valid range.",
+        "execution_steps": [
+          "CHARACTER: Sung Jinwoo — Monarch's Domain",
+          "CANON BEHAVIOR: Jinwoo enhances the active members of his shadow army.",
+          "FORM REQUIREMENT: none_specified",
+          "Create owner-linked battlefield effect region.",
+          "Apply modifier only to registered allied shadow soldiers in valid range.",
+          "IMPLEMENTATION FAMILY: Lingering region effect",
+          "zone = spawn_persistent_region(actor,target_point,shape)",
+          "while zone.is_active:",
+          "    occupants = query_entities_entering_or_inside(zone)",
+          "    apply_defined_effects_per_occupant_tick(occupants,zone)",
+          "on_exit_or_end: remove_only_owned_status_instances(zone)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_monarch_s_domain_solo(ctx, actor, target, cfg):\n    # LORE INTENT: Jinwoo enhances the active members of his shadow army.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    zone = spawn_persistent_region(actor,target_point,shape)\n    while zone.is_active:\n        occupants = query_entities_entering_or_inside(zone)\n        apply_defined_effects_per_occupant_tick(occupants,zone)\n    on_exit_or_end: remove_only_owned_status_instances(zone)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AreaVolume",
+          "EffectTicker"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "radius",
+          "tick_interval",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "test_scenarios": [
+          "Monarch's Domain: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Monarch's Domain: executes the intended lingering region effect only for eligible targets.",
+          "Monarch's Domain: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sung Jinwoo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+        ],
+        "character_specific_initial_steps": [
+          "Create owner-linked battlefield effect region.",
+          "Apply modifier only to registered allied shadow soldiers in valid range."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Ruler's Authority",
+      "category": "telekinesis",
+      "canon_behavior": "Jinwoo can move objects through telekinetic force.",
+      "activation": "active",
+      "targeting": "selected physics object / opponent",
+      "observed_effects": [
+        "Remote lift, push or pull"
+      ],
+      "suggested_game_logic": [
+        "Check movable target mass and immunity.",
+        "Apply server-authoritative forces and release cleanly."
+      ],
+      "canon_limitations": "Force and weight limits must be balanced separately.",
+      "source_urls": [
+        "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+        "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1432-ruler-s-authority"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "environment"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "unresolved_special",
+        "mechanic_title": "Special scripted power (requires manual rules)",
+        "semantic_route_evidence": "manual_mechanic_definition_required",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Jinwoo can move objects through telekinetic force.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Check movable target mass and immunity. → Apply server-authoritative forces and release cleanly.",
+        "execution_steps": [
+          "CHARACTER: Sung Jinwoo — Ruler's Authority",
+          "CANON BEHAVIOR: Jinwoo can move objects through telekinetic force.",
+          "FORM REQUIREMENT: none_specified",
+          "Check movable target mass and immunity.",
+          "Apply server-authoritative forces and release cleanly.",
+          "IMPLEMENTATION FAMILY: Special scripted power (requires manual rules)",
+          "define_explicit_trigger_and_target_predicates(ability)",
+          "implement_named_effect_as_custom_authoritative_state_transition()",
+          "register_interrupt_cleanup_and_conflict_resolution()",
+          "verify_against_original_scene_or_mechanics_before_shipping()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ruler_s_authority_solo(ctx, actor, target, cfg):\n    # LORE INTENT: Jinwoo can move objects through telekinetic force.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    define_explicit_trigger_and_target_predicates(ability)\n    implement_named_effect_as_custom_authoritative_state_transition()\n    register_interrupt_cleanup_and_conflict_resolution()\n    verify_against_original_scene_or_mechanics_before_shipping()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CustomAbilityScript",
+          "RulePredicate",
+          "EventLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "precise_effect",
+          "target_eligibility",
+          "exception_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Reference is too terse to infer a reliable exact algorithm."
+        ],
+        "test_scenarios": [
+          "Ruler's Authority: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Ruler's Authority: executes the intended special scripted power (requires manual rules) only for eligible targets.",
+          "Ruler's Authority: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Reference is too terse to infer a reliable exact algorithm."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sung Jinwoo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+          "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+        ],
+        "character_specific_initial_steps": [
+          "Check movable target mass and immunity.",
+          "Apply server-authoritative forces and release cleanly."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://solo-leveling.fandom.com/wiki/Sung_Jinwoo",
+    "https://solo-leveling.fandom.com/wiki/Shadow_Extraction",
+    "https://solo-leveling.fandom.com/wiki/Shadow_Exchange"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 5
+}

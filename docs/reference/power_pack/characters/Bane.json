@@ -1,0 +1,144 @@
+{
+  "id": "character-dota-2-bane",
+  "name": "Bane",
+  "aliases": [],
+  "universe": "Dota 2",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "alteration",
+    "mental"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Bane: Fiend's Grip",
+      "existing_atlas_entry_ids": [
+        "ability-2674-bane-fiend-s-grip"
+      ],
+      "canon_behavior": "Channels mind-binding control that holds an enemy incapacitated while draining resources.",
+      "classification": {
+        "combat_roles": [
+          "alteration",
+          "mental"
+        ],
+        "mechanic_tags": [
+          "manipulation",
+          "mind"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "direct_effect_change"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Identify which concrete attributes or entities may be changed.",
+        "Apply the requested transformation/modification and maintain any ongoing constraints.",
+        "Check whether the recipient is susceptible to the cognition effect.",
+        "Apply behavior, perception or input restrictions without assuming player mind control.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "drain_exchange",
+        "mechanic_title": "Drain and transfer resources",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Channels mind-binding control that holds an enemy incapacitated while draining resources.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Identify which concrete attributes or entities may be changed. → Apply the requested transformation/modification and maintain any ongoing constraints.",
+        "execution_steps": [
+          "CHARACTER: Bane — Bane: Fiend's Grip",
+          "CANON BEHAVIOR: Channels mind-binding control that holds an enemy incapacitated while draining resources.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Identify which concrete attributes or entities may be changed.",
+          "Apply the requested transformation/modification and maintain any ongoing constraints.",
+          "Check whether the recipient is susceptible to the cognition effect.",
+          "Apply behavior, perception or input restrictions without assuming player mind control.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Drain and transfer resources",
+          "source_resource = lookup_eligible_resource(target,ability)",
+          "amount = min(available_amount(source_resource), configured_drain)",
+          "deduct_from_source_in_single_transaction(target,amount)",
+          "add_to_recipient_if_transfer_is_defined(actor,amount,conversion_rules)",
+          "on_failure: rollback_both_sides()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_bane_fiend_s_grip_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Channels mind-binding control that holds an enemy incapacitated while draining resources.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    source_resource = lookup_eligible_resource(target,ability)\n    amount = min(available_amount(source_resource), configured_drain)\n    deduct_from_source_in_single_transaction(target,amount)\n    add_to_recipient_if_transfer_is_defined(actor,amount,conversion_rules)\n    on_failure: rollback_both_sides()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ResourceLedger",
+          "CombatTransaction"
+        ],
+        "effect_tags_from_description": [
+          "status_effect",
+          "resource_transfer"
+        ],
+        "design_parameters_to_supply": [
+          "drain_type",
+          "transfer_efficiency",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Prevent resource duplication from interrupted transactions."
+        ],
+        "test_scenarios": [
+          "Bane: Fiend's Grip: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Bane: Fiend's Grip: executes the intended drain and transfer resources only for eligible targets.",
+          "Bane: Fiend's Grip: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Prevent resource duplication from interrupted transactions."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Bane",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Identify which concrete attributes or entities may be changed.",
+          "Apply the requested transformation/modification and maintain any ongoing constraints.",
+          "Check whether the recipient is susceptible to the cognition effect.",
+          "Apply behavior, perception or input restrictions without assuming player mind control.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

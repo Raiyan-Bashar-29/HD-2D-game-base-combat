@@ -1,0 +1,135 @@
+{
+  "id": "character-league-of-legends-runeterra-taric",
+  "name": "Taric",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "area_control"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Taric: Cosmic Radiance",
+      "existing_atlas_entry_ids": [
+        "ability-2641-taric-cosmic-radiance"
+      ],
+      "canon_behavior": "Makes nearby allied champions temporarily invulnerable after a visible delay.",
+      "classification": {
+        "combat_roles": [
+          "area_control"
+        ],
+        "mechanic_tags": [
+          "aoe"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "area_or_field"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Create an area-shaped query or persistent effect zone around the cast point.",
+        "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "Makes nearby allied champions temporarily invulnerable after a visible delay.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Create an area-shaped query or persistent effect zone around the cast point. → Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+        "execution_steps": [
+          "CHARACTER: Taric — Taric: Cosmic Radiance",
+          "CANON BEHAVIOR: Makes nearby allied champions temporarily invulnerable after a visible delay.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_taric_cosmic_radiance_league(ctx, actor, target, cfg):\n    # LORE INTENT: Makes nearby allied champions temporarily invulnerable after a visible delay.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "Taric: Cosmic Radiance: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Taric: Cosmic Radiance: executes the intended defensive interception or immunity only for eligible targets.",
+          "Taric: Cosmic Radiance: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Taric",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Create an area-shaped query or persistent effect zone around the cast point.",
+          "Apply effects to eligible actors within the zone; use explicit tick rules if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

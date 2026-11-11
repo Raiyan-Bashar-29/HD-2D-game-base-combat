@@ -1,0 +1,129 @@
+{
+  "id": "character-jojos-bizarre-adventure-josuke",
+  "name": "Josuke",
+  "aliases": [],
+  "universe": "JoJo’s Bizarre Adventure",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "world_interaction"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Soft & Wet — Plunder",
+      "existing_atlas_entry_ids": [
+        "ability-1238-soft-wet-plunder"
+      ],
+      "canon_behavior": "Josuke's bubbles remove selected properties from objects or people.",
+      "classification": {
+        "combat_roles": [
+          "world_interaction"
+        ],
+        "mechanic_tags": [
+          "environment"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "world_or_environment",
+        "delivery_hint": "world_interaction"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Query weather, terrain, surface, region or nearby world objects.",
+        "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "effect_theft",
+        "mechanic_title": "Steal property in a moving container",
+        "semantic_route_evidence": "curated_explicit_override",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Josuke's bubbles remove selected properties from objects or people.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Query weather, terrain, surface, region or nearby world objects. → Modify only the permitted tiles/objects and serialize world changes if persistent.",
+        "execution_steps": [
+          "CHARACTER: Josuke — Soft & Wet — Plunder",
+          "CANON BEHAVIOR: Josuke's bubbles remove selected properties from objects or people.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Query weather, terrain, surface, region or nearby world objects.",
+          "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Steal property in a moving container",
+          "Store the extracted property in the bubble's metadata until popped or recovered.",
+          "On bubble destruction or ability release, apply the authored restoration/transfer rule."
+        ],
+        "pseudocode": "def execute_soft_wet_plunder_jojos(ctx, actor, target, cfg):\n    # LORE INTENT: Josuke's bubbles remove selected properties from objects or people.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    # Create a soap-bubble projectile with a chosen allowed property to take from the target.\n    # When the bubble makes a valid contact, attach a temporary property-removal modifier to the target.\n    # Store the extracted property in the bubble's metadata until popped or recovered.\n    # On bubble destruction or ability release, apply the authored restoration/transfer rule.\n    bubble = spawn_property_thief_bubble(actor,target_property)\n    on_valid_contact: property_ledger.take_temporary_property(target,bubble)\n    while_active: apply_absence_of_stolen_property(target)\n    on_bubble_release: restore_or_transfer_property_as_specified()\n    tx.commit_if_valid(); ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "PropertyRegistry",
+          "ProjectilePool",
+          "StatusModifier"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "stealable_properties",
+          "bubble_lifetime",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Prevent stacked theft from losing original properties."
+        ],
+        "test_scenarios": [
+          "Soft & Wet — Plunder: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Soft & Wet — Plunder: executes the intended steal property in a moving container only for eligible targets.",
+          "Soft & Wet — Plunder: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Prevent stacked theft from losing original properties."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Josuke",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Query weather, terrain, surface, region or nearby world objects.",
+          "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

@@ -1,0 +1,597 @@
+{
+  "id": "character-dota-2-invoker",
+  "name": "Invoker",
+  "aliases": [],
+  "universe": "Dota 2",
+  "species_or_type": "spellcaster hero",
+  "canon_rank_or_title": "Arsenal Magus",
+  "combat_roles": [
+    "elemental_mage",
+    "combo_compiler",
+    "control"
+  ],
+  "forms": [
+    {
+      "name": "orb_selection",
+      "canon_description": "Quas/Wex/Exort orb configuration."
+    },
+    {
+      "name": "invoked_spells",
+      "canon_description": "Two or more spells prepared via recipes."
+    }
+  ],
+  "resource_model": {
+    "source": "mana and orb levels",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Orb-based bonuses"
+  ],
+  "abilities": [
+    {
+      "name": "Quas/Wex/Exort",
+      "category": "orb_configuration",
+      "canon_behavior": "Invoker cycles ice, storm and fire elemental orbs that modify stats and determine possible invoked spells.",
+      "activation": "active_orb_selection",
+      "targeting": "self",
+      "observed_effects": [
+        "Orb state sequence",
+        "Attribute/stat modifiers"
+      ],
+      "suggested_game_logic": [
+        "Store the last three invoked element orb slots.",
+        "On orb change update passive modifiers.",
+        "Pass three-slot recipe to Invoke when requested."
+      ],
+      "canon_limitations": "Do not allow a spell outside the appropriate orb combination.",
+      "source_urls": [
+        "https://www.dota2.com/hero/invoker/?l=english"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile",
+        "aoe"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "persistent_field",
+        "mechanic_title": "Lingering region effect",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Invoker cycles ice, storm and fire elemental orbs that modify stats and determine possible invoked spells.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Store the last three invoked element orb slots. → On orb change update passive modifiers. → Pass three-slot recipe to Invoke when requested.",
+        "execution_steps": [
+          "CHARACTER: Invoker — Quas/Wex/Exort",
+          "CANON BEHAVIOR: Invoker cycles ice, storm and fire elemental orbs that modify stats and determine possible invoked spells.",
+          "FORM REQUIREMENT: none_specified",
+          "Store the last three invoked element orb slots.",
+          "On orb change update passive modifiers.",
+          "Pass three-slot recipe to Invoke when requested.",
+          "IMPLEMENTATION FAMILY: Lingering region effect",
+          "zone = spawn_persistent_region(actor,target_point,shape)",
+          "while zone.is_active:",
+          "    occupants = query_entities_entering_or_inside(zone)",
+          "    apply_defined_effects_per_occupant_tick(occupants,zone)",
+          "on_exit_or_end: remove_only_owned_status_instances(zone)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_quas_wex_exort_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Invoker cycles ice, storm and fire elemental orbs that modify stats and determine possible invoked spells.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    zone = spawn_persistent_region(actor,target_point,shape)\n    while zone.is_active:\n        occupants = query_entities_entering_or_inside(zone)\n        apply_defined_effects_per_occupant_tick(occupants,zone)\n    on_exit_or_end: remove_only_owned_status_instances(zone)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AreaVolume",
+          "EffectTicker"
+        ],
+        "effect_tags_from_description": [
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "radius",
+          "tick_interval",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "test_scenarios": [
+          "Quas/Wex/Exort: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Quas/Wex/Exort: executes the intended lingering region effect only for eligible targets.",
+          "Quas/Wex/Exort: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Invoker",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.dota2.com/hero/invoker/?l=english"
+        ],
+        "character_specific_initial_steps": [
+          "Store the last three invoked element orb slots.",
+          "On orb change update passive modifiers.",
+          "Pass three-slot recipe to Invoke when requested."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Invoke",
+      "category": "spell_compilation",
+      "canon_behavior": "Invoker combines his current Quas, Wex and Exort orb pattern into an available spell.",
+      "activation": "active",
+      "targeting": "self / ability loadout",
+      "observed_effects": [
+        "Dynamic spell slot selection"
+      ],
+      "suggested_game_logic": [
+        "Look up normalized three-orb composition in recipe table.",
+        "Equip created spell into available invoked spell slot.",
+        "Preserve separate cooldowns according to game rules."
+      ],
+      "canon_limitations": "Not arbitrary spell creation; recipes are finite and known.",
+      "source_urls": [
+        "https://www.dota2.com/hero/invoker/?l=english"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "legacy_tag_fallback",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Invoker combines his current Quas, Wex and Exort orb pattern into an available spell.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Look up normalized three-orb composition in recipe table. → Equip created spell into available invoked spell slot. → Preserve separate cooldowns according to game rules.",
+        "execution_steps": [
+          "CHARACTER: Invoker — Invoke",
+          "CANON BEHAVIOR: Invoker combines his current Quas, Wex and Exort orb pattern into an available spell.",
+          "FORM REQUIREMENT: none_specified",
+          "Look up normalized three-orb composition in recipe table.",
+          "Equip created spell into available invoked spell slot.",
+          "Preserve separate cooldowns according to game rules.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_invoke_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Invoker combines his current Quas, Wex and Exort orb pattern into an available spell.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "Invoke: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Invoke: executes the intended single or repeated moving shot only for eligible targets.",
+          "Invoke: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Invoker",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.dota2.com/hero/invoker/?l=english"
+        ],
+        "character_specific_initial_steps": [
+          "Look up normalized three-orb composition in recipe table.",
+          "Equip created spell into available invoked spell slot.",
+          "Preserve separate cooldowns according to game rules."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Sun Strike",
+      "category": "delayed_global_aoe",
+      "canon_behavior": "Invoker calls a concentrated fire strike at a chosen map location after a delay.",
+      "activation": "active",
+      "targeting": "ground point",
+      "observed_effects": [
+        "Delayed impact damage"
+      ],
+      "suggested_game_logic": [
+        "Select valid ground coordinate.",
+        "Spawn visible telegraph and schedule impact event.",
+        "On impact query actors inside radius and apply damage according to spell rules."
+      ],
+      "canon_limitations": "Long range and delay matter; not instantaneous homing.",
+      "source_urls": [
+        "https://www.dota2.com/hero/invoker/?l=english"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-2663-invoker-sun-strike"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile",
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Invoker calls a concentrated fire strike at a chosen map location after a delay.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Select valid ground coordinate. → Spawn visible telegraph and schedule impact event. → On impact query actors inside radius and apply damage according to spell rules.",
+        "execution_steps": [
+          "CHARACTER: Invoker — Sun Strike",
+          "CANON BEHAVIOR: Invoker calls a concentrated fire strike at a chosen map location after a delay.",
+          "FORM REQUIREMENT: none_specified",
+          "Select valid ground coordinate.",
+          "Spawn visible telegraph and schedule impact event.",
+          "On impact query actors inside radius and apply damage according to spell rules.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Use fire/burn material tags; a damage-over-time status is optional unless explicitly described.",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_sun_strike_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Invoker calls a concentrated fire strike at a chosen map location after a delay.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Sun Strike: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Sun Strike: executes the intended melee animation with active frames only for eligible targets.",
+          "Sun Strike: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Invoker",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.dota2.com/hero/invoker/?l=english"
+        ],
+        "character_specific_initial_steps": [
+          "Select valid ground coordinate.",
+          "Spawn visible telegraph and schedule impact event.",
+          "On impact query actors inside radius and apply damage according to spell rules."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Chaos Meteor",
+      "category": "rolling_aoe",
+      "canon_behavior": "Invoker calls a rolling meteor that repeatedly burns enemies along its travel path.",
+      "activation": "active",
+      "targeting": "target direction / ground point",
+      "observed_effects": [
+        "Moving area damage",
+        "Repeated burning hits"
+      ],
+      "suggested_game_logic": [
+        "Spawn traveling meteor entity.",
+        "Advance along ground path; perform swept area overlap each tick.",
+        "Track repeat-hit limits per target."
+      ],
+      "canon_limitations": "Meteor speed, radius and numbers are balance parameters.",
+      "source_urls": [
+        "https://www.dota2.com/hero/invoker/?l=english"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-2664-invoker-chaos-meteor"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "aoe",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "explosion_aoe",
+        "mechanic_title": "Radial wave or explosion",
+        "semantic_route_evidence": "legacy_tag_fallback",
+        "execution_delivery": "radius_query",
+        "explicit_goal": "Invoker calls a rolling meteor that repeatedly burns enemies along its travel path.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Spawn traveling meteor entity. → Advance along ground path; perform swept area overlap each tick. → Track repeat-hit limits per target.",
+        "execution_steps": [
+          "CHARACTER: Invoker — Chaos Meteor",
+          "CANON BEHAVIOR: Invoker calls a rolling meteor that repeatedly burns enemies along its travel path.",
+          "FORM REQUIREMENT: none_specified",
+          "Spawn traveling meteor entity.",
+          "Advance along ground path; perform swept area overlap each tick.",
+          "Track repeat-hit limits per target.",
+          "IMPLEMENTATION FAMILY: Radial wave or explosion",
+          "center = determine_impact_or_cast_center(actor,target)",
+          "targets = unique_targets_in_radius(center,radius)",
+          "for entity in targets:",
+          "    strength = compute_optional_distance_falloff(entity,center)",
+          "    apply_named_impact_knockback_or_damage(entity,strength)",
+          "spawn_one_off_environment_visual(center)",
+          "Use fire/burn material tags; a damage-over-time status is optional unless explicitly described.",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_chaos_meteor_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Invoker calls a rolling meteor that repeatedly burns enemies along its travel path.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    center = determine_impact_or_cast_center(actor,target)\n    targets = unique_targets_in_radius(center,radius)\n    for entity in targets:\n        strength = compute_optional_distance_falloff(entity,center)\n        apply_named_impact_knockback_or_damage(entity,strength)\n    spawn_one_off_environment_visual(center)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AoEQuery",
+          "Falloff",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "radius",
+          "damage_falloff",
+          "environment_effect",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Protect from duplicate hits on overlapping colliders."
+        ],
+        "test_scenarios": [
+          "Chaos Meteor: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Chaos Meteor: executes the intended radial wave or explosion only for eligible targets.",
+          "Chaos Meteor: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Protect from duplicate hits on overlapping colliders."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Invoker",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.dota2.com/hero/invoker/?l=english"
+        ],
+        "character_specific_initial_steps": [
+          "Spawn traveling meteor entity.",
+          "Advance along ground path; perform swept area overlap each tick.",
+          "Track repeat-hit limits per target."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Tornado",
+      "category": "lift_control",
+      "canon_behavior": "Invoker launches a moving tornado that lifts qualifying targets in its path.",
+      "activation": "active",
+      "targeting": "line of opponents",
+      "observed_effects": [
+        "Lift/disable targets"
+      ],
+      "suggested_game_logic": [
+        "Create traveling tornado hit area.",
+        "On hit apply airborne/disabled state and suspend target movement until landing."
+      ],
+      "canon_limitations": "Duration and distance depend on specific game tuning.",
+      "source_urls": [
+        "https://www.dota2.com/hero/invoker/?l=english"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-2665-invoker-tornado"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Invoker launches a moving tornado that lifts qualifying targets in its path.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Create traveling tornado hit area. → On hit apply airborne/disabled state and suspend target movement until landing.",
+        "execution_steps": [
+          "CHARACTER: Invoker — Tornado",
+          "CANON BEHAVIOR: Invoker launches a moving tornado that lifts qualifying targets in its path.",
+          "FORM REQUIREMENT: none_specified",
+          "Create traveling tornado hit area.",
+          "On hit apply airborne/disabled state and suspend target movement until landing.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_tornado_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Invoker launches a moving tornado that lifts qualifying targets in its path.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "Tornado: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Tornado: executes the intended single or repeated moving shot only for eligible targets.",
+          "Tornado: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Invoker",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.dota2.com/hero/invoker/?l=english"
+        ],
+        "character_specific_initial_steps": [
+          "Create traveling tornado hit area.",
+          "On hit apply airborne/disabled state and suspend target movement until landing."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://www.dota2.com/hero/invoker/?l=english"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 5
+}

@@ -1,0 +1,492 @@
+{
+  "id": "character-jujutsu-kaisen-ryomen-sukuna",
+  "name": "Ryomen Sukuna",
+  "aliases": [],
+  "universe": "Jujutsu Kaisen",
+  "species_or_type": "incarnated cursed entity",
+  "canon_rank_or_title": "King of Curses",
+  "combat_roles": [
+    "cutting_offense",
+    "domain_control",
+    "adapted_slashes"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "Standard Shrine techniques."
+    },
+    {
+      "name": "domain_active",
+      "canon_description": "Malevolent Shrine active."
+    }
+  ],
+  "resource_model": {
+    "source": "cursed energy",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Highly skilled cursed technique use"
+  ],
+  "abilities": [
+    {
+      "name": "Dismantle",
+      "category": "remote_cut",
+      "canon_behavior": "Sukuna sends slashing attacks that cut opponents and objects.",
+      "activation": "active",
+      "targeting": "enemy or trajectory",
+      "observed_effects": [
+        "Cutting hit"
+      ],
+      "suggested_game_logic": [
+        "Emit line or area slash trace.",
+        "Check contact, obstacles and durability."
+      ],
+      "canon_limitations": "Slashes are not necessarily physical flying swords.",
+      "source_urls": [
+        "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+        "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1250-dismantle"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "environment",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Sukuna sends slashing attacks that cut opponents and objects.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Emit line or area slash trace. → Check contact, obstacles and durability.",
+        "execution_steps": [
+          "CHARACTER: Ryomen Sukuna — Dismantle",
+          "CANON BEHAVIOR: Sukuna sends slashing attacks that cut opponents and objects.",
+          "FORM REQUIREMENT: none_specified",
+          "Emit line or area slash trace.",
+          "Check contact, obstacles and durability.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_dismantle_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Sukuna sends slashing attacks that cut opponents and objects.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Dismantle: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Dismantle: executes the intended melee animation with active frames only for eligible targets.",
+          "Dismantle: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ryomen Sukuna",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+          "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+        ],
+        "character_specific_initial_steps": [
+          "Emit line or area slash trace.",
+          "Check contact, obstacles and durability."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Cleave",
+      "category": "adaptive_cut",
+      "canon_behavior": "Sukuna uses a cutting technique that adjusts its effect to the target under certain conditions.",
+      "activation": "active",
+      "targeting": "eligible nearby target",
+      "observed_effects": [
+        "Adaptive cutting damage"
+      ],
+      "suggested_game_logic": [
+        "Resolve eligible target and its defenses.",
+        "Compute slash effect with technique-specific adaptation rule."
+      ],
+      "canon_limitations": "Do not model as universal kill immunity bypass.",
+      "source_urls": [
+        "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+        "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1249-cleave"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "legacy_tag_fallback",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Sukuna uses a cutting technique that adjusts its effect to the target under certain conditions.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Resolve eligible target and its defenses. → Compute slash effect with technique-specific adaptation rule.",
+        "execution_steps": [
+          "CHARACTER: Ryomen Sukuna — Cleave",
+          "CANON BEHAVIOR: Sukuna uses a cutting technique that adjusts its effect to the target under certain conditions.",
+          "FORM REQUIREMENT: none_specified",
+          "Resolve eligible target and its defenses.",
+          "Compute slash effect with technique-specific adaptation rule.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_cleave_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Sukuna uses a cutting technique that adjusts its effect to the target under certain conditions.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Cleave: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Cleave: executes the intended melee animation with active frames only for eligible targets.",
+          "Cleave: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ryomen Sukuna",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+          "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+        ],
+        "character_specific_initial_steps": [
+          "Resolve eligible target and its defenses.",
+          "Compute slash effect with technique-specific adaptation rule."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Malevolent Shrine",
+      "category": "open_domain",
+      "canon_behavior": "Sukuna manifests an open Domain Expansion that repeatedly strikes targets in its effective region.",
+      "activation": "active_domain",
+      "targeting": "specified surrounding region",
+      "observed_effects": [
+        "Persistent sure-hit-style slashing barrage"
+      ],
+      "suggested_game_logic": [
+        "Activate open-domain state with radius rather than a standard closed shell.",
+        "Schedule slash events against target groups according to domain rules.",
+        "Allow domain counters/durability and environmental impacts."
+      ],
+      "canon_limitations": "Domain range, scope and attack types vary by use.",
+      "source_urls": [
+        "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+        "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1248-malevolent-shrine"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "pocket_space",
+        "mechanic_title": "Create contained world space",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Sukuna manifests an open Domain Expansion that repeatedly strikes targets in its effective region.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Activate open-domain state with radius rather than a standard closed shell. → Schedule slash events against target groups according to domain rules. → Allow domain counters/durability and environmental impacts.",
+        "execution_steps": [
+          "CHARACTER: Ryomen Sukuna — Malevolent Shrine",
+          "CANON BEHAVIOR: Sukuna manifests an open Domain Expansion that repeatedly strikes targets in its effective region.",
+          "FORM REQUIREMENT: none_specified",
+          "Activate open-domain state with radius rather than a standard closed shell.",
+          "Schedule slash events against target groups according to domain rules.",
+          "Allow domain counters/durability and environmental impacts.",
+          "IMPLEMENTATION FAMILY: Create contained world space",
+          "space = allocate_instance_or_region(ability, owner=actor)",
+          "transfer_eligible_occupants_via_valid_entry(space)",
+          "apply_local_space_rules_and_move_set(space)",
+          "on_exit_or_dispose: restore_occupants_safely()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_malevolent_shrine_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Sukuna manifests an open Domain Expansion that repeatedly strikes targets in its effective region.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    space = allocate_instance_or_region(ability, owner=actor)\n    transfer_eligible_occupants_via_valid_entry(space)\n    apply_local_space_rules_and_move_set(space)\n    on_exit_or_dispose: restore_occupants_safely()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "PocketWorldManager",
+          "PortalRegistry"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "interior_scene",
+          "occupant_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Do not accidentally delete player inventories when unloading."
+        ],
+        "test_scenarios": [
+          "Malevolent Shrine: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Malevolent Shrine: executes the intended create contained world space only for eligible targets.",
+          "Malevolent Shrine: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Do not accidentally delete player inventories when unloading."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ryomen Sukuna",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+          "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+        ],
+        "character_specific_initial_steps": [
+          "Activate open-domain state with radius rather than a standard closed shell.",
+          "Schedule slash events against target groups according to domain rules.",
+          "Allow domain counters/durability and environmental impacts."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "World-Cutting Slash",
+      "category": "spatial_cut",
+      "canon_behavior": "A specialized Dismantle targets the space/world occupied by the opponent rather than an ordinary body strike.",
+      "activation": "restricted_activation",
+      "targeting": "line through selected area",
+      "observed_effects": [
+        "High-impact spatial severing"
+      ],
+      "suggested_game_logic": [
+        "Require version-appropriate preconditions.",
+        "Trace cutting plane against environment and valid actors."
+      ],
+      "canon_limitations": "Not an unrestricted map-delete command; casting conditions change.",
+      "source_urls": [
+        "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+        "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1251-world-cutting-slash"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "space",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "A specialized Dismantle targets the space/world occupied by the opponent rather than an ordinary body strike.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Require version-appropriate preconditions. → Trace cutting plane against environment and valid actors.",
+        "execution_steps": [
+          "CHARACTER: Ryomen Sukuna — World-Cutting Slash",
+          "CANON BEHAVIOR: A specialized Dismantle targets the space/world occupied by the opponent rather than an ordinary body strike.",
+          "FORM REQUIREMENT: none_specified",
+          "Require version-appropriate preconditions.",
+          "Trace cutting plane against environment and valid actors.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_world_cutting_slash_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: A specialized Dismantle targets the space/world occupied by the opponent rather than an ordinary body strike.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "World-Cutting Slash: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "World-Cutting Slash: executes the intended melee animation with active frames only for eligible targets.",
+          "World-Cutting Slash: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ryomen Sukuna",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+          "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+        ],
+        "character_specific_initial_steps": [
+          "Require version-appropriate preconditions.",
+          "Trace cutting plane against environment and valid actors."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://jujutsu-kaisen.fandom.com/wiki/Sukuna",
+    "https://jujutsu-kaisen.fandom.com/wiki/Shrine"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 4
+}

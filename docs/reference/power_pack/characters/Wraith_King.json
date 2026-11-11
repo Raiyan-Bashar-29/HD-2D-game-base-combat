@@ -1,0 +1,132 @@
+{
+  "id": "character-dota-2-wraith-king",
+  "name": "Wraith King",
+  "aliases": [],
+  "universe": "Dota 2",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "unclassified"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Wraith King: Reincarnation",
+      "existing_atlas_entry_ids": [
+        "ability-2659-wraith-king-reincarnation"
+      ],
+      "canon_behavior": "Returns to life after death when his resurrection ability is ready.",
+      "classification": {
+        "combat_roles": [
+          "unclassified"
+        ],
+        "mechanic_tags": [
+          "other"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Define a concrete trigger and observable output for this power.",
+        "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "soul_interaction",
+        "mechanic_title": "Soul entity/status operations",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Returns to life after death when his resurrection ability is ready.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Define a concrete trigger and observable output for this power. → Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "execution_steps": [
+          "CHARACTER: Wraith King — Wraith King: Reincarnation",
+          "CANON BEHAVIOR: Returns to life after death when his resurrection ability is ready.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Soul entity/status operations",
+          "soul = resolve_target_soul_entity(target)",
+          "assert soul_is_affected_by_this_ability(soul, rules)",
+          "apply_named_soul_operation(soul, healing_binding_damage_or_extract)",
+          "mirror_effect_to_body_only_if_lore_requires(soul.owner)",
+          "record_persistence_and_release_rules()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_wraith_king_reincarnation_dota(ctx, actor, target, cfg):\n    # LORE INTENT: Returns to life after death when his resurrection ability is ready.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    soul = resolve_target_soul_entity(target)\n    assert soul_is_affected_by_this_ability(soul, rules)\n    apply_named_soul_operation(soul, healing_binding_damage_or_extract)\n    mirror_effect_to_body_only_if_lore_requires(soul.owner)\n    record_persistence_and_release_rules()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "SoulRegistry",
+          "EssenceResolver"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "soul_target_conditions",
+          "soul_effect_mode",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Not every soul attack is ordinary HP damage."
+        ],
+        "test_scenarios": [
+          "Wraith King: Reincarnation: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Wraith King: Reincarnation: executes the intended soul entity/status operations only for eligible targets.",
+          "Wraith King: Reincarnation: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Not every soul attack is ordinary HP damage."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Wraith King",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

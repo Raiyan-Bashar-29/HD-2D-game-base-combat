@@ -9,7 +9,12 @@ between them, written in plain words.
 
 **Update this block at the end of every package.** It is the first thing the next reader sees.
 
-- **Last finished package:** C7.1c, the worn weapon on attacks. A worn piece lends the
+- **Last finished package:** C6.0c, the power atlas (docs and data, 0.66.1). The owner's
+  powers pack (3,306 powers in 116 handler families, 127 character profiles) and full weapons
+  list are kept whole in `docs/reference/originals/`, with slim copies beside them, and
+  [`POWER_ATLAS.md`](POWER_ATLAS.md) sorts every family onto the mechanism that runs it and
+  adds rows C8.10–C8.15. **Read it before building any mechanism or kit row.** Before it,
+  C7.1c, the worn weapon on attacks. A worn piece lends the
   wearer's plain attack an `element` and `attack_tags` (`GearSet` writes them onto the
   `Combatant`; `Battle`'s ATTACK and `Hurtbox` read them), and a piece can take up more slots
   through `blocks` (two-handed = blocks the off hand). Before it, C7.1b, gear in a fight. A fighter's definition lists the gear it

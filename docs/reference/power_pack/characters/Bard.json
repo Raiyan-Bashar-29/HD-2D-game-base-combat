@@ -1,0 +1,144 @@
+{
+  "id": "character-league-of-legends-runeterra-bard",
+  "name": "Bard",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "summoner",
+    "temporal"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Bard: Tempered Fate",
+      "existing_atlas_entry_ids": [
+        "ability-2632-bard-tempered-fate"
+      ],
+      "canon_behavior": "Temporarily puts all affected champions, minions and certain structures into untouchable stasis.",
+      "classification": {
+        "combat_roles": [
+          "summoner",
+          "temporal"
+        ],
+        "mechanic_tags": [
+          "summon",
+          "time"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "unspecified",
+        "delivery_hint": "summon_entity"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Validate summon slot, material and/or source requirement.",
+        "Spawn owned summon entities and register them with the owner/command AI.",
+        "Create an explicit temporal rule for selected actors or objects.",
+        "Store and restore only the allowed snapshots or modify local time scales; do not assume universal time stop.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "fate_outcome",
+        "mechanic_title": "Causal / probability rule",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "outcome_interceptor",
+        "explicit_goal": "Temporarily puts all affected champions, minions and certain structures into untouchable stasis.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Validate summon slot, material and/or source requirement. → Spawn owned summon entities and register them with the owner/command AI.",
+        "execution_steps": [
+          "CHARACTER: Bard — Bard: Tempered Fate",
+          "CANON BEHAVIOR: Temporarily puts all affected champions, minions and certain structures into untouchable stasis.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Validate summon slot, material and/or source requirement.",
+          "Spawn owned summon entities and register them with the owner/command AI.",
+          "Create an explicit temporal rule for selected actors or objects.",
+          "Store and restore only the allowed snapshots or modify local time scales; do not assume universal time stop.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Causal / probability rule",
+          "event = capture_qualifying_outcome_before_commit(world)",
+          "possibilities = derive_legal_outcomes(event, scoped_rules)",
+          "selected = choose_or_bias_outcome(possibilities, owner, rng)",
+          "commit_single_selected_outcome(selected)",
+          "log_causal_branch_for_replay()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_bard_tempered_fate_league(ctx, actor, target, cfg):\n    # LORE INTENT: Temporarily puts all affected champions, minions and certain structures into untouchable stasis.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    event = capture_qualifying_outcome_before_commit(world)\n    possibilities = derive_legal_outcomes(event, scoped_rules)\n    selected = choose_or_bias_outcome(possibilities, owner, rng)\n    commit_single_selected_outcome(selected)\n    log_causal_branch_for_replay()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "EventInterception",
+          "SeededRng",
+          "OutcomeSelector"
+        ],
+        "effect_tags_from_description": [
+          "world_rule"
+        ],
+        "design_parameters_to_supply": [
+          "trigger_predicate",
+          "eligible_outcomes",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Cross-continuity absolute fate claims need handcrafted rules."
+        ],
+        "test_scenarios": [
+          "Bard: Tempered Fate: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Bard: Tempered Fate: executes the intended causal / probability rule only for eligible targets.",
+          "Bard: Tempered Fate: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Cross-continuity absolute fate claims need handcrafted rules."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Bard",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Validate summon slot, material and/or source requirement.",
+          "Spawn owned summon entities and register them with the owner/command AI.",
+          "Create an explicit temporal rule for selected actors or objects.",
+          "Store and restore only the allowed snapshots or modify local time scales; do not assume universal time stop.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

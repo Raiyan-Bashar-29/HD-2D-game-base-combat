@@ -1,0 +1,244 @@
+{
+  "id": "character-final-fantasy-viii-rinoa-heartilly",
+  "name": "Rinoa Heartilly",
+  "aliases": [],
+  "universe": "Final Fantasy VIII",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "offense",
+    "unclassified"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Angelo Cannon",
+      "existing_atlas_entry_ids": [
+        "ability-1777-angelo-cannon"
+      ],
+      "canon_behavior": "Rinoa's dog Angelo is launched or directed in a distinctive canine-assisted attack.",
+      "classification": {
+        "combat_roles": [
+          "offense"
+        ],
+        "mechanic_tags": [
+          "damage"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Resolve relevant hit targets and attack properties.",
+        "Apply typed damage through the combat resolver, then post impact events.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Rinoa's dog Angelo is launched or directed in a distinctive canine-assisted attack.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Resolve relevant hit targets and attack properties. → Apply typed damage through the combat resolver, then post impact events.",
+        "execution_steps": [
+          "CHARACTER: Rinoa Heartilly — Angelo Cannon",
+          "CANON BEHAVIOR: Rinoa's dog Angelo is launched or directed in a distinctive canine-assisted attack.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_angelo_cannon_final(ctx, actor, target, cfg):\n    # LORE INTENT: Rinoa's dog Angelo is launched or directed in a distinctive canine-assisted attack.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "Angelo Cannon: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Angelo Cannon: executes the intended single or repeated moving shot only for eligible targets.",
+          "Angelo Cannon: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Rinoa Heartilly",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    },
+    {
+      "name": "Angel Wing",
+      "existing_atlas_entry_ids": [
+        "ability-1778-angel-wing"
+      ],
+      "canon_behavior": "Rinoa enters a spell-casting state with heightened magic that selects attacks automatically.",
+      "classification": {
+        "combat_roles": [
+          "unclassified"
+        ],
+        "mechanic_tags": [
+          "other"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Define a concrete trigger and observable output for this power.",
+        "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "autonomous_support",
+        "mechanic_title": "Companion AI and reactive automated assistance",
+        "semantic_route_evidence": "named_semantic_route",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Rinoa enters a spell-casting state with heightened magic that selects attacks automatically.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Define a concrete trigger and observable output for this power. → Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+        "execution_steps": [
+          "CHARACTER: Rinoa Heartilly — Angel Wing",
+          "CANON BEHAVIOR: Rinoa enters a spell-casting state with heightened magic that selects attacks automatically.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Companion AI and reactive automated assistance",
+          "register_companion_or_subsystem_as_owner_linked_actor(actor)",
+          "on_threat_or_assist_window: if rule_matches(event):",
+          "    choose_defined_support_action(companion,event)",
+          "    run_support_action_through_ability_runner()",
+          "unregister_listeners_on_owner_disconnect_or_companion_despawn()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_angel_wing_final(ctx, actor, target, cfg):\n    # LORE INTENT: Rinoa enters a spell-casting state with heightened magic that selects attacks automatically.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    register_companion_or_subsystem_as_owner_linked_actor(actor)\n    on_threat_or_assist_window: if rule_matches(event):\n        choose_defined_support_action(companion,event)\n        run_support_action_through_ability_runner()\n    unregister_listeners_on_owner_disconnect_or_companion_despawn()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CompanionAI",
+          "TargetThreatMonitor"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "assist_conditions",
+          "action_pool",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "No infinite recursion between automated assisting units."
+        ],
+        "test_scenarios": [
+          "Angel Wing: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Angel Wing: executes the intended companion ai and reactive automated assistance only for eligible targets.",
+          "Angel Wing: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "No infinite recursion between automated assisting units."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Rinoa Heartilly",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Define a concrete trigger and observable output for this power.",
+          "Implement only what the canon summary says; ask for missing rules rather than inventing them.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 2
+}

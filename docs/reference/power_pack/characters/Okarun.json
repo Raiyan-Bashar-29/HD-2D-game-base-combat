@@ -1,0 +1,136 @@
+{
+  "id": "character-dandadan-okarun",
+  "name": "Okarun",
+  "aliases": [],
+  "universe": "Dandadan",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "transformer"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Turbo Granny's Speed",
+      "existing_atlas_entry_ids": [
+        "ability-1598-turbo-granny-s-speed"
+      ],
+      "canon_behavior": "Okarun's cursed transformation channels extreme running speed and fierce physical attacks.",
+      "classification": {
+        "combat_roles": [
+          "transformer"
+        ],
+        "mechanic_tags": [
+          "transformation"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Verify prerequisites and transition the character into a named form state.",
+        "Swap model/animation/ability permissions; on exit restore baseline state.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "transform_form",
+        "mechanic_title": "Form swap state machine",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "state_machine",
+        "explicit_goal": "Okarun's cursed transformation channels extreme running speed and fierce physical attacks.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Verify prerequisites and transition the character into a named form state. → Swap model/animation/ability permissions; on exit restore baseline state.",
+        "execution_steps": [
+          "CHARACTER: Okarun — Turbo Granny's Speed",
+          "CANON BEHAVIOR: Okarun's cursed transformation channels extreme running speed and fierce physical attacks.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Verify prerequisites and transition the character into a named form state.",
+          "Swap model/animation/ability permissions; on exit restore baseline state.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Form swap state machine",
+          "assert can_enter_form(actor,requested_form)",
+          "transition_actor_state(actor,TRANSFORMING)",
+          "swap_mesh_skeleton_collision_and_move_set(actor,requested_form)",
+          "apply_only_configured_form_stat_modifiers(actor)",
+          "on_form_end: revert_all_owned_form_changes()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_turbo_granny_s_speed_dandadan(ctx, actor, target, cfg):\n    # LORE INTENT: Okarun's cursed transformation channels extreme running speed and fierce physical attacks.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert can_enter_form(actor,requested_form)\n    transition_actor_state(actor,TRANSFORMING)\n    swap_mesh_skeleton_collision_and_move_set(actor,requested_form)\n    apply_only_configured_form_stat_modifiers(actor)\n    on_form_end: revert_all_owned_form_changes()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "FormFSM",
+          "StatModifier",
+          "MoveSetLoader"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "form_change"
+        ],
+        "design_parameters_to_supply": [
+          "form_requirements",
+          "duration",
+          "stat_changes",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "test_scenarios": [
+          "Turbo Granny's Speed: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Turbo Granny's Speed: executes the intended form swap state machine only for eligible targets.",
+          "Turbo Granny's Speed: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Okarun",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Verify prerequisites and transition the character into a named form state.",
+          "Swap model/animation/ability permissions; on exit restore baseline state.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 1
+}

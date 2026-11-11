@@ -1,0 +1,709 @@
+{
+  "id": "character-jujutsu-kaisen-satoru-gojo",
+  "name": "Satoru Gojo",
+  "aliases": [],
+  "universe": "Jujutsu Kaisen",
+  "species_or_type": "human jujutsu sorcerer",
+  "canon_rank_or_title": "Special grade",
+  "combat_roles": [
+    "spatial_controller",
+    "ranged_burst",
+    "defender"
+  ],
+  "forms": [
+    {
+      "name": "default",
+      "canon_description": "Limitless toolkit available."
+    },
+    {
+      "name": "domain_active",
+      "canon_description": "Unlimited Void domain in effect."
+    }
+  ],
+  "resource_model": {
+    "source": "cursed energy",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Six Eyes perception",
+    "Fine control of cursed energy"
+  ],
+  "abilities": [
+    {
+      "name": "Infinity",
+      "category": "passive_defense",
+      "canon_behavior": "Gojo manipulates spatial convergence so approaching matter and many attacks slow dramatically and do not normally reach him.",
+      "activation": "passive_toggle_or_continuous",
+      "targeting": "self / incoming eligible attacks",
+      "observed_effects": [
+        "Interception via spatial barrier"
+      ],
+      "suggested_game_logic": [
+        "Register an incoming-contact filter around Gojo.",
+        "For eligible threats, slow/stop approach before physical collision; exclude attacks that bypass it by explicit rules.",
+        "Use separate bypass flags for canon counters such as domain amplification and some domain effects."
+      ],
+      "canon_limitations": "Not ordinary damage immunity; can be bypassed by particular techniques.",
+      "source_urls": [
+        "https://www.oricon-group.com/news/2821/",
+        "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1242-limitless-infinity"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "shield",
+        "debuff",
+        "space"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "construct_matter",
+        "mechanic_title": "Shape existing or created substance",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "matter_instance_mutation",
+        "explicit_goal": "Gojo manipulates spatial convergence so approaching matter and many attacks slow dramatically and do not normally reach him.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Register an incoming-contact filter around Gojo. → For eligible threats, slow/stop approach before physical collision; exclude attacks that bypass it by explicit rules. → Use separate bypass flags for canon counters such as domain amplification and some domain effects.",
+        "execution_steps": [
+          "CHARACTER: Satoru Gojo — Infinity",
+          "CANON BEHAVIOR: Gojo manipulates spatial convergence so approaching matter and many attacks slow dramatically and do not normally reach him.",
+          "FORM REQUIREMENT: none_specified",
+          "Register an incoming-contact filter around Gojo.",
+          "For eligible threats, slow/stop approach before physical collision; exclude attacks that bypass it by explicit rules.",
+          "Use separate bypass flags for canon counters such as domain amplification and some domain effects.",
+          "IMPLEMENTATION FAMILY: Shape existing or created substance",
+          "material = locate_or_generate_allowed_substance(material_kind, actor)",
+          "if material is None: return NO_VALID_MATERIAL",
+          "apply_named_transformation_or_force(material, target_shape_or_motion)",
+          "update_collision_mass_and_attached_effects(material)",
+          "on_release: settle_construct_under_world_physics(material)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_infinity_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Gojo manipulates spatial convergence so approaching matter and many attacks slow dramatically and do not normally reach him.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    material = locate_or_generate_allowed_substance(material_kind, actor)\n    if material is None: return NO_VALID_MATERIAL\n    apply_named_transformation_or_force(material, target_shape_or_motion)\n    update_collision_mass_and_attached_effects(material)\n    on_release: settle_construct_under_world_physics(material)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "MatterRegistry",
+          "ConstructRig",
+          "PhysicsConstraints"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "status_effect"
+        ],
+        "design_parameters_to_supply": [
+          "material_kind",
+          "control_radius",
+          "mass_limit",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Material source and transmutation rules vary by ability."
+        ],
+        "test_scenarios": [
+          "Infinity: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Infinity: executes the intended shape existing or created substance only for eligible targets.",
+          "Infinity: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Material source and transmutation rules vary by ability."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Satoru Gojo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.oricon-group.com/news/2821/",
+          "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+        ],
+        "character_specific_initial_steps": [
+          "Register an incoming-contact filter around Gojo.",
+          "For eligible threats, slow/stop approach before physical collision; exclude attacks that bypass it by explicit rules.",
+          "Use separate bypass flags for canon counters such as domain amplification and some domain effects."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Blue",
+      "category": "spatial_pull",
+      "canon_behavior": "Blue produces an attraction point through Limitless and pulls matter toward it.",
+      "activation": "active",
+      "targeting": "chosen point / nearby objects",
+      "observed_effects": [
+        "Attraction",
+        "Potential collision or crush damage"
+      ],
+      "suggested_game_logic": [
+        "Place force well at target point.",
+        "For valid entities apply inward movement or force each simulation tick."
+      ],
+      "canon_limitations": "Do not encode a real singularity or universal gravitational law without game design.",
+      "source_urls": [
+        "https://www.oricon-group.com/news/2821/",
+        "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1243-cursed-technique-lapse-blue"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "space",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "Blue produces an attraction point through Limitless and pulls matter toward it.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Place force well at target point. → For valid entities apply inward movement or force each simulation tick.",
+        "execution_steps": [
+          "CHARACTER: Satoru Gojo — Blue",
+          "CANON BEHAVIOR: Blue produces an attraction point through Limitless and pulls matter toward it.",
+          "FORM REQUIREMENT: none_specified",
+          "Place force well at target point.",
+          "For valid entities apply inward movement or force each simulation tick.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_blue_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Blue produces an attraction point through Limitless and pulls matter toward it.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "Blue: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Blue: executes the intended defensive interception or immunity only for eligible targets.",
+          "Blue: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Satoru Gojo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.oricon-group.com/news/2821/",
+          "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+        ],
+        "character_specific_initial_steps": [
+          "Place force well at target point.",
+          "For valid entities apply inward movement or force each simulation tick."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Red",
+      "category": "spatial_push",
+      "canon_behavior": "Red generates repulsive spatial force that launches targets away.",
+      "activation": "active",
+      "targeting": "selected direction / point",
+      "observed_effects": [
+        "Strong outward impulse",
+        "Impact damage"
+      ],
+      "suggested_game_logic": [
+        "Create repulsion pulse centered on cast origin.",
+        "Apply directional force and collision-aware knockback to eligible targets."
+      ],
+      "canon_limitations": "Magnitude and area must be chosen for balance.",
+      "source_urls": [
+        "https://www.oricon-group.com/news/2821/",
+        "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1244-cursed-technique-reversal-red"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile",
+        "space",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Red generates repulsive spatial force that launches targets away.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Create repulsion pulse centered on cast origin. → Apply directional force and collision-aware knockback to eligible targets.",
+        "execution_steps": [
+          "CHARACTER: Satoru Gojo — Red",
+          "CANON BEHAVIOR: Red generates repulsive spatial force that launches targets away.",
+          "FORM REQUIREMENT: none_specified",
+          "Create repulsion pulse centered on cast origin.",
+          "Apply directional force and collision-aware knockback to eligible targets.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_red_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Red generates repulsive spatial force that launches targets away.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "Red: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Red: executes the intended single or repeated moving shot only for eligible targets.",
+          "Red: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Satoru Gojo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.oricon-group.com/news/2821/",
+          "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+        ],
+        "character_specific_initial_steps": [
+          "Create repulsion pulse centered on cast origin.",
+          "Apply directional force and collision-aware knockback to eligible targets."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Hollow Purple",
+      "category": "composite_spatial_attack",
+      "canon_behavior": "Gojo combines Blue and Red to release a massive destructive attack along a path.",
+      "activation": "active_combo",
+      "targeting": "line or route through space",
+      "observed_effects": [
+        "High destructive attack"
+      ],
+      "suggested_game_logic": [
+        "Require access to both Blue and Red.",
+        "Create traveling area/beam attack with path collision and environmental destruction flags as appropriate."
+      ],
+      "canon_limitations": "Avoid unqualified claims of literal existence erasure across all targets.",
+      "source_urls": [
+        "https://www.oricon-group.com/news/2821/",
+        "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1245-hollow-technique-purple"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "legacy_tag_fallback",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Gojo combines Blue and Red to release a massive destructive attack along a path.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Require access to both Blue and Red. → Create traveling area/beam attack with path collision and environmental destruction flags as appropriate.",
+        "execution_steps": [
+          "CHARACTER: Satoru Gojo — Hollow Purple",
+          "CANON BEHAVIOR: Gojo combines Blue and Red to release a massive destructive attack along a path.",
+          "FORM REQUIREMENT: none_specified",
+          "Require access to both Blue and Red.",
+          "Create traveling area/beam attack with path collision and environmental destruction flags as appropriate.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_hollow_purple_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Gojo combines Blue and Red to release a massive destructive attack along a path.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Hollow Purple: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Hollow Purple: executes the intended melee animation with active frames only for eligible targets.",
+          "Hollow Purple: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Satoru Gojo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.oricon-group.com/news/2821/",
+          "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+        ],
+        "character_specific_initial_steps": [
+          "Require access to both Blue and Red.",
+          "Create traveling area/beam attack with path collision and environmental destruction flags as appropriate."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Unlimited Void",
+      "category": "domain_control",
+      "canon_behavior": "Gojo manifests a Domain Expansion that overwhelms victims with information and prevents normal action.",
+      "activation": "active_domain",
+      "targeting": "eligible entities within barrier/domain",
+      "observed_effects": [
+        "Information overload",
+        "Action suppression"
+      ],
+      "suggested_game_logic": [
+        "Create domain instance with explicit boundary and duration.",
+        "On target entry apply mind-overload control after rule/immunity checks.",
+        "Disable affected movement/cast decisions until effect ends or a counter resolves."
+      ],
+      "canon_limitations": "Does not mean every being in every universe is automatically susceptible.",
+      "source_urls": [
+        "https://www.oricon-group.com/news/2821/",
+        "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1247-unlimited-void"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "other"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "pocket_space",
+        "mechanic_title": "Create contained world space",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Gojo manifests a Domain Expansion that overwhelms victims with information and prevents normal action.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Create domain instance with explicit boundary and duration. → On target entry apply mind-overload control after rule/immunity checks. → Disable affected movement/cast decisions until effect ends or a counter resolves.",
+        "execution_steps": [
+          "CHARACTER: Satoru Gojo — Unlimited Void",
+          "CANON BEHAVIOR: Gojo manifests a Domain Expansion that overwhelms victims with information and prevents normal action.",
+          "FORM REQUIREMENT: none_specified",
+          "Create domain instance with explicit boundary and duration.",
+          "On target entry apply mind-overload control after rule/immunity checks.",
+          "Disable affected movement/cast decisions until effect ends or a counter resolves.",
+          "IMPLEMENTATION FAMILY: Create contained world space",
+          "space = allocate_instance_or_region(ability, owner=actor)",
+          "transfer_eligible_occupants_via_valid_entry(space)",
+          "apply_local_space_rules_and_move_set(space)",
+          "on_exit_or_dispose: restore_occupants_safely()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_unlimited_void_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: Gojo manifests a Domain Expansion that overwhelms victims with information and prevents normal action.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    space = allocate_instance_or_region(ability, owner=actor)\n    transfer_eligible_occupants_via_valid_entry(space)\n    apply_local_space_rules_and_move_set(space)\n    on_exit_or_dispose: restore_occupants_safely()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "PocketWorldManager",
+          "PortalRegistry"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "interior_scene",
+          "occupant_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Do not accidentally delete player inventories when unloading."
+        ],
+        "test_scenarios": [
+          "Unlimited Void: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Unlimited Void: executes the intended create contained world space only for eligible targets.",
+          "Unlimited Void: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Do not accidentally delete player inventories when unloading."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Satoru Gojo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.oricon-group.com/news/2821/",
+          "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+        ],
+        "character_specific_initial_steps": [
+          "Create domain instance with explicit boundary and duration.",
+          "On target entry apply mind-overload control after rule/immunity checks.",
+          "Disable affected movement/cast decisions until effect ends or a counter resolves."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Six Eyes",
+      "category": "perception_passive",
+      "canon_behavior": "The Six Eyes provide exceptionally fine cursed-energy perception and efficient cursed-energy control.",
+      "activation": "passive",
+      "targeting": "self",
+      "observed_effects": [
+        "Cursed energy insight",
+        "Precise efficiency"
+      ],
+      "suggested_game_logic": [
+        "Add energy-signature perception layer.",
+        "Modify cursed-energy costs only if game rules specify multipliers."
+      ],
+      "canon_limitations": "Not a general-purpose ability to see or know every fact.",
+      "source_urls": [
+        "https://www.oricon-group.com/news/2821/",
+        "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1246-six-eyes"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "manipulation"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "information_sensor",
+        "mechanic_title": "Query and reveal information",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "The Six Eyes provide exceptionally fine cursed-energy perception and efficient cursed-energy control.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Receive a matching passive/stat/observation/progression event or an explicit activation.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Add energy-signature perception layer. → Modify cursed-energy costs only if game rules specify multipliers.",
+        "execution_steps": [
+          "CHARACTER: Satoru Gojo — Six Eyes",
+          "CANON BEHAVIOR: The Six Eyes provide exceptionally fine cursed-energy perception and efficient cursed-energy control.",
+          "FORM REQUIREMENT: none_specified",
+          "Add energy-signature perception layer.",
+          "Modify cursed-energy costs only if game rules specify multipliers.",
+          "IMPLEMENTATION FAMILY: Query and reveal information",
+          "candidates = query_observable_entities_or_events(actor, ability)",
+          "visible = filter_by_ability_sensing_and_occlusion(candidates)",
+          "facts = fetch_only_authorized_knowledge_fields(visible)",
+          "display_results_to_actor_or_ai(facts)",
+          "clear_overlay_or_expire_sensor_if_temporary()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_six_eyes_jujutsu(ctx, actor, target, cfg):\n    # LORE INTENT: The Six Eyes provide exceptionally fine cursed-energy perception and efficient cursed-energy control.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    candidates = query_observable_entities_or_events(actor, ability)\n    visible = filter_by_ability_sensing_and_occlusion(candidates)\n    facts = fetch_only_authorized_knowledge_fields(visible)\n    display_results_to_actor_or_ai(facts)\n    clear_overlay_or_expire_sensor_if_temporary()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "PerceptionQuery",
+          "KnowledgeFilter",
+          "HUDOverlay"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "detection_range",
+          "reveal_fields",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Cannot reveal non-authored hidden facts."
+        ],
+        "test_scenarios": [
+          "Six Eyes: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Six Eyes: executes the intended query and reveal information only for eligible targets.",
+          "Six Eyes: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Cannot reveal non-authored hidden facts."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Satoru Gojo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://www.oricon-group.com/news/2821/",
+          "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+        ],
+        "character_specific_initial_steps": [
+          "Add energy-signature perception layer.",
+          "Modify cursed-energy costs only if game rules specify multipliers."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://www.oricon-group.com/news/2821/",
+    "https://jujutsu-kaisen.fandom.com/wiki/Satoru_Gojo"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 6
+}

@@ -1,0 +1,490 @@
+{
+  "id": "character-tokyo-ghoul-ken-kaneki",
+  "name": "Ken Kaneki",
+  "aliases": [],
+  "universe": "Tokyo Ghoul",
+  "species_or_type": "artificial one-eyed ghoul / rinkaku",
+  "canon_rank_or_title": "Varies by arc",
+  "combat_roles": [
+    "melee_bruiser",
+    "regenerator",
+    "transformer"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "May suppress or manifest rinkaku."
+    },
+    {
+      "name": "rinkaku_active",
+      "canon_description": "Rinkaku tentacles active."
+    },
+    {
+      "name": "kakuja_variant",
+      "canon_description": "Specific kakuja stage chosen explicitly."
+    }
+  ],
+  "resource_model": {
+    "source": "RC cells",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Enhanced reflexes",
+    "High regeneration"
+  ],
+  "abilities": [
+    {
+      "name": "Rinkaku Tentacle Strikes",
+      "category": "melee_attack",
+      "canon_behavior": "Kaneki manifests several rinkaku tentacles from his waist/back area that can strike and pierce enemies.",
+      "activation": "active",
+      "targeting": "close-to-medium opponent",
+      "observed_effects": [
+        "Flexible multiple limb strikes"
+      ],
+      "suggested_game_logic": [
+        "Deploy deformable tentacle meshes with jointed collision segments.",
+        "Trigger selected tentacle attack animations and resolve hits."
+      ],
+      "canon_limitations": "Count and shape depend on period/form; do not hardcode one fixed form for all continuities.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1467-rinkaku-kagune"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee",
+        "aoe",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "Kaneki manifests several rinkaku tentacles from his waist/back area that can strike and pierce enemies.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Deploy deformable tentacle meshes with jointed collision segments. → Trigger selected tentacle attack animations and resolve hits.",
+        "execution_steps": [
+          "CHARACTER: Ken Kaneki — Rinkaku Tentacle Strikes",
+          "CANON BEHAVIOR: Kaneki manifests several rinkaku tentacles from his waist/back area that can strike and pierce enemies.",
+          "FORM REQUIREMENT: none_specified",
+          "Deploy deformable tentacle meshes with jointed collision segments.",
+          "Trigger selected tentacle attack animations and resolve hits.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_rinkaku_tentacle_strikes_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Kaneki manifests several rinkaku tentacles from his waist/back area that can strike and pierce enemies.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Rinkaku Tentacle Strikes: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Rinkaku Tentacle Strikes: executes the intended melee animation with active frames only for eligible targets.",
+          "Rinkaku Tentacle Strikes: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ken Kaneki",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Deploy deformable tentacle meshes with jointed collision segments.",
+          "Trigger selected tentacle attack animations and resolve hits."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Kagune Weapon Shaping",
+      "category": "weapon_morph",
+      "canon_behavior": "Kaneki can manipulate his rinkaku into different attacking shapes, including blade-like forms.",
+      "activation": "active",
+      "targeting": "self / nearby opponents",
+      "observed_effects": [
+        "Reshape appendage weapon"
+      ],
+      "suggested_game_logic": [
+        "Change tentacle end-effector geometry for requested attack profile.",
+        "Use form-specific hitboxes."
+      ],
+      "canon_limitations": "Requires a selected incarnation/period.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "melee"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "construct_matter",
+        "mechanic_title": "Shape existing or created substance",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "matter_instance_mutation",
+        "explicit_goal": "Kaneki can manipulate his rinkaku into different attacking shapes, including blade-like forms.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Change tentacle end-effector geometry for requested attack profile. → Use form-specific hitboxes.",
+        "execution_steps": [
+          "CHARACTER: Ken Kaneki — Kagune Weapon Shaping",
+          "CANON BEHAVIOR: Kaneki can manipulate his rinkaku into different attacking shapes, including blade-like forms.",
+          "FORM REQUIREMENT: none_specified",
+          "Change tentacle end-effector geometry for requested attack profile.",
+          "Use form-specific hitboxes.",
+          "IMPLEMENTATION FAMILY: Shape existing or created substance",
+          "material = locate_or_generate_allowed_substance(material_kind, actor)",
+          "if material is None: return NO_VALID_MATERIAL",
+          "apply_named_transformation_or_force(material, target_shape_or_motion)",
+          "update_collision_mass_and_attached_effects(material)",
+          "on_release: settle_construct_under_world_physics(material)",
+          "Set material or effect tags to the exact substances named in this ability; enforce their specific environmental dependencies.",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_kagune_weapon_shaping_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Kaneki can manipulate his rinkaku into different attacking shapes, including blade-like forms.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    material = locate_or_generate_allowed_substance(material_kind, actor)\n    if material is None: return NO_VALID_MATERIAL\n    apply_named_transformation_or_force(material, target_shape_or_motion)\n    update_collision_mass_and_attached_effects(material)\n    on_release: settle_construct_under_world_physics(material)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "MatterRegistry",
+          "ConstructRig",
+          "PhysicsConstraints"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "material_kind",
+          "control_radius",
+          "mass_limit",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Material source and transmutation rules vary by ability."
+        ],
+        "test_scenarios": [
+          "Kagune Weapon Shaping: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Kagune Weapon Shaping: executes the intended shape existing or created substance only for eligible targets.",
+          "Kagune Weapon Shaping: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Material source and transmutation rules vary by ability."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ken Kaneki",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Change tentacle end-effector geometry for requested attack profile.",
+          "Use form-specific hitboxes."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Kakuja Evolution",
+      "category": "transformation",
+      "canon_behavior": "Kaneki develops kakuja-related transformations with enhanced and sometimes unstable physical capabilities.",
+      "activation": "active_or_triggered",
+      "targeting": "self",
+      "observed_effects": [
+        "Form change",
+        "Altered strength and attack patterns"
+      ],
+      "suggested_game_logic": [
+        "Use explicit progression/form flags.",
+        "Transition to separate ability loadout and AI behavior when the form activates."
+      ],
+      "canon_limitations": "Kakuja stages differ substantially; do not merge them into a single canonical default.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1469-kakuja"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "transformation",
+        "damage"
+      ],
+      "form_requirement": "kakuja_variant",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "transform_form",
+        "mechanic_title": "Form swap state machine",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "state_machine",
+        "explicit_goal": "Kaneki develops kakuja-related transformations with enhanced and sometimes unstable physical capabilities.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Use explicit progression/form flags. → Transition to separate ability loadout and AI behavior when the form activates.",
+        "execution_steps": [
+          "CHARACTER: Ken Kaneki — Kakuja Evolution",
+          "CANON BEHAVIOR: Kaneki develops kakuja-related transformations with enhanced and sometimes unstable physical capabilities.",
+          "FORM REQUIREMENT: kakuja_variant",
+          "Use explicit progression/form flags.",
+          "Transition to separate ability loadout and AI behavior when the form activates.",
+          "IMPLEMENTATION FAMILY: Form swap state machine",
+          "assert can_enter_form(actor,requested_form)",
+          "transition_actor_state(actor,TRANSFORMING)",
+          "swap_mesh_skeleton_collision_and_move_set(actor,requested_form)",
+          "apply_only_configured_form_stat_modifiers(actor)",
+          "on_form_end: revert_all_owned_form_changes()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_kakuja_evolution_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Kaneki develops kakuja-related transformations with enhanced and sometimes unstable physical capabilities.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert can_enter_form(actor,requested_form)\n    transition_actor_state(actor,TRANSFORMING)\n    swap_mesh_skeleton_collision_and_move_set(actor,requested_form)\n    apply_only_configured_form_stat_modifiers(actor)\n    on_form_end: revert_all_owned_form_changes()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "FormFSM",
+          "StatModifier",
+          "MoveSetLoader"
+        ],
+        "effect_tags_from_description": [
+          "form_change"
+        ],
+        "design_parameters_to_supply": [
+          "form_requirements",
+          "duration",
+          "stat_changes",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "test_scenarios": [
+          "Kakuja Evolution: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Kakuja Evolution: executes the intended form swap state machine only for eligible targets.",
+          "Kakuja Evolution: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Changing visual form is separate from replacing character identity."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ken Kaneki",
+        "form_requirements": "kakuja_variant",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Use explicit progression/form flags.",
+          "Transition to separate ability loadout and AI behavior when the form activates."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Enhanced Regeneration",
+      "category": "passive",
+      "canon_behavior": "His ghoul biology supports recovery from extreme injury.",
+      "activation": "passive",
+      "targeting": "self",
+      "observed_effects": [
+        "Recover health or major wounds"
+      ],
+      "suggested_game_logic": [
+        "Use injury-based regeneration tiers with story-appropriate restrictions."
+      ],
+      "canon_limitations": "Not unconditional resurrection.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+        "https://tokyoghoul.fandom.com/wiki/Kagune"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "other"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "regeneration",
+        "mechanic_title": "Self or target tissue repair",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "body_part_health_tick",
+        "explicit_goal": "His ghoul biology supports recovery from extreme injury.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Use injury-based regeneration tiers with story-appropriate restrictions.",
+        "execution_steps": [
+          "CHARACTER: Ken Kaneki — Enhanced Regeneration",
+          "CANON BEHAVIOR: His ghoul biology supports recovery from extreme injury.",
+          "FORM REQUIREMENT: none_specified",
+          "Use injury-based regeneration tiers with story-appropriate restrictions.",
+          "IMPLEMENTATION FAMILY: Self or target tissue repair",
+          "if not eligible_to_regenerate(target): return",
+          "repairable = classify_injury_parts(target)",
+          "per_tick = compute_regeneration_amount(ability,delta_time)",
+          "restore_health_and_allowed_body_parts(target,repairable,per_tick)",
+          "stop_when_defeated_or_regeneration_is_suppressed()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_enhanced_regeneration_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: His ghoul biology supports recovery from extreme injury.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not eligible_to_regenerate(target): return\n    repairable = classify_injury_parts(target)\n    per_tick = compute_regeneration_amount(ability,delta_time)\n    restore_health_and_allowed_body_parts(target,repairable,per_tick)\n    stop_when_defeated_or_regeneration_is_suppressed()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "HealthComponent",
+          "BodyPartRegistry"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "healing"
+        ],
+        "design_parameters_to_supply": [
+          "heal_rate",
+          "injury_types",
+          "suppression_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Limb reconstruction requires a body-part model."
+        ],
+        "test_scenarios": [
+          "Enhanced Regeneration: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Enhanced Regeneration: executes the intended self or target tissue repair only for eligible targets.",
+          "Enhanced Regeneration: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Limb reconstruction requires a body-part model."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ken Kaneki",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+          "https://tokyoghoul.fandom.com/wiki/Kagune"
+        ],
+        "character_specific_initial_steps": [
+          "Use injury-based regeneration tiers with story-appropriate restrictions."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://tokyoghoul.fandom.com/wiki/Ken_Kaneki",
+    "https://tokyoghoul.fandom.com/wiki/Kagune"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 4
+}

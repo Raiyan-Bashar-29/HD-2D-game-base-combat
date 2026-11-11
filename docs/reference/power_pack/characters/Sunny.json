@@ -1,0 +1,355 @@
+{
+  "id": "character-shadow-slave-sunny",
+  "name": "Sunny",
+  "aliases": [],
+  "universe": "Shadow Slave",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "passive_support",
+    "control",
+    "spiritual",
+    "adaptive"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Shadow Bond",
+      "existing_atlas_entry_ids": [
+        "ability-1663-shadow-bond"
+      ],
+      "canon_behavior": "Sunny's innate ability that can bind him to a master under specific True Name conditions.",
+      "classification": {
+        "combat_roles": [
+          "passive_support",
+          "control"
+        ],
+        "mechanic_tags": [
+          "passive_trait",
+          "crowd_control"
+        ],
+        "activation_hint": "passive_or_innate",
+        "target_hint": "unspecified",
+        "delivery_hint": "passive_event_hook"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Register a trait or condition on its owner.",
+        "Evaluate its rules automatically on the relevant game event.",
+        "Apply a control status after checking resistances.",
+        "While active, gate specified actions (move, attack, cast) and clear on expiration.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "status_ailment",
+        "mechanic_title": "Timed ailment / movement restraint",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Sunny's innate ability that can bind him to a master under specific True Name conditions.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Register a trait or condition on its owner. → Evaluate its rules automatically on the relevant game event.",
+        "execution_steps": [
+          "CHARACTER: Sunny — Shadow Bond",
+          "CANON BEHAVIOR: Sunny's innate ability that can bind him to a master under specific True Name conditions.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Register a trait or condition on its owner.",
+          "Evaluate its rules automatically on the relevant game event.",
+          "Apply a control status after checking resistances.",
+          "While active, gate specified actions (move, attack, cast) and clear on expiration.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Timed ailment / movement restraint",
+          "if target_resists(status_kind, ability): return RESISTED",
+          "effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)",
+          "on_tick: apply_status_specific_periodic_effect_if_any(effect)",
+          "on_update: recompute_movement_ai_or_cast_permissions(target)",
+          "on_expiry_or_cleanse: remove_instance_and_recalculate(target)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_shadow_bond_shadow(ctx, actor, target, cfg):\n    # LORE INTENT: Sunny's innate ability that can bind him to a master under specific True Name conditions.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if target_resists(status_kind, ability): return RESISTED\n    effect = add_or_refresh_status_instance(target,status_kind,stacks,duration)\n    on_tick: apply_status_specific_periodic_effect_if_any(effect)\n    on_update: recompute_movement_ai_or_cast_permissions(target)\n    on_expiry_or_cleanse: remove_instance_and_recalculate(target)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "StatusController",
+          "TickScheduler"
+        ],
+        "effect_tags_from_description": [
+          "status_effect"
+        ],
+        "design_parameters_to_supply": [
+          "status_kind",
+          "duration",
+          "stacking_rules",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "test_scenarios": [
+          "Shadow Bond: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shadow Bond: executes the intended timed ailment / movement restraint only for eligible targets.",
+          "Shadow Bond: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "A freeze is not necessarily a stun; define tag semantics."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sunny",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Register a trait or condition on its owner.",
+          "Evaluate its rules automatically on the relevant game event.",
+          "Apply a control status after checking resistances.",
+          "While active, gate specified actions (move, attack, cast) and clear on expiration.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    },
+    {
+      "name": "Shadow Legion",
+      "existing_atlas_entry_ids": [
+        "ability-1668-shadow-legion"
+      ],
+      "canon_behavior": "Sunny's domain ability calls on the shadows gathered in his soul sea as an army.",
+      "classification": {
+        "combat_roles": [
+          "spiritual"
+        ],
+        "mechanic_tags": [
+          "soul"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Choose a separate soul/essence target layer if the game models one.",
+        "Apply spiritual damage, capture, binding or restoration according to ability rules.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "soul_interaction",
+        "mechanic_title": "Soul entity/status operations",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Sunny's domain ability calls on the shadows gathered in his soul sea as an army.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Choose a separate soul/essence target layer if the game models one. → Apply spiritual damage, capture, binding or restoration according to ability rules.",
+        "execution_steps": [
+          "CHARACTER: Sunny — Shadow Legion",
+          "CANON BEHAVIOR: Sunny's domain ability calls on the shadows gathered in his soul sea as an army.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Choose a separate soul/essence target layer if the game models one.",
+          "Apply spiritual damage, capture, binding or restoration according to ability rules.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Soul entity/status operations",
+          "soul = resolve_target_soul_entity(target)",
+          "assert soul_is_affected_by_this_ability(soul, rules)",
+          "apply_named_soul_operation(soul, healing_binding_damage_or_extract)",
+          "mirror_effect_to_body_only_if_lore_requires(soul.owner)",
+          "record_persistence_and_release_rules()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_shadow_legion_shadow(ctx, actor, target, cfg):\n    # LORE INTENT: Sunny's domain ability calls on the shadows gathered in his soul sea as an army.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    soul = resolve_target_soul_entity(target)\n    assert soul_is_affected_by_this_ability(soul, rules)\n    apply_named_soul_operation(soul, healing_binding_damage_or_extract)\n    mirror_effect_to_body_only_if_lore_requires(soul.owner)\n    record_persistence_and_release_rules()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "SoulRegistry",
+          "EssenceResolver"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "soul_target_conditions",
+          "soul_effect_mode",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Not every soul attack is ordinary HP damage."
+        ],
+        "test_scenarios": [
+          "Shadow Legion: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shadow Legion: executes the intended soul entity/status operations only for eligible targets.",
+          "Shadow Legion: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Not every soul attack is ordinary HP damage."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sunny",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Choose a separate soul/essence target layer if the game models one.",
+          "Apply spiritual damage, capture, binding or restoration according to ability rules.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    },
+    {
+      "name": "Shadow Dance",
+      "existing_atlas_entry_ids": [
+        "ability-1669-shadow-dance"
+      ],
+      "canon_behavior": "Sunny's Aspect Legacy combat art analyzes and imitates an opponent's movement and techniques.",
+      "classification": {
+        "combat_roles": [
+          "adaptive"
+        ],
+        "mechanic_tags": [
+          "copy"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Detect the authorized source ability, target or past action.",
+        "Create a temporary or persistent copy with explicit eligibility and restriction rules.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "mobility",
+        "mechanic_title": "Movement controller override",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "physics_motor",
+        "explicit_goal": "Sunny's Aspect Legacy combat art analyzes and imitates an opponent's movement and techniques.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Detect the authorized source ability, target or past action. → Create a temporary or persistent copy with explicit eligibility and restriction rules.",
+        "execution_steps": [
+          "CHARACTER: Sunny — Shadow Dance",
+          "CANON BEHAVIOR: Sunny's Aspect Legacy combat art analyzes and imitates an opponent's movement and techniques.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Detect the authorized source ability, target or past action.",
+          "Create a temporary or persistent copy with explicit eligibility and restriction rules.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Movement controller override",
+          "if not movement_state_allows(actor,ability): return DENIED",
+          "trajectory = plan_movement_path(actor,aim_or_target,config)",
+          "for step in trajectory: move_with_swept_collision(actor,step)",
+          "handle_wall_floor_and_cancel_rules(actor)",
+          "restore_standard_movement_controller_after_action(actor)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_shadow_dance_shadow(ctx, actor, target, cfg):\n    # LORE INTENT: Sunny's Aspect Legacy combat art analyzes and imitates an opponent's movement and techniques.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    if not movement_state_allows(actor,ability): return DENIED\n    trajectory = plan_movement_path(actor,aim_or_target,config)\n    for step in trajectory: move_with_swept_collision(actor,step)\n    handle_wall_floor_and_cancel_rules(actor)\n    restore_standard_movement_controller_after_action(actor)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "MovementMotor",
+          "PhysicsSweep"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "movement_curve",
+          "speed",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Dash and sustained flight require different motor modes."
+        ],
+        "test_scenarios": [
+          "Shadow Dance: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shadow Dance: executes the intended movement controller override only for eligible targets.",
+          "Shadow Dance: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Dash and sustained flight require different motor modes."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Sunny",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Detect the authorized source ability, target or past action.",
+          "Create a temporary or persistent copy with explicit eligibility and restriction rules.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 3
+}

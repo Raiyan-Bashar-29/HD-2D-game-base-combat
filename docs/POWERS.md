@@ -14,6 +14,11 @@ characters with FORMS, so each is one kit whose forms are M5 `form`s in one excl
 They needed one new mechanism (M14 `refresh`) and four small seams, each placed in the row that
 builds the part it touches.
 
+**The owner's power list (C6.0c, 2026-11-11):** 3,306 powers and 127 character profiles are in
+`docs/reference/`, and [`POWER_ATLAS.md`](POWER_ATLAS.md) sorts each of their 116 handler
+families onto a mechanism on this page, a part already built, or a new row (C8.10–C8.15). A
+kit row reads its character's profile there as a second source.
+
 **Contents:** the rules in one screen · Renaming · the framework · the fourteen shared mechanisms
 · one section per character · the build order (board rows) · Sources.
 

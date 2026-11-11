@@ -1,0 +1,379 @@
+{
+  "id": "character-naruto-boruto-naruto-uzumaki",
+  "name": "Naruto Uzumaki",
+  "aliases": [],
+  "universe": "Naruto / Boruto",
+  "species_or_type": null,
+  "canon_rank_or_title": null,
+  "combat_roles": [
+    "resource_management",
+    "offense",
+    "melee_offense",
+    "world_interaction"
+  ],
+  "forms": [],
+  "resource_model": null,
+  "passive_traits": [],
+  "abilities": [
+    {
+      "name": "Shadow Clone Technique",
+      "existing_atlas_entry_ids": [
+        "ability-1288-shadow-clone-technique"
+      ],
+      "canon_behavior": "Naruto creates physical chakra duplicates that act independently and relay their experiences when dismissed.",
+      "classification": {
+        "combat_roles": [
+          "resource_management"
+        ],
+        "mechanic_tags": [
+          "resource"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "unspecified",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Check and consume the relevant power resource or material.",
+        "Update the character state and user interface.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "clone_actor",
+        "mechanic_title": "Duplicate unit into owned copies",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Naruto creates physical chakra duplicates that act independently and relay their experiences when dismissed.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Check and consume the relevant power resource or material. → Update the character state and user interface.",
+        "execution_steps": [
+          "CHARACTER: Naruto Uzumaki — Shadow Clone Technique",
+          "CANON BEHAVIOR: Naruto creates physical chakra duplicates that act independently and relay their experiences when dismissed.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Check and consume the relevant power resource or material.",
+          "Update the character state and user interface.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Duplicate unit into owned copies",
+          "assert source_is_clone_eligible(actor)",
+          "snapshot = capture_whitelisted_clone_traits(actor)",
+          "for each clone in bounded_clone_count:",
+          "    spawn_clone_instance(snapshot, owner=actor, independent_health=True)",
+          "on_expiry: despawn_clones_without_duplicating_inventory()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_shadow_clone_technique_naruto(ctx, actor, target, cfg):\n    # LORE INTENT: Naruto creates physical chakra duplicates that act independently and relay their experiences when dismissed.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert source_is_clone_eligible(actor)\n    snapshot = capture_whitelisted_clone_traits(actor)\n    for each clone in bounded_clone_count:\n        spawn_clone_instance(snapshot, owner=actor, independent_health=True)\n    on_expiry: despawn_clones_without_duplicating_inventory()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "EntitySpawner",
+          "CloneState",
+          "OwnershipIndex"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "clone_count",
+          "copied_fields",
+          "lifetime",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Clone identity and control sharing must be defined."
+        ],
+        "test_scenarios": [
+          "Shadow Clone Technique: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Shadow Clone Technique: executes the intended duplicate unit into owned copies only for eligible targets.",
+          "Shadow Clone Technique: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Clone identity and control sharing must be defined."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Naruto Uzumaki",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Check and consume the relevant power resource or material.",
+          "Update the character state and user interface.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    },
+    {
+      "name": "Rasengan",
+      "existing_atlas_entry_ids": [
+        "ability-1289-rasengan"
+      ],
+      "canon_behavior": "A sphere of intensely rotating chakra damages a target through concentrated rotational force.",
+      "classification": {
+        "combat_roles": [
+          "resource_management",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "resource",
+          "damage"
+        ],
+        "activation_hint": "not_determined_from_summary",
+        "target_hint": "opponents_or_selected_target",
+        "delivery_hint": "unknown_from_short_summary"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Check and consume the relevant power resource or material.",
+        "Update the character state and user interface.",
+        "Resolve relevant hit targets and attack properties.",
+        "Apply typed damage through the combat resolver, then post impact events.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "unresolved_special",
+        "mechanic_title": "Special scripted power (requires manual rules)",
+        "semantic_route_evidence": "manual_mechanic_definition_required",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "A sphere of intensely rotating chakra damages a target through concentrated rotational force.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Check and consume the relevant power resource or material. → Update the character state and user interface.",
+        "execution_steps": [
+          "CHARACTER: Naruto Uzumaki — Rasengan",
+          "CANON BEHAVIOR: A sphere of intensely rotating chakra damages a target through concentrated rotational force.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Check and consume the relevant power resource or material.",
+          "Update the character state and user interface.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Special scripted power (requires manual rules)",
+          "define_explicit_trigger_and_target_predicates(ability)",
+          "implement_named_effect_as_custom_authoritative_state_transition()",
+          "register_interrupt_cleanup_and_conflict_resolution()",
+          "verify_against_original_scene_or_mechanics_before_shipping()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_rasengan_naruto(ctx, actor, target, cfg):\n    # LORE INTENT: A sphere of intensely rotating chakra damages a target through concentrated rotational force.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    define_explicit_trigger_and_target_predicates(ability)\n    implement_named_effect_as_custom_authoritative_state_transition()\n    register_interrupt_cleanup_and_conflict_resolution()\n    verify_against_original_scene_or_mechanics_before_shipping()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CustomAbilityScript",
+          "RulePredicate",
+          "EventLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "precise_effect",
+          "target_eligibility",
+          "exception_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Reference is too terse to infer a reliable exact algorithm."
+        ],
+        "test_scenarios": [
+          "Rasengan: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Rasengan: executes the intended special scripted power (requires manual rules) only for eligible targets.",
+          "Rasengan: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Reference is too terse to infer a reliable exact algorithm."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Naruto Uzumaki",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Check and consume the relevant power resource or material.",
+          "Update the character state and user interface.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    },
+    {
+      "name": "Rasenshuriken",
+      "existing_atlas_entry_ids": [
+        "ability-1290-rasenshuriken"
+      ],
+      "canon_behavior": "A wind-natured Rasengan expands into a cutting attack composed of numerous microscopic strikes.",
+      "classification": {
+        "combat_roles": [
+          "melee_offense",
+          "world_interaction",
+          "offense"
+        ],
+        "mechanic_tags": [
+          "melee",
+          "environment",
+          "damage"
+        ],
+        "activation_hint": "activated_or_command",
+        "target_hint": "world_or_environment",
+        "delivery_hint": "melee_hitbox"
+      },
+      "provenance": "linked_from_existing_encyclopedia",
+      "suggested_game_logic": [
+        "Ability requested or passive event received.",
+        "Validate state, target eligibility and any explicitly defined prerequisites.",
+        "Run the attack animation and enable a hitbox only during its active frames.",
+        "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "Query weather, terrain, surface, region or nearby world objects.",
+        "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+        "Resolve relevant hit targets and attack properties.",
+        "Apply typed damage through the combat resolver, then post impact events.",
+        "Emit events for animation/VFX/audio and combat-log observers.",
+        "Apply recovery, clean up spawned objects, and return to an allowed state."
+      ],
+      "canon_limitations": "Unspecified beyond existing summary",
+      "coding_logic": {
+        "handler_family": "melee_hitbox",
+        "mechanic_title": "Melee animation with active frames",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "animation_synced_melee_hitbox",
+        "explicit_goal": "A wind-natured Rasengan expands into a cutting attack composed of numerous microscopic strikes.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Ability requested or passive event received. → Validate state, target eligibility and any explicitly defined prerequisites. → Run the attack animation and enable a hitbox only during its active frames. → Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+        "execution_steps": [
+          "CHARACTER: Naruto Uzumaki — Rasenshuriken",
+          "CANON BEHAVIOR: A wind-natured Rasengan expands into a cutting attack composed of numerous microscopic strikes.",
+          "FORM REQUIREMENT: none_specified",
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Query weather, terrain, surface, region or nearby world objects.",
+          "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state.",
+          "IMPLEMENTATION FAMILY: Melee animation with active frames",
+          "assert allowed_combat_state(actor)",
+          "play_attack_animation(actor,ability)",
+          "during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)",
+          "for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)",
+          "on_recovery_complete: disable_hitbox_and_finish()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_rasenshuriken_naruto(ctx, actor, target, cfg):\n    # LORE INTENT: A wind-natured Rasengan expands into a cutting attack composed of numerous microscopic strikes.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert allowed_combat_state(actor)\n    play_attack_animation(actor,ability)\n    during_active_frames: targets = sweep_weapon_or_body_hitbox(actor)\n    for target in new_valid_targets(targets,hit_ledger): resolve_melee_hit(target)\n    on_recovery_complete: disable_hitbox_and_finish()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AnimationFSM",
+          "MeleeHitbox",
+          "HitLedger"
+        ],
+        "effect_tags_from_description": [
+          "health_damage"
+        ],
+        "design_parameters_to_supply": [
+          "attack_arc",
+          "reach",
+          "active_frames",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Never leave melee hitbox active after interruption."
+        ],
+        "test_scenarios": [
+          "Rasenshuriken: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Rasenshuriken: executes the intended melee animation with active frames only for eligible targets.",
+          "Rasenshuriken: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Never leave melee hitbox active after interruption."
+        ],
+        "implementation_status": "index_character_move_needs_research",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Naruto Uzumaki",
+        "form_requirements": "none_specified",
+        "source_urls": [],
+        "character_specific_initial_steps": [
+          "Ability requested or passive event received.",
+          "Validate state, target eligibility and any explicitly defined prerequisites.",
+          "Run the attack animation and enable a hitbox only during its active frames.",
+          "Track already-hit targets to prevent accidental repeated hits unless multihit is intended.",
+          "Query weather, terrain, surface, region or nearby world objects.",
+          "Modify only the permitted tiles/objects and serialize world changes if persistent.",
+          "Resolve relevant hit targets and attack properties.",
+          "Apply typed damage through the combat resolver, then post impact events.",
+          "Emit events for animation/VFX/audio and combat-log observers.",
+          "Apply recovery, clean up spawned objects, and return to an allowed state."
+        ],
+        "character_profile_status": "index_profile_needs_manual_verification"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "ACQUIRE_TARGET",
+    "USE_ABILITY",
+    "RECOVER"
+  ],
+  "sources": [],
+  "source_notes": "Owner inferred from source title/prefix or editorial mapping. Verify before treating as a complete character sheet.",
+  "profile_status": "index_profile_needs_manual_verification",
+  "implementation_disclaimer": "Auto-tagging and inferred AI logic are suggested implementation metadata, not canon.",
+  "ability_count": 3
+}

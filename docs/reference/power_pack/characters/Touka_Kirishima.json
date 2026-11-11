@@ -1,0 +1,370 @@
+{
+  "id": "character-tokyo-ghoul-touka-kirishima",
+  "name": "Touka Kirishima",
+  "aliases": [],
+  "universe": "Tokyo Ghoul",
+  "species_or_type": "ghoul / ukaku",
+  "canon_rank_or_title": "Not specified in this profile",
+  "combat_roles": [
+    "mobile_ranged",
+    "defender"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "No manifested wing."
+    },
+    {
+      "name": "ukaku_active",
+      "canon_description": "One or more ukaku wing structures visible."
+    }
+  ],
+  "resource_model": {
+    "source": "RC cells",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Ghoul physique",
+    "Rapid wing hardening"
+  ],
+  "abilities": [
+    {
+      "name": "Ukaku Wing Shards",
+      "category": "ranged_attack",
+      "canon_behavior": "Touka fires fast Rc shard projectiles from the crystallized portions of her ukaku kagune.",
+      "activation": "active",
+      "targeting": "enemy in front",
+      "observed_effects": [
+        "Ranged shard hit"
+      ],
+      "suggested_game_logic": [
+        "Require manifested wing.",
+        "Emit one or more shard projectiles from wing mount.",
+        "Resolve flight, collision and despawn."
+      ],
+      "canon_limitations": "Explicit ammo and stamina amounts are not canonically fixed.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Touka_Kirishima"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1465-ukaku-kagune"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "projectile",
+        "mechanic_title": "Single or repeated moving shot",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "owned_projectile",
+        "explicit_goal": "Touka fires fast Rc shard projectiles from the crystallized portions of her ukaku kagune.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Require manifested wing. → Emit one or more shard projectiles from wing mount. → Resolve flight, collision and despawn.",
+        "execution_steps": [
+          "CHARACTER: Touka Kirishima — Ukaku Wing Shards",
+          "CANON BEHAVIOR: Touka fires fast Rc shard projectiles from the crystallized portions of her ukaku kagune.",
+          "FORM REQUIREMENT: none_specified",
+          "Require manifested wing.",
+          "Emit one or more shard projectiles from wing mount.",
+          "Resolve flight, collision and despawn.",
+          "IMPLEMENTATION FAMILY: Single or repeated moving shot",
+          "projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)",
+          "each_tick: projectile.move_using_swept_collision(delta_time)",
+          "on_collision: validate_faction_and_hit_once(projectile,hit_target)",
+          "apply_projectile_payload(hit_target,damage_or_status)",
+          "despawn_on_hit_max_range_or_lifetime(projectile)",
+          "Use fire/burn material tags; a damage-over-time status is optional unless explicitly described.",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ukaku_wing_shards_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Touka fires fast Rc shard projectiles from the crystallized portions of her ukaku kagune.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    projectile = spawn_projectile(owner=actor,origin=launch_socket,aim=target)\n    each_tick: projectile.move_using_swept_collision(delta_time)\n    on_collision: validate_faction_and_hit_once(projectile,hit_target)\n    apply_projectile_payload(hit_target,damage_or_status)\n    despawn_on_hit_max_range_or_lifetime(projectile)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "ProjectilePool",
+          "SweptCollision",
+          "HitResolver"
+        ],
+        "effect_tags_from_description": [
+          "projectile_emission"
+        ],
+        "design_parameters_to_supply": [
+          "projectile_speed",
+          "range",
+          "hit_effect",
+          "cooldown",
+          "resource_cost",
+          "duration",
+          "damage_or_magnitude"
+        ],
+        "failure_and_edge_cases": [
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "test_scenarios": [
+          "Ukaku Wing Shards: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Ukaku Wing Shards: executes the intended single or repeated moving shot only for eligible targets.",
+          "Ukaku Wing Shards: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Projectile payload may be damage, status or transport—not always HP loss."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Touka Kirishima",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Touka_Kirishima"
+        ],
+        "character_specific_initial_steps": [
+          "Require manifested wing.",
+          "Emit one or more shard projectiles from wing mount.",
+          "Resolve flight, collision and despawn."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Ukaku Wing Guard",
+      "category": "defense",
+      "canon_behavior": "Touka can harden and use kagune wings to intercept projectiles.",
+      "activation": "reactive_or_hold",
+      "targeting": "self",
+      "observed_effects": [
+        "Projectile interception"
+      ],
+      "suggested_game_logic": [
+        "Change wing material state to hardened.",
+        "Place directional shield collision volume at wing location.",
+        "Reduce or stop qualifying incoming hits."
+      ],
+      "canon_limitations": "Protection varies with opponent and attack; not universal negation.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Touka_Kirishima"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "projectile",
+        "shield"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "Touka can harden and use kagune wings to intercept projectiles.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Change wing material state to hardened. → Place directional shield collision volume at wing location. → Reduce or stop qualifying incoming hits.",
+        "execution_steps": [
+          "CHARACTER: Touka Kirishima — Ukaku Wing Guard",
+          "CANON BEHAVIOR: Touka can harden and use kagune wings to intercept projectiles.",
+          "FORM REQUIREMENT: none_specified",
+          "Change wing material state to hardened.",
+          "Place directional shield collision volume at wing location.",
+          "Reduce or stop qualifying incoming hits.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_ukaku_wing_guard_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Touka can harden and use kagune wings to intercept projectiles.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [
+          "projectile_emission",
+          "shield_modifier"
+        ],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "Ukaku Wing Guard: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Ukaku Wing Guard: executes the intended defensive interception or immunity only for eligible targets.",
+          "Ukaku Wing Guard: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Touka Kirishima",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Touka_Kirishima"
+        ],
+        "character_specific_initial_steps": [
+          "Change wing material state to hardened.",
+          "Place directional shield collision volume at wing location.",
+          "Reduce or stop qualifying incoming hits."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Lightning-like RC Aura",
+      "category": "special_attack",
+      "canon_behavior": "Her kagune can display and produce an electricity-like offensive effect.",
+      "activation": "active",
+      "targeting": "close or midrange enemy",
+      "observed_effects": [
+        "Unusual lightning-like output"
+      ],
+      "suggested_game_logic": [
+        "Activate an aura or arc hit effect attached to wing.",
+        "Resolve hits as a separately typed attack; do not presume real-world electrodynamics."
+      ],
+      "canon_limitations": "Treat as a pseudo-electric RC phenomenon, not necessarily an independent magic system.",
+      "source_urls": [
+        "https://tokyoghoul.fandom.com/wiki/Touka_Kirishima"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "resource"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "persistent_field",
+        "mechanic_title": "Lingering region effect",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Her kagune can display and produce an electricity-like offensive effect.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Activate an aura or arc hit effect attached to wing. → Resolve hits as a separately typed attack; do not presume real-world electrodynamics.",
+        "execution_steps": [
+          "CHARACTER: Touka Kirishima — Lightning-like RC Aura",
+          "CANON BEHAVIOR: Her kagune can display and produce an electricity-like offensive effect.",
+          "FORM REQUIREMENT: none_specified",
+          "Activate an aura or arc hit effect attached to wing.",
+          "Resolve hits as a separately typed attack; do not presume real-world electrodynamics.",
+          "IMPLEMENTATION FAMILY: Lingering region effect",
+          "zone = spawn_persistent_region(actor,target_point,shape)",
+          "while zone.is_active:",
+          "    occupants = query_entities_entering_or_inside(zone)",
+          "    apply_defined_effects_per_occupant_tick(occupants,zone)",
+          "on_exit_or_end: remove_only_owned_status_instances(zone)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_lightning_like_rc_aura_tokyo(ctx, actor, target, cfg):\n    # LORE INTENT: Her kagune can display and produce an electricity-like offensive effect.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    zone = spawn_persistent_region(actor,target_point,shape)\n    while zone.is_active:\n        occupants = query_entities_entering_or_inside(zone)\n        apply_defined_effects_per_occupant_tick(occupants,zone)\n    on_exit_or_end: remove_only_owned_status_instances(zone)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "AreaVolume",
+          "EffectTicker"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "radius",
+          "tick_interval",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "test_scenarios": [
+          "Lightning-like RC Aura: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Lightning-like RC Aura: executes the intended lingering region effect only for eligible targets.",
+          "Lightning-like RC Aura: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Avoid applying effect every frame instead of once per tick."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Touka Kirishima",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://tokyoghoul.fandom.com/wiki/Touka_Kirishima"
+        ],
+        "character_specific_initial_steps": [
+          "Activate an aura or arc hit effect attached to wing.",
+          "Resolve hits as a separately typed attack; do not presume real-world electrodynamics."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://tokyoghoul.fandom.com/wiki/Touka_Kirishima"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 3
+}

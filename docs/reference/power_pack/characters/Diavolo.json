@@ -1,0 +1,259 @@
+{
+  "id": "character-jojos-bizarre-adventure-diavolo",
+  "name": "Diavolo",
+  "aliases": [],
+  "universe": "JoJo’s Bizarre Adventure",
+  "species_or_type": "human Stand user",
+  "canon_rank_or_title": "Boss of Passione",
+  "combat_roles": [
+    "temporal_assassin",
+    "future_prediction"
+  ],
+  "forms": [
+    {
+      "name": "stand_active",
+      "canon_description": "King Crimson available."
+    }
+  ],
+  "resource_model": {
+    "source": "Stand ability",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Epitaph future preview"
+  ],
+  "abilities": [
+    {
+      "name": "Epitaph",
+      "category": "future_preview",
+      "canon_behavior": "Epitaph presents Diavolo with a short glimpse of future outcomes.",
+      "activation": "active_or_conditional",
+      "targeting": "self / predicted sequence",
+      "observed_effects": [
+        "Future prediction"
+      ],
+      "suggested_game_logic": [
+        "Sample a short scheduled timeline or authored future cue.",
+        "Present that information to AI decision logic or to player UI.",
+        "Do not overwrite the game world with an arbitrary prediction."
+      ],
+      "canon_limitations": "Prediction scope is short and story-specific.",
+      "source_urls": [
+        "https://jojowiki.com/King_Crimson"
+      ],
+      "existing_atlas_entry_ids": [],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "time"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "fate_outcome",
+        "mechanic_title": "Causal / probability rule",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "outcome_interceptor",
+        "explicit_goal": "Epitaph presents Diavolo with a short glimpse of future outcomes.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Sample a short scheduled timeline or authored future cue. → Present that information to AI decision logic or to player UI. → Do not overwrite the game world with an arbitrary prediction.",
+        "execution_steps": [
+          "CHARACTER: Diavolo — Epitaph",
+          "CANON BEHAVIOR: Epitaph presents Diavolo with a short glimpse of future outcomes.",
+          "FORM REQUIREMENT: none_specified",
+          "Sample a short scheduled timeline or authored future cue.",
+          "Present that information to AI decision logic or to player UI.",
+          "Do not overwrite the game world with an arbitrary prediction.",
+          "IMPLEMENTATION FAMILY: Causal / probability rule",
+          "event = capture_qualifying_outcome_before_commit(world)",
+          "possibilities = derive_legal_outcomes(event, scoped_rules)",
+          "selected = choose_or_bias_outcome(possibilities, owner, rng)",
+          "commit_single_selected_outcome(selected)",
+          "log_causal_branch_for_replay()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_epitaph_jojos(ctx, actor, target, cfg):\n    # LORE INTENT: Epitaph presents Diavolo with a short glimpse of future outcomes.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    event = capture_qualifying_outcome_before_commit(world)\n    possibilities = derive_legal_outcomes(event, scoped_rules)\n    selected = choose_or_bias_outcome(possibilities, owner, rng)\n    commit_single_selected_outcome(selected)\n    log_causal_branch_for_replay()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "EventInterception",
+          "SeededRng",
+          "OutcomeSelector"
+        ],
+        "effect_tags_from_description": [
+          "world_rule"
+        ],
+        "design_parameters_to_supply": [
+          "trigger_predicate",
+          "eligible_outcomes",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Cross-continuity absolute fate claims need handcrafted rules."
+        ],
+        "test_scenarios": [
+          "Epitaph: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Epitaph: executes the intended causal / probability rule only for eligible targets.",
+          "Epitaph: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Cross-continuity absolute fate claims need handcrafted rules."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Diavolo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://jojowiki.com/King_Crimson"
+        ],
+        "character_specific_initial_steps": [
+          "Sample a short scheduled timeline or authored future cue.",
+          "Present that information to AI decision logic or to player UI.",
+          "Do not overwrite the game world with an arbitrary prediction."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "King Crimson: Time Erasure",
+      "category": "temporal_skip",
+      "canon_behavior": "Diavolo erases a brief interval from others experience while resulting outcomes still occur, allowing him to reposition under special timing rules.",
+      "activation": "active",
+      "targeting": "local temporal interval",
+      "observed_effects": [
+        "Skip perceived interval",
+        "Personal repositioning"
+      ],
+      "suggested_game_logic": [
+        "Implement as deterministic timeline segment with actor immunity/special handling.",
+        "Preserve outcomes and distinguish memory/perception effects from actual rewind.",
+        "Avoid generic global time stop or ordinary teleport semantics."
+      ],
+      "canon_limitations": "Temporal/cause details are nuanced and should be version-specific.",
+      "source_urls": [
+        "https://jojowiki.com/King_Crimson"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-1221-king-crimson-time-erasure"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "mobility",
+        "time"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "temporal_skip",
+        "mechanic_title": "Skip or erase time slice",
+        "semantic_route_evidence": "name_and_description_semantics",
+        "execution_delivery": "custom_or_service_handler",
+        "explicit_goal": "Diavolo erases a brief interval from others experience while resulting outcomes still occur, allowing him to reposition under special timing rules.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Implement as deterministic timeline segment with actor immunity/special handling. → Preserve outcomes and distinguish memory/perception effects from actual rewind. → Avoid generic global time stop or ordinary teleport semantics.",
+        "execution_steps": [
+          "CHARACTER: Diavolo — King Crimson: Time Erasure",
+          "CANON BEHAVIOR: Diavolo erases a brief interval from others experience while resulting outcomes still occur, allowing him to reposition under special timing rules.",
+          "FORM REQUIREMENT: none_specified",
+          "Implement as deterministic timeline segment with actor immunity/special handling.",
+          "Preserve outcomes and distinguish memory/perception effects from actual rewind.",
+          "Avoid generic global time stop or ordinary teleport semantics.",
+          "IMPLEMENTATION FAMILY: Skip or erase time slice",
+          "window = world_clock.reserve_interval(duration)",
+          "project_state_changes_for_interval(window)",
+          "apply_user_exemptions_and_no-contact_rules(window)",
+          "commit_consistent_end_state(window)",
+          "release_temporal_override()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_king_crimson_time_erasure_jojos(ctx, actor, target, cfg):\n    # LORE INTENT: Diavolo erases a brief interval from others experience while resulting outcomes still occur, allowing him to reposition under special timing rules.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    window = world_clock.reserve_interval(duration)\n    project_state_changes_for_interval(window)\n    apply_user_exemptions_and_no-contact_rules(window)\n    commit_consistent_end_state(window)\n    release_temporal_override()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "WorldStateHistory",
+          "EventReconciler"
+        ],
+        "effect_tags_from_description": [],
+        "design_parameters_to_supply": [
+          "erasure_window",
+          "exception_rules",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Time erasure does not universally equal time freeze."
+        ],
+        "test_scenarios": [
+          "King Crimson: Time Erasure: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "King Crimson: Time Erasure: executes the intended skip or erase time slice only for eligible targets.",
+          "King Crimson: Time Erasure: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Time erasure does not universally equal time freeze."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Diavolo",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://jojowiki.com/King_Crimson"
+        ],
+        "character_specific_initial_steps": [
+          "Implement as deterministic timeline segment with actor immunity/special handling.",
+          "Preserve outcomes and distinguish memory/perception effects from actual rewind.",
+          "Avoid generic global time stop or ordinary teleport semantics."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://jojowiki.com/King_Crimson"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 2
+}

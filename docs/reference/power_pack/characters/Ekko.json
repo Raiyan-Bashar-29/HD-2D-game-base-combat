@@ -1,0 +1,280 @@
+{
+  "id": "character-league-of-legends-runeterra-ekko",
+  "name": "Ekko",
+  "aliases": [],
+  "universe": "League of Legends / Runeterra",
+  "species_or_type": "human inventor",
+  "canon_rank_or_title": "Boy Who Shattered Time",
+  "combat_roles": [
+    "mobility_assassin",
+    "time_rewind",
+    "area_control"
+  ],
+  "forms": [
+    {
+      "name": "normal",
+      "canon_description": "Z-Drive technology available."
+    }
+  ],
+  "resource_model": {
+    "source": "ability cooldowns and mana",
+    "numeric_pool": null
+  },
+  "passive_traits": [
+    "Maintains time-delayed position history"
+  ],
+  "abilities": [
+    {
+      "name": "Parallel Convergence",
+      "category": "conditional_zone",
+      "canon_behavior": "Ekko creates a delayed slowing zone; entering it at the right time grants a shield and stuns foes.",
+      "activation": "active",
+      "targeting": "ground area / enemy group",
+      "observed_effects": [
+        "Slow field",
+        "Conditional shield",
+        "Conditional stun"
+      ],
+      "suggested_game_logic": [
+        "Spawn delayed zone telegraph.",
+        "On completion apply slow to enemies within.",
+        "If owner enters zone, trigger shield and enemy stun; despawn zone."
+      ],
+      "canon_limitations": "Shield and stun require Ekko entering the anomaly.",
+      "source_urls": [
+        "https://wildrift.leagueoflegends.com/en-us/champions/ekko/",
+        "https://wiki.leagueoflegends.com/en-us/Ekko"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-2631-ekko-parallel-convergence"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "aoe",
+        "shield",
+        "debuff",
+        "crowd_control"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "barrier_shield",
+        "mechanic_title": "Defensive interception or immunity",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "combat_interceptor",
+        "explicit_goal": "Ekko creates a delayed slowing zone; entering it at the right time grants a shield and stuns foes.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Spawn delayed zone telegraph. → On completion apply slow to enemies within. → If owner enters zone, trigger shield and enemy stun; despawn zone.",
+        "execution_steps": [
+          "CHARACTER: Ekko — Parallel Convergence",
+          "CANON BEHAVIOR: Ekko creates a delayed slowing zone; entering it at the right time grants a shield and stuns foes.",
+          "FORM REQUIREMENT: none_specified",
+          "Spawn delayed zone telegraph.",
+          "On completion apply slow to enemies within.",
+          "If owner enters zone, trigger shield and enemy stun; despawn zone.",
+          "IMPLEMENTATION FAMILY: Defensive interception or immunity",
+          "defense = attach_defense_rule_to_actor_or_zone(target)",
+          "on_incoming_hit(hit):",
+          "    if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)",
+          "    else: pass_through_normal_hit_resolution(hit)",
+          "on_depletion_or_expiry: remove_defense_rule(defense)",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_parallel_convergence_league(ctx, actor, target, cfg):\n    # LORE INTENT: Ekko creates a delayed slowing zone; entering it at the right time grants a shield and stuns foes.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    defense = attach_defense_rule_to_actor_or_zone(target)\n    on_incoming_hit(hit):\n        if matches_defense_filter(hit,defense): reduce_block_or_reflect(hit)\n        else: pass_through_normal_hit_resolution(hit)\n    on_depletion_or_expiry: remove_defense_rule(defense)\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "CombatResolver",
+          "BarrierVolume",
+          "ResistanceTable"
+        ],
+        "effect_tags_from_description": [
+          "status_effect",
+          "shield_modifier"
+        ],
+        "design_parameters_to_supply": [
+          "hit_filter",
+          "shield_strength",
+          "duration",
+          "cooldown",
+          "resource_cost",
+          "range"
+        ],
+        "failure_and_edge_cases": [
+          "Immunity and shield HP are distinct models."
+        ],
+        "test_scenarios": [
+          "Parallel Convergence: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Parallel Convergence: executes the intended defensive interception or immunity only for eligible targets.",
+          "Parallel Convergence: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Immunity and shield HP are distinct models."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ekko",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://wildrift.leagueoflegends.com/en-us/champions/ekko/",
+          "https://wiki.leagueoflegends.com/en-us/Ekko"
+        ],
+        "character_specific_initial_steps": [
+          "Spawn delayed zone telegraph.",
+          "On completion apply slow to enemies within.",
+          "If owner enters zone, trigger shield and enemy stun; despawn zone."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    },
+    {
+      "name": "Chronobreak",
+      "category": "self_rewind",
+      "canon_behavior": "Ekko returns to a recent previous location, regains some recently lost health, and damages nearby enemies when he reappears.",
+      "activation": "active",
+      "targeting": "self historical snapshot plus nearby foes",
+      "observed_effects": [
+        "Self reposition / heal",
+        "Arrival-area damage"
+      ],
+      "suggested_game_logic": [
+        "Record Ekko position and health history in time ring buffer.",
+        "On cast make Ekko untargetable only during the specified transition.",
+        "Move him to past position, restore qualifying health, then explode on arrival."
+      ],
+      "canon_limitations": "Do not rewind enemies, entire world, or resurrect from death automatically.",
+      "source_urls": [
+        "https://wildrift.leagueoflegends.com/en-us/champions/ekko/",
+        "https://wiki.leagueoflegends.com/en-us/Ekko"
+      ],
+      "existing_atlas_entry_ids": [
+        "ability-2630-ekko-chronobreak"
+      ],
+      "gameplay_tuning": {
+        "cooldown_seconds": null,
+        "damage": null,
+        "max_range_units": null,
+        "resource_cost": null
+      },
+      "mechanic_tags": [
+        "aoe",
+        "heal",
+        "mobility",
+        "damage"
+      ],
+      "form_requirement": "none_specified",
+      "implementation_is_canon": false,
+      "coding_logic": {
+        "handler_family": "heal",
+        "mechanic_title": "Healing and cleansing",
+        "semantic_route_evidence": "description_semantics",
+        "execution_delivery": "health_delta",
+        "explicit_goal": "Ekko returns to a recent previous location, regains some recently lost health, and damages nearby enemies when he reappears.",
+        "activation_inputs": [
+          "actor_id",
+          "ability_id",
+          "target_or_location",
+          "ability_config",
+          "world_context"
+        ],
+        "validation_and_preconditions": [
+          "Ability is owned and available to the actor (do not infer character ownership from same universe).",
+          "Caster alive/allowed to act, or passive trigger matches.",
+          "Target passes ability-specific faction, range, state and resistance checks when applicable."
+        ],
+        "coding_logic_column": "Record Ekko position and health history in time ring buffer. → On cast make Ekko untargetable only during the specified transition. → Move him to past position, restore qualifying health, then explode on arrival.",
+        "execution_steps": [
+          "CHARACTER: Ekko — Chronobreak",
+          "CANON BEHAVIOR: Ekko returns to a recent previous location, regains some recently lost health, and damages nearby enemies when he reappears.",
+          "FORM REQUIREMENT: none_specified",
+          "Record Ekko position and health history in time ring buffer.",
+          "On cast make Ekko untargetable only during the specified transition.",
+          "Move him to past position, restore qualifying health, then explode on arrival.",
+          "IMPLEMENTATION FAMILY: Healing and cleansing",
+          "assert is_valid_heal_target(actor,target)",
+          "healed = clamp_healing_to_missing_health(target,configured_amount)",
+          "health.apply_healing(target,healed)",
+          "if specified: cleanse_selected_status_tags(target)",
+          "emit_health_change_and_heal_visuals()",
+          "Emit effect/VFX events and run interruption, expiry and cleanup handlers."
+        ],
+        "pseudocode": "def execute_chronobreak_league(ctx, actor, target, cfg):\n    # LORE INTENT: Ekko returns to a recent previous location, regains some recently lost health, and damages nearby enemies when he reappears.\n    if not ctx.owns_ability(actor, ability_id): return NOT_OWNED\n    if not ctx.check_explicit_conditions(actor, target, cfg): return DENIED\n    tx = ctx.begin_effect(ability_id, actor, target)\n    assert is_valid_heal_target(actor,target)\n    healed = clamp_healing_to_missing_health(target,configured_amount)\n    health.apply_healing(target,healed)\n    if specified: cleanse_selected_status_tags(target)\n    emit_health_change_and_heal_visuals()\n    tx.commit_if_valid()\n    ctx.emit_effect_event(ability_id)\n    return SUCCESS",
+        "required_engine_systems": [
+          "HealthSystem",
+          "StatusController"
+        ],
+        "effect_tags_from_description": [
+          "health_damage",
+          "healing",
+          "teleportation",
+          "area_effect"
+        ],
+        "design_parameters_to_supply": [
+          "healing_amount",
+          "target_filter",
+          "cooldown",
+          "resource_cost",
+          "range",
+          "duration"
+        ],
+        "failure_and_edge_cases": [
+          "Healing should not revive dead actors without revival rules."
+        ],
+        "test_scenarios": [
+          "Chronobreak: rejects activation when the owner, target, form or resource prerequisites are not satisfied.",
+          "Chronobreak: executes the intended healing and cleansing only for eligible targets.",
+          "Chronobreak: repeated or interrupted activation does not duplicate events, state or ownership.",
+          "Healing should not revive dead actors without revival rules."
+        ],
+        "implementation_status": "curated_character_move_with_proposed_mechanics",
+        "manual_verification_required": true,
+        "not_canon": true,
+        "engine_neutral": true,
+        "character_ownership": "EXPLICIT: Ekko",
+        "form_requirements": "none_specified",
+        "source_urls": [
+          "https://wildrift.leagueoflegends.com/en-us/champions/ekko/",
+          "https://wiki.leagueoflegends.com/en-us/Ekko"
+        ],
+        "character_specific_initial_steps": [
+          "Record Ekko position and health history in time ring buffer.",
+          "On cast make Ekko untargetable only during the specified transition.",
+          "Move him to past position, restore qualifying health, then explode on arrival."
+        ],
+        "character_profile_status": "researched_and_curated"
+      }
+    }
+  ],
+  "ai_state_suggestions": [
+    "IDLE",
+    "PATROL",
+    "TARGET_ACQUISITION",
+    "APPROACH_OR_KITE",
+    "CAST_OR_ATTACK",
+    "RECOVERY",
+    "RETREAT_OR_REPOSITION",
+    "DEFEATED"
+  ],
+  "sources": [
+    "https://wildrift.leagueoflegends.com/en-us/champions/ekko/",
+    "https://wiki.leagueoflegends.com/en-us/Ekko"
+  ],
+  "source_notes": "Character details are cited; combat balancing numbers are intentionally omitted.",
+  "profile_status": "researched_and_curated",
+  "implementation_disclaimer": "AI states, effects implementation and balancing rules are GAME DESIGN suggestions, not canon.",
+  "ability_count": 2
+}
