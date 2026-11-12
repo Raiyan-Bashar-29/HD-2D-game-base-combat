@@ -532,7 +532,7 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | C6.6 | M3 `barrier` and the incoming guard in `Combatant.receive` (C6.6a, built); the timed block (C6.6b, built); the perfect dodge and `knockback_taken` (C6.6c, built); M13 `counter_stance` (C6.6d, built as data) | C6.1 |
 | C6.7 | M1 `barrage` and the `Projectile` node: DONE (0.74.0) | C6.2 |
 | C6.8 | M2 `finisher` (charge, its break, flourish, power from a pool): DONE (0.76.0) | C6.4 |
-| C6.9 | M4 `domain` (including clash and pull). The core, C6.9a: DONE (0.77.0) as the `battlefield` (`GEAR.md` § Part 3) | C6.6 |
+| C6.9 | M4 `domain` (including clash and pull). The core, C6.9a: DONE (0.77.0) as the `battlefield` (`GEAR.md` § Part 3); damage, ticks, pull and immunity, C6.9b: DONE (0.78.0) | C6.6 |
 | C6.10 | M7 `foresight` | C6.6 |
 | C6.11 | M8 `command` and M12 `grant` | C6.2 |
 | C6.12 | M9 `blink`, M11 `sacrifice` and M14 `refresh` (with the `cooldown_rate` stat) | C6.2 |

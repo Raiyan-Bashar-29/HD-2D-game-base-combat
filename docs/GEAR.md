@@ -511,8 +511,12 @@ in the field, turns in a battle), so a battle's battlefield never touches the fi
 waiting outside. Fighters are let in and out on raising and on every tick, so one walking out
 of an aura, a fighter arriving and a revived ally are all handled. The caster falling ends it
 with no aftermath (`ends_when` CASTER_FALLS is the only ending so far). `damage_dealt` is read
-on the attacker by `VulnerabilityStage`. **Still to build:** C6.9b (ticks, enter and exit,
-pull and push, immunity), C6.9c (clashes, sure-hit, breaking), C6.9d (the place, the log and
+on the attacker by `VulnerabilityStage`. **As built (C6.9b, 0.78.0):** `on_enter`, `on_exit` and `tick` are each one
+`Skill` (not a list of `SkillEffect`s: a skill already holds effects, statuses, element and
+`sure_hit`), used by the caster on the group, free; the effect's `who` aims it, so the skill's
+`target` and `scope` are not read. `tick_seconds`, `tick_turns` (counted on the caster's turns),
+`tick_grows`, `pull`, `push` and `immune_tags` (tags of held statuses) are as the table says;
+`resist_field_<name>` uses the power id after its last "/". **Still to build:** C6.9c (clashes, sure-hit, breaking), C6.9d (the place, the log and
 the HUD), a sphere left at a point and ZONE, fighters picked by tag, `resist_field_<id>`.
 
 ## The planted strike (M15 `plant`, new)
@@ -729,7 +733,7 @@ weapons themselves.
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading, and "where a barrage's misses land": DONE (0.75.0) | C6.7 |
 | C6.8 | M2 `finisher`: `FinisherMechanism`, the charge and its break, the `Flourish` time-stop, power from a pool: DONE (0.76.0) | C6.4 |
 | C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt`: DONE (0.77.0) | C6.6 |
-| C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity | C6.9a |
+| C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity: DONE (0.78.0) | C6.9a |
 | C6.9c | Battlefields against each other: `sure_hit` and `hit_tags`, `closed`, layers, the four clash rules, `broken_by_tags`, `cancelled_by`, `aftermath` | C6.9b |
 | C6.9d | The place: `PlaceLook`, `moves_fight`, `weather`, `caster_kit`, `summons`; the log and HUD readout | C6.9c, C6.5d |
 | C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |

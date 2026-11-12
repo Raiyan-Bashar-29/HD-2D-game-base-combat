@@ -66,13 +66,14 @@ static func stance_on(user: Combatant, skill: Skill) -> bool:
 
 ## Does `skill` to every one of `targets`. `boost` is how many Boost levels were spent on it:
 ## each adds `boost_power` to its power and `boost_hits` to its hits. A stance ignores both and
-## its targets, and just switches on or off on its user.
+## its targets, and just switches on or off on its user. `strength` multiplies every amount too
+## (a battlefield's growing tick, C6.9b); 1 leaves it as written.
 static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
-		rng: RandomNumberGenerator, boost: int = 0) -> void:
+		rng: RandomNumberGenerator, boost: int = 0, strength: float = 1.0) -> void:
 	if skill.toggle_status != null:
 		_toggle(user, skill)
 		return
-	var scale: float = 1.0 + skill.boost_power * boost
+	var scale: float = (1.0 + skill.boost_power * boost) * maxf(0.0, strength)
 	var hits: int = maxi(1, skill.hits) + skill.boost_hits * boost
 	for aimed: Combatant in targets:
 		# A reflecting target sends the whole skill, statuses and all, back at the user.

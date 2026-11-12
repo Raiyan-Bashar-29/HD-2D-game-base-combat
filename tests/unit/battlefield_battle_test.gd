@@ -2,7 +2,8 @@ extends TestCase
 ## Battlefields in a battle (C6.9a): raising one from the battle menu puts its effects on the
 ## battle's fighters and not on the field's, which wait outside on another clock; it stands for
 ## its turns, counted at the start of the caster's own, then ends with its aftermath; and the
-## caster falling ends it.
+## caster falling ends it. C6.9b: its on_enter skill lands as it rises, its tick on the caster's
+## own turns, and its on_exit skill as it ends.
 ##
 ## OWNS: assertions about `BattlefieldRun`'s battle reading.
 ## MUST NOT: name a game's kits, powers or characters.
@@ -18,7 +19,7 @@ var _outside: Node
 
 
 func run() -> void:
-	plan(4)
+	plan(5)
 	Flags.clear_all()
 	_holder = Node.new()
 	attach(_holder)
@@ -39,9 +40,15 @@ func _raising_and_turns() -> void:
 			_stacks(_battle.enemies[1], SLOWED)], [1, 10.0, 1, 1])
 	equal("a fighter in the field, on the other clock, is not inside",
 		StatusSet.of(_outside).stacks(SLOWED), 0)
+	var risen: int = _hp(_battle.enemies[0])
 	_hero_turn()
 	var first: int = _stacks(_battle.enemies[0], SLOWED)
+	var ticked: int = _hp(_battle.enemies[0])
+	Vitals.of(_battle.enemies[0].get_parent()).set_to(&"mp", 0)
 	_hero_turn()
+	equal("its on_enter skill lands as it rises, its tick on the caster's turn, its on_exit as it ends",
+		[risen < 99, ticked < risen, Vitals.of(_battle.enemies[0].get_parent()).current(&"mp")],
+		[true, true, 2])
 	equal("it stands for its turns, then ends with its aftermath and takes its effects off",
 		[first, _stacks(_battle.enemies[0], SLOWED), _stacks(hero, DOMAIN), _stacks(hero, BURNOUT),
 			hero.sheet.value(&"attack")], [1, 0, 0, 1, 6.0])
@@ -85,6 +92,10 @@ func _hero_turn() -> void:
 		_battle.act(BattleCommand.new(), [_battle.party[0]])
 
 
+func _hp(fighter: Combatant) -> int:
+	return Vitals.of(fighter.get_parent()).current(&"hp")
+
+
 func _stacks(fighter: Combatant, id: StringName) -> int:
 	return StatusSet.of(fighter.get_parent()).stacks(id)
 
@@ -115,6 +126,13 @@ func _kit() -> PowerKit:
 	var slow := BattlefieldEffect.new()
 	slow.who = BattlefieldEffect.Who.OTHER_SIDE
 	slow.statuses = [_status(SLOWED)]
+	slow.on_enter = _skill(&"fixture_battle_field_blast", 5.0, null)
+	slow.tick = _skill(&"fixture_battle_field_rain", 5.0, null)
+	slow.tick_turns = 1
+	var gift := SkillEffect.new()
+	gift.kind = SkillEffect.Kind.RESTORE
+	gift.amount = 2.0
+	slow.on_exit = _skill(&"fixture_battle_field_after", 0.0, gift)
 	field.effects = [lift, slow]
 	_power = Power.new()
 	_power.power_id = &"power/fixture_battle_field"
@@ -125,6 +143,19 @@ func _kit() -> PowerKit:
 	kit.name_key = "fixture.kit"
 	kit.powers = [_power]
 	return kit
+
+
+# A sure hit of `power`, or, with `effect`, a skill that only does that effect.
+func _skill(id: StringName, power: float, effect: SkillEffect) -> Skill:
+	var skill := Skill.new()
+	skill.id = id
+	skill.name_key = "fixture.skill"
+	skill.power = power
+	skill.sure_hit = true
+	if effect != null:
+		skill.target = FactionTable.Target.ALLY
+		skill.effects = [effect]
+	return skill
 
 
 func _status(id: StringName) -> StatusEffect:

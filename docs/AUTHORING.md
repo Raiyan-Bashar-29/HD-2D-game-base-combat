@@ -1340,7 +1340,13 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      `statuses` (give them duration 0: the field takes them off as fighters leave). `radius` 0
      covers the whole fight; above 0 it covers fighters within that many metres of the caster in
      the field, and follows it. `seconds` (field) and `turns` (battle) end it; 0 stands until
-     ended.
+     ended. Damage and movement (C6.9b): an effect's `on_enter`, `on_exit` and `tick` are each a
+     `Skill` the caster uses on the group, free (its `target` and `scope` are ignored; give a
+     helping skill `target` ALLY so it is not flagged as healing foes). `tick` needs a clock:
+     `tick_seconds` (field) and/or `tick_turns` (battle, the caster's turns); `tick_grows` 0.5
+     makes ticks 1, 1.5, 2 times as strong. `pull` and `push` are metres a second (field only).
+     `immune_tags` leaves out a fighter holding a status with that tag; the stat
+     `resist_field_<name>` (the power id after its last "/") at 1 keeps it out entirely.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle

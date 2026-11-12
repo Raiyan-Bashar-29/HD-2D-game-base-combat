@@ -113,13 +113,13 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | Family | Powers | In plain words | What runs it here | State | Examples |
 |---|---|---|---|---|---|
 | `construct_matter` | 311 | Make or shape matter: walls, weapons, objects | Things placed in the arena that block, hurt or can be thrown | NEW C8.14, on M15 `plant` (C6.26) and C8.9 | C-Moon; Magu Magu no Mi; Wood Release |
-| `persistent_field` | 126 | A zone that keeps acting on whoever is inside | M4 battlefield: statuses, ticks, pull | BUILT C6.9a (statuses and modifiers per group); ticks and pull PLANNED C6.9b | Weather Report; Self-Embodiment of Perfection; Deadly Sentencing |
+| `persistent_field` | 126 | A zone that keeps acting on whoever is inside | M4 battlefield: statuses, ticks, pull | BUILT C6.9a (statuses and modifiers per group), C6.9b (enter, exit and ticks; pull) | Weather Report; Self-Embodiment of Perfection; Deadly Sentencing |
 | `materialized_art` | 36 | A drawing or idea made real | A construct or an owned fighter | NEW C8.14, C8.10 | Ichimonji; Arthur — Plasma Excalibur; The Matchless Poet |
 | `craft_creation` | 25 | Make items | `Recipe` and `Crafting` | PLANNED C7.6 | Killer Queen — Bomb Transmutation; Nen Transmutation; Godspeed |
 | `terrain_control` | 19 | Reshape the ground | M4 battlefield effects; things in the arena | PLANNED C6.9, C8.9 | Chidori; Creation; Ultrahand |
 | `make_energy` | 17 | Make and store energy | A pool with `regen_<pool>`; M6 `gauge` | BUILT (C2.16, C6.4) | Goro Goro no Mi; Third Generation Pyrokinesis; Nezuko — Exploding Blood |
 | `pocket_space` | 15 | Take the fight into a closed world with its own rules | M4 battlefield `closed`, `moves_fight`, `PlaceLook` | PLANNED C6.9c–d | Unlimited Void; Imaginary Space; Eternity Devil |
-| `gravity_well_prison` | 2 | Pull everything in and hold it | M4 battlefield `pull` plus a hold status | PLANNED C6.9b | Six Paths: Planetary Devastation |
+| `gravity_well_prison` | 2 | Pull everything in and hold it | M4 battlefield `pull` plus a hold status | BUILT C6.9b | Six Paths: Planetary Devastation |
 | `terrain_cast_random` | 1 | A spell that depends on where you stand | `PowerScaling` reading the area or battlefield tag | NEW C8.15 (a scaling source) | Geomancy |
 | `impassable_prison` | 1 | A cage nobody leaves | M4 battlefield `closed`; NO_FLEE | PLANNED C6.9c | Forcecage |
 | `restricted_chain_grapple` | 1 | Bind one target; it cannot act or use powers | A status with SKIP_TURN and NO_SKILLS | BUILT (C2.14) | Chain Jail |

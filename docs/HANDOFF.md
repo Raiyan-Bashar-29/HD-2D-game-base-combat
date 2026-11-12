@@ -64,8 +64,12 @@ between them, written in plain words.
   side, the other side, everyone, everyone but the caster) modifiers and statuses while they
   are inside, around the caster (`radius`) or the whole fight, for `seconds` or `turns` or
   until ended, with the form's drain as upkeep. New stat `damage_dealt`.
-- **Next: C6.9b, battlefield damage and movement (batch 2: C6.8, C6.9a, C6.9b; the PR after
-  it).** The
+- **C6.9b is done (0.78.0): battlefield damage and movement.** Each effect can use a skill on
+  its group as a fighter comes in (`on_enter`), as it leaves (`on_exit`) and on a clock
+  (`tick`, every `tick_seconds` or `tick_turns`, growing by `tick_grows`); `pull` and `push`
+  move the group in the field; `immune_tags` and the stat `resist_field_<name>` keep fighters
+  out. Batch 2 (C6.8, C6.9a, C6.9b) is complete and goes up as one PR.
+- **Next: C6.9c, battlefields against each other.** The
   build order is the table at the foot of `GEAR.md`: C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.

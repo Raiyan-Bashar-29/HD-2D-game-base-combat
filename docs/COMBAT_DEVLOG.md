@@ -3699,3 +3699,35 @@ C6.9d, and C8.11 (time), which needs the battlefield core.
 - No `battlefield_raised` or `battlefield_ended` event yet: nothing would listen until the battle
   log and the HUD readout (C6.9d).
 
+
+## 2026-11-12 — C6.9b · Battlefield damage and movement
+
+**Did.** `BattlefieldEffect` gained `on_enter`, `on_exit` and `tick` (each a `Skill`),
+`tick_seconds`, `tick_turns`, `tick_grows`, `pull`, `push` and `immune_tags`, with their
+problems (a tick with no clock, a clock with no tick, negative numbers, an empty tag).
+`BattlefieldRun` uses `on_enter` on each fighter as it comes in (so on everyone as the field
+rises, and on whoever walks into an aura), `on_exit` as it leaves or the field ends, counts each
+effect's own clock on every tick and uses `tick` on every standing fighter of its group inside,
+and in the field draws or drives the group (`move_and_collide` for a body, a plain move
+otherwise), never past the caster. A fighter whose `resist_field_<name>` is 1 or more is never
+let in, and is let out when it gains it; one holding a status tagged with an effect's
+`immune_tags` is left out of that effect. `SkillUse.apply` takes a `strength` (the growing
+tick). Combat 0.78.0.
+
+**Why a `Skill` and not a list of `SkillEffect`s.** A skill already holds power, element,
+effects, statuses and `sure_hit`, and `SkillUse.apply` runs all of it through the caster's
+formula, weakness and reflect included: no second way to hurt someone. The effect's `who` aims
+it, so the skill's `target` and `scope` are not read.
+
+**Verified.** `battlefield_touch_test` (10) and one more `battlefield_battle_test` assertion
+(on_enter as it rises, the tick on the caster's turn, on_exit as it ends). Red first: with
+`_use_on` and `_work` stubbed and immunity left out, every new assertion failed. Suite 0
+failed; seven checkers 0; stripped run 0 failed; boot 0 warnings, 0 errors, printing 0.78.0.
+
+**Connects.** C6.9c (sure-hit, clashes, breaking) builds on the same run; C8.11's time stop
+can be a battlefield with a hold status.
+
+**Gaps.** Immunity tags are read as a fighter comes in and at each tick and pull, so a tag
+gained while inside keeps the modifiers and statuses it came in with until it leaves. `on_exit`
+lands when the caster falls too. A battle tick counts the caster's turns, not each fighter's
+own. Ticks are not saved: a load starts each clock again.
