@@ -34,7 +34,9 @@ extends RefCounted
 ##   and the break costs it a turn (`Weakness`, C2.17). Its shield refills when the break ends.
 ## - POWER uses a hero power from the actor's kit through `PowerUse` (C6.2a): every refusal it
 ##   has (cooldown, hours, statuses, cost), its skill aimed like any skill, then its mechanism,
-##   its cooldown and the statuses it uses up. A silence blocks it, as it blocks SKILL.
+##   its cooldown and the statuses it uses up. A silence blocks it, as it blocks SKILL. A power
+##   with no skill whose mechanism strikes the foes by itself (a barrage, C6.7) is offered every
+##   standing foe.
 ## - Power cooldowns count in the holder's own turns, at the START of each, beside its statuses,
 ##   asleep or not. So "cooldown 3" means used on one turn, usable again three turns later.
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
@@ -170,10 +172,12 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 	var filter: FactionTable.Target = FactionTable.Target.ENEMY
 	match command.kind:
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM, BattleCommand.Kind.POWER:
-			# A power that is all mechanism has no skill, and so aims at nobody.
-			if command.skill == null:
+			# A power that is all mechanism has no skill, and so aims at nobody, unless its
+			# mechanism strikes the foes by itself (a barrage, C6.7).
+			if command.skill == null and not _aims_at_foes(command):
 				return out
-			filter = command.skill.target
+			if command.skill != null:
+				filter = command.skill.target
 		# DEFEND and FLEE aim at nobody.
 		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE:
 			return out
@@ -306,6 +310,12 @@ func _power(actor: Combatant, command: BattleCommand, targets: Array[Combatant])
 	if skill != null and skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
 	return true
+
+
+# True for a power with no skill whose mechanism strikes the foes by itself (C6.7).
+static func _aims_at_foes(command: BattleCommand) -> bool:
+	return command.power != null and command.power.mechanism != null \
+			and command.power.mechanism.aims_at_foes()
 
 
 # What `command` really does for `actor`: a plain ATTACK made while a form says it becomes a

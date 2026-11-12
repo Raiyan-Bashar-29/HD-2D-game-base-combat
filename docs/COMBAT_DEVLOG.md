@@ -3544,3 +3544,39 @@ attacker) and a late block still countered. Suite, seven checkers and stripped r
 
 **Unblocks.** C6.7 (next). **Gaps.** No gauge `on_counter` yet (`power_set.gd` is at its line
 budget); enemies and followers counter the way they face, which is toward the hostile they chase.
+
+## 2026-11-12 — C6.7 · Barrage and projectiles
+
+**Did.** Built M1, the barrage, as one mechanism for many kits (combat `0.74.0`):
+- `BarrageMechanism` (content, kind `barrage`):
+  - `pattern`: RING_BEHIND_USER, RING_AROUND_TARGET, RAIN, LINE or FROM_GROUND;
+  - `count`, `interval`, `speed`, `turn_rate`, `radius`, `height` and `pierce`;
+  - `shots`, a list of `ActionMove`s played in turn;
+  - `elements`, one drawn at random per shot.
+- `Projectile` (gameplay) extends `Hitbox`. It plays its shot on a clock of its own: it waits through `startup`, flies through `active`, homes, faces its line and sweeps. Its first strike ends it, unless it pierces. It runs on `CombatClock`.
+- `BarrageRun`:
+  - In the field it aims (the given target, else the lock-on, else the nearest foe) and fires the first shot at once and the rest each `interval`. Each shot is placed by the pure `spot`.
+  - In a battle it lands the hits at once, on random standing foes, with weakness chips.
+- `PowerMechanism.aims_at_foes()`: a battle offers a skill-less barrage power every standing foe (`Battle.targets_for`).
+
+**Why.** The shot is an `ActionMove` reused as it is, so every shot already goes through `Hurtbox.take`, and the barrage needed no new code for:
+- damage and weakness;
+- poise and push;
+- a dodge or a perfect dodge;
+- a barrier or a parry, and a counter.
+
+A beam (`beam_hitscan`) is data: a LINE shot at speed 0 with pierce and a long box. This follows the owner's rule: mechanisms that combine, not one script per weapon.
+
+**Verified.**
+- Red first: with `_fire` and `_battle` stubbed, 8 failed.
+- `barrage_test` (20, the field) and `barrage_battle_test` (3) pass. The first file was split in two to fit the 250-line budget.
+- The full suite passes, as do the seven checkers and the stripped run.
+- Boot prints 0.74.0, with 0 warnings and 0 errors.
+
+**Unblocks.** C6.26 (plant: the Owl's shards that stay in the ground), and every kit row that fires something: Gate of Babylon, Heilig Pfeil, Summoned Swords, Judgment Cut, Narukami, IXA's spikes, Gunslinger and Cruel Sun.
+
+**Gaps.**
+- A shot has no mesh until art exists.
+- Where a barrage's misses land is C6.26's, which reads it.
+- Enemies and followers fire a barrage only through a kit (C6.20 brings boss kits).
+- Every shot is aimed at the same target chosen at use.

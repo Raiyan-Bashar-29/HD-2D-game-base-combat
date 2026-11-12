@@ -118,7 +118,7 @@ formulas (`ActionFighter`, `CombatClock`).
 
 | # | Mechanism (`kind`) | What it is | Battle | Field | Used by |
 |---|---|---|---|---|---|
-| M1 | `barrage` | Many projectiles from portals or a pattern | `skill.hits` hits, each at a random or a fixed target, each with its own element drawn from a list | `count` projectiles from a `pattern` (RING_BEHIND_USER, RING_AROUND_TARGET, RAIN, LINE, FROM_GROUND), every `interval` s, with `speed` and `homing`. New `Projectile` node: a moving `Hitbox` | Gate of Babylon, Heilig Pfeil, Summoned Swords, Judgment Cut, Narukami, IXA remote spikes, Gunslinger, Cruel Sun, Barnabas's blades |
+| M1 | `barrage` | Many projectiles from portals or a pattern | **Built (C6.7).** `count` hits at once, each on a standing foe picked at random; each shot uses its own numbers (its skill, or `hits` × `power`) and element, or one drawn from `elements` | **Built (C6.7).** `count` (times COUNT scaling) shots from a `pattern` (RING_BEHIND_USER, RING_AROUND_TARGET, RAIN, LINE, FROM_GROUND), every `interval` s, at `speed`, homing by `turn_rate`, `pierce` or not. Each shot is an `ActionMove` (`shots`, played in turn: the sizes) flown by a `Projectile`, a moving `Hitbox`. A beam is a LINE shot with speed 0, pierce and a long box | Gate of Babylon, Heilig Pfeil, Summoned Swords, Judgment Cut, Narukami, IXA remote spikes, Gunslinger, Cruel Sun, Barnabas's blades |
 | M2 | `finisher` | A charged, gated big hit | A "charging" status for `charge_turns`, released on the next turn; a strong hit cancels it if `breaks_on_hit` | Hold to charge (`charge_time`), release; optional time-stop flourish (`CombatClock` at 0 for `flourish` s); power from `POOL_FRACTION` scaling | Enuma Elish, Zantetsuken, Judgment Cut End, Hollow Purple 200%, Pride Flare, Divine Sword, Royal Release, Sankt Bogen |
 | M3 | `barrier` | Stops or softens what reaches you | The same, through the guard | `mode`: NULLIFY, REDUCE (`factor`), TIMED_BLOCK (C4.10's `TimedWindow`: a perfect press takes 0); `upkeep` pool per second or turn, `cost_per_block`, `bypass_tags` (a `domain` or `sure_hit` gets through), `absorb_elements` stored into `store_pool`; `scope` SELF or ALLIES | Infinity, Blut Vene, Blut Vene Anhaben, IXA shield, Royal Guard, Rhitta's heat, Narukami's absorb |
 | M4 | `domain` | An area that rules everyone inside | Statuses on all foes, or on all, for `turns`; the user's skills gain `sure_hit` and the `domain` tag; two domains clash and both end | A sphere of `radius` for `duration` s: statuses on entry, `tick` damage, `pull` toward the centre, bypass for the user; `affects_allies` | Unlimited Void, Escanor's heat aura, Blue's vortex, Vollständig's light |
@@ -529,7 +529,7 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | C6.4 | M6 `gauge` running: every `GaugeRule` event, `levels` | C6.1 |
 | C6.5 | M5 `form` | C6.2 |
 | C6.6 | M3 `barrier` and the incoming guard in `Combatant.receive` (C6.6a, built); the timed block (C6.6b, built); the perfect dodge and `knockback_taken` (C6.6c, built); M13 `counter_stance` (C6.6d, built as data) | C6.1 |
-| C6.7 | M1 `barrage` and the `Projectile` node | C6.2 |
+| C6.7 | M1 `barrage` and the `Projectile` node: DONE (0.74.0) | C6.2 |
 | C6.8 | M2 `finisher` (charge, hold, flourish) | C6.4 |
 | C6.9 | M4 `domain` (including clash and pull) | C6.6 |
 | C6.10 | M7 `foresight` | C6.6 |

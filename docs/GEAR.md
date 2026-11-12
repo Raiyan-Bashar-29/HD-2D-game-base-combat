@@ -625,7 +625,7 @@ and merged. **Row** names the board row that builds it.
 | Barriers | Infinity, Blut Vene | Have (C6.6a) |
 | Perfect dodge with a reward | Bayonetta's Witch Time, FF XVI | Built (C6.6c): `perfect_window`, `Events.perfect_dodge`, a gauge's `on_perfect_dodge`; a slow-down reward can listen to the event |
 | Counter stance and parry | Sekiro, Royal Guard | Built (C6.6d): a COUNTER status with a `counter_move` on a form or a timed-block barrier |
-| Projectile barrages | Gate of Babylon | Row C6.7 |
+| Projectile barrages | Gate of Babylon | Built (C6.7) |
 | Charged finishers | Zantetsuken | Row C6.8 |
 | Planted and delayed strikes | Owl, time bombs, rune traps | Row C6.26 (new) |
 | Battlefields: domains, terrain, weather, auras | JJK, Fate, Pokémon weather and terrain, Divinity's surfaces | Rows C6.9a–d (widened) |
@@ -666,7 +666,7 @@ for ideas before searching the web. Its eleven mechanic groups map onto the mech
 
 | Group in the list (count) | What such weapons do | Built from | Row |
 |---|---|---|---|
-| Energy / Tech (484) | Beams, blasts, satellite panels, charged shots | M1 `barrage` + `Projectile`; a charge is a gauge (C6.4) | C6.7 |
+| Energy / Tech (484) | Beams, blasts, satellite panels, charged shots | M1 `barrage` + `Projectile` (a beam is a LINE shot at speed 0); a charge is a gauge (C6.4) | C6.7, built |
 | Elemental (396) | Fire, ice, lightning on the blade or as spells | Gear `element` and `attack_tags` (built, C7.1c); statuses; weakness and Break | C7.1c |
 | Transformation (317) | A weapon with modes; a suitcase that opens into a weapon; armour that changes the wearer | M5 `form` with a look and its own moves; **deploy** below | C6.5, C6.5d |
 | Projectile (236) | Thrown knives, arrows, volleys, returning throws | M1 `barrage`; M15 `plant` for ones that stay and trigger later | C6.7, C6.26 |
@@ -700,8 +700,8 @@ weapons themselves.
 | C6.5f | **DONE.** `Power.once_per_battle` (the sheet name moved to C7.7) | C6.5e |
 | C6.6c | **DONE.** Perfect dodge (`perfect_window`, `Events.perfect_dodge`, `on_perfect_dodge`) and `knockback_taken` | C6.6 |
 | C6.6d | **DONE.** Counter stance: `StatusEffect.counter_move`, the field counter in `Hurtbox` | C6.6 |
-| C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |
-| C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading | C6.7 |
+| C6.7 | Barrage and the `Projectile` node, with sizes: DONE (0.74.0). "Where the misses land" moved to C6.26, which reads it | |
+| C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading, and "where a barrage's misses land" | C6.7 |
 | C6.8 | Finisher | |
 | C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt` | C6.6 |
 | C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity | C6.9a |

@@ -1303,6 +1303,16 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
    - A power used once per fight (C6.5f): tick `once_per_battle` on the `Power`. After one use
      it is refused ("once per battle") until the next battle, or in the field until the next
      area. It may also have a cooldown; a passive power must not set it.
+   - A barrage (C6.7): give a `Power` a `BarrageMechanism` and no skill. `shots` are
+     `ActionMove`s, played in turn: `startup` is the wait before a shot flies, `active` how long
+     it flies, and its `power`, `element`, `hits`, `poise`, `knockback` or `skill` its hit, with
+     `hitbox_size` its size (set `hitbox_offset` to zero). `pattern` says where shots start
+     (behind the user, round the target, rain from `height`, a line from the user, up from the
+     ground along `radius`), `count` how many (a COUNT scaling grows it), `interval` the seconds
+     between them, `speed`, `turn_rate` to home, `pierce` to fly on through, and `elements` to
+     give each shot a random one. A beam: LINE, one shot, `speed` 0, `pierce`, a long
+     `hitbox_size` with `hitbox_offset` half of it forward, and a short `active`. In a battle
+     the barrage lands its hits at once on random standing foes.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle
