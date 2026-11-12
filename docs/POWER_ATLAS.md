@@ -121,7 +121,7 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | `pocket_space` | 15 | Take the fight into a closed world with its own rules | M4 battlefield `closed`, `moves_fight`, `PlaceLook` | PLANNED C6.9c–d | Unlimited Void; Imaginary Space; Eternity Devil |
 | `gravity_well_prison` | 2 | Pull everything in and hold it | M4 battlefield `pull` plus a hold status | BUILT C6.9b | Six Paths: Planetary Devastation |
 | `terrain_cast_random` | 1 | A spell that depends on where you stand | `PowerScaling` reading the area or battlefield tag | NEW C8.15 (a scaling source) | Geomancy |
-| `impassable_prison` | 1 | A cage nobody leaves | M4 battlefield `closed`; NO_FLEE | PLANNED C6.9d | Forcecage |
+| `impassable_prison` | 1 | A cage nobody leaves | M4 battlefield `closed`; NO_FLEE | BUILT C6.9d (`closed`); NO_FLEE is a built status (C2.14) | Forcecage |
 | `restricted_chain_grapple` | 1 | Bind one target; it cannot act or use powers | A status with SKIP_TURN and NO_SKILLS | BUILT (C2.14) | Chain Jail |
 | `gravity_nullifier` | 1 | A field that also switches others' powers off | M4 battlefield plus the power seal | NEW C8.13 (seal) | Yami Yami no Mi |
 | `imagined_construct` | 1 | Anything imagined, while concentration holds | A construct with upkeep, ended when the maker is hit | NEW C8.14 | The Visionary |

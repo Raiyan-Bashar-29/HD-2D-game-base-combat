@@ -3755,3 +3755,32 @@ line in `COMBAT.md`, fixed in this commit's docs. Seven checkers as recorded in 
 **Gaps.** A battle attack (not a skill) does not break a battlefield: only the field's `Hurtbox`
 does. The sure hit is checked by its tag, not by an accuracy roll (the fixture formula has no
 accuracy stage). `closed`, layers and the clash rules are C6.9d.
+
+## 2026-11-12 — C6.9d · Clashes and `closed` (combat 0.80.0)
+
+**Did.** Battlefields now clash. `layer` (TERRAIN, WEATHER, DOMAIN) keeps a battlefield apart from the
+others. Two in one layer, on one clock, that overlap clash by `clash`, the newer one's rule deciding:
+STRONGER_WINS, BOTH_END, OVERWRITE or BOTH_STAND. `refinement` says who is stronger, scaled by the
+caster's `refinement_stat` when one is named. `closed` is a barrier: in the field a fighter who walks out
+is held at the edge.
+
+**Why.** The design row in `GEAR.md` Part 3 asks for Domain Expansion's clash ("the more refined one
+wins") and a barrier nobody crosses. Without a clash, two domains simply stacked.
+
+**Connects.** `BattlefieldClash` (new) is asked by `BattlefieldRun._raise` before a battlefield rises. It
+ends the rivals it beats through `break_down` (the C6.9c path, no aftermath) and returns whether the
+newcomer may stand. `BattlefieldWall` (new) holds bodies at a closed field's edge each tick and holds the
+step the pull and push already used. `BattlefieldRun._refresh` keeps those already inside a closed field.
+
+**Verified.** Boot: 0 warnings, 0 errors, prints 0.80.0. Full suite: 4093 passed, 0 failed (the new
+`battlefield_clash_test` is 14 of 14, and the version check passes). Stripped run: 3996 passed, 0 failed,
+25 skipped. All seven checkers exit 0; `check_budgets` reports 0 violations.
+
+**Unblocks.** C6.9e (the place, the log and HUD), and the Unlimited Void and Simple Domain pairings.
+
+**Gaps.** A battle has no edge, so a closed battlefield changes nothing there until summons (C6.9e). A
+clash is judged when the newcomer rises. If a stat later changes a standing battlefield's strength, it is
+not re-judged. The wall corrects a body one tick after a physics shove, not in the same frame.
+
+**Also.** Asked whether the IXA's modes are handled in code: they are designed in `GEAR.md` (lance by
+default, shield mode, the remote-activated mine), but not built as data. That is C7.9, which needs C6.26.

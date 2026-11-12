@@ -525,8 +525,10 @@ strike, a skill and a battle attack alike. `cancelled_by` names a status that, h
 leaves that target to a roll. `broken_by_tags`: a landed hit on the caster carrying one of them
 brings the battlefield down at once (`BattlefieldRun.break_down`, no aftermath), checked in
 `Hurtbox`; **a battle attack does not break it yet**. A barrier's `bypass_tags` reads the hit's tags.
-**Still to build:** C6.9d (clashes by `layer`, `refinement`, `clash`, and `closed`), C6.9e (the place,
+**Still to build:** C6.9e (the place,
 the log and the HUD), a sphere left at a point and ZONE, fighters picked by tag, `resist_field_<id>`.
+
+**As built (C6.9d, 0.80.0):** clashes and `closed`. `BattlefieldClash.allows` runs before a battlefield rises: it compares it with each standing battlefield in the same `layer`, on the same clock, that overlaps it (in a battle always; in the field when either has no radius or the casters are within the larger radius). The newer one's `clash` decides, and `refinement` (times one plus `refinement_stat`, when named) says who is stronger. A battlefield that loses is shattered at once, with no aftermath, and so is a rival it beats in BOTH_END. `closed` makes `BattlefieldRun._refresh` keep those already inside, and `BattlefieldWall.hold` walks their bodies back to the edge each tick. Not built yet: a battle's edge (no distances until summons) and clashes re-judged when a stat changes.
 
 ## The planted strike (M15 `plant`, new)
 
@@ -744,7 +746,7 @@ weapons themselves.
 | C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt`: DONE (0.77.0) | C6.6 |
 | C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity: DONE (0.78.0) | C6.9a |
 | C6.9c | Battlefields against each other, the hit side: `sure_hit`, `hit_tags`, `broken_by_tags`, `cancelled_by`: DONE (0.79.0) | C6.9b |
-| C6.9d | Clashes and `closed`: `layer`, `refinement`, the four clash rules, `closed` | C6.9c |
+| C6.9d | Clashes and `closed`: `layer`, `refinement`, the four clash rules, `closed`: DONE (0.80.0) | C6.9c |
 | C6.9e | The place: `PlaceLook`, `moves_fight`, `weather`, `caster_kit`, `summons`; the log and HUD readout | C6.9d, C6.5d |
 | C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |
 | C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |

@@ -24,6 +24,11 @@ extends FormMechanism
 ## names a status that, held by a target, leaves it to a roll. `broken_by_tags`: a landed hit on
 ## the caster carrying one of them brings it down at once, with no aftermath.
 ##
+## CLASHES (C6.9d): `layer` keeps a battlefield apart from the other layers. Two in the same layer,
+## on the same clock, that overlap clash by `clash`, decided by the newer one's rule, with
+## `refinement` (scaled by `refinement_stat` when one is named) telling which is stronger
+## (`BattlefieldClash`). `closed` is a barrier: nobody crosses its edge (`BattlefieldWall`).
+##
 ## OWNS: the shape of a battlefield.
 ## MUST NOT: hold running state. `BattlefieldRun` (gameplay) runs it.
 
@@ -44,6 +49,23 @@ extends FormMechanism
 @export var broken_by_tags: Array[StringName] = []
 ## C6.9c: the id of a status that stops the sure hit against its holder (Simple Domain).
 @export var cancelled_by: StringName = &""
+## C6.9d: the layer this battlefield sits in. Battlefields in different layers never clash
+## (terrain under a domain, a weather under a storm, a domain against a domain).
+enum Layer { TERRAIN, WEATHER, DOMAIN }
+## C6.9d: what happens when this battlefield, once raised, overlaps others in its layer and clock.
+## STRONGER_WINS: each weaker one ends, an equal one ends with this one, and this one ends if any is
+## stronger. BOTH_END: all of them end. OVERWRITE: they end and this one stands. BOTH_STAND: nothing ends.
+enum Clash { STRONGER_WINS, BOTH_END, OVERWRITE, BOTH_STAND }
+@export var layer: Layer = Layer.DOMAIN
+@export var clash: Clash = Clash.STRONGER_WINS
+## C6.9d: how strong this battlefield is when clashing: `refinement` times (1 + `refinement_stat`).
+@export var refinement: float = 0.0
+## C6.9d: a stat of the caster that scales `refinement` (empty: no scaling).
+@export var refinement_stat: StringName = &""
+## C6.9d: nobody inside can leave and nobody outside can enter (a barrier). In the field a fighter
+## who would walk out is held at the edge. In a battle there is no edge yet, so it changes nothing
+## there until summons arrive (C6.9e).
+@export var closed: bool = false
 
 
 func kind() -> StringName:
@@ -81,6 +103,6 @@ func problems(context: String) -> PackedStringArray:
 			found.append_array(effects[i].problems("%s effect %d" % [context, i]))
 	if not cycle.is_empty():
 		found.append("%s is a battlefield with a cycle" % context)
-	if radius < 0.0 or seconds < 0.0 or turns < 0:
-		found.append("%s has a negative radius, time or turn count" % context)
+	if radius < 0.0 or seconds < 0.0 or turns < 0 or refinement < 0.0:
+		found.append("%s has a negative radius, time, turn count or refinement" % context)
 	return found

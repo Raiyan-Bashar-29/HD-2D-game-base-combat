@@ -26,6 +26,10 @@ extends FormRun
 ##   left out of that effect. The tags are read as it comes in and at each tick and pull, so a
 ##   tag gained while inside keeps the modifiers and statuses it came in with until it leaves.
 ##
+## - C6.9d: a raise first asks `BattlefieldClash.allows`. A battlefield that loses a clash never
+##   stands, and one that beats a rival ends it. A `closed` one keeps those already inside
+##   (`_refresh`) and holds their bodies at its edge each tick (`BattlefieldWall`).
+##
 ## NOT SAVED: a load puts the caster's status back (the kit knows it), and the next tick raises the
 ## field again with a fresh clock and lets everyone in.
 ##
@@ -133,6 +137,10 @@ func _settle() -> void:
 func _raise() -> void:
 	var field: BattlefieldMechanism = mechanism as BattlefieldMechanism
 	var me: Combatant = _caster()
+	# A clash (C6.9d) may keep it from standing: it then shatters at once, with no aftermath.
+	if not BattlefieldClash.allows(me, field, self):
+		leave()
+		return
 	_up = true
 	_left = (field.seconds if me != null and me.real_time else float(field.turns))
 	_clock.clear()
@@ -169,7 +177,9 @@ func _refresh() -> void:
 		var vitals: Vitals = Vitals.of(other.get_parent())
 		if vitals != null and vitals.is_defeated():
 			continue
-		var reached: bool = _reaches(me, other) and not _immune(other)
+		# A closed battlefield keeps those already inside (C6.9d); its edge is held in `_work`.
+		var keep: bool = (mechanism as BattlefieldMechanism).closed and _inside.has(id)
+		var reached: bool = (_reaches(me, other) or keep) and not _immune(other)
 		if reached and not _inside.has(id):
 			_join(other)
 		elif not reached and _inside.has(id):
@@ -240,7 +250,11 @@ func _work(amount: float) -> void:
 	var me: Combatant = _caster()
 	if me == null:
 		return
-	var effects: Array[BattlefieldEffect] = (mechanism as BattlefieldMechanism).effects
+	# A closed battlefield holds those inside at its edge, in the field only (C6.9d).
+	var field: BattlefieldMechanism = mechanism as BattlefieldMechanism
+	if me.real_time and field.closed:
+		BattlefieldWall.hold(me, field.radius, _inside.values())
+	var effects: Array[BattlefieldEffect] = field.effects
 	for i: int in effects.size():
 		var effect: BattlefieldEffect = effects[i]
 		if effect == null:
@@ -285,11 +299,7 @@ func _drift(me: Combatant, effect: BattlefieldEffect, seconds: float) -> void:
 		if gap.length() < 0.001:
 			continue
 		var step: Vector3 = gap.normalized() * minf(speed * seconds, gap.length())
-		var mover: CharacterBody3D = body as CharacterBody3D
-		if mover != null:
-			mover.move_and_collide(step)
-		else:
-			body.global_position += step
+		BattlefieldWall.step_body(body, step)
 
 
 # The fighters inside now that `effect` touches.
