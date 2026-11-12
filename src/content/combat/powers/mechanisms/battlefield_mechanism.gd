@@ -19,6 +19,11 @@ extends FormMechanism
 ## rules, the burnout after a domain. Its `exclusive_group`, `look` and `name_key` work as a
 ## form's do. A battlefield is never a cycle.
 ##
+## HITS (C6.9c): `sure_hit` makes the caster's hits sure (they cannot miss) and `hit_tags` tags
+## them, while it stands; both ride on a copy of the caster's status (`HitFlags`). `cancelled_by`
+## names a status that, held by a target, leaves it to a roll. `broken_by_tags`: a landed hit on
+## the caster carrying one of them brings it down at once, with no aftermath.
+##
 ## OWNS: the shape of a battlefield.
 ## MUST NOT: hold running state. `BattlefieldRun` (gameplay) runs it.
 
@@ -30,6 +35,15 @@ extends FormMechanism
 @export var seconds: float = 0.0
 ## How many of the caster's own turns it stands in a battle. 0: until ended.
 @export var turns: int = 0
+## C6.9c: the caster's hits are sure hits (they cannot miss) while it stands.
+@export var sure_hit: bool = false
+## C6.9c: tags the caster's hits carry while it stands (a barrier's `bypass_tags` can name one).
+@export var hit_tags: Array[StringName] = []
+## C6.9c: a landed hit on the caster carrying one of these tags ends the battlefield at once,
+## with no aftermath (an anti-world attack ends a reality marble).
+@export var broken_by_tags: Array[StringName] = []
+## C6.9c: the id of a status that stops the sure hit against its holder (Simple Domain).
+@export var cancelled_by: StringName = &""
 
 
 func kind() -> StringName:
@@ -46,6 +60,14 @@ func statuses() -> Array[StatusEffect]:
 				if held != null:
 					out.append(held)
 	return out
+
+
+## True when one of `tags` brings this battlefield down (C6.9c).
+func broken_by(tags: Array[StringName]) -> bool:
+	for tag: StringName in broken_by_tags:
+		if tags.has(tag):
+			return true
+	return false
 
 
 func problems(context: String) -> PackedStringArray:

@@ -44,6 +44,8 @@ var _clock: Dictionary[int, float] = {}
 var _ticks: Dictionary[int, int] = {}
 # The dice the skills roll with: the use's, else a fresh one.
 var _rng := RandomNumberGenerator.new()
+# The caster's status with its hit flags added (C6.9c), made on first use. Null until then.
+var _granted: StatusEffect = null
 
 
 func use(user: Combatant, targets: Array[Combatant], rng: RandomNumberGenerator) -> void:
@@ -76,6 +78,41 @@ func end() -> void:
 ## True while the battlefield stands. Asked by tests and, later, the HUD.
 func standing() -> bool:
 	return _up
+
+
+## Brings the battlefield down at once, with no aftermath, because a hit broke it (C6.9c). The
+## caster's status comes off, and `_settle` then lowers the field.
+func break_down() -> void:
+	leave()
+	_settle()
+
+
+## Ends every standing battlefield on `target` whose `broken_by_tags` names one of `tags` (C6.9c).
+## Called on each landed hit, so an anti-world attack ends a reality marble on its caster.
+static func breaks(target: Combatant, tags: Array[StringName]) -> void:
+	if target == null or tags.is_empty() or target.get_parent() == null:
+		return
+	var powers: PowerSet = PowerSet.of(target.get_parent())
+	if powers == null:
+		return
+	for run: PowerExecutor in powers.running():
+		var field := run as BattlefieldRun
+		if field != null and field.standing() and (field.mechanism as BattlefieldMechanism).broken_by(tags):
+			field.break_down()
+
+
+# The caster's status, with what the battlefield grants on it (C6.9c). Made once and kept, so a
+# shared status resource is never changed.
+func _stage_status(index: int) -> StatusEffect:
+	var base: StatusEffect = super._stage_status(index)
+	var field: BattlefieldMechanism = mechanism as BattlefieldMechanism
+	if base == null or field == null:
+		return base
+	if not (field.sure_hit or not field.hit_tags.is_empty() or field.cancelled_by != &""):
+		return base
+	if _granted == null:
+		_granted = HitFlags.granted(base, field)
+	return _granted
 
 
 # A stage status ran out or came off: the field follows.

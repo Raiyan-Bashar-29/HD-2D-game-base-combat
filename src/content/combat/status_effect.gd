@@ -62,6 +62,15 @@ enum Reaction { COUNTER, REFLECT }
 @export var reflect_tag: StringName = &"magic"
 ## COUNTER only: the move that answers a hit (a six-hit thrust, a riposte). Null is a plain hit.
 @export var counter_move: ActionMove
+## C6.9c: while held, every hit this holder makes is a sure hit (it cannot miss). A battlefield
+## with `sure_hit` puts this on its caster (Domain Expansion). A foe holding `cancelled_by`
+## is not affected: the sure hit is only a roll again against them (Simple Domain).
+@export var grants_sure_hit: bool = false
+## C6.9c: tags every hit this holder makes carries, read by a barrier's `bypass_tags` (a
+## domain passes Infinity).
+@export var grants_hit_tags: Array[StringName] = []
+## C6.9c: the id of a status that, held by a TARGET, stops this holder's sure hits against it.
+@export var cancelled_by: StringName = &""
 
 
 ## True when this status carries `block`.

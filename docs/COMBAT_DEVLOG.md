@@ -3731,3 +3731,27 @@ can be a battlefield with a hold status.
 gained while inside keeps the modifiers and statuses it came in with until it leaves. `on_exit`
 lands when the caster falls too. A battle tick counts the caster's turns, not each fighter's
 own. Ticks are not saved: a load starts each clock again.
+
+## 2026-11-12 — C6.9c · Battlefields against each other (the hit side)
+
+**Did.** A battlefield's `sure_hit` and `hit_tags` now make its caster's hits sure and tagged
+while it stands. The caster holds a copy of its status that grants them (`StatusEffect`
+`grants_sure_hit`, `grants_hit_tags`, `cancelled_by`), made once by `HitFlags.granted`, with the
+same id, so the shared status is never changed. `Combatant.hit` reads the attacker's flags
+through the new `HitFlags` and applies them to every hit. `cancelled_by` leaves a target that
+holds it to a roll. `broken_by_tags` ends a battlefield at once when a landed field hit on its
+caster carries one of those tags (`BattlefieldRun.break_down`, no aftermath). The breaking check
+is `BattlefieldMechanism.broken_by`, called from `BattlefieldRun.breaks`, which `Hurtbox` calls.
+
+**Why.** The C6.9c row was about 12 files, so it was split by the 8-file rule: the hit side here,
+clashes and `closed` in C6.9d, the place, log and HUD in C6.9e.
+
+**Verified.** Boot 0 warnings, 0 errors, printing 0.79.0. `battlefield_hit_test` 12 of 12. Red
+first: stubbing the sure-hit rule failed the sure-hit assertions, then the file was restored.
+Budgets: `battlefield_run.gd` went to 253 code lines, so `broken_by` moved to the mechanism and
+the check passes 0 violations. The full suite shows 4078 passed, and one failure: the version
+line in `COMBAT.md`, fixed in this commit's docs. Seven checkers as recorded in the commit.
+
+**Gaps.** A battle attack (not a skill) does not break a battlefield: only the field's `Hurtbox`
+does. The sure hit is checked by its tag, not by an accuracy roll (the fixture formula has no
+accuracy stage). `closed`, layers and the clash rules are C6.9d.

@@ -69,8 +69,12 @@ between them, written in plain words.
   (`tick`, every `tick_seconds` or `tick_turns`, growing by `tick_grows`); `pull` and `push`
   move the group in the field; `immune_tags` and the stat `resist_field_<name>` keep fighters
   out. Batch 2 (C6.8, C6.9a, C6.9b) is complete and goes up as one PR.
-- **Next: C6.9c, battlefields against each other.** The
-  build order is the table at the foot of `GEAR.md`: C6.9a–d, then the rest of C7.
+- **C6.9c is done (0.79.0): battlefields against each other, the hit side.** A battlefield's
+  `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
+  (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
+  on a landed field hit (a battle attack does not break it yet).
+- **Next: C6.9d, clashes by `layer` and `closed`.** Then C6.9e (the place, the log and HUD).
+  The build order is the table at the foot of `GEAR.md`, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's

@@ -77,7 +77,7 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | `skill_performance` | 10 | Change combo timing and cancel windows | `ActionMove` chain windows; a form's own `attack_chain` | BUILT; launch and juggle are C8.8 | Dual Casting; Jeahbongchim; Vivi's Double Black |
 | `charge_stat_burst` | 2 | Charge up, then act much stronger | M2 `finisher` (charge) or a timed status | BUILT C6.8 | Geomancy; Geomancy |
 | `ukaku_projectiles` | 1 | A shard volley from a manifested weapon that stays out after firing | M1 `barrage` used inside a form (M5) | BUILT C6.7 | Ukaku Kagune |
-| `world_rending_burst` | 1 | One huge directed discharge that breaks battlefields | M2 `finisher` with `broken_by_tags` on battlefields (Ea) | BUILT C6.8 (the finisher); PLANNED C6.9c (`broken_by_tags`) | Ea — Enuma Elish |
+| `world_rending_burst` | 1 | One huge directed discharge that breaks battlefields | M2 `finisher` with `broken_by_tags` on battlefields (Ea) | BUILT C6.8 (the finisher) and C6.9c (`broken_by_tags`) | Ea — Enuma Elish |
 | `charge_mount` | 1 | Ride something and ram | A form (M5) whose attack chain is a travelling move | BUILT as parts (C6.5b) | Bellerophon |
 | `tail_kagune` | 1 | A body weapon that both strikes and guards | A form (M5) with its own moves plus M3 `barrier` REDUCE | BUILT as parts (C6.5, C6.6a) | Bikaku Kagune |
 
@@ -121,7 +121,7 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | `pocket_space` | 15 | Take the fight into a closed world with its own rules | M4 battlefield `closed`, `moves_fight`, `PlaceLook` | PLANNED C6.9c–d | Unlimited Void; Imaginary Space; Eternity Devil |
 | `gravity_well_prison` | 2 | Pull everything in and hold it | M4 battlefield `pull` plus a hold status | BUILT C6.9b | Six Paths: Planetary Devastation |
 | `terrain_cast_random` | 1 | A spell that depends on where you stand | `PowerScaling` reading the area or battlefield tag | NEW C8.15 (a scaling source) | Geomancy |
-| `impassable_prison` | 1 | A cage nobody leaves | M4 battlefield `closed`; NO_FLEE | PLANNED C6.9c | Forcecage |
+| `impassable_prison` | 1 | A cage nobody leaves | M4 battlefield `closed`; NO_FLEE | PLANNED C6.9d | Forcecage |
 | `restricted_chain_grapple` | 1 | Bind one target; it cannot act or use powers | A status with SKIP_TURN and NO_SKILLS | BUILT (C2.14) | Chain Jail |
 | `gravity_nullifier` | 1 | A field that also switches others' powers off | M4 battlefield plus the power seal | NEW C8.13 (seal) | Yami Yami no Mi |
 | `imagined_construct` | 1 | Anything imagined, while concentration holds | A construct with upkeep, ended when the maker is hit | NEW C8.14 | The Visionary |

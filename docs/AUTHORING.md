@@ -1347,6 +1347,11 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      makes ticks 1, 1.5, 2 times as strong. `pull` and `push` are metres a second (field only).
      `immune_tags` leaves out a fighter holding a status with that tag; the stat
      `resist_field_<name>` (the power id after its last "/") at 1 keeps it out entirely.
+     Hits (C6.9c): `sure_hit` makes the caster's hits sure hits (they cannot miss) while it
+     stands; `hit_tags` tags them, and a barrier's `bypass_tags` can name one to let it through.
+     `cancelled_by` is a status id: a target holding it is only rolled for. `broken_by_tags`:
+     a landed field hit on the caster carrying one of them ends the battlefield at once, with no
+     aftermath (a battle attack does not break it yet).
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle
