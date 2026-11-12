@@ -15,11 +15,17 @@ extends Hitbox
 ## It always faces along `direction` (its -z), so a long box (a beam) lies along its line. It runs
 ## on fight time (`CombatClock`), so a stopped fight freezes it in the air.
 ##
+## WHERE IT LANDS (C6.26): a shot whose flight ends without it striking anyone says where it
+## ended (`landed`), so a plant can leave something in the ground there (the shards that missed).
+##
 ## It belongs in the world, not under the fighter, so it does not follow its shooter about.
 ##
 ## OWNS: one shot's flight, its clock and when it is gone.
 ## MUST NOT: decide what a hit does (the `Hurtbox` does), or choose where shots start (the
 ## barrage's pattern does).
+
+## Its flight ended without it striking anyone, at `at`.
+signal landed(at: Vector3)
 
 ## Every projectile in flight joins this group, so a test or a debug overlay can find them.
 const GROUP: StringName = &"combat_projectiles"
@@ -36,6 +42,7 @@ var homing_at: Node3D
 var pierce: bool = false
 
 var _gone: bool = false
+var _struck_any: bool = false
 
 
 func _ready() -> void:
@@ -61,6 +68,8 @@ func fly(dt: float) -> void:
 		return
 	timeline.step(dt)
 	if not timeline.busy() or timeline.phase == MoveTimeline.Phase.RECOVERY:
+		if not _struck_any:
+			landed.emit(global_position)
 		_end()
 		return
 	if timeline.phase == MoveTimeline.Phase.ACTIVE:
@@ -79,6 +88,7 @@ func strike(hurtbox: Hurtbox) -> bool:
 	if _gone:
 		return false
 	var counted: bool = super.strike(hurtbox)
+	_struck_any = _struck_any or counted
 	if counted and not pierce:
 		_end()
 	return counted

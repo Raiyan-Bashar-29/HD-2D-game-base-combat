@@ -52,8 +52,11 @@ between them, written in plain words.
 - **C6.7 is done (0.74.0): the barrage.** A `BarrageMechanism` fires shots from a pattern,
   each a `Projectile` (a moving `Hitbox`) flying an `ActionMove`; homing, pierce, sizes, a drawn
   element, and a speed-0 line for a beam. In a battle its hits land at once on random foes.
-- **Next: C6.26, the plant**, then the PR for batch 1 (C6.6d, C6.7, C6.26). The build order is
-  the table at the foot of `GEAR.md`: C6.26, C6.8, C6.9a–d, then the rest of C7.
+- **C6.26 is done (0.75.0): the plant.** A `PlantMechanism` leaves `Planted` nodes (still
+  hitboxes) that go off on a second use, a foe coming near, a timer or a foe beside them being
+  hit; a barrage's misses can stay in the ground. In a battle a plant is a mark on a foe.
+- **Next: the PR for batch 1 (C6.6d, C6.7, C6.26), then C6.8, the finisher.** The build order is
+  the table at the foot of `GEAR.md`: C6.8, C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's

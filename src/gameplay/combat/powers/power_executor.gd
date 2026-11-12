@@ -20,6 +20,8 @@ extends RefCounted
 ##   C6.5b), so a form can drain per action.
 ## - `intercept_incoming`: a hit is about to land on this fighter or on one of its allies
 ##   (`PowerGuard.incoming`, from `Combatant.receive`, C6.6a), so a barrier can stop or soften it.
+## - `projectile_landed`: a shot of this fighter's barrage ended without striking (`BarrageRun`,
+##   C6.26), so a plant can leave something where it fell.
 ##
 ## OWNS: the running state of one mechanism on one fighter.
 ## MUST NOT: name a character, or be looked up by anything but its `kind`.
@@ -60,6 +62,12 @@ func moved(_move: ActionMove) -> void:
 ## A resolved hit, `result`, thrown by `_from`, is about to land on `_target`: this fighter
 ## itself, or one of its allies. Change `result` to stop or soften it; leave it alone otherwise.
 func intercept_incoming(_target: Combatant, _result: DamageResult, _from: StringName) -> void:
+	pass
+
+
+## A shot of this fighter's barrage ended without striking: at `_at` in the field, or aimed at
+## `_near` in a battle (where `_at` means nothing).
+func projectile_landed(_at: Vector3, _near: Combatant) -> void:
 	pass
 
 

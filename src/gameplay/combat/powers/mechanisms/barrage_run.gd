@@ -12,7 +12,11 @@ extends PowerExecutor
 ## IN A BATTLE (the user is not `real_time`): nothing flies. The barrage lands its hits at once,
 ## each on a foe picked at random from the standing ones it was given, with the shot's numbers:
 ## its skill through `SkillUse.apply`, or else `hits` plain hits of its `power` and element, each
-## landed one chipping a matching weakness, as a battle ATTACK does.
+## landed one chipping a matching weakness, as a battle ATTACK does (`strike_with`).
+##
+## WHERE THE MISSES LAND (C6.26): a shot that ends its flight without striking, and a battle shot
+## that lands nothing, is told to every running mechanism of the kit (`projectile_landed`), so a
+## plant can leave something in the ground there.
 ##
 ## The number of shots is `count` times the power's COUNT scaling (`PowerUse.multiplier`), so a
 ## barrage can grow with a gauge, the hour or the user's wounds.
@@ -70,14 +74,14 @@ func end() -> void:
 ## lock-on holds, else the nearest foe. Null when there is nobody to aim at.
 static func aim_of(user: Combatant, targets: Array[Combatant]) -> Combatant:
 	for target: Combatant in targets:
-		if _standing(target):
+		if standing(target):
 			return target
 	var body: Node3D = user.get_parent() as Node3D
 	if body == null:
 		return null
 	for child: Node in body.get_children():
 		var lock: LockOn = child as LockOn
-		if lock != null and lock.target != null and _standing(lock.target.fighter()):
+		if lock != null and lock.target != null and standing(lock.target.fighter()):
 			return lock.target.fighter()
 	var nearest: Hurtbox = Hurtbox.nearest_hostile(body)
 	return nearest.fighter() if nearest != null else null
@@ -137,11 +141,11 @@ func _fire(i: int) -> void:
 	var body: Node3D = _user.get_parent() as Node3D if is_instance_valid(_user) else null
 	if body == null or not body.is_inside_tree() or body.get_parent() == null:
 		return
-	if _aim != null and (not is_instance_valid(_aim) or not _standing(_aim)):
+	if _aim != null and (not is_instance_valid(_aim) or not standing(_aim)):
 		_aim = null
 	var aimed: Node3D = _aim.get_parent() as Node3D if _aim != null else null
 	var at: Vector3 = aimed.global_position if aimed != null \
-			else body.global_position + _forward(body) * 6.0
+			else body.global_position + facing_of(body) * 6.0
 	var start: Transform3D = spot(barrage.pattern, i, _total, body.global_position, at,
 			barrage.radius, barrage.height, _rng)
 	var shot := Projectile.new()
@@ -152,6 +156,7 @@ func _fire(i: int) -> void:
 	shot.homing_at = aimed
 	shot.pierce = barrage.pierce
 	shot.launch(_shot(i))
+	shot.landed.connect(_landed.bind(null))
 	body.get_parent().add_child(shot)
 	shot.global_transform = start
 	shot.direction = -start.basis.z
@@ -162,22 +167,43 @@ func _battle(user: Combatant, targets: Array[Combatant], count: int) -> void:
 	for i: int in count:
 		var foes: Array[Combatant] = []
 		for target: Combatant in targets:
-			if target != user and _standing(target):
+			if target != user and standing(target):
 				foes.append(target)
 		if foes.is_empty():
 			return
-		var shot: ActionMove = _shot(i)
 		var foe: Combatant = foes[_rng.randi() % foes.size()]
-		if shot.skill != null:
-			SkillUse.apply(user, shot.skill, [foe], _rng)
-			continue
-		var element: StringName = user.strike_element(shot.element)
-		var keys: Array[StringName] = [element]
-		keys.append_array(user.strike_tags())
-		for hit: int in maxi(1, shot.hits):
-			var result: DamageResult = user.hit(foe, shot.power, element, _rng)
-			if result != null and not result.missed and not result.blocked:
+		if not strike_with(user, foe, _shot(i), _rng):
+			_landed(Vector3.ZERO, foe)
+
+
+## `user` strikes `foe` with `shot` in a battle, where nothing flies: the shot's skill through
+## `SkillUse.apply`, or else `hits` plain hits of its `power` and element, each landed one
+## chipping a matching weakness, as a battle ATTACK does. True when anything landed. A battle
+## plant's eruption (C6.26) strikes this way too.
+static func strike_with(user: Combatant, foe: Combatant, shot: ActionMove, rng: RandomNumberGenerator) -> bool:
+	if shot.skill != null:
+		SkillUse.apply(user, shot.skill, [foe], rng)
+		return true
+	var landed: bool = false
+	var element: StringName = user.strike_element(shot.element)
+	var keys: Array[StringName] = [element]
+	keys.append_array(user.strike_tags())
+	for hit: int in maxi(1, shot.hits):
+		var result: DamageResult = user.hit(foe, shot.power, element, rng)
+		if result != null and not result.missed:
+			landed = true
+			if not result.blocked:
 				Weakness.strike(foe, keys)
+	return landed
+
+
+# A shot of this volley ended without striking, at `at` in the field, or aimed at `near` in a
+# battle: every running mechanism of the kit hears of it, so a plant can stay there (C6.26).
+func _landed(at: Vector3, near: Combatant) -> void:
+	if holder == null:
+		return
+	for running: PowerExecutor in holder.running():
+		running.projectile_landed(at, near)
 
 
 # Shot `i` of the volley: the shots in turn, each given a random element of `elements` when
@@ -196,8 +222,8 @@ func _shot(i: int) -> ActionMove:
 	return _elemental[key]
 
 
-# Which way the user faces: its fighter's `facing`, else its body's -z.
-static func _forward(body: Node3D) -> Vector3:
+## Which way a body faces: its fighter's `facing`, else its -z.
+static func facing_of(body: Node3D) -> Vector3:
 	for child: Node in body.get_children():
 		var fighter: ActionFighter = child as ActionFighter
 		if fighter != null:
@@ -205,7 +231,8 @@ static func _forward(body: Node3D) -> Vector3:
 	return -body.global_basis.z
 
 
-static func _standing(fighter: Combatant) -> bool:
+## True for a fighter that is there and not defeated.
+static func standing(fighter: Combatant) -> bool:
 	if fighter == null:
 		return false
 	var vitals: Vitals = Vitals.of(fighter.get_parent())

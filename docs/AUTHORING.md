@@ -1313,6 +1313,15 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      give each shot a random one. A beam: LINE, one shot, `speed` 0, `pierce`, a long
      `hitbox_size` with `hitbox_offset` half of it forward, and a short `active`. In a battle
      the barrage lands its hits at once on random standing foes.
+   - A plant (C6.26): give a `Power` a `PlantMechanism` and no skill. `eruption` is the
+     `ActionMove` each plant plays when it goes off (a spike: a tall `hitbox_size` with
+     `hitbox_offset` raised half its height). `where` puts plants at the target, at the user,
+     `distance` AHEAD, or WHERE_PROJECTILES_LAND (a barrage of the same fighter leaves its misses
+     there); `count` of them lie `spread` apart, and no more than `max_standing` stand. `trigger`:
+     REMOTE (use the power again, or a power named in `set_off_by`; `chain_delay` ripples them),
+     PROXIMITY (a foe within `radius`), TIMER (`seconds`; `turns` in a battle) or ON_HIT (a foe
+     within `radius` is hit). `lifetime` 0 keeps a plant until set off. `mark` is the status a
+     plant is in a battle: give it STACK stacking and a `name_key`.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle

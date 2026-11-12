@@ -3580,3 +3580,40 @@ A beam (`beam_hitscan`) is data: a LINE shot at speed 0 with pierce and a long b
 - Where a barrage's misses land is C6.26's, which reads it.
 - Enemies and followers fire a barrage only through a kit (C6.20 brings boss kits).
 - Every shot is aimed at the same target chosen at use.
+
+## 2026-11-12 — C6.26 · The plant
+
+**Did.** Built M15, the planted strike, as one mechanism (combat `0.75.0`):
+- `PlantMechanism` (content, kind `plant`): `where` (AT_TARGET, AT_USER, AHEAD,
+  WHERE_PROJECTILES_LAND), `count`, `spread`, `max_standing`, `trigger` (REMOTE with
+  `set_off_by`, PROXIMITY, TIMER, ON_HIT), `radius`, `seconds`, `turns`, `eruption`,
+  `chain_delay`, `lifetime` and `mark`.
+- `Planted` (gameplay) extends `Hitbox`: it waits striking nothing, watches its trigger and its
+  life on `CombatClock`, burns a fuse when set off, then plays its eruption and is gone.
+- `PlantRun`: in the field it plants along the line through the spot, keeps no more than
+  `max_standing`, and sets them off in a ripple; in a battle it marks foes with the `mark`
+  status and sets them off on the same triggers, the eruption once per mark.
+- Where the misses land: `Projectile.landed` fires when a shot ends without striking;
+  `BarrageRun` tells every running mechanism of the kit (the new executor hook
+  `projectile_landed`), and in a battle a missed shot tells it which foe it was aimed at.
+- `BarrageRun.strike_with`, the battle's "strike with an `ActionMove`", now shared by both.
+
+**Why.** The Owl's shards that stay in the ground, its trap mode, IXA's mine and remote
+activation, time bombs and rune traps are one thing: something left now that goes off later.
+The eruption is an `ActionMove`, so it is dodged, blocked, countered and finds a weakness
+through `Hurtbox.take` with no new code.
+
+**Verified.**
+- Red first: with `PlantRun.use` and `projectile_landed` stubbed, 12 failed.
+- `plant_test` (17, the field) and `plant_battle_test` (6) pass; the full suite passes, as do
+  the seven checkers and the stripped run.
+- Boot prints 0.75.0, with 0 warnings and 0 errors.
+
+**Unblocks.** C7.9 (the Owl and IXA as data), C8.14 (constructs), C8.15 (late outcomes).
+
+**Gaps.**
+- A plant has no mesh or marker until art exists, so `visible_to_foes` is not built.
+- `recall` (blink to a plant) waits for M9 `blink` (C6.12).
+- A shot's landing point is where its flight ended; a rain shot must be given an `active` long
+  enough to reach the ground (nothing looks for the floor).
+- One mark status shared by two plant powers is cured by whichever goes off first.

@@ -70,7 +70,7 @@ fight). "Powers" is how many of the 3,306 the family holds.
 |---|---|---|---|---|---|
 | `melee_hitbox` | 178 | A swing that hurts only during its active frames, once per target | `ActionMove` + `MoveTimeline` + `Hitbox`/`Hurtbox`; in a battle a `Skill` | BUILT (C3.2–C3.4) | Tsubame Gaeshi; Bites the Dust; Tusk ACT 4 — Infinite Rotation |
 | `projectile` | 129 | One moving shot that hits what it meets | M1 `barrage` with `count` 1, the `Projectile` node | BUILT C6.7 | Gura Gura no Mi; The X-Axis; Spirit Bomb / Genki Dama |
-| `explosion_aoe` | 77 | A burst that hits everyone in a radius | A `Skill` with scope ALL; in the field a sphere `Hitbox` on `ActionMove` | BUILT; the delayed kind is M15 `plant` (C6.26) | Mafuba / Evil Containment Wave; Explosion; Adolla Burst |
+| `explosion_aoe` | 77 | A burst that hits everyone in a radius | A `Skill` with scope ALL; in the field a sphere `Hitbox` on `ActionMove` | BUILT; the delayed kind is M15 `plant` (BUILT C6.26) | Mafuba / Evil Containment Wave; Explosion; Adolla Burst |
 | `magic_cast` | 45 | A spell: pay, wind up, effect | `Skill` + `SkillUse`; `Power` for cooldowns and conditions | BUILT (C2.13, C6.1) | Byakugan; Rinnegan; Shinsu Baang |
 | `beam_hitscan` | 31 | An instant line that hits everything along it | M1 `barrage` pattern LINE with `speed` 0 (a line `Hitbox` for one frame) | BUILT C6.7 | Excalibur; Cero; 100-Type Guanyin Bodhisattva |
 | `volley_projectiles` | 12 | A fan, volley or rain of shots | M1 `barrage` patterns | BUILT C6.7 | Highwind Limit; Lion Heart; Oblivion |
@@ -231,7 +231,7 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | `equipment_special` | 25 | A weapon with its own power | Special gear: a piece's `kit` | PLANNED C7.3 | Crazy Slots; Quinque; Owl |
 | `equipment_inventory` | 23 | Carry and swap gear | `Inventory`, `GearSet` | BUILT (C7.1) | Requip — The Knight; Djinn Equip; Create Greater Item |
 | `enchant_object` | 11 | Add an effect to an item | Sockets, affixes | PLANNED C7.4, C7.2b | Soru Soru no Mi; Strand Unravel; Reverse Lashing |
-| `magic_prep` | 11 | A rune or potion prepared now, used later | M15 `plant` with a trigger; items | PLANNED C6.26 | Light Glyph; Ice Glyph; Compound Glyph Spell |
+| `magic_prep` | 11 | A rune or potion prepared now, used later | M15 `plant` with a trigger; items | BUILT C6.26 | Light Glyph; Ice Glyph; Compound Glyph Spell |
 | `held_item_attack_type` | 2 | The attack's type comes from what is held | A worn piece lends `element` and `attack_tags` | BUILT (C7.1c) | Judgment; Judgment |
 | `equipment_spell_stat_binding` | 1 | Bind stocked spells to stats | Sockets with counted gems | PLANNED C7.4 | Junction |
 
