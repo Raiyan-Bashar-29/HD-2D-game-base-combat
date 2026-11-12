@@ -3731,3 +3731,70 @@ can be a battlefield with a hold status.
 gained while inside keeps the modifiers and statuses it came in with until it leaves. `on_exit`
 lands when the caster falls too. A battle tick counts the caster's turns, not each fighter's
 own. Ticks are not saved: a load starts each clock again.
+
+## 2026-11-12 — C6.9c · Battlefields against each other (the hit side)
+
+**Did.** A battlefield's `sure_hit` and `hit_tags` now make its caster's hits sure and tagged
+while it stands. The caster holds a copy of its status that grants them (`StatusEffect`
+`grants_sure_hit`, `grants_hit_tags`, `cancelled_by`), made once by `HitFlags.granted`, with the
+same id, so the shared status is never changed. `Combatant.hit` reads the attacker's flags
+through the new `HitFlags` and applies them to every hit. `cancelled_by` leaves a target that
+holds it to a roll. `broken_by_tags` ends a battlefield at once when a landed field hit on its
+caster carries one of those tags (`BattlefieldRun.break_down`, no aftermath). The breaking check
+is `BattlefieldMechanism.broken_by`, called from `BattlefieldRun.breaks`, which `Hurtbox` calls.
+
+**Why.** The C6.9c row was about 12 files, so it was split by the 8-file rule: the hit side here,
+clashes and `closed` in C6.9d, the place, log and HUD in C6.9e.
+
+**Verified.** Boot 0 warnings, 0 errors, printing 0.79.0. `battlefield_hit_test` 12 of 12. Red
+first: stubbing the sure-hit rule failed the sure-hit assertions, then the file was restored.
+Budgets: `battlefield_run.gd` went to 253 code lines, so `broken_by` moved to the mechanism and
+the check passes 0 violations. The full suite shows 4078 passed, and one failure: the version
+line in `COMBAT.md`, fixed in this commit's docs. Seven checkers as recorded in the commit.
+
+**Gaps.** A battle attack (not a skill) does not break a battlefield: only the field's `Hurtbox`
+does. The sure hit is checked by its tag, not by an accuracy roll (the fixture formula has no
+accuracy stage). `closed`, layers and the clash rules are C6.9d.
+
+## 2026-11-12 — C6.9d · Clashes and `closed` (combat 0.80.0)
+
+**Did.** Battlefields now clash. `layer` (TERRAIN, WEATHER, DOMAIN) keeps a battlefield apart from the
+others. Two in one layer, on one clock, that overlap clash by `clash`, the newer one's rule deciding:
+STRONGER_WINS, BOTH_END, OVERWRITE or BOTH_STAND. `refinement` says who is stronger, scaled by the
+caster's `refinement_stat` when one is named. `closed` is a barrier: in the field a fighter who walks out
+is held at the edge.
+
+**Why.** The design row in `GEAR.md` Part 3 asks for Domain Expansion's clash ("the more refined one
+wins") and a barrier nobody crosses. Without a clash, two domains simply stacked.
+
+**Connects.** `BattlefieldClash` (new) is asked by `BattlefieldRun._raise` before a battlefield rises. It
+ends the rivals it beats through `break_down` (the C6.9c path, no aftermath) and returns whether the
+newcomer may stand. `BattlefieldWall` (new) holds bodies at a closed field's edge each tick and holds the
+step the pull and push already used. `BattlefieldRun._refresh` keeps those already inside a closed field.
+
+**Verified.** Boot: 0 warnings, 0 errors, prints 0.80.0. Full suite: 4093 passed, 0 failed (the new
+`battlefield_clash_test` is 14 of 14, and the version check passes). Stripped run: 3996 passed, 0 failed,
+25 skipped. All seven checkers exit 0; `check_budgets` reports 0 violations.
+
+**Unblocks.** C6.9e (the place, the log and HUD), and the Unlimited Void and Simple Domain pairings.
+
+**Gaps.** A battle has no edge, so a closed battlefield changes nothing there until summons (C6.9e). A
+clash is judged when the newcomer rises. If a stat later changes a standing battlefield's strength, it is
+not re-judged. The wall corrects a body one tick after a physics shove, not in the same frame.
+
+**Also.** Asked whether the IXA's modes are handled in code: they are designed in `GEAR.md` (lance by
+default, shield mode, the remote-activated mine), but not built as data. That is C7.9, which needs C6.26.
+
+## 2026-11-12 — C6.9e · The caster's kit (combat 0.81.0)
+
+**Did.** `BattlefieldMechanism.caster_kit`: a `PowerKit` the caster holds only while the battlefield stands. `PowerSet.hold_kit` and `release_kit` put it on and take it off under `field_kit/<power>`; `kits()` now lists held kits so their powers show in menus. `BattlefieldRun` holds the kit on at the raise (after the clash check) and releases it at the lower, however the field ends. The gauge handlers moved out of `power_set.gd` into `PowerGaugeFeed` (same rules, same events) to keep that file in its budget.
+
+**Why.** C6.9e as written covered five things (the place, `moves_fight`, `weather`, `caster_kit`, `summons`) plus the log and HUD: well over the board's 8-file rule. So the row is split. This slice is the caster's kit, the piece the Unlimited Blade Works plan needs. `summons` moves to C8.10, because it needs owned fighters. The rest is C6.9f (the place) and C6.9g (the log and HUD).
+
+**Connects.** Clash and `closed` decide whether the field rises, so the kit follows them: a shattered field never gives its kit. `PowerSet.kits()` now feeds `powers()`, `status()` and `_regauge()`, so a held kit's gauges and statuses are live like a lent one's.
+
+**Verified.** Boot 0 warnings, 0 errors. Full suite 4100 passed, 0 failed (`battlefield_kit_test` 7 of 7). Stripped run 4003 passed, 0 failed, 25 skipped. All seven checkers exit 0; `check_budgets` 0 violations.
+
+**Unblocks.** C6.9f (the place) and the Unlimited Blade Works kit as data.
+
+**Gaps.** A held kit is not saved: it comes back when the field rises again on the next tick after a load, as the field itself does (NOT SAVED in `BattlefieldRun`). Kits are held by their power's source, so two battlefields on one caster each hold their own kit. Two kits that share a power id still overwrite each other's executor, as lent kits do (the header of `PowerSet` says so).

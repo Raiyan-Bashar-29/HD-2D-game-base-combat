@@ -130,6 +130,7 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 		# A skill lands the way it does in a battle: power, effects, statuses, reflect and all.
 		# It does not report misses one by one, so poise and knockback treat it as landed.
 		SkillUse.apply(attacker, move.skill, [target], rng)
+		BattlefieldRun.breaks(target, move.skill.tags)
 		return Outcome.LANDED
 	# A move with no element of its own takes the worn weapon's, and its tags too (C7.1c).
 	var element: StringName = attacker.strike_element(move.element)
@@ -146,6 +147,8 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 		else:
 			outcome = Outcome.LANDED
 			Weakness.strike(target, keys)
+			# A landed hit may bring down a battlefield on its target (C6.9c).
+			BattlefieldRun.breaks(target, result.tags)
 	return outcome
 
 

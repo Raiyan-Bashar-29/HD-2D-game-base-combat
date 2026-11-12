@@ -516,8 +516,20 @@ on the attacker by `VulnerabilityStage`. **As built (C6.9b, 0.78.0):** `on_enter
 `sure_hit`), used by the caster on the group, free; the effect's `who` aims it, so the skill's
 `target` and `scope` are not read. `tick_seconds`, `tick_turns` (counted on the caster's turns),
 `tick_grows`, `pull`, `push` and `immune_tags` (tags of held statuses) are as the table says;
-`resist_field_<name>` uses the power id after its last "/". **Still to build:** C6.9c (clashes, sure-hit, breaking), C6.9d (the place, the log and
-the HUD), a sphere left at a point and ZONE, fighters picked by tag, `resist_field_<id>`.
+`resist_field_<name>` uses the power id after its last "/". **As built (C6.9c, 0.79.0):** the hit side. A battlefield's `sure_hit` and `hit_tags` are
+flags the caster holds while it stands: the battlefield raises its caster holding a copy of
+its status that grants them (`StatusEffect.grants_sure_hit`, `grants_hit_tags`; `HitFlags.granted`
+makes the copy, the same id, and leaves the shared status alone). `Combatant.hit` reads them
+through `HitFlags`, so every hit the caster makes is a sure hit and carries the tags: a field
+strike, a skill and a battle attack alike. `cancelled_by` names a status that, held by a target,
+leaves that target to a roll. `broken_by_tags`: a landed hit on the caster carrying one of them
+brings the battlefield down at once (`BattlefieldRun.break_down`, no aftermath), checked in
+`Hurtbox`; **a battle attack does not break it yet**. A barrier's `bypass_tags` reads the hit's tags.
+**Still to build:** C6.9f (the place: `PlaceLook`, `moves_fight`, `weather`), C6.9g (the log and the HUD), `summons` (C8.10), a sphere left at a point and ZONE, fighters picked by tag, `resist_field_<id>`.
+
+**As built (C6.9d, 0.80.0):** clashes and `closed`. `BattlefieldClash.allows` runs before a battlefield rises: it compares it with each standing battlefield in the same `layer`, on the same clock, that overlaps it (in a battle always; in the field when either has no radius or the casters are within the larger radius). The newer one's `clash` decides, and `refinement` (times one plus `refinement_stat`, when named) says who is stronger. A battlefield that loses is shattered at once, with no aftermath, and so is a rival it beats in BOTH_END. `closed` makes `BattlefieldRun._refresh` keep those already inside, and `BattlefieldWall.hold` walks their bodies back to the edge each tick. Not built yet: a battle's edge (no distances until summons) and clashes re-judged when a stat changes.
+
+**As built (C6.9e, 0.81.0):** the caster's kit. `caster_kit` is a `PowerKit` the caster holds only while the battlefield stands, so Unlimited Blade Works' sword barrage is on the caster while the field is up and gone when it ends. `BattlefieldRun` holds it on at the raise (after the clash check, so a battlefield that loses a clash never gives it) and releases it at the lower, whichever way the field ends. Its powers show in menus through `PowerSet.kits()`. Not yet built: `PlaceLook`, `moves_fight` and `weather` (C6.9f), the log and HUD (C6.9g), and `summons` (C8.10).
 
 ## The planted strike (M15 `plant`, new)
 
@@ -734,8 +746,11 @@ weapons themselves.
 | C6.8 | M2 `finisher`: `FinisherMechanism`, the charge and its break, the `Flourish` time-stop, power from a pool: DONE (0.76.0) | C6.4 |
 | C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt`: DONE (0.77.0) | C6.6 |
 | C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity: DONE (0.78.0) | C6.9a |
-| C6.9c | Battlefields against each other: `sure_hit` and `hit_tags`, `closed`, layers, the four clash rules, `broken_by_tags`, `cancelled_by`, `aftermath` | C6.9b |
-| C6.9d | The place: `PlaceLook`, `moves_fight`, `weather`, `caster_kit`, `summons`; the log and HUD readout | C6.9c, C6.5d |
+| C6.9c | Battlefields against each other, the hit side: `sure_hit`, `hit_tags`, `broken_by_tags`, `cancelled_by`: DONE (0.79.0) | C6.9b |
+| C6.9d | Clashes and `closed`: `layer`, `refinement`, the four clash rules, `closed`: DONE (0.80.0) | C6.9c |
+| C6.9e | The caster's kit: `caster_kit`, held while the battlefield stands: DONE (0.81.0) | C6.9d |
+| C6.9f | The place: `PlaceLook`, `moves_fight`, `weather` | C6.9e, C6.5d |
+| C6.9g | The log and HUD readout | C6.9f |
 | C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |
 | C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |
 | C7.6 | Crafting, the logic: `Recipe`, `Crafting`, dismantle and transmute | C7.2 |

@@ -134,11 +134,17 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 		sure_hit: bool = false, tags: Array[StringName] = []) -> DamageResult:
 	if target == null:
 		return null
+	# A battlefield this attacker stands in may make its hits sure, and tag them (C6.9c).
+	var flags := HitFlags.of(self)
+	var sure: bool = sure_hit or flags.sure_against(target)
 	var request := DamageRequest.of(sheet, target.sheet, power, element)
-	request.sure_hit = sure_hit
+	request.sure_hit = sure
 	var result: DamageResult = resolving_formula().resolve(request, rng)
 	result.tags.assign(tags)
-	if sure_hit:
+	for flag: StringName in flags.tags:
+		if not result.tags.has(flag):
+			result.tags.append(flag)
+	if sure:
 		result.tags.append(&"sure_hit")
 	target.receive(result, combatant_id)
 	return result

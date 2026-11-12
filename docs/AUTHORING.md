@@ -1347,6 +1347,13 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      makes ticks 1, 1.5, 2 times as strong. `pull` and `push` are metres a second (field only).
      `immune_tags` leaves out a fighter holding a status with that tag; the stat
      `resist_field_<name>` (the power id after its last "/") at 1 keeps it out entirely.
+     Hits (C6.9c): `sure_hit` makes the caster's hits sure hits (they cannot miss) while it
+     stands; `hit_tags` tags them, and a barrier's `bypass_tags` can name one to let it through.
+     `cancelled_by` is a status id: a target holding it is only rolled for. `broken_by_tags`:
+     a landed field hit on the caster carrying one of them ends the battlefield at once, with no
+     aftermath (a battle attack does not break it yet).
+      Caster kit (C6.9e): `caster_kit` (a `PowerKit`) is held by the caster only while the battlefield stands: it goes on at the raise, after the clash check, and comes off at the lower, however the field ends. Give its powers and stat bonuses the usual `kit_id`, since they are listed with the caster's own.
+      Clashes (C6.9d): `layer` (TERRAIN, WEATHER or DOMAIN) keeps a battlefield apart from the others. Two in the same layer and on the same clock that overlap clash by `clash` (STRONGER_WINS, BOTH_END, OVERWRITE or BOTH_STAND), the newer one's rule deciding. `refinement` (a number, scaled by the caster's `refinement_stat` when named) says who is stronger. `closed: true` is a barrier: in the field a fighter who would walk out is held at the edge. In a battle a closed field changes nothing yet.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle

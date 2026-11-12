@@ -26,6 +26,10 @@ extends FormRun
 ##   left out of that effect. The tags are read as it comes in and at each tick and pull, so a
 ##   tag gained while inside keeps the modifiers and statuses it came in with until it leaves.
 ##
+## - C6.9d: a raise first asks `BattlefieldClash.allows`. A battlefield that loses a clash never
+##   stands, and one that beats a rival ends it. A `closed` one keeps those already inside
+##   (`_refresh`) and holds their bodies at its edge each tick (`BattlefieldWall`).
+##
 ## NOT SAVED: a load puts the caster's status back (the kit knows it), and the next tick raises the
 ## field again with a fresh clock and lets everyone in.
 ##
@@ -44,6 +48,8 @@ var _clock: Dictionary[int, float] = {}
 var _ticks: Dictionary[int, int] = {}
 # The dice the skills roll with: the use's, else a fresh one.
 var _rng := RandomNumberGenerator.new()
+# The caster's status with its hit flags added (C6.9c), made on first use. Null until then.
+var _granted: StatusEffect = null
 
 
 func use(user: Combatant, targets: Array[Combatant], rng: RandomNumberGenerator) -> void:
@@ -78,6 +84,41 @@ func standing() -> bool:
 	return _up
 
 
+## Brings the battlefield down at once, with no aftermath, because a hit broke it (C6.9c). The
+## caster's status comes off, and `_settle` then lowers the field.
+func break_down() -> void:
+	leave()
+	_settle()
+
+
+## Ends every standing battlefield on `target` whose `broken_by_tags` names one of `tags` (C6.9c).
+## Called on each landed hit, so an anti-world attack ends a reality marble on its caster.
+static func breaks(target: Combatant, tags: Array[StringName]) -> void:
+	if target == null or tags.is_empty() or target.get_parent() == null:
+		return
+	var powers: PowerSet = PowerSet.of(target.get_parent())
+	if powers == null:
+		return
+	for run: PowerExecutor in powers.running():
+		var field := run as BattlefieldRun
+		if field != null and field.standing() and (field.mechanism as BattlefieldMechanism).broken_by(tags):
+			field.break_down()
+
+
+# The caster's status, with what the battlefield grants on it (C6.9c). Made once and kept, so a
+# shared status resource is never changed.
+func _stage_status(index: int) -> StatusEffect:
+	var base: StatusEffect = super._stage_status(index)
+	var field: BattlefieldMechanism = mechanism as BattlefieldMechanism
+	if base == null or field == null:
+		return base
+	if not (field.sure_hit or not field.hit_tags.is_empty() or field.cancelled_by != &""):
+		return base
+	if _granted == null:
+		_granted = HitFlags.granted(base, field)
+	return _granted
+
+
 # A stage status ran out or came off: the field follows.
 func _on_expired(who: StringName, status_id: StringName) -> void:
 	super._on_expired(who, status_id)
@@ -96,10 +137,15 @@ func _settle() -> void:
 func _raise() -> void:
 	var field: BattlefieldMechanism = mechanism as BattlefieldMechanism
 	var me: Combatant = _caster()
+	# A clash (C6.9d) may keep it from standing: it then shatters at once, with no aftermath.
+	if not BattlefieldClash.allows(me, field, self):
+		leave()
+		return
 	_up = true
 	_left = (field.seconds if me != null and me.real_time else float(field.turns))
 	_clock.clear()
 	_ticks.clear()
+	if holder != null: holder.hold_kit(field.caster_kit, _source("field_kit/"))
 	if not Events.combatant_defeated.is_connected(_on_defeated):
 		Events.combatant_defeated.connect(_on_defeated)
 	_refresh()
@@ -108,6 +154,7 @@ func _raise() -> void:
 func _lower() -> void:
 	_up = false
 	_left = 0.0
+	if holder != null: holder.release_kit(_source("field_kit/"))
 	if Events.combatant_defeated.is_connected(_on_defeated):
 		Events.combatant_defeated.disconnect(_on_defeated)
 	for id: int in _inside.keys():
@@ -132,7 +179,9 @@ func _refresh() -> void:
 		var vitals: Vitals = Vitals.of(other.get_parent())
 		if vitals != null and vitals.is_defeated():
 			continue
-		var reached: bool = _reaches(me, other) and not _immune(other)
+		# A closed battlefield keeps those already inside (C6.9d); its edge is held in `_work`.
+		var keep: bool = (mechanism as BattlefieldMechanism).closed and _inside.has(id)
+		var reached: bool = (_reaches(me, other) or keep) and not _immune(other)
 		if reached and not _inside.has(id):
 			_join(other)
 		elif not reached and _inside.has(id):
@@ -203,7 +252,11 @@ func _work(amount: float) -> void:
 	var me: Combatant = _caster()
 	if me == null:
 		return
-	var effects: Array[BattlefieldEffect] = (mechanism as BattlefieldMechanism).effects
+	# A closed battlefield holds those inside at its edge, in the field only (C6.9d).
+	var field: BattlefieldMechanism = mechanism as BattlefieldMechanism
+	if me.real_time and field.closed:
+		BattlefieldWall.hold(me, field.radius, _inside.values())
+	var effects: Array[BattlefieldEffect] = field.effects
 	for i: int in effects.size():
 		var effect: BattlefieldEffect = effects[i]
 		if effect == null:
@@ -248,11 +301,7 @@ func _drift(me: Combatant, effect: BattlefieldEffect, seconds: float) -> void:
 		if gap.length() < 0.001:
 			continue
 		var step: Vector3 = gap.normalized() * minf(speed * seconds, gap.length())
-		var mover: CharacterBody3D = body as CharacterBody3D
-		if mover != null:
-			mover.move_and_collide(step)
-		else:
-			body.global_position += step
+		BattlefieldWall.step_body(body, step)
 
 
 # The fighters inside now that `effect` touches.
@@ -325,5 +374,6 @@ func _caster() -> Combatant:
 	return Combatant.of(holder.get_parent()) if holder != null and holder.get_parent() != null else null
 
 
-func _source() -> StringName:
-	return StringName("field/" + String(power.power_id if power != null else &""))
+# The source the field's modifiers go on under; `prefix` "field_kit/" keeps the caster kit's apart (C6.9e).
+func _source(prefix: String = "field/") -> StringName:
+	return StringName(prefix + String(power.power_id if power != null else &""))

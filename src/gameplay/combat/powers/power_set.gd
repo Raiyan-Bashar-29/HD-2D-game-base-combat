@@ -58,6 +58,8 @@ extends Node
 var kit: PowerKit
 # Kits lent by what the fighter wears (C7.3): source -> kit, in the order their powers are listed.
 var _lent: Dictionary[StringName, PowerKit] = {}
+# Kits a battlefield holds on its caster while it stands (C6.9e), by the source they went on under.
+var _held: Dictionary[StringName, PowerKit] = {}
 var _cooling: Dictionary[StringName, float] = {}
 var _running: Dictionary[StringName, PowerExecutor] = {}
 var _passives: Array[StringName] = []
@@ -67,8 +69,8 @@ var _passives: Array[StringName] = []
 var once: OnceLedger = OnceLedger.new()
 ## The equipped kit's gauges. Empty, never null, with no kit.
 var gauges: KitGauges = KitGauges.new()
-# The id that fell a moment ago, until the next damage event says who felled it.
-var _just_fell: StringName = &""
+# The gauge side of what this fighter hears (C6.4a); it remembers who just fell (a kill).
+var _feed := PowerGaugeFeed.new()
 
 
 ## The set under `who`, or null.
@@ -167,12 +169,28 @@ func lend(wanted: Dictionary[StringName, PowerKit]) -> void:
 			_put_on(_lent[source], source)
 
 
-## Every kit on the fighter: its own first, then each lent one, in order.
+## Puts `held_kit` on the fighter under `source` until `release_kit` takes it off (C6.9e: a kit a
+## battlefield lends its caster while it stands). A source already holding one is left alone.
+func hold_kit(held_kit: PowerKit, source: StringName) -> void:
+	if held_kit != null and not _held.has(source):
+		_held[source] = held_kit
+		_put_on(held_kit, source)
+
+
+## Takes off the kit held under `source`, if one is held (C6.9e).
+func release_kit(source: StringName) -> void:
+	if _held.has(source):
+		_take_off(_held[source], source)
+		_held.erase(source)
+
+
+## Every kit on the fighter: its own first, then each lent one, then each held one, in order.
 func kits() -> Array[PowerKit]:
 	var out: Array[PowerKit] = []
 	if kit != null:
 		out.append(kit)
 	out.append_array(_lent.values())
+	out.append_array(_held.values())
 	return out
 
 
@@ -374,56 +392,33 @@ func _on_game_loaded(_slot: int) -> void:
 	_hold_passives()
 
 
-# A hit landed or taken moves the gauges; a heal (a negative amount) does not.
+# The gauge handlers below hand each event to the feed (`PowerGaugeFeed`), which owns the rules.
 func _on_damaged(who: StringName, by: StringName, amount: int, _critical: bool) -> void:
-	var me: StringName = _id()
-	var felled: bool = who != &"" and who == _just_fell
-	_just_fell = &""
-	if amount <= 0 or me == &"":
-		return
-	if felled and by == me and who != me:
-		gauges.happen(get_parent(), GaugeRule.Event.KILL)
-	if by == me:
-		gauges.happen(get_parent(), GaugeRule.Event.HIT_DEALT)
-	if who == me:
-		gauges.happen(get_parent(), GaugeRule.Event.HIT_TAKEN)
+	_feed.damaged(self, who, by, amount)
 
 
-# Remembers who fell, for the damage event that follows; and an ally falling moves the gauges.
 func _on_defeated(who: StringName) -> void:
-	_just_fell = who
-	var me: Combatant = Combatant.of(get_parent())
-	if me == null or who == &"" or who == me.combatant_id:
-		return
-	var other: Combatant = Combatant.find(get_tree(), who)
-	if other != null and me.can_target(other, FactionTable.Target.ALLY):
-		gauges.happen(get_parent(), GaugeRule.Event.ALLY_DEFEATED)
+	_feed.defeated(self, who)
 
 
 func _on_revived(who: StringName) -> void:
-	if who == _just_fell:
-		_just_fell = &""
+	_feed.revived(who)
 
 
 func _on_dodged(who: StringName, _by: StringName) -> void:
-	if who != &"" and who == _id():
-		gauges.happen(get_parent(), GaugeRule.Event.DODGE)
+	_feed.dodged(self, who)
 
 
 func _on_perfect_dodge(who: StringName, _by: StringName) -> void:
-	if who != &"" and who == _id():
-		gauges.happen(get_parent(), GaugeRule.Event.PERFECT_DODGE)
+	_feed.perfect_dodged(self, who)
 
 
-# `who` is the one the attack missed; `by` threw it.
 func _on_missed(_who: StringName, by: StringName) -> void:
-	if by != &"" and by == _id():
-		gauges.happen(get_parent(), GaugeRule.Event.MISS)
+	_feed.missed(self, by)
 
 
 func _on_vitals_changed(who: StringName, pool: StringName, _value: int, _maximum: int) -> void:
-	if who != &"" and who == _id() and gauges.has_pool(pool):
-		gauges.refresh_levels(get_parent(), pool)
+	_feed.vitals_changed(self, who, pool)
 
 
 func _id() -> StringName:
