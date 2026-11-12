@@ -1332,6 +1332,15 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      metres in the field), otherwise the aimed foe (the first standing foe in a battle). For a
      gauge finisher, give the power a POOL_FRACTION POWER scaling and set `drain_pool` to empty
      the gauge as it lands; `requires_pool` and `requires_fraction` gate it.
+   - A battlefield (C6.9a): give a `Power` a `BattlefieldMechanism` and no skill. It is a form,
+     so `status` (duration 0) marks it standing, using it again ends it, and `drain_pool` with
+     its rates is the upkeep; `aftermath` is the burnout when it ends by its own rules. Each of
+     `effects` is a `BattlefieldEffect`: `who` (CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE,
+     EVERYONE_BUT_CASTER), `modifiers` (any stat, `damage_dealt` and `damage_taken` too) and
+     `statuses` (give them duration 0: the field takes them off as fighters leave). `radius` 0
+     covers the whole fight; above 0 it covers fighters within that many metres of the caster in
+     the field, and follows it. `seconds` (field) and `turns` (battle) end it; 0 stands until
+     ended.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle

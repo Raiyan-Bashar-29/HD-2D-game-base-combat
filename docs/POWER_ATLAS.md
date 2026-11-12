@@ -113,7 +113,7 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | Family | Powers | In plain words | What runs it here | State | Examples |
 |---|---|---|---|---|---|
 | `construct_matter` | 311 | Make or shape matter: walls, weapons, objects | Things placed in the arena that block, hurt or can be thrown | NEW C8.14, on M15 `plant` (C6.26) and C8.9 | C-Moon; Magu Magu no Mi; Wood Release |
-| `persistent_field` | 126 | A zone that keeps acting on whoever is inside | M4 battlefield: statuses, ticks, pull | PLANNED C6.9a–b | Weather Report; Self-Embodiment of Perfection; Deadly Sentencing |
+| `persistent_field` | 126 | A zone that keeps acting on whoever is inside | M4 battlefield: statuses, ticks, pull | BUILT C6.9a (statuses and modifiers per group); ticks and pull PLANNED C6.9b | Weather Report; Self-Embodiment of Perfection; Deadly Sentencing |
 | `materialized_art` | 36 | A drawing or idea made real | A construct or an owned fighter | NEW C8.14, C8.10 | Ichimonji; Arthur — Plasma Excalibur; The Matchless Poet |
 | `craft_creation` | 25 | Make items | `Recipe` and `Crafting` | PLANNED C7.6 | Killer Queen — Bomb Transmutation; Nen Transmutation; Godspeed |
 | `terrain_control` | 19 | Reshape the ground | M4 battlefield effects; things in the arena | PLANNED C6.9, C8.9 | Chidori; Creation; Ultrahand |

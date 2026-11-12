@@ -3657,3 +3657,45 @@ The strike is an `ActionMove`, so dodges, blocks, counters and weaknesses answer
 - Charging does not hold the user still by itself: give `charging` a SKIP_TURN block or slowing
   modifiers to do that.
 
+## 2026-11-12 — C6.9a · The battlefield core
+
+**Did.** Built the core of M4, the battlefield, as one mechanism (combat `0.77.0`):
+- `BattlefieldEffect` (content): `who` (CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE,
+  EVERYONE_BUT_CASTER), `modifiers` and `statuses`: one rule for one group.
+- `BattlefieldMechanism` (content, kind `battlefield`) extends `FormMechanism`: `effects`,
+  `radius`, `seconds` and `turns`. Its `status` marks it standing, so using it again, the drain
+  (the upkeep), `aftermath`, `exclusive_group`, `look` and `name_key` are all a form's. It is
+  never a cycle. `statuses()` also lists the effects' statuses, so the kit knows them on a load.
+- `BattlefieldRun` extends `FormRun`. It raises and lowers the field to match the caster's
+  status, however that came on or off (a use, the drain, the clock, a cure, the kit coming off);
+  counts `seconds` in the field and the caster's `turns` in a battle, ending with the aftermath;
+  and on raising and every tick lets in every fighter on the caster's clock within reach and
+  out the ones that left, putting on and taking off each matching effect under the source
+  `field/<power id>`. The caster falling ends it with no aftermath.
+- `VulnerabilityStage` also multiplies by 1 plus the attacker's `damage_dealt`.
+
+**Why.** A domain, a reality marble, an aura and weather magic are the same rule with different
+data; this is the part they all share: who is inside, what they get, and for how long. "The
+fight" is every `Combatant` on the caster's clock, so a battle's battlefield never reaches the
+field fighters paused outside, and no list of fighters had to be handed to the executor.
+
+**Verified.**
+- Red first: with `_refresh` stubbed to do nothing, 8 assertions failed.
+- `battlefield_test` (15, the field) and `battlefield_battle_test` (4) pass; the full suite
+  (4,055), the seven checkers and the stripped run (3,958, 25 skipped) pass.
+- Boot prints 0.77.0, with 0 warnings and 0 errors.
+
+**Unblocks.** C6.9b (damage on enter, on exit and on a clock; pull and push; immunity), C6.9c,
+C6.9d, and C8.11 (time), which needs the battlefield core.
+
+**Gaps.**
+- `radius` is only around the caster (FOLLOWS_CASTER); a sphere left at a point, LINE and ZONE
+  are not built, and a battle has no distances, so there it is always the whole fight.
+- Groups by tag are not built.
+- When a fighter leaves, the field cures its statuses by id, so the same status from elsewhere
+  comes off too. Give a field's statuses their own ids.
+- Not saved: a load puts the caster's status back and the next tick raises the field again,
+  with a fresh clock.
+- No `battlefield_raised` or `battlefield_ended` event yet: nothing would listen until the battle
+  log and the HUD readout (C6.9d).
+

@@ -501,6 +501,20 @@ bigger N. A duration is `seconds` and `turns`, or 0 for infinite.
 - `Events.battlefield_raised(by, power_id)` and `battlefield_ended(by, power_id, why)`; the
   battle log and the HUD show its name and time left.
 
+**As built (C6.9a, 0.77.0).** `BattlefieldMechanism` extends `FormMechanism`, so raising,
+ending, upkeep (`drain_pool`), `aftermath`, `exclusive_group`, `look` and `name_key` are a
+form's; it is never a cycle. Built now: `effects`, `seconds`, `turns`, and `radius` (0 is
+WHOLE_FIGHT; above 0 is FOLLOWS_CASTER in the field, and a battle is always the whole fight).
+`BattlefieldEffect` has `who` (CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE, EVERYONE_BUT_CASTER),
+`modifiers` and `statuses`. "The fight" is every `Combatant` on the caster's clock (real time
+in the field, turns in a battle), so a battle's battlefield never touches the field fighters
+waiting outside. Fighters are let in and out on raising and on every tick, so one walking out
+of an aura, a fighter arriving and a revived ally are all handled. The caster falling ends it
+with no aftermath (`ends_when` CASTER_FALLS is the only ending so far). `damage_dealt` is read
+on the attacker by `VulnerabilityStage`. **Still to build:** C6.9b (ticks, enter and exit,
+pull and push, immunity), C6.9c (clashes, sure-hit, breaking), C6.9d (the place, the log and
+the HUD), a sphere left at a point and ZONE, fighters picked by tag, `resist_field_<id>`.
+
 ## The planted strike (M15 `plant`, new)
 
 **In plain words:** something is left in the ground now and goes off later. The Owl's shards,
@@ -714,7 +728,7 @@ weapons themselves.
 | C6.7 | Barrage and the `Projectile` node, with sizes: DONE (0.74.0). "Where the misses land" moved to C6.26, which reads it | |
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading, and "where a barrage's misses land": DONE (0.75.0) | C6.7 |
 | C6.8 | M2 `finisher`: `FinisherMechanism`, the charge and its break, the `Flourish` time-stop, power from a pool: DONE (0.76.0) | C6.4 |
-| C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt` | C6.6 |
+| C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt`: DONE (0.77.0) | C6.6 |
 | C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity | C6.9a |
 | C6.9c | Battlefields against each other: `sure_hit` and `hit_tags`, `closed`, layers, the four clash rules, `broken_by_tags`, `cancelled_by`, `aftermath` | C6.9b |
 | C6.9d | The place: `PlaceLook`, `moves_fight`, `weather`, `caster_kit`, `summons`; the log and HUD readout | C6.9c, C6.5d |

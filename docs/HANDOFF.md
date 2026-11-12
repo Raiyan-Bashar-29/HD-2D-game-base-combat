@@ -59,7 +59,13 @@ between them, written in plain words.
   turns in a battle, holding a `charging` status that a hit can break), stops the field fight
   for a `flourish` (the `Flourish` node), then lands one big `strike`, scaled by the power's
   POWER and HITS rules (a gauge through POOL_FRACTION, emptied by `drain_pool`).
-- **Next: C6.9a, the battlefield core (batch 2: C6.8, C6.9a, C6.9b; the PR after C6.9b).** The
+- **C6.9a is done (0.77.0): the battlefield core.** A `BattlefieldMechanism` is a form whose
+  status marks it standing; each of its `BattlefieldEffect`s gives one group (the caster, its
+  side, the other side, everyone, everyone but the caster) modifiers and statuses while they
+  are inside, around the caster (`radius`) or the whole fight, for `seconds` or `turns` or
+  until ended, with the form's drain as upkeep. New stat `damage_dealt`.
+- **Next: C6.9b, battlefield damage and movement (batch 2: C6.8, C6.9a, C6.9b; the PR after
+  it).** The
   build order is the table at the foot of `GEAR.md`: C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
