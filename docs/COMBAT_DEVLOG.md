@@ -3617,3 +3617,43 @@ through `Hurtbox.take` with no new code.
 - A shot's landing point is where its flight ended; a rain shot must be given an `active` long
   enough to reach the ground (nothing looks for the floor).
 - One mark status shared by two plant powers is cured by whichever goes off first.
+
+## 2026-11-12 — C6.8 · The finisher
+
+**Did.** Built M2, the finisher, as one mechanism (combat `0.76.0`):
+- `FinisherMechanism` (content, kind `finisher`): `strike` (an `ActionMove`), `charge_time`,
+  `charge_turns`, `charging`, `break_damage`, `flourish`, `all_foes`, `reach` and `drain_pool`.
+- `FinisherRun`: a use remembers its targets and starts the charge, holding the `charging`
+  status; each tick fills it (seconds in the field, a turn in a battle, at the start of the
+  user's turn) and checks it still stands. The charge is lost when the status ends early (a
+  `breaks_on_hit` status ends on any hit that hurts), on one hit of `break_damage` or more, or
+  when the user falls. A second use while charging changes nothing.
+- `Flourish` (gameplay): a node that sets `CombatClock` to 0, counts real seconds, then gives
+  the fight back the speed it had and says `finished`. Freed early, it still gives it back.
+- The strike lands through each foe's `Hurtbox.take` in the field (the aimed foe, or every
+  hostile within `reach`) and through `BarrageRun.strike_with` in a battle (the first standing
+  foe, or all). It is a copy with the power's POWER and HITS scaling read as it lands, so a
+  POOL_FRACTION rule makes a fuller gauge hit harder; `drain_pool` is emptied afterwards.
+
+**Why.** Enuma Elish, Zantetsuken, Judgment Cut End, Hollow Purple, Pride Flare, Divine Sword,
+Royal Release and Sankt Bogen are one shape: wait, maybe be interrupted, then one great blow.
+The strike is an `ActionMove`, so dodges, blocks, counters and weaknesses answer it unchanged.
+
+**Verified.**
+- Red first: with the strike stubbed out of `_land`, 7 assertions failed.
+- `finisher_test` (14, the field) and `finisher_battle_test` (5) pass; the full suite passes, as
+  do the seven checkers and the stripped run.
+- Boot prints 0.76.0, with 0 warnings and 0 errors.
+
+**Unblocks.** The kits that end in a finisher (C6.14–C6.25), and C6.9c's `broken_by_tags`.
+
+**Gaps.**
+- Hold-to-charge input is not built: a press starts the charge, which then fills by itself.
+- A line-shaped strike (Enuma Elish's line of ruin) is a LINE beam barrage, not a finisher
+  shape; `all_foes` strikes a circle of `reach`.
+- Zantetsuken's "a foe under 25% hp falls" (an execute) is not built; it needs a notion of a
+  boss, and becomes part of its kit row (C6.20).
+- A skill-less finisher in a battle strikes the first standing foe; the menu offers no picker.
+- Charging does not hold the user still by itself: give `charging` a SKIP_TURN block or slowing
+  modifiers to do that.
+

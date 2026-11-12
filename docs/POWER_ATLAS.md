@@ -75,9 +75,9 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | `beam_hitscan` | 31 | An instant line that hits everything along it | M1 `barrage` pattern LINE with `speed` 0 (a line `Hitbox` for one frame) | BUILT C6.7 | Excalibur; Cero; 100-Type Guanyin Bodhisattva |
 | `volley_projectiles` | 12 | A fan, volley or rain of shots | M1 `barrage` patterns | BUILT C6.7 | Highwind Limit; Lion Heart; Oblivion |
 | `skill_performance` | 10 | Change combo timing and cancel windows | `ActionMove` chain windows; a form's own `attack_chain` | BUILT; launch and juggle are C8.8 | Dual Casting; Jeahbongchim; Vivi's Double Black |
-| `charge_stat_burst` | 2 | Charge up, then act much stronger | M2 `finisher` (charge) or a timed status | PLANNED C6.8 | Geomancy; Geomancy |
+| `charge_stat_burst` | 2 | Charge up, then act much stronger | M2 `finisher` (charge) or a timed status | BUILT C6.8 | Geomancy; Geomancy |
 | `ukaku_projectiles` | 1 | A shard volley from a manifested weapon that stays out after firing | M1 `barrage` used inside a form (M5) | BUILT C6.7 | Ukaku Kagune |
-| `world_rending_burst` | 1 | One huge directed discharge that breaks battlefields | M2 `finisher` with `broken_by_tags` on battlefields (Ea) | PLANNED C6.8, C6.9c | Ea — Enuma Elish |
+| `world_rending_burst` | 1 | One huge directed discharge that breaks battlefields | M2 `finisher` with `broken_by_tags` on battlefields (Ea) | BUILT C6.8 (the finisher); PLANNED C6.9c (`broken_by_tags`) | Ea — Enuma Elish |
 | `charge_mount` | 1 | Ride something and ram | A form (M5) whose attack chain is a travelling move | BUILT as parts (C6.5b) | Bellerophon |
 | `tail_kagune` | 1 | A body weapon that both strikes and guards | A form (M5) with its own moves plus M3 `barrier` REDUCE | BUILT as parts (C6.5, C6.6a) | Bikaku Kagune |
 

@@ -637,7 +637,7 @@ and merged. **Row** names the board row that builds it.
 | Perfect dodge with a reward | Bayonetta's Witch Time, FF XVI | Built (C6.6c): `perfect_window`, `Events.perfect_dodge`, a gauge's `on_perfect_dodge`; a slow-down reward can listen to the event |
 | Counter stance and parry | Sekiro, Royal Guard | Built (C6.6d): a COUNTER status with a `counter_move` on a form or a timed-block barrier |
 | Projectile barrages | Gate of Babylon | Built (C6.7) |
-| Charged finishers | Zantetsuken | Row C6.8 |
+| Charged finishers | Zantetsuken | Built: M2 `finisher` (C6.8) |
 | Planted and delayed strikes | Owl, time bombs, rune traps | Built: M15 `plant` (C6.26) |
 | Battlefields: domains, terrain, weather, auras | JJK, Fate, Pokémon weather and terrain, Divinity's surfaces | Rows C6.9a–d (widened) |
 | Foresight, command, blink, clone, sacrifice, grant, refresh | The kits in `POWERS.md` | Rows C6.10–C6.13 |
@@ -713,7 +713,7 @@ weapons themselves.
 | C6.6d | **DONE.** Counter stance: `StatusEffect.counter_move`, the field counter in `Hurtbox` | C6.6 |
 | C6.7 | Barrage and the `Projectile` node, with sizes: DONE (0.74.0). "Where the misses land" moved to C6.26, which reads it | |
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading, and "where a barrage's misses land": DONE (0.75.0) | C6.7 |
-| C6.8 | Finisher | |
+| C6.8 | M2 `finisher`: `FinisherMechanism`, the charge and its break, the `Flourish` time-stop, power from a pool: DONE (0.76.0) | C6.4 |
 | C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt` | C6.6 |
 | C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity | C6.9a |
 | C6.9c | Battlefields against each other: `sure_hit` and `hit_tags`, `closed`, layers, the four clash rules, `broken_by_tags`, `cancelled_by`, `aftermath` | C6.9b |

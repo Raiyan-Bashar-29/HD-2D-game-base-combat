@@ -1322,6 +1322,16 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      PROXIMITY (a foe within `radius`), TIMER (`seconds`; `turns` in a battle) or ON_HIT (a foe
      within `radius` is hit). `lifetime` 0 keeps a plant until set off. `mark` is the status a
      plant is in a battle: give it STACK stacking and a `name_key`.
+   - A finisher (C6.8): give a `Power` a `FinisherMechanism` and no skill. `strike` is the
+     `ActionMove` that lands (its `power`, `element`, `hits`, `poise`, `knockback` or `skill`).
+     `charge_time` (seconds in the field) and `charge_turns` (the user's own turns in a battle)
+     are the wait first; 0 lands at once. `charging` is a status held meanwhile: give it
+     duration 0, and `breaks_on_hit` if any hit that hurts should lose the charge;
+     `break_damage` loses it on one hit of at least that much. `flourish` stops the field fight
+     for that many real seconds before the strike. `all_foes` strikes every foe (within `reach`
+     metres in the field), otherwise the aimed foe (the first standing foe in a battle). For a
+     gauge finisher, give the power a POOL_FRACTION POWER scaling and set `drain_pool` to empty
+     the gauge as it lands; `requires_pool` and `requires_fraction` gate it.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle

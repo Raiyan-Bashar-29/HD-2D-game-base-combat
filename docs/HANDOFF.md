@@ -55,8 +55,12 @@ between them, written in plain words.
 - **C6.26 is done (0.75.0): the plant.** A `PlantMechanism` leaves `Planted` nodes (still
   hitboxes) that go off on a second use, a foe coming near, a timer or a foe beside them being
   hit; a barrage's misses can stay in the ground. In a battle a plant is a mark on a foe.
-- **Next: the PR for batch 1 (C6.6d, C6.7, C6.26), then C6.8, the finisher.** The build order is
-  the table at the foot of `GEAR.md`: C6.8, C6.9a–d, then the rest of C7.
+- **C6.8 is done (0.76.0): the finisher.** A `FinisherMechanism` charges (seconds in the field,
+  turns in a battle, holding a `charging` status that a hit can break), stops the field fight
+  for a `flourish` (the `Flourish` node), then lands one big `strike`, scaled by the power's
+  POWER and HITS rules (a gauge through POOL_FRACTION, emptied by `drain_pool`).
+- **Next: C6.9a, the battlefield core (batch 2: C6.8, C6.9a, C6.9b; the PR after C6.9b).** The
+  build order is the table at the foot of `GEAR.md`: C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
