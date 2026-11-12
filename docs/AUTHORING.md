@@ -1322,6 +1322,31 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      PROXIMITY (a foe within `radius`), TIMER (`seconds`; `turns` in a battle) or ON_HIT (a foe
      within `radius` is hit). `lifetime` 0 keeps a plant until set off. `mark` is the status a
      plant is in a battle: give it STACK stacking and a `name_key`.
+   - A finisher (C6.8): give a `Power` a `FinisherMechanism` and no skill. `strike` is the
+     `ActionMove` that lands (its `power`, `element`, `hits`, `poise`, `knockback` or `skill`).
+     `charge_time` (seconds in the field) and `charge_turns` (the user's own turns in a battle)
+     are the wait first; 0 lands at once. `charging` is a status held meanwhile: give it
+     duration 0, and `breaks_on_hit` if any hit that hurts should lose the charge;
+     `break_damage` loses it on one hit of at least that much. `flourish` stops the field fight
+     for that many real seconds before the strike. `all_foes` strikes every foe (within `reach`
+     metres in the field), otherwise the aimed foe (the first standing foe in a battle). For a
+     gauge finisher, give the power a POOL_FRACTION POWER scaling and set `drain_pool` to empty
+     the gauge as it lands; `requires_pool` and `requires_fraction` gate it.
+   - A battlefield (C6.9a): give a `Power` a `BattlefieldMechanism` and no skill. It is a form,
+     so `status` (duration 0) marks it standing, using it again ends it, and `drain_pool` with
+     its rates is the upkeep; `aftermath` is the burnout when it ends by its own rules. Each of
+     `effects` is a `BattlefieldEffect`: `who` (CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE,
+     EVERYONE_BUT_CASTER), `modifiers` (any stat, `damage_dealt` and `damage_taken` too) and
+     `statuses` (give them duration 0: the field takes them off as fighters leave). `radius` 0
+     covers the whole fight; above 0 it covers fighters within that many metres of the caster in
+     the field, and follows it. `seconds` (field) and `turns` (battle) end it; 0 stands until
+     ended. Damage and movement (C6.9b): an effect's `on_enter`, `on_exit` and `tick` are each a
+     `Skill` the caster uses on the group, free (its `target` and `scope` are ignored; give a
+     helping skill `target` ALLY so it is not flagged as healing foes). `tick` needs a clock:
+     `tick_seconds` (field) and/or `tick_turns` (battle, the caster's turns); `tick_grows` 0.5
+     makes ticks 1, 1.5, 2 times as strong. `pull` and `push` are metres a second (field only).
+     `immune_tags` leaves out a fighter holding a status with that tag; the stat
+     `resist_field_<name>` (the power id after its last "/") at 1 keeps it out entirely.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle

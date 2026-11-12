@@ -501,6 +501,24 @@ bigger N. A duration is `seconds` and `turns`, or 0 for infinite.
 - `Events.battlefield_raised(by, power_id)` and `battlefield_ended(by, power_id, why)`; the
   battle log and the HUD show its name and time left.
 
+**As built (C6.9a, 0.77.0).** `BattlefieldMechanism` extends `FormMechanism`, so raising,
+ending, upkeep (`drain_pool`), `aftermath`, `exclusive_group`, `look` and `name_key` are a
+form's; it is never a cycle. Built now: `effects`, `seconds`, `turns`, and `radius` (0 is
+WHOLE_FIGHT; above 0 is FOLLOWS_CASTER in the field, and a battle is always the whole fight).
+`BattlefieldEffect` has `who` (CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE, EVERYONE_BUT_CASTER),
+`modifiers` and `statuses`. "The fight" is every `Combatant` on the caster's clock (real time
+in the field, turns in a battle), so a battle's battlefield never touches the field fighters
+waiting outside. Fighters are let in and out on raising and on every tick, so one walking out
+of an aura, a fighter arriving and a revived ally are all handled. The caster falling ends it
+with no aftermath (`ends_when` CASTER_FALLS is the only ending so far). `damage_dealt` is read
+on the attacker by `VulnerabilityStage`. **As built (C6.9b, 0.78.0):** `on_enter`, `on_exit` and `tick` are each one
+`Skill` (not a list of `SkillEffect`s: a skill already holds effects, statuses, element and
+`sure_hit`), used by the caster on the group, free; the effect's `who` aims it, so the skill's
+`target` and `scope` are not read. `tick_seconds`, `tick_turns` (counted on the caster's turns),
+`tick_grows`, `pull`, `push` and `immune_tags` (tags of held statuses) are as the table says;
+`resist_field_<name>` uses the power id after its last "/". **Still to build:** C6.9c (clashes, sure-hit, breaking), C6.9d (the place, the log and
+the HUD), a sphere left at a point and ZONE, fighters picked by tag, `resist_field_<id>`.
+
 ## The planted strike (M15 `plant`, new)
 
 **In plain words:** something is left in the ground now and goes off later. The Owl's shards,
@@ -637,7 +655,7 @@ and merged. **Row** names the board row that builds it.
 | Perfect dodge with a reward | Bayonetta's Witch Time, FF XVI | Built (C6.6c): `perfect_window`, `Events.perfect_dodge`, a gauge's `on_perfect_dodge`; a slow-down reward can listen to the event |
 | Counter stance and parry | Sekiro, Royal Guard | Built (C6.6d): a COUNTER status with a `counter_move` on a form or a timed-block barrier |
 | Projectile barrages | Gate of Babylon | Built (C6.7) |
-| Charged finishers | Zantetsuken | Row C6.8 |
+| Charged finishers | Zantetsuken | Built: M2 `finisher` (C6.8) |
 | Planted and delayed strikes | Owl, time bombs, rune traps | Built: M15 `plant` (C6.26) |
 | Battlefields: domains, terrain, weather, auras | JJK, Fate, Pokémon weather and terrain, Divinity's surfaces | Rows C6.9a–d (widened) |
 | Foresight, command, blink, clone, sacrifice, grant, refresh | The kits in `POWERS.md` | Rows C6.10–C6.13 |
@@ -713,9 +731,9 @@ weapons themselves.
 | C6.6d | **DONE.** Counter stance: `StatusEffect.counter_move`, the field counter in `Hurtbox` | C6.6 |
 | C6.7 | Barrage and the `Projectile` node, with sizes: DONE (0.74.0). "Where the misses land" moved to C6.26, which reads it | |
 | C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading, and "where a barrage's misses land": DONE (0.75.0) | C6.7 |
-| C6.8 | Finisher | |
-| C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt` | C6.6 |
-| C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity | C6.9a |
+| C6.8 | M2 `finisher`: `FinisherMechanism`, the charge and its break, the `Flourish` time-stop, power from a pool: DONE (0.76.0) | C6.4 |
+| C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt`: DONE (0.77.0) | C6.6 |
+| C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity: DONE (0.78.0) | C6.9a |
 | C6.9c | Battlefields against each other: `sure_hit` and `hit_tags`, `closed`, layers, the four clash rules, `broken_by_tags`, `cancelled_by`, `aftermath` | C6.9b |
 | C6.9d | The place: `PlaceLook`, `moves_fight`, `weather`, `caster_kit`, `summons`; the log and HUD readout | C6.9c, C6.5d |
 | C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |

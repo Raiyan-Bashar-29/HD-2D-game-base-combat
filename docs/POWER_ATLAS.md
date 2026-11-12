@@ -75,9 +75,9 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | `beam_hitscan` | 31 | An instant line that hits everything along it | M1 `barrage` pattern LINE with `speed` 0 (a line `Hitbox` for one frame) | BUILT C6.7 | Excalibur; Cero; 100-Type Guanyin Bodhisattva |
 | `volley_projectiles` | 12 | A fan, volley or rain of shots | M1 `barrage` patterns | BUILT C6.7 | Highwind Limit; Lion Heart; Oblivion |
 | `skill_performance` | 10 | Change combo timing and cancel windows | `ActionMove` chain windows; a form's own `attack_chain` | BUILT; launch and juggle are C8.8 | Dual Casting; Jeahbongchim; Vivi's Double Black |
-| `charge_stat_burst` | 2 | Charge up, then act much stronger | M2 `finisher` (charge) or a timed status | PLANNED C6.8 | Geomancy; Geomancy |
+| `charge_stat_burst` | 2 | Charge up, then act much stronger | M2 `finisher` (charge) or a timed status | BUILT C6.8 | Geomancy; Geomancy |
 | `ukaku_projectiles` | 1 | A shard volley from a manifested weapon that stays out after firing | M1 `barrage` used inside a form (M5) | BUILT C6.7 | Ukaku Kagune |
-| `world_rending_burst` | 1 | One huge directed discharge that breaks battlefields | M2 `finisher` with `broken_by_tags` on battlefields (Ea) | PLANNED C6.8, C6.9c | Ea — Enuma Elish |
+| `world_rending_burst` | 1 | One huge directed discharge that breaks battlefields | M2 `finisher` with `broken_by_tags` on battlefields (Ea) | BUILT C6.8 (the finisher); PLANNED C6.9c (`broken_by_tags`) | Ea — Enuma Elish |
 | `charge_mount` | 1 | Ride something and ram | A form (M5) whose attack chain is a travelling move | BUILT as parts (C6.5b) | Bellerophon |
 | `tail_kagune` | 1 | A body weapon that both strikes and guards | A form (M5) with its own moves plus M3 `barrier` REDUCE | BUILT as parts (C6.5, C6.6a) | Bikaku Kagune |
 
@@ -113,13 +113,13 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | Family | Powers | In plain words | What runs it here | State | Examples |
 |---|---|---|---|---|---|
 | `construct_matter` | 311 | Make or shape matter: walls, weapons, objects | Things placed in the arena that block, hurt or can be thrown | NEW C8.14, on M15 `plant` (C6.26) and C8.9 | C-Moon; Magu Magu no Mi; Wood Release |
-| `persistent_field` | 126 | A zone that keeps acting on whoever is inside | M4 battlefield: statuses, ticks, pull | PLANNED C6.9a–b | Weather Report; Self-Embodiment of Perfection; Deadly Sentencing |
+| `persistent_field` | 126 | A zone that keeps acting on whoever is inside | M4 battlefield: statuses, ticks, pull | BUILT C6.9a (statuses and modifiers per group), C6.9b (enter, exit and ticks; pull) | Weather Report; Self-Embodiment of Perfection; Deadly Sentencing |
 | `materialized_art` | 36 | A drawing or idea made real | A construct or an owned fighter | NEW C8.14, C8.10 | Ichimonji; Arthur — Plasma Excalibur; The Matchless Poet |
 | `craft_creation` | 25 | Make items | `Recipe` and `Crafting` | PLANNED C7.6 | Killer Queen — Bomb Transmutation; Nen Transmutation; Godspeed |
 | `terrain_control` | 19 | Reshape the ground | M4 battlefield effects; things in the arena | PLANNED C6.9, C8.9 | Chidori; Creation; Ultrahand |
 | `make_energy` | 17 | Make and store energy | A pool with `regen_<pool>`; M6 `gauge` | BUILT (C2.16, C6.4) | Goro Goro no Mi; Third Generation Pyrokinesis; Nezuko — Exploding Blood |
 | `pocket_space` | 15 | Take the fight into a closed world with its own rules | M4 battlefield `closed`, `moves_fight`, `PlaceLook` | PLANNED C6.9c–d | Unlimited Void; Imaginary Space; Eternity Devil |
-| `gravity_well_prison` | 2 | Pull everything in and hold it | M4 battlefield `pull` plus a hold status | PLANNED C6.9b | Six Paths: Planetary Devastation |
+| `gravity_well_prison` | 2 | Pull everything in and hold it | M4 battlefield `pull` plus a hold status | BUILT C6.9b | Six Paths: Planetary Devastation |
 | `terrain_cast_random` | 1 | A spell that depends on where you stand | `PowerScaling` reading the area or battlefield tag | NEW C8.15 (a scaling source) | Geomancy |
 | `impassable_prison` | 1 | A cage nobody leaves | M4 battlefield `closed`; NO_FLEE | PLANNED C6.9c | Forcecage |
 | `restricted_chain_grapple` | 1 | Bind one target; it cannot act or use powers | A status with SKIP_TURN and NO_SKILLS | BUILT (C2.14) | Chain Jail |

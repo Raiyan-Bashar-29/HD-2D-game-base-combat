@@ -3617,3 +3617,117 @@ through `Hurtbox.take` with no new code.
 - A shot's landing point is where its flight ended; a rain shot must be given an `active` long
   enough to reach the ground (nothing looks for the floor).
 - One mark status shared by two plant powers is cured by whichever goes off first.
+
+## 2026-11-12 — C6.8 · The finisher
+
+**Did.** Built M2, the finisher, as one mechanism (combat `0.76.0`):
+- `FinisherMechanism` (content, kind `finisher`): `strike` (an `ActionMove`), `charge_time`,
+  `charge_turns`, `charging`, `break_damage`, `flourish`, `all_foes`, `reach` and `drain_pool`.
+- `FinisherRun`: a use remembers its targets and starts the charge, holding the `charging`
+  status; each tick fills it (seconds in the field, a turn in a battle, at the start of the
+  user's turn) and checks it still stands. The charge is lost when the status ends early (a
+  `breaks_on_hit` status ends on any hit that hurts), on one hit of `break_damage` or more, or
+  when the user falls. A second use while charging changes nothing.
+- `Flourish` (gameplay): a node that sets `CombatClock` to 0, counts real seconds, then gives
+  the fight back the speed it had and says `finished`. Freed early, it still gives it back.
+- The strike lands through each foe's `Hurtbox.take` in the field (the aimed foe, or every
+  hostile within `reach`) and through `BarrageRun.strike_with` in a battle (the first standing
+  foe, or all). It is a copy with the power's POWER and HITS scaling read as it lands, so a
+  POOL_FRACTION rule makes a fuller gauge hit harder; `drain_pool` is emptied afterwards.
+
+**Why.** Enuma Elish, Zantetsuken, Judgment Cut End, Hollow Purple, Pride Flare, Divine Sword,
+Royal Release and Sankt Bogen are one shape: wait, maybe be interrupted, then one great blow.
+The strike is an `ActionMove`, so dodges, blocks, counters and weaknesses answer it unchanged.
+
+**Verified.**
+- Red first: with the strike stubbed out of `_land`, 7 assertions failed.
+- `finisher_test` (14, the field) and `finisher_battle_test` (5) pass; the full suite passes, as
+  do the seven checkers and the stripped run.
+- Boot prints 0.76.0, with 0 warnings and 0 errors.
+
+**Unblocks.** The kits that end in a finisher (C6.14–C6.25), and C6.9c's `broken_by_tags`.
+
+**Gaps.**
+- Hold-to-charge input is not built: a press starts the charge, which then fills by itself.
+- A line-shaped strike (Enuma Elish's line of ruin) is a LINE beam barrage, not a finisher
+  shape; `all_foes` strikes a circle of `reach`.
+- Zantetsuken's "a foe under 25% hp falls" (an execute) is not built; it needs a notion of a
+  boss, and becomes part of its kit row (C6.20).
+- A skill-less finisher in a battle strikes the first standing foe; the menu offers no picker.
+- Charging does not hold the user still by itself: give `charging` a SKIP_TURN block or slowing
+  modifiers to do that.
+
+## 2026-11-12 — C6.9a · The battlefield core
+
+**Did.** Built the core of M4, the battlefield, as one mechanism (combat `0.77.0`):
+- `BattlefieldEffect` (content): `who` (CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE,
+  EVERYONE_BUT_CASTER), `modifiers` and `statuses`: one rule for one group.
+- `BattlefieldMechanism` (content, kind `battlefield`) extends `FormMechanism`: `effects`,
+  `radius`, `seconds` and `turns`. Its `status` marks it standing, so using it again, the drain
+  (the upkeep), `aftermath`, `exclusive_group`, `look` and `name_key` are all a form's. It is
+  never a cycle. `statuses()` also lists the effects' statuses, so the kit knows them on a load.
+- `BattlefieldRun` extends `FormRun`. It raises and lowers the field to match the caster's
+  status, however that came on or off (a use, the drain, the clock, a cure, the kit coming off);
+  counts `seconds` in the field and the caster's `turns` in a battle, ending with the aftermath;
+  and on raising and every tick lets in every fighter on the caster's clock within reach and
+  out the ones that left, putting on and taking off each matching effect under the source
+  `field/<power id>`. The caster falling ends it with no aftermath.
+- `VulnerabilityStage` also multiplies by 1 plus the attacker's `damage_dealt`.
+
+**Why.** A domain, a reality marble, an aura and weather magic are the same rule with different
+data; this is the part they all share: who is inside, what they get, and for how long. "The
+fight" is every `Combatant` on the caster's clock, so a battle's battlefield never reaches the
+field fighters paused outside, and no list of fighters had to be handed to the executor.
+
+**Verified.**
+- Red first: with `_refresh` stubbed to do nothing, 8 assertions failed.
+- `battlefield_test` (15, the field) and `battlefield_battle_test` (4) pass; the full suite
+  (4,055), the seven checkers and the stripped run (3,958, 25 skipped) pass.
+- Boot prints 0.77.0, with 0 warnings and 0 errors.
+
+**Unblocks.** C6.9b (damage on enter, on exit and on a clock; pull and push; immunity), C6.9c,
+C6.9d, and C8.11 (time), which needs the battlefield core.
+
+**Gaps.**
+- `radius` is only around the caster (FOLLOWS_CASTER); a sphere left at a point, LINE and ZONE
+  are not built, and a battle has no distances, so there it is always the whole fight.
+- Groups by tag are not built.
+- When a fighter leaves, the field cures its statuses by id, so the same status from elsewhere
+  comes off too. Give a field's statuses their own ids.
+- Not saved: a load puts the caster's status back and the next tick raises the field again,
+  with a fresh clock.
+- No `battlefield_raised` or `battlefield_ended` event yet: nothing would listen until the battle
+  log and the HUD readout (C6.9d).
+
+
+## 2026-11-12 — C6.9b · Battlefield damage and movement
+
+**Did.** `BattlefieldEffect` gained `on_enter`, `on_exit` and `tick` (each a `Skill`),
+`tick_seconds`, `tick_turns`, `tick_grows`, `pull`, `push` and `immune_tags`, with their
+problems (a tick with no clock, a clock with no tick, negative numbers, an empty tag).
+`BattlefieldRun` uses `on_enter` on each fighter as it comes in (so on everyone as the field
+rises, and on whoever walks into an aura), `on_exit` as it leaves or the field ends, counts each
+effect's own clock on every tick and uses `tick` on every standing fighter of its group inside,
+and in the field draws or drives the group (`move_and_collide` for a body, a plain move
+otherwise), never past the caster. A fighter whose `resist_field_<name>` is 1 or more is never
+let in, and is let out when it gains it; one holding a status tagged with an effect's
+`immune_tags` is left out of that effect. `SkillUse.apply` takes a `strength` (the growing
+tick). Combat 0.78.0.
+
+**Why a `Skill` and not a list of `SkillEffect`s.** A skill already holds power, element,
+effects, statuses and `sure_hit`, and `SkillUse.apply` runs all of it through the caster's
+formula, weakness and reflect included: no second way to hurt someone. The effect's `who` aims
+it, so the skill's `target` and `scope` are not read.
+
+**Verified.** `battlefield_touch_test` (10) and one more `battlefield_battle_test` assertion
+(on_enter as it rises, the tick on the caster's turn, on_exit as it ends). Red first: with
+`_use_on` and `_work` stubbed and immunity left out, every new assertion failed. Suite 0
+failed; seven checkers 0; stripped run 0 failed; boot 0 warnings, 0 errors, printing 0.78.0.
+
+**Connects.** C6.9c (sure-hit, clashes, breaking) builds on the same run; C8.11's time stop
+can be a battlefield with a hold status.
+
+**Gaps.** Immunity tags are read as a fighter comes in and at each tick and pull, so a tag
+gained while inside keeps the modifiers and statuses it came in with until it leaves. `on_exit`
+lands when the caster falls too. A battle tick counts the caster's turns, not each fighter's
+own. Ticks are not saved: a load starts each clock again.

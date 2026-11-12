@@ -55,8 +55,22 @@ between them, written in plain words.
 - **C6.26 is done (0.75.0): the plant.** A `PlantMechanism` leaves `Planted` nodes (still
   hitboxes) that go off on a second use, a foe coming near, a timer or a foe beside them being
   hit; a barrage's misses can stay in the ground. In a battle a plant is a mark on a foe.
-- **Next: the PR for batch 1 (C6.6d, C6.7, C6.26), then C6.8, the finisher.** The build order is
-  the table at the foot of `GEAR.md`: C6.8, C6.9a–d, then the rest of C7.
+- **C6.8 is done (0.76.0): the finisher.** A `FinisherMechanism` charges (seconds in the field,
+  turns in a battle, holding a `charging` status that a hit can break), stops the field fight
+  for a `flourish` (the `Flourish` node), then lands one big `strike`, scaled by the power's
+  POWER and HITS rules (a gauge through POOL_FRACTION, emptied by `drain_pool`).
+- **C6.9a is done (0.77.0): the battlefield core.** A `BattlefieldMechanism` is a form whose
+  status marks it standing; each of its `BattlefieldEffect`s gives one group (the caster, its
+  side, the other side, everyone, everyone but the caster) modifiers and statuses while they
+  are inside, around the caster (`radius`) or the whole fight, for `seconds` or `turns` or
+  until ended, with the form's drain as upkeep. New stat `damage_dealt`.
+- **C6.9b is done (0.78.0): battlefield damage and movement.** Each effect can use a skill on
+  its group as a fighter comes in (`on_enter`), as it leaves (`on_exit`) and on a clock
+  (`tick`, every `tick_seconds` or `tick_turns`, growing by `tick_grows`); `pull` and `push`
+  move the group in the field; `immune_tags` and the stat `resist_field_<name>` keep fighters
+  out. Batch 2 (C6.8, C6.9a, C6.9b) is complete and goes up as one PR.
+- **Next: C6.9c, battlefields against each other.** The
+  build order is the table at the foot of `GEAR.md`: C6.9a–d, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
   **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
