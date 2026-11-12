@@ -66,6 +66,9 @@ enum Clash { STRONGER_WINS, BOTH_END, OVERWRITE, BOTH_STAND }
 ## who would walk out is held at the edge. In a battle there is no edge yet, so it changes nothing
 ## there until summons arrive (C6.9e).
 @export var closed: bool = false
+## C6.9e: a kit the caster holds only while the battlefield stands (UBW's sword barrage). It goes on
+## when the field rises and comes off when it ends, however it ends.
+@export var caster_kit: PowerKit = null
 
 
 func kind() -> StringName:
@@ -105,4 +108,6 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s is a battlefield with a cycle" % context)
 	if radius < 0.0 or seconds < 0.0 or turns < 0 or refinement < 0.0:
 		found.append("%s has a negative radius, time, turn count or refinement" % context)
+	if caster_kit != null:
+		found.append_array(caster_kit.problems("%s caster kit" % context))
 	return found

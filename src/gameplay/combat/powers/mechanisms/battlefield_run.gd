@@ -145,6 +145,7 @@ func _raise() -> void:
 	_left = (field.seconds if me != null and me.real_time else float(field.turns))
 	_clock.clear()
 	_ticks.clear()
+	if holder != null: holder.hold_kit(field.caster_kit, _source("field_kit/"))
 	if not Events.combatant_defeated.is_connected(_on_defeated):
 		Events.combatant_defeated.connect(_on_defeated)
 	_refresh()
@@ -153,6 +154,7 @@ func _raise() -> void:
 func _lower() -> void:
 	_up = false
 	_left = 0.0
+	if holder != null: holder.release_kit(_source("field_kit/"))
 	if Events.combatant_defeated.is_connected(_on_defeated):
 		Events.combatant_defeated.disconnect(_on_defeated)
 	for id: int in _inside.keys():
@@ -372,5 +374,6 @@ func _caster() -> Combatant:
 	return Combatant.of(holder.get_parent()) if holder != null and holder.get_parent() != null else null
 
 
-func _source() -> StringName:
-	return StringName("field/" + String(power.power_id if power != null else &""))
+# The source the field's modifiers go on under; `prefix` "field_kit/" keeps the caster kit's apart (C6.9e).
+func _source(prefix: String = "field/") -> StringName:
+	return StringName(prefix + String(power.power_id if power != null else &""))

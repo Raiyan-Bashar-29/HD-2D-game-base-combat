@@ -3784,3 +3784,17 @@ not re-judged. The wall corrects a body one tick after a physics shove, not in t
 
 **Also.** Asked whether the IXA's modes are handled in code: they are designed in `GEAR.md` (lance by
 default, shield mode, the remote-activated mine), but not built as data. That is C7.9, which needs C6.26.
+
+## 2026-11-12 — C6.9e · The caster's kit (combat 0.81.0)
+
+**Did.** `BattlefieldMechanism.caster_kit`: a `PowerKit` the caster holds only while the battlefield stands. `PowerSet.hold_kit` and `release_kit` put it on and take it off under `field_kit/<power>`; `kits()` now lists held kits so their powers show in menus. `BattlefieldRun` holds the kit on at the raise (after the clash check) and releases it at the lower, however the field ends. The gauge handlers moved out of `power_set.gd` into `PowerGaugeFeed` (same rules, same events) to keep that file in its budget.
+
+**Why.** C6.9e as written covered five things (the place, `moves_fight`, `weather`, `caster_kit`, `summons`) plus the log and HUD: well over the board's 8-file rule. So the row is split. This slice is the caster's kit, the piece the Unlimited Blade Works plan needs. `summons` moves to C8.10, because it needs owned fighters. The rest is C6.9f (the place) and C6.9g (the log and HUD).
+
+**Connects.** Clash and `closed` decide whether the field rises, so the kit follows them: a shattered field never gives its kit. `PowerSet.kits()` now feeds `powers()`, `status()` and `_regauge()`, so a held kit's gauges and statuses are live like a lent one's.
+
+**Verified.** Boot 0 warnings, 0 errors. Full suite 4100 passed, 0 failed (`battlefield_kit_test` 7 of 7). Stripped run 4003 passed, 0 failed, 25 skipped. All seven checkers exit 0; `check_budgets` 0 violations.
+
+**Unblocks.** C6.9f (the place) and the Unlimited Blade Works kit as data.
+
+**Gaps.** A held kit is not saved: it comes back when the field rises again on the next tick after a load, as the field itself does (NOT SAVED in `BattlefieldRun`). Kits are held by their power's source, so two battlefields on one caster each hold their own kit. Two kits that share a power id still overwrite each other's executor, as lent kits do (the header of `PowerSet` says so).
