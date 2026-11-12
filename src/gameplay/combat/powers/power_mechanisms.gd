@@ -11,10 +11,13 @@ extends RefCounted
 ## OWNS: the kind -> executor table, and making an executor for a mechanism.
 ## MUST NOT: name a character or a kit, or run an executor itself.
 
-## The base's own mechanisms: kind -> executor script path. `form` came in C6.5a, `barrier` in C6.6a.
+## The base's own mechanisms: kind -> executor script path. `form` came in C6.5a, `barrier` in C6.6a,
+## `barrage` in C6.7, `plant` in C6.26.
 const BUILT_IN: Dictionary[StringName, String] = {
 	&"form": "res://src/gameplay/combat/powers/mechanisms/form_run.gd",
 	&"barrier": "res://src/gameplay/combat/powers/mechanisms/barrier_run.gd",
+	&"barrage": "res://src/gameplay/combat/powers/mechanisms/barrage_run.gd",
+	&"plant": "res://src/gameplay/combat/powers/mechanisms/plant_run.gd",
 }
 
 ## Kinds a game (or a test) registered at run time.

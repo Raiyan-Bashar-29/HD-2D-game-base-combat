@@ -30,6 +30,9 @@ enum Block { SKIP_TURN, NO_SKILLS, NO_ITEMS, NO_FLEE }
 ## How a status answers a hit on its holder (C2.15). COUNTER: a plain ATTACK that landed is
 ## struck back with the holder's own attack. REFLECT: a skill carrying `reflect_tag` (`magic`
 ## by default) bounces back to whoever used it. Each fires at `reaction_chance`.
+## A COUNTER can name a `counter_move` (C6.6d, M13 counter stance): in the field the holder swings
+## that move at whoever hit it; in a battle the counter strikes with that move's numbers. With
+## none, the counter is one plain hit with the holder's attack.
 enum Reaction { COUNTER, REFLECT }
 
 ## Localization key for the status's name in the battle readout and log (C2.19). Empty shows
@@ -57,6 +60,8 @@ enum Reaction { COUNTER, REFLECT }
 @export_range(0.0, 1.0, 0.01) var reaction_chance: float = 1.0
 ## The skill tag a REFLECT bounces. A skill without it (a sword art, say) goes through.
 @export var reflect_tag: StringName = &"magic"
+## COUNTER only: the move that answers a hit (a six-hit thrust, a riposte). Null is a plain hit.
+@export var counter_move: ActionMove
 
 
 ## True when this status carries `block`.
@@ -85,6 +90,10 @@ func problems() -> PackedStringArray:
 	if reactions.has(Reaction.REFLECT) and reflect_tag == &"":
 		# With no tag to match, nothing would ever be reflected: almost certainly a slip.
 		found.append("%s (%s) reflects but names no reflect_tag" % [resource_path, id])
+	if counter_move != null:
+		if not reactions.has(Reaction.COUNTER):
+			found.append("%s (%s) has a counter_move but no COUNTER reaction" % [resource_path, id])
+		found.append_array(counter_move.problems("%s (%s) counter_move" % [resource_path, id]))
 	for modifier: StatModifier in modifiers:
 		if modifier == null or modifier.stat == &"":
 			found.append("%s (%s) has a modifier with no stat" % [resource_path, id])

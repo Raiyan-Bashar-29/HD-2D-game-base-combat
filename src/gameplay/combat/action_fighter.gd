@@ -18,6 +18,8 @@ extends Node
 ## 4c. The moves played are the fighter's own, unless a running power hands over others: a
 ##    form's own attack chain and dodge (`current_moves`, C6.5b).
 ## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
+## 4d. A counter stance's move (C6.6d) is started on this timeline by the `Hurtbox`; the fighter
+##    turns to face whoever it counters (`Events.countered`), so the counter swings at them.
 ## 5. While busy, the fighter holds the body's `&"action"` lock, so the controller stops
 ##    walking it; the fighter then sets the horizontal velocity itself: the push of a
 ##    knockback, or a move's `travel_speed` (a dodge's roll, a lunge).
@@ -69,6 +71,7 @@ func _ready() -> void:
 		elif child is LockOn:
 			_lock_on = child as LockOn
 	Events.knockback_requested.connect(_on_knockback)
+	Events.countered.connect(_on_countered)
 
 
 func _physics_process(delta: float) -> void:
@@ -222,6 +225,19 @@ func _on_knockback(who: StringName, push: Vector3) -> void:
 	timeline.cancel()
 	_stun_left = stun_time
 	_push = push / stun_time if stun_time > 0.0 else Vector3.ZERO
+
+
+func _on_countered(who: StringName, against: StringName) -> void:
+	var mine: Combatant = Combatant.of(get_parent())
+	if mine == null or who != mine.combatant_id or _body == null or not is_inside_tree():
+		return
+	var them: Combatant = Combatant.find(get_tree(), against)
+	var body: Node3D = them.get_parent() as Node3D if them != null else null
+	if body == null:
+		return
+	var toward: Vector3 = _flat(body.global_position - _body.global_position)
+	if toward.length() > 0.01:
+		facing = toward.normalized()
 
 
 static func _flat(v: Vector3) -> Vector3:

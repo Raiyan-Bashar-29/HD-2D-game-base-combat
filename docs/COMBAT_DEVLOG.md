@@ -3508,3 +3508,112 @@ at 0, −0.5 and −1; an equipped player stunned by a push and not stunned at �
 checkers and stripped run green.
 
 **Unblocks.** C6.6d (next). **Gaps.** A battle has no dodge moves, so no perfect dodge there.
+
+## 2026-11-11 — C6.6d · Counter stance
+
+**Did.** `StatusEffect.counter_move` (an `ActionMove`; a problem without the COUNTER reaction,
+and the move's own problems pass up). `SkillUse.counter` split into `counter_stance` (does this
+fighter answer now: both standing, not stunned, a COUNTER status, the chance rolls) and `answer`
+(strike with the move's numbers: its skill at no cost, or `hits` × `power`; no move is the old
+plain hit). `Hurtbox._resolve` now says MISSED, BLOCKED or LANDED, and `take` asks for a
+counter on BLOCKED or LANDED: with a move and a timeline the move starts on the holder's own
+clock (not begun again while it plays), else the attacker is struck at once; a countered hit is
+not pushed. `ActionFighter` turns to face whoever it counters (`Events.countered`, now sent in
+the field too). `ladder.yml` runs on pushes to `main` only, as well as on pull requests and by
+hand. Combat 0.73.0.
+
+**Why.** Board row C6.6d (M13): Gungnir, Royal Guard and Arima's counters. Owner, mid-row: push
+less, in bigger complete updates, to save the Actions quota.
+
+**Connects.** Hold the stance is a form (its drain is the upkeep); the parry is C6.6b's timed
+block, whose perfect press stops the hit, and the counter answers it. In a battle that already
+worked through C2.15's COUNTER; now it can be a flurry. Every field fighter keeps its timeline on
+its `Hurtbox` and refits its hitbox when `timeline.swing` changes, so the player, enemies and
+followers all swing a counter with no change to them.
+
+**Decided.** No `CounterMechanism` class: a counter stance is data on parts that already combine
+(the owner's rule). The field counters any move's hit; a battle still counters only a plain
+ATTACK (a skill meets REFLECT). Batches: about three rows per pull request.
+
+**Verified.** Red first: with `counter_stance` stubbed to null, 16 assertions failed. New
+`tests/unit/counter_stance_test.gd` (14): problems; a flurry counter beats a plain one; a skill
+counter; a battle parry through `BattleSetup` (no damage, the foe struck); a field counter with no
+push; no restart mid-counter; a bare stance strikes at once; a stunned holder is pushed and does
+not counter; a dodge is not countered; the player's parry (no damage, the move plays, facing the
+attacker) and a late block still countered. Suite, seven checkers and stripped run green.
+
+**Unblocks.** C6.7 (next). **Gaps.** No gauge `on_counter` yet (`power_set.gd` is at its line
+budget); enemies and followers counter the way they face, which is toward the hostile they chase.
+
+## 2026-11-12 — C6.7 · Barrage and projectiles
+
+**Did.** Built M1, the barrage, as one mechanism for many kits (combat `0.74.0`):
+- `BarrageMechanism` (content, kind `barrage`):
+  - `pattern`: RING_BEHIND_USER, RING_AROUND_TARGET, RAIN, LINE or FROM_GROUND;
+  - `count`, `interval`, `speed`, `turn_rate`, `radius`, `height` and `pierce`;
+  - `shots`, a list of `ActionMove`s played in turn;
+  - `elements`, one drawn at random per shot.
+- `Projectile` (gameplay) extends `Hitbox`. It plays its shot on a clock of its own: it waits through `startup`, flies through `active`, homes, faces its line and sweeps. Its first strike ends it, unless it pierces. It runs on `CombatClock`.
+- `BarrageRun`:
+  - In the field it aims (the given target, else the lock-on, else the nearest foe) and fires the first shot at once and the rest each `interval`. Each shot is placed by the pure `spot`.
+  - In a battle it lands the hits at once, on random standing foes, with weakness chips.
+- `PowerMechanism.aims_at_foes()`: a battle offers a skill-less barrage power every standing foe (`Battle.targets_for`).
+
+**Why.** The shot is an `ActionMove` reused as it is, so every shot already goes through `Hurtbox.take`, and the barrage needed no new code for:
+- damage and weakness;
+- poise and push;
+- a dodge or a perfect dodge;
+- a barrier or a parry, and a counter.
+
+A beam (`beam_hitscan`) is data: a LINE shot at speed 0 with pierce and a long box. This follows the owner's rule: mechanisms that combine, not one script per weapon.
+
+**Verified.**
+- Red first: with `_fire` and `_battle` stubbed, 8 failed.
+- `barrage_test` (20, the field) and `barrage_battle_test` (3) pass. The first file was split in two to fit the 250-line budget.
+- The full suite passes, as do the seven checkers and the stripped run.
+- Boot prints 0.74.0, with 0 warnings and 0 errors.
+
+**Unblocks.** C6.26 (plant: the Owl's shards that stay in the ground), and every kit row that fires something: Gate of Babylon, Heilig Pfeil, Summoned Swords, Judgment Cut, Narukami, IXA's spikes, Gunslinger and Cruel Sun.
+
+**Gaps.**
+- A shot has no mesh until art exists.
+- Where a barrage's misses land is C6.26's, which reads it.
+- Enemies and followers fire a barrage only through a kit (C6.20 brings boss kits).
+- Every shot is aimed at the same target chosen at use.
+
+## 2026-11-12 — C6.26 · The plant
+
+**Did.** Built M15, the planted strike, as one mechanism (combat `0.75.0`):
+- `PlantMechanism` (content, kind `plant`): `where` (AT_TARGET, AT_USER, AHEAD,
+  WHERE_PROJECTILES_LAND), `count`, `spread`, `max_standing`, `trigger` (REMOTE with
+  `set_off_by`, PROXIMITY, TIMER, ON_HIT), `radius`, `seconds`, `turns`, `eruption`,
+  `chain_delay`, `lifetime` and `mark`.
+- `Planted` (gameplay) extends `Hitbox`: it waits striking nothing, watches its trigger and its
+  life on `CombatClock`, burns a fuse when set off, then plays its eruption and is gone.
+- `PlantRun`: in the field it plants along the line through the spot, keeps no more than
+  `max_standing`, and sets them off in a ripple; in a battle it marks foes with the `mark`
+  status and sets them off on the same triggers, the eruption once per mark.
+- Where the misses land: `Projectile.landed` fires when a shot ends without striking;
+  `BarrageRun` tells every running mechanism of the kit (the new executor hook
+  `projectile_landed`), and in a battle a missed shot tells it which foe it was aimed at.
+- `BarrageRun.strike_with`, the battle's "strike with an `ActionMove`", now shared by both.
+
+**Why.** The Owl's shards that stay in the ground, its trap mode, IXA's mine and remote
+activation, time bombs and rune traps are one thing: something left now that goes off later.
+The eruption is an `ActionMove`, so it is dodged, blocked, countered and finds a weakness
+through `Hurtbox.take` with no new code.
+
+**Verified.**
+- Red first: with `PlantRun.use` and `projectile_landed` stubbed, 12 failed.
+- `plant_test` (17, the field) and `plant_battle_test` (6) pass; the full suite passes, as do
+  the seven checkers and the stripped run.
+- Boot prints 0.75.0, with 0 warnings and 0 errors.
+
+**Unblocks.** C7.9 (the Owl and IXA as data), C8.14 (constructs), C8.15 (late outcomes).
+
+**Gaps.**
+- A plant has no mesh or marker until art exists, so `visible_to_foes` is not built.
+- `recall` (blink to a plant) waits for M9 `blink` (C6.12).
+- A shot's landing point is where its flight ended; a rain shot must be given an `active` long
+  enough to reach the ground (nothing looks for the floor).
+- One mark status shared by two plant powers is cured by whichever goes off first.

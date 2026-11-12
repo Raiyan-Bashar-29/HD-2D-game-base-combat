@@ -11,6 +11,9 @@ extends Resource
 ## A mechanism that puts statuses of its own on its holder (a form) lists them in `statuses()`
 ## (C6.5c), so the kit can find them: a save can load them, and the quick slots know them.
 ##
+## A mechanism that strikes the foes by itself, with no skill to aim it (a barrage), says so in
+## `aims_at_foes()` (C6.7), so a battle offers it every standing foe as its targets.
+##
 ## OWNS: the base shape every mechanism shares.
 ## MUST NOT: hold running state or touch a fighter. The executor does both.
 
@@ -25,6 +28,11 @@ func kind() -> StringName:
 func statuses() -> Array[StatusEffect]:
 	var none: Array[StatusEffect] = []
 	return none
+
+
+## True when the power aims at the foes by itself, with no skill to aim it. False for most.
+func aims_at_foes() -> bool:
+	return false
 
 
 ## Empty when it can run. A subclass adds its own checks to this list.

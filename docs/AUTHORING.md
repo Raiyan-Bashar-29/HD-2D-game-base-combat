@@ -1303,6 +1303,25 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
    - A power used once per fight (C6.5f): tick `once_per_battle` on the `Power`. After one use
      it is refused ("once per battle") until the next battle, or in the field until the next
      area. It may also have a cooldown; a passive power must not set it.
+   - A barrage (C6.7): give a `Power` a `BarrageMechanism` and no skill. `shots` are
+     `ActionMove`s, played in turn: `startup` is the wait before a shot flies, `active` how long
+     it flies, and its `power`, `element`, `hits`, `poise`, `knockback` or `skill` its hit, with
+     `hitbox_size` its size (set `hitbox_offset` to zero). `pattern` says where shots start
+     (behind the user, round the target, rain from `height`, a line from the user, up from the
+     ground along `radius`), `count` how many (a COUNT scaling grows it), `interval` the seconds
+     between them, `speed`, `turn_rate` to home, `pierce` to fly on through, and `elements` to
+     give each shot a random one. A beam: LINE, one shot, `speed` 0, `pierce`, a long
+     `hitbox_size` with `hitbox_offset` half of it forward, and a short `active`. In a battle
+     the barrage lands its hits at once on random standing foes.
+   - A plant (C6.26): give a `Power` a `PlantMechanism` and no skill. `eruption` is the
+     `ActionMove` each plant plays when it goes off (a spike: a tall `hitbox_size` with
+     `hitbox_offset` raised half its height). `where` puts plants at the target, at the user,
+     `distance` AHEAD, or WHERE_PROJECTILES_LAND (a barrage of the same fighter leaves its misses
+     there); `count` of them lie `spread` apart, and no more than `max_standing` stand. `trigger`:
+     REMOTE (use the power again, or a power named in `set_off_by`; `chain_delay` ripples them),
+     PROXIMITY (a foe within `radius`), TIMER (`seconds`; `turns` in a battle) or ON_HIT (a foe
+     within `radius` is hit). `lifetime` 0 keeps a plant until set off. `mark` is the status a
+     plant is in a battle: give it STACK stacking and a `name_key`.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under
      `data/looks/`: `look_id`, `tint`, `scale`, and `label_key` for a tag over the head) and a
      `name_key`. While the form is held the body is tinted, sized and tagged, and the battle
@@ -1359,6 +1378,7 @@ section above:
 | `blocks` | SKIP_TURN (sleep, stun), NO_SKILLS (silence), NO_ITEMS, NO_FLEE. ATTACK and DEFEND are never blocked. |
 | `breaks_on_hit` | Ends at the first hit that does damage, as a sleep does. |
 | `reactions`, `reaction_chance`, `reflect_tag` | COUNTER strikes back at a plain attack that landed; REFLECT bounces a skill with `reflect_tag` back to its user. |
+| `counter_move` | COUNTER only (C6.6d, a counter stance): the `ActionMove` that answers. In the field the holder swings it at once, on its own clock, and is not pushed by the hit it answers; in a battle the counter strikes with its numbers (its skill, or `hits` × `power`). Empty is one plain hit. Put the status on a form, or on a timed-block barrier for a parry. |
 
 **A fighter** (`CombatantDef`) gets its depth from stats and three lists:
 - **Pools** are any `max_<pool>` stat: `max_mp`, `max_bp`, `max_limit`, `max_shield`. Each starts

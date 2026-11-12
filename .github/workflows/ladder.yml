@@ -27,7 +27,11 @@
 name: Ladder
 
 on:
+  # ONLY `main` RUNS ON PUSH (combat fork, owner 2026-11-11, to save the Actions quota). A pull
+  # request runs the ladder anyway, so a push to its branch used to run it twice; and work is now
+  # pushed package by package to a branch with no PR open, which should cost nothing.
   push:
+    branches: [main]
   pull_request:
   # A HUMAN CAN RUN THE LADDER ON DEMAND, against any branch. Two reasons it is here and not
   # left to push events alone: re-running the ladder after a flake should not need an empty

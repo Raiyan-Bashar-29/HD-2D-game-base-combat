@@ -525,6 +525,17 @@ IXA's remote activation and mine, a time bomb, a rune trap and a delayed spell a
   hits every marked foe, harder per mark; PROXIMITY goes off when the marked foe next attacks;
   TIMER goes off after N turns.
 
+**As built (C6.26, 0.75.0).** `where` is AT_TARGET (on the ground under the target; there is no
+separate UNDER_TARGET), AT_USER, AHEAD or WHERE_PROJECTILES_LAND. One use's plants lie `spread`
+apart along the line from the user through that spot. REMOTE also takes `set_off_by`, other
+powers whose use sets the plants off. ON_HIT reads "a foe within `radius` of the plant is hit by
+anyone", in a battle "the marked foe is hit", so one strike can set off a chain. The eruption is
+an `ActionMove` (its `skill` in a battle when it has one). The battle's mark is the data's own
+`mark` status (give it STACK stacking); going off, a foe takes the eruption once per mark. A
+barrage shot that ends without striking reports where (`Projectile.landed`), and one that
+misses in a battle marks the foe it was aimed at. **Not built yet:** `visible_to_foes` (nothing
+is drawn until art) and `recall` (needs M9 `blink`, C6.12).
+
 ## Part 4 · Transformations
 
 **In plain words:** a transformation is a form (M5, built) that the player can see. Today a
@@ -624,10 +635,10 @@ and merged. **Row** names the board row that builds it.
 | Forms and styles | Devil May Cry | Have (C6.5) |
 | Barriers | Infinity, Blut Vene | Have (C6.6a) |
 | Perfect dodge with a reward | Bayonetta's Witch Time, FF XVI | Built (C6.6c): `perfect_window`, `Events.perfect_dodge`, a gauge's `on_perfect_dodge`; a slow-down reward can listen to the event |
-| Counter stance and parry | Sekiro, Royal Guard | Row C6.6d |
-| Projectile barrages | Gate of Babylon | Row C6.7 |
+| Counter stance and parry | Sekiro, Royal Guard | Built (C6.6d): a COUNTER status with a `counter_move` on a form or a timed-block barrier |
+| Projectile barrages | Gate of Babylon | Built (C6.7) |
 | Charged finishers | Zantetsuken | Row C6.8 |
-| Planted and delayed strikes | Owl, time bombs, rune traps | Row C6.26 (new) |
+| Planted and delayed strikes | Owl, time bombs, rune traps | Built: M15 `plant` (C6.26) |
 | Battlefields: domains, terrain, weather, auras | JJK, Fate, Pokémon weather and terrain, Divinity's surfaces | Rows C6.9a–d (widened) |
 | Foresight, command, blink, clone, sacrifice, grant, refresh | The kits in `POWERS.md` | Rows C6.10–C6.13 |
 | Transformations with a look | The table above | Have: the look and name (C6.5d), commands, the Attack and the aftermath (C6.5e); once per battle (C6.5f); the name on the gear screen in row C7.7 |
@@ -666,7 +677,7 @@ for ideas before searching the web. Its eleven mechanic groups map onto the mech
 
 | Group in the list (count) | What such weapons do | Built from | Row |
 |---|---|---|---|
-| Energy / Tech (484) | Beams, blasts, satellite panels, charged shots | M1 `barrage` + `Projectile`; a charge is a gauge (C6.4) | C6.7 |
+| Energy / Tech (484) | Beams, blasts, satellite panels, charged shots | M1 `barrage` + `Projectile` (a beam is a LINE shot at speed 0); a charge is a gauge (C6.4) | C6.7, built |
 | Elemental (396) | Fire, ice, lightning on the blade or as spells | Gear `element` and `attack_tags` (built, C7.1c); statuses; weakness and Break | C7.1c |
 | Transformation (317) | A weapon with modes; a suitcase that opens into a weapon; armour that changes the wearer | M5 `form` with a look and its own moves; **deploy** below | C6.5, C6.5d |
 | Projectile (236) | Thrown knives, arrows, volleys, returning throws | M1 `barrage`; M15 `plant` for ones that stay and trigger later | C6.7, C6.26 |
@@ -699,9 +710,9 @@ weapons themselves.
 | C6.5e | **DONE.** A form's own commands: `commands`, `replaces_attack`, `aftermath` | C6.5d |
 | C6.5f | **DONE.** `Power.once_per_battle` (the sheet name moved to C7.7) | C6.5e |
 | C6.6c | **DONE.** Perfect dodge (`perfect_window`, `Events.perfect_dodge`, `on_perfect_dodge`) and `knockback_taken` | C6.6 |
-| C6.6d | As on the board | |
-| C6.7 | Barrage and the `Projectile` node, with sizes and "where the misses land" | |
-| C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading | C6.7 |
+| C6.6d | **DONE.** Counter stance: `StatusEffect.counter_move`, the field counter in `Hurtbox` | C6.6 |
+| C6.7 | Barrage and the `Projectile` node, with sizes: DONE (0.74.0). "Where the misses land" moved to C6.26, which reads it | |
+| C6.26 | M15 `plant`: `PlantMechanism`, the `Planted` node, the four triggers, the battle reading, and "where a barrage's misses land": DONE (0.75.0) | C6.7 |
 | C6.8 | Finisher | |
 | C6.9a | Battlefield, the core: `BattlefieldMechanism`, `BattlefieldEffect`, modifiers and statuses per group, durations in seconds, turns or infinite, upkeep, both formulas; `damage_dealt` | C6.6 |
 | C6.9b | Battlefield damage and movement: `on_enter`, `on_exit`, ticks on both clocks, `tick_grows`, pull and push, immunity | C6.9a |
