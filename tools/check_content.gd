@@ -44,6 +44,7 @@ func _initialize() -> void:
 	_check_dialogue()
 	_check_schedules()
 	_check_quests()
+	_check_passives()
 	_check_areas()
 	_check_path_actions()
 	_check_scenes()
@@ -170,6 +171,26 @@ func _require_key(context: String, field: String, key: String) -> void:
 	if key == "" or _keys.has(key):
 		return
 	_fail("%s %s '%s' is not in the CSV" % [context, field, key])
+
+
+## The passive library (C9.3b): every file under `data/passives` is sound, and its name and
+## description are in the CSV.
+func _check_passives() -> void:
+	PassiveDb.rescan()
+	for problem: String in PassiveDb.problems():
+		_fail(problem)
+	var paths: PackedStringArray = PackedStringArray()
+	if DirAccess.dir_exists_absolute(PassiveDb.content_dir):
+		paths = ContentScan.resource_paths(PassiveDb.content_dir)
+	print("  passives: %d" % paths.size())
+	for path: String in paths:
+		var passive: PassiveSkill = load(path) as PassiveSkill
+		if passive == null:
+			continue
+		_require_key(path, "name_key", passive.name_key)
+		_require_key(path, "desc_key", passive.desc_key)
+		if passive.desc_key == "":
+			_fail("%s has no desc_key" % path)
 
 
 ## Schedules get the same treatment as items and conversations, plus the check no text scan can

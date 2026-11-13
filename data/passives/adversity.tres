@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="PassiveSkill" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="skill"]
+[ext_resource type="Resource" path="res://data/statuses/desperation.tres" id="desperation"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_effect.gd" id="eff"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_trigger.gd" id="trig"]
+
+[sub_resource type="Resource" id="eff_1"]
+script = ExtResource("eff")
+kind = 3
+status = ExtResource("desperation")
+
+[sub_resource type="Resource" id="trig_2"]
+script = ExtResource("trig")
+event = 10
+threshold = 0.3
+effects = Array[ExtResource("eff")]([SubResource("eff_1")])
+
+[sub_resource type="Resource" id="eff_3"]
+script = ExtResource("eff")
+kind = 4
+tag = &"desperation"
+
+[sub_resource type="Resource" id="trig_4"]
+script = ExtResource("trig")
+event = 11
+threshold = 0.3
+effects = Array[ExtResource("eff")]([SubResource("eff_3")])
+
+[resource]
+script = ExtResource("skill")
+id = &"passive/adversity"
+name_key = "combat.passive.adversity.name"
+desc_key = "combat.passive.adversity.desc"
+cost = 3
+triggers = Array[ExtResource("trig")]([SubResource("trig_2"), SubResource("trig_4")])
+tags = Array[StringName]([&"offence"])

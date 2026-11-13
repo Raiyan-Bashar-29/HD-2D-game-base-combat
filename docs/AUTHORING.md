@@ -1484,6 +1484,10 @@ trigger changes the hit before it lands. SURVIVE on a LETHAL_HIT trigger leaves 
 (target OTHER for a pursuit or a counter). The conditions HIT_TAG and HIT_ELEMENT (name in `tag`)
 ask about the hit itself.
 
+**Samples (C9.3b).** `data/passives/` has one working file per family (a stat boost, a guard,
+a killer, guts and so on). Copy the nearest one, change its id, keys and numbers, and add
+`combat.passive.<name>.name` and `.desc` to the CSV; `check_content` fails without them.
+
 **Who gives a passive (C9.3a).** List `PassiveSkill` files in `PowerKit.passive_skills`, or in
 `passives` on a piece of gear, a gear-set tier, a gem or an upgrade level. The fighter holds
 them while the kit is on, the piece is worn, the tier or the level is reached, or the gem sits

@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="PassiveSkill" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_effect.gd" id="eff"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_trigger.gd" id="trig"]
+
+[sub_resource type="Resource" id="eff_1"]
+script = ExtResource("eff")
+kind = 5
+amount = 0.5
+
+[sub_resource type="Resource" id="trig_2"]
+script = ExtResource("trig")
+event = 4
+chance = 0.25
+effects = Array[ExtResource("eff")]([SubResource("eff_1")])
+
+[sub_resource type="Resource" id="eff_3"]
+script = ExtResource("eff")
+kind = 1
+amount = 0.05
+
+[sub_resource type="Resource" id="eff_4"]
+script = ExtResource("eff")
+kind = 8
+amount = 1.0
+
+[sub_resource type="Resource" id="trig_5"]
+script = ExtResource("trig")
+event = 9
+effects = Array[ExtResource("eff")]([SubResource("eff_3"), SubResource("eff_4")])
+
+[resource]
+script = ExtResource("skill")
+id = &"passive/steady_guard"
+name_key = "combat.passive.steady_guard.name"
+desc_key = "combat.passive.steady_guard.desc"
+cost = 3
+triggers = Array[ExtResource("trig")]([SubResource("trig_2"), SubResource("trig_5")])
+tags = Array[StringName]([&"defence"])

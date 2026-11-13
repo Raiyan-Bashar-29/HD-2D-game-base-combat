@@ -4151,3 +4151,14 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** a form stage has no passive list of its own. A set made in the middle of a battle
   rolls its chances with its own random numbers, not the battle's seed.
 - **Unblocks:** C9.3b, C9.4.
+
+## 2026-11-13 — C9.3b · The sample passive library (combat 0.94.0)
+
+- **Did:** 22 files in `data/passives/`, one per catalogue family; statuses `battle_fury` and
+  `desperation`; 46 CSV rows; a passives section in `tools/check_content.gd`; new
+  `tests/unit/passive_library_test.gd` (3 checks). No code under `src/` changed.
+- **Verified:** suite 4257 passed, 0 failed. With one file's amount set to 0, `check_content`
+  fails and 2 suite checks fail.
+- **Gaps:** the samples are held and checked as a whole; each family's behaviour is proven by
+  the fixture tests of C9.1 to C9.2c, not once more per file.
+- **Unblocks:** C9.4.

@@ -253,6 +253,20 @@ other forever.
 - Not built yet: the sample files (C9.3b); a form stage has no passive list of its own (use a
   FORM_ENTERED trigger, or the form's status); the `loadout` source (C9.4).
 
+### As built (C9.3b, 0.94.0)
+
+- `data/passives/` has 22 sample files, one per row of the catalogue below: `strength_up`,
+  `ailment_ward`, `regen`, `counter`, `thrift`, `opening_guard`, `victory_rest`, `life_steal`,
+  `weakening_blows`, `reaper`, `avenging_spirit`, `adversity`, `full_vigour`, `dragon_killer`,
+  `vital_aim`, `steady_guard` (with its two riders), `iron_will`, `flame_saber`, `last_stand`,
+  `night_owl`, `clear_mind`, `skill_haste`.
+- A held status is written inside its passive's file, with the id `status/passive_<name>`. A
+  timed status a passive gives is its own file in `data/statuses/` (`battle_fury`, `desperation`).
+- "Last stand" and "day or night" are a `TURN_START` trigger with an `ALONE` or `HOUR`
+  condition giving a short buff each turn, because a held status has no condition.
+- `tools/check_content.gd` fails a broken passive, and one whose name or description is not
+  in the CSV. `tests/unit/passive_library_test.gd` holds the whole library on one fighter.
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs

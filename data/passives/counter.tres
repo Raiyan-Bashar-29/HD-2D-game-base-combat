@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveSkill" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+
+[sub_resource type="Resource" id="status_1"]
+script = ExtResource("status")
+id = &"status/passive_counter"
+duration = 0.0
+reactions = Array[int]([0])
+reaction_chance = 0.3
+tags = Array[StringName]([&"passive"])
+
+[resource]
+script = ExtResource("skill")
+id = &"passive/counter"
+name_key = "combat.passive.counter.name"
+desc_key = "combat.passive.counter.desc"
+cost = 3
+held = SubResource("status_1")
+tags = Array[StringName]([&"offence"])
