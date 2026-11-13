@@ -14,7 +14,9 @@ extends RefCounted
 ## - BOTH_STAND: nothing ends (terrain under a domain).
 ## A battlefield that ends by a clash is shattered: no aftermath, as with a broken one.
 ##
-## OWNS: the clash rules, what counts as overlapping, and a battlefield's strength.
+## Each clash is said on `Events.battlefield_clashed` (C6.9g), newcomer's caster first, for the log.
+##
+## OWNS: the clash rules, what counts as overlapping, a battlefield's strength, and announcing a clash.
 ## MUST NOT: change a battlefield's own settings. It ends rivals through `BattlefieldRun.break_down`
 ## and only says whether the newcomer may rise; `BattlefieldRun` does the newcomer's own ending.
 
@@ -38,6 +40,7 @@ static func allows(me: Combatant, field: BattlefieldMechanism, newcomer: Battlef
 			if theirs_field == null or not _overlap(me, field, other, theirs_field):
 				continue
 			var theirs: float = strength(theirs_field, other)
+			Events.battlefield_clashed.emit(me.combatant_id, other.combatant_id)
 			match field.clash:
 				BattlefieldMechanism.Clash.BOTH_END:
 					shattered = true

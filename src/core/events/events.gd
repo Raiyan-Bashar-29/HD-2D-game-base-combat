@@ -327,6 +327,16 @@ signal atb_changed(who: StringName, value: float, segments: int)
 ## battle) of cooldown before it can be used again; 0 means it is ready. Emitted by `PowerSet`
 ## (C6.3b) only when that whole number changes, not every frame, so a HUD can show it live.
 signal power_cooldown_changed(who: StringName, power_id: StringName, left: int)
+## `who` raised the battlefield `power_id` and it stands (C6.9g). Emitted by `BattlefieldRun` after
+## any clash let it rise, so a log and a HUD can name it and its place.
+signal battlefield_raised(who: StringName, power_id: StringName)
+## `who`'s battlefield `power_id` came down. `broken` is true when it was shattered with no
+## aftermath (a hit that breaks it, a clash it lost to a newer one, its caster falling), false when
+## it ran out or its status came off. Emitted by `BattlefieldRun` (C6.9g) before it lets anyone go.
+signal battlefield_lowered(who: StringName, power_id: StringName, broken: bool)
+## `who`'s battlefield, rising, met `rival`'s standing one and they clashed (C6.9g). Emitted by
+## `BattlefieldClash` once per rival, before the rule decides who ends.
+signal battlefield_clashed(who: StringName, rival: StringName)
 ## A turn-based battle began. Emitted by `Battle.start`, with the enemy side's combatant ids.
 signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,

@@ -8,6 +8,10 @@ extends RefCounted
 ## each: "Wisp takes 12.", "The attack on Wisp missed.", "Wisp blocks the attack.", "Wisp is broken!". `BattleScreen` shows
 ## `lines` under the turn order.
 ##
+## Battlefields too (C6.9g): "Wisp raises Iron Court: Ash Plain.", "Wisp's Iron Court
+## fades." or "shatters!", and "Wisp's field clashes with Ash's!". Names come from the battlefield
+## itself through `BattlefieldNews`, else the last part of its id.
+##
 ## IT ONLY LISTENS. Every line comes from a signal another system already emits, so the log can
 ## never disagree with what happened. Names come from the screen's `namer`, so a duplicate
 ## enemy reads "Wisp 2" here just as in the menu.
@@ -29,6 +33,11 @@ const WEAK_KEY: String = "ui.battle.log.weak"
 const BROKEN_KEY: String = "ui.battle.log.broken"
 const DEFEATED_KEY: String = "ui.battle.log.defeated"
 const STATUS_KEY: String = "ui.battle.log.status"
+const FIELD_RAISED_KEY: String = "ui.battle.log.field_raised"
+const FIELD_PLACE_KEY: String = "ui.battle.log.field_place"
+const FIELD_FADED_KEY: String = "ui.battle.log.field_faded"
+const FIELD_SHATTERED_KEY: String = "ui.battle.log.field_shattered"
+const FIELD_CLASHED_KEY: String = "ui.battle.log.field_clashed"
 
 ## Oldest first; never more than MAX_LINES.
 var lines: Array[String] = []
@@ -55,6 +64,9 @@ func start() -> void:
 	Events.combatant_broken.connect(_on_broken)
 	Events.combatant_defeated.connect(_on_defeated)
 	Events.status_applied.connect(_on_status)
+	Events.battlefield_raised.connect(_on_field_raised)
+	Events.battlefield_lowered.connect(_on_field_lowered)
+	Events.battlefield_clashed.connect(_on_field_clashed)
 
 
 ## Stops listening. The screen calls it when it closes, so a later battle's signals land only
@@ -65,7 +77,9 @@ func stop() -> void:
 			[Events.status_resisted, _on_resisted], [Events.turn_skipped, _on_skipped],
 			[Events.countered, _on_countered], [Events.skill_reflected, _on_reflected],
 			[Events.weakness_revealed, _on_weak], [Events.combatant_broken, _on_broken],
-			[Events.combatant_defeated, _on_defeated], [Events.status_applied, _on_status]]:
+			[Events.combatant_defeated, _on_defeated], [Events.status_applied, _on_status],
+			[Events.battlefield_raised, _on_field_raised], [Events.battlefield_lowered, _on_field_lowered],
+			[Events.battlefield_clashed, _on_field_clashed]]:
 		var bus: Signal = pair[0]
 		var handler: Callable = pair[1]
 		if bus.is_connected(handler):
@@ -150,3 +164,30 @@ func _on_defeated(who: StringName) -> void:
 
 func _on_status(who: StringName, status_id: StringName, _stacks: int) -> void:
 	_add(STATUS_KEY, {"name": _name(who), "status": status_name(who, status_id)})
+
+
+func _on_field_raised(who: StringName, power_id: StringName) -> void:
+	var place: String = BattlefieldNews.place_name_key(BattlefieldNews.field_of(_fighter(who), power_id))
+	var values: Dictionary = {"name": _name(who), "power": _field_name(who, power_id)}
+	if place == "":
+		_add(FIELD_RAISED_KEY, values)
+	else:
+		values["place"] = TranslationServer.translate(place)
+		_add(FIELD_PLACE_KEY, values)
+
+
+func _on_field_lowered(who: StringName, power_id: StringName, broken: bool) -> void:
+	_add(FIELD_SHATTERED_KEY if broken else FIELD_FADED_KEY,
+		{"name": _name(who), "power": _field_name(who, power_id)})
+
+
+func _on_field_clashed(who: StringName, rival: StringName) -> void:
+	_add(FIELD_CLASHED_KEY, {"name": _name(who), "rival": _name(rival)})
+
+
+# The battlefield's own name, else the last part of its id.
+func _field_name(who: StringName, power_id: StringName) -> String:
+	var key: String = BattlefieldNews.power_name_key(BattlefieldNews.field_of(_fighter(who), power_id))
+	if key != "":
+		return TranslationServer.translate(key)
+	return String(power_id).get_slice("/", String(power_id).get_slice_count("/") - 1)

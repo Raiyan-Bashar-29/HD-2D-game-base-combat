@@ -3831,3 +3831,34 @@ its own. `moves_fight` does nothing in a battle (no distances), like `closed`. N
 nor the held weather is saved, as the field is not: a load sets the weather from the save, and the
 next tick raises the field again. A fighter who falls in the pocket stays there until the field
 ends, like one who falls inside a closed field.
+
+## 2026-11-13 — C6.9g · The log and HUD (combat 0.83.0)
+
+**Did.** Battlefields now say what they do. Three signals on `Events`: `battlefield_raised(who,
+power_id)` once a battlefield stands (after any clash let it), `battlefield_lowered(who, power_id,
+broken)` as it comes down, and `battlefield_clashed(who, rival)` once per rival a rising one
+clashes with. `BattlefieldRun` sets a `_broken` flag in `break_down` and when its caster falls, so
+`broken` tells a shattering from an ending (ran out, cured, drained, kit off). `BattleLog` turns
+them into lines ("Wisp raises Iron Court: Ash Plain.", "… fades.", "… shatters!", "… clashes with
+…'s!"), and `CombatHud.field_text` adds a line for every battlefield standing in the player's
+fight, with its place in brackets. `BattlefieldNews` finds a battlefield by caster and power id,
+or every one standing in a fight, and reads its name keys. `_effects_for` and `_holds_any` moved
+to `BattlefieldGroups` to give `battlefield_run.gd` room.
+
+**Why.** The board row: the log and HUD must show a battlefield rising, lowering, clashing and
+breaking, and C6.9f left the place's name for the HUD.
+
+**Connects.** The bus stays ids only; the readouts look up names through `BattlefieldNews`
+(ui reads gameplay, downward). `battlefield_lowered` is emitted at the top of `_lower`, while the
+run is still in `PowerSet.running()`, so a listener can still read the battlefield's name.
+
+**Verified.** Boot 0 warnings, 0 errors. Suite: 0 failed (`battlefield_news_test` 12/12: the three
+signals, `broken` false on running out and true on a break and a lost clash, the log's place,
+fade, shatter, clash and plain lines, the HUD line on and off). Red first: with the emits stubbed,
+the signal and log assertions fail. Seven checkers exit 0. Stripped run passes.
+
+**Unblocks.** C7.3b and the rest of C7 in `GEAR.md`'s order; phase C6.9 is done.
+
+**Gaps.** No art or sound. The field has no log, only the HUD line. A battlefield that loses a
+clash as it rises gets a clash line but no "shatters" line, since it never stood. No windowed
+capture: the HUD line needs a battlefield raised in the field, and no dev command raises one yet.

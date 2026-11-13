@@ -8,13 +8,17 @@ extends Label
 ## C3.4). Then it reads, at the bottom left:
 ##     HP 25 / 30   MP 8 / 10   ATB 1 / 2  40%   [Poisoned]
 ##     [1] Bolt   5 MP   [2] Gate  (ready in 3s)
+##     Iron Court (Ash Plain)
 ##     Thorn Wisp   HP 12 / 20
 ## the ATB part only for a fighter with an ATB gauge (C4.4): whole bars ready out of all of them,
 ## then how full the next bar is. The slot line (C6.3b) only for a fighter with hero powers: each
 ## quick slot's key, its power's name, and its cost, or why it cannot be used now (the same words
-## the command menu uses, from `PowerMenu`). The last line only while something is locked on.
+## the command menu uses, from `PowerMenu`). The battlefield line (C6.9g) only while one stands in
+## the player's fight: each one's name, and the place it gives in brackets. The last line only
+## while something is locked on.
 ## It redraws whenever a pool moves, a status starts or ends, the lock changes, or a cooldown's
-## whole seconds tick down (`Events.power_cooldown_changed`), and never polls.
+## whole seconds tick down (`Events.power_cooldown_changed`), or a battlefield rises or comes down,
+## and never polls.
 ##
 ## OWNS: the rendering of the player's and the locked target's combat state.
 ## MUST NOT: change anything it shows, or find targets (it shows what `LockOn` announces).
@@ -27,6 +31,8 @@ const COST_KEY: String = "ui.battle.cost"
 const UNAVAILABLE_KEY: String = "ui.battle.unavailable"
 const POOL_KEY: String = "ui.battle.pool"
 const STATUSES_KEY: String = "ui.battle.statuses"
+const FIELD_KEY: String = "ui.combat_hud.field"
+const FIELD_PLACE_KEY: String = "ui.combat_hud.field_place"
 const VARIATION: StringName = &"HudText"
 const PALETTE: StringName = &"UiPalette"
 
@@ -50,6 +56,9 @@ func _ready() -> void:
 	Events.lock_on_changed.connect(_on_lock_on_changed)
 	Events.atb_changed.connect(func(_w: StringName, _v: float, _s: int) -> void: refresh())
 	Events.power_cooldown_changed.connect(func(_w: StringName, _p: StringName, _l: int) -> void: refresh())
+	Events.battlefield_raised.connect(func(_w: StringName, _p: StringName) -> void: refresh())
+	# Deferred: the field is still standing as it says it comes down.
+	Events.battlefield_lowered.connect(func(_w: StringName, _p: StringName, _b: bool) -> void: refresh.call_deferred())
 	# The fighter's parts are fitted a frame after the player spawns (C3.4), so look then.
 	Events.player_spawned.connect(func(_p: Node3D) -> void: refresh.call_deferred())
 	Events.player_despawned.connect(refresh)
@@ -68,6 +77,9 @@ func refresh() -> void:
 	var slots: String = slot_text(fighter)
 	if slots != "":
 		lines.append(slots)
+	var fields: String = field_text(fighter)
+	if fields != "":
+		lines.append(fields)
 	var target: Combatant = _target()
 	if target != null:
 		var vitals: Vitals = Vitals.of(target.get_parent())
@@ -117,6 +129,19 @@ func slot_text(fighter: Combatant) -> String:
 			label = tr(UNAVAILABLE_KEY).format({"label": label, "reason": tr(reason).format(args)})
 		parts.append(tr(SLOT_KEY).format({"key": KeyBindings.text_for(CombatActions.SLOTS[slot], false),
 			"label": label}))
+	return "   ".join(parts)
+
+
+## The battlefields standing in `fighter`'s fight, each with the place it gives, or "" for none
+## (C6.9g). Public so a test reads it.
+func field_text(fighter: Combatant) -> String:
+	var parts: Array[String] = []
+	for run: BattlefieldRun in BattlefieldNews.standing(fighter):
+		var key: String = BattlefieldNews.power_name_key(run)
+		var power: String = tr(key) if key != "" else _tail(run.power.power_id if run.power != null else &"")
+		var place: String = BattlefieldNews.place_name_key(run)
+		parts.append(tr(FIELD_PLACE_KEY).format({"power": power, "place": tr(place)}) if place != ""
+			else tr(FIELD_KEY).format({"power": power}))
 	return "   ".join(parts)
 
 
