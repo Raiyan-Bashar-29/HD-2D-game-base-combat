@@ -29,6 +29,8 @@ extends Resource
 ## The hero powers this fighter has, in both formulas (C6.2): a battle equips them when it builds
 ## the fighter, and so does the field when this is a loadout's `fighter`. Null means none.
 @export var power_kit: PowerKit
+## The passives this fighter always holds (C9.1), party member or foe: see `docs/PASSIVES.md`.
+@export var passives: Array[PassiveSkill] = []
 ## The gear this fighter starts with, by item id (C7.1b). Each needs a gear file. A party member
 ## puts them on once and may change them after; a foe wears them every fight. Empty means none.
 @export var gear: Array[StringName] = []
@@ -57,6 +59,11 @@ func problems(context: String) -> PackedStringArray:
 		found.append_array(brain.problems(where))
 	if power_kit != null:
 		found.append_array(power_kit.problems(where))
+	for passive: PassiveSkill in passives:
+		if passive == null:
+			found.append("%s has an empty passive" % where)
+		else:
+			found.append_array(passive.problems())
 	for item_id: StringName in gear:
 		if GearDb.for_item(item_id) == null:
 			found.append("%s starts with '%s', which has no gear file" % [where, item_id])

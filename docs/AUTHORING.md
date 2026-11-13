@@ -1453,6 +1453,24 @@ Cleanse, Rekindle and Bulwark. The wisps are weak to fire and to blades, one may
 to sleep, and two Embers break a wisp. `combat_content_test.gd` fails on a missing string or an
 unsound skill or status.
 
+### A passive (C9.1)
+
+A passive is one file, `data/passives/<name>.tres`, a `PassiveSkill` with id `passive/<name>`.
+Give it to a fighter by adding it to the fighter's `passives` list (a party member in the
+roster, or an enemy in an encounter or on an `ActionEnemy`). The design is in
+[`PASSIVES.md`](PASSIVES.md).
+
+| Field | What it does |
+|---|---|
+| `held` | A status the fighter has for as long as it holds the passive: a stat boost, a regen, a drain, a counter. Give that status duration 0. |
+| `triggers` | A list of `PassiveTrigger`s. Each has an `event` (FIGHT_START, FIGHT_WON, TURN_START, HIT_DEALT, HIT_TAKEN, KILL, ALLY_DEFEATED), a `chance`, a `cooldown` (turns in a battle, seconds in the field), a `limit` per battle, and its `effects`. |
+| an effect | A `PassiveEffect`: `kind` POOL_FLAT (points), POOL_SHARE (a share of the pool's maximum), POOL_FROM_DAMAGE (a share of the hit's damage), GIVE_STATUS or CURE; and a `target`: SELF, OTHER (the other fighter in the event), ALLIES or FOES. A negative `amount` is a cost or a drain. |
+| `cost`, `tags` | The skill cost for the loadout (C9.4), and labels for screens. |
+
+Examples: life steal is HIT_DEALT with POOL_FROM_DAMAGE `hp` 0.2. An opening buff is
+FIGHT_START with GIVE_STATUS. A wave-end heal is FIGHT_WON with POOL_SHARE `hp` 0.3. A drain
+that pays for a strong `held` status is TURN_START with POOL_SHARE `hp` -0.05.
+
 ## Action combat: fighting in real time in the field (combat fork only)
 
 **The player swings, rolls and locks on in the field itself, with no battle screen.** It is

@@ -107,6 +107,7 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 		var powers := PowerSet.new()
 		actor.add_child(powers)
 		powers.equip(def.power_kit)
+	PassiveSet.fit(actor, def)
 	# Gear after the Combatant too: a party member's is saved, an enemy's is not.
 	GearSet.fit(actor, def, not fresh)
 	# Enemies always start at full HP, even if an old flag says otherwise.

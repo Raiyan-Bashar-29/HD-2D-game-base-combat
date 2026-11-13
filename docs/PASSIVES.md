@@ -171,6 +171,23 @@ effects of the attacker, then of the defender, change the damage; barriers absor
 A passive's own `EXTRA_HIT` wakes no `HIT_DEALT` passive, so two passives cannot feed each
 other forever.
 
+### As built (C9.1, 0.89.0)
+
+- The four content files are in `src/content/combat/passives/`; the runner is
+  `src/gameplay/combat/passives/passive_set.gd`, with `passive_effects.gd` beside it.
+- Built so far: `held`, `triggers`, `cost`, `tags`; the seven events FIGHT_START, FIGHT_WON,
+  TURN_START, HIT_DEALT, HIT_TAKEN, KILL, ALLY_DEFEATED; the effects POOL_FLAT, POOL_SHARE,
+  POOL_FROM_DAMAGE, GIVE_STATUS, CURE. The only source is `CombatantDef.passives` (held under
+  `own`); `hold(source, list)` and `release(source)` are ready for kits and gear (C9.3).
+- A trigger also has `interval`: in the field, the seconds that stand for one turn.
+- A cooldown counts down as the holder's turn begins, before that turn's triggers, so a
+  cooldown of 2 wakes every second turn.
+- FIGHT_WON wakes when the last standing foe of the holder falls. In the field, only fighters
+  within 20 metres (`PassiveEffects.NEAR`) count as its allies and foes.
+- A pool effect changes the pool directly, not as a hit, so it wakes no other passive.
+- A fallen holder's passives do nothing.
+- Not built yet: `gauges`, `group`, `rank`, conditions and the other events and effects (C9.2).
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs

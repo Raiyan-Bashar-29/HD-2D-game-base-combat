@@ -235,6 +235,7 @@ func _build() -> void:
 	combatant.real_time = true
 	add_child(combatant)
 	# Its starting gear, if it has any (C7.1b). Not saved: a field foe is rebuilt fresh.
+	PassiveSet.fit(self, fighter)
 	GearSet.fit(self, fighter, false)
 	var vitals: Vitals = Vitals.of(self)
 	for stat: StringName in fighter.base_stats:

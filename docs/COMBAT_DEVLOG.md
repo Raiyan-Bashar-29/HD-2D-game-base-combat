@@ -4071,3 +4071,35 @@ and the stripped run has 0 failed. No file under `src/` or `tests/` changed.
 - Three kakuja lines are marked "to confirm" against the source.
 - Only Arata is an armour in the source; the other armour versions are a reading.
 - C9.8 (studying fan-made fighting-game character files) is not started.
+
+## 2026-11-13 — C9.1 · Passives, the core (combat 0.89.0)
+
+**Did.**
+
+- Content: `PassiveSkill`, `PassiveTrigger`, `PassiveEffect`, `PassiveDb` in
+  `src/content/combat/passives/`; `CombatantDef.passives`.
+- Gameplay: `PassiveSet` (who gave which passives, held statuses, each trigger's cooldown and
+  count, the event listeners) and `PassiveEffects` (who an effect lands on, and applying it).
+- Wiring: `BattleSetup`, `ActionHost` and `ActionEnemy` fit the set; `Battle` hands it its
+  random numbers and tells it each turn; `StatusSet` finds a held status again on load.
+- `tests/unit/passives_test.gd`, 14 checks.
+
+**Why.** The owner wants every ability as a reusable passive. This is the part the engine
+lacked: something that waits for an event and then acts once.
+
+**Connects.** `Events` (battle started, area entered, damaged, defeated, revived), `Vitals`,
+`StatusSet`, `Combatant`, `Battle`.
+
+**Verified.** Red first: with the effects switched off, 8 checks failed. Then the suite: 4207
+passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The stripped run has
+0 failed.
+
+**Unblocks.** C9.2 (conditions and hit effects), C9.3 (passives on kits and gear).
+
+**Gaps.**
+
+- A battle won by a defeat rule other than "every foe is down" does not wake FIGHT_WON.
+- Cooldowns and counts are not saved; a load starts them again.
+- By the owner's word (2026-11-13) batch PRs stop until the remaining rows are done; an
+  `invincible` status, mercy time and the overshield were added to row C9.5.
+

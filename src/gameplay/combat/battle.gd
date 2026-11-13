@@ -93,6 +93,7 @@ func start() -> void:
 	for fighter: Combatant in party + enemies:
 		# Remember every fighter by id, so the scheduler's ids can be turned back into nodes.
 		_by_id[fighter.combatant_id] = fighter
+		PassiveSet.join(fighter.get_parent(), rng)
 		# Only fighters still standing get a place in the turn order.
 		if not _vitals(fighter).is_defeated():
 			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
@@ -126,6 +127,7 @@ func next_turn() -> Combatant:
 		var powers: PowerSet = PowerSet.of(actor.get_parent())
 		if powers != null:
 			powers.tick_turn()
+		PassiveSet.turn(actor.get_parent())
 		# A break that just wore off gives the shield back (C2.17).
 		Weakness.recover(actor)
 		# Each `regen_<pool>` stat refills (or drains) its pool once a turn, asleep or not

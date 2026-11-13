@@ -328,6 +328,8 @@ func _apply_save(data: Dictionary, _from_version: int) -> void:
 		if effect == null:
 			effect = PowerSet.passive_of(get_parent(), StringName(key))
 		if effect == null:
+			effect = PassiveSet.held_of(get_parent(), StringName(key))
+		if effect == null:
 			Log.warn(CATEGORY, "'%s' held a status '%s' that no longer exists; dropped" % [owner_id, key])
 			continue
 		var row: Dictionary = DictRead.get_dict(data, key)
