@@ -34,6 +34,7 @@ enum Reason {
 	COST,  ## The user cannot pay its skill's cost.
 	GEAR,  ## The piece or kind of gear it needs is not worn (C7.3).
 	ONCE,  ## A once-per-battle power already used in this battle, or in this area (C6.5f).
+	UPGRADE,  ## The piece that carries it is not upgraded far enough (C7.5).
 }
 
 
@@ -55,6 +56,8 @@ static func refusal(user: Combatant, power: Power, hour: float = -1.0) -> Reason
 		return Reason.HOURS
 	if power.requires_gear != &"" and not GearSet.wearing(body, power.requires_gear):
 		return Reason.GEAR
+	if not GearUpgrades.unlocks(body, power):
+		return Reason.UPGRADE
 	var statuses: StatusSet = StatusSet.of(body)
 	for status_id: StringName in power.requires_statuses:
 		if statuses == null or statuses.stacks(status_id) == 0:

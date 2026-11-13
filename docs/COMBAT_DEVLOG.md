@@ -3996,3 +3996,45 @@ that re-lends.
 - There is no rule limiting a gem to certain slots.
 - Two copies of one piece share their sockets.
 - A piece that leaves the bag keeps its gems recorded.
+
+## 2026-11-13 — C7.5 · Upgrading and awakening (combat 0.88.0)
+
+**Did.**
+
+- New content `UpgradeLevel` (`items`, `stat_bonus`, `modifiers`, `sockets`) and `UpgradeTrack`
+  (`levels`, `awaken_into`, `awaken_items`), both checked with the piece.
+- `GearDefinition.upgrade`, `max_upgrade` and `upgrade_cap()`. `Rarity.max_upgrade` is now read.
+- `Power.requires_upgrade`, refused with the new `PowerUse.Reason.UPGRADE` and the words
+  `ui.battle.reason.needs_upgrade`.
+- New `GearUpgrades` (gameplay):
+  - `upgrade` pays the next level from the bag and raises the level (`refusal` says why not);
+  - `awaken`, at the cap, swaps the piece for the track's `awaken_into` (`awaken_refusal`);
+  - `apply` puts the worn pieces' gains on the sheet under `upgrades`;
+  - `extra_sockets` is read by `GearSockets.gems`, and `unlocks` by `PowerUse.refusal`.
+- `GearLending` calls `apply`.
+
+**Why.** It is `GEAR.md` § Sets, sockets, upgrading. The level is a flag, as a socket is, so
+it needs no new save code. The gains are rebuilt from scratch, so a refresh can't double them.
+The stat bonus is a share of the added amounts and not a scale on everything, so it sits on
+the sheet as plain added amounts under its own source. Every level costs items, so
+`inventory_changed` stays the one place that re-lends.
+
+**Connects.** `Inventory` (the cost), `Flags`, `GearLending`, `GearSockets` (C7.4c), `Rarity`
+(C7.2), `PowerUse` and `PowerMenu` (C6.1b, C6.2).
+
+**Verified.**
+
+- Boot: 0 warnings, 0 errors.
+- The suite has 0 failed, and `gear_upgrades_test.gd` passes 13/13.
+- Red first: with the `apply` call and the power check switched off, 4 checks failed.
+- All seven checkers exit 0, and the stripped run has 0 failed.
+
+**Unblocks.** C7.6 (crafting's UPGRADE and AWAKEN recipes), C7.2b (affixes) and C7.9 (the
+weapons).
+
+**Gaps.**
+
+- No money cost, because the base has no money.
+- No screen yet (C7.7).
+- The level is per item: two copies of a piece, and a foe wearing the same item, share it.
+- An awakened piece's gems stay recorded on the old item, and the new piece is not put on.

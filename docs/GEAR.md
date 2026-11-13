@@ -76,7 +76,7 @@ row that builds it. The hero powers it leans on are in [`POWERS.md`](POWERS.md).
 | `needs_level`, `needs_stats` | Requirements to wear it |
 | `set_bonus` | The set it belongs to, a `GearSetBonus` (§ Sets; the design first called this `set_id`) |
 | `sockets` | How many gems it holds, before its rarity's extra sockets (§ Sockets; built in C7.4c) |
-| `max_upgrade`, `upgrade` | The upgrade track (§ Upgrading) |
+| `max_upgrade`, `upgrade` | The upgrade track and its cap (§ Upgrading; built in C7.5) |
 | `blocks` | Slots the piece takes up besides its own. A two-handed weapon is `blocks = [offhand]` (built in C7.1c; the design first called this `two_handed`) |
 | `cursed` | Cannot be taken off in the ordinary way |
 
@@ -221,6 +221,39 @@ A foe drops what it wears when its `loot_table` lists the piece (C7.2).
   - Two copies of one piece share their sockets, because the bag counts items by id.
   - A piece that leaves the bag keeps its gems recorded.
 
+**As built (C7.5, 0.88.0): upgrading and awakening.**
+
+- **`UpgradeTrack`** (content, on `GearDefinition.upgrade`): `levels`, a list of
+  `UpgradeLevel`s. `levels[0]` is the step from level 0 to level 1.
+- **`UpgradeLevel`:** `items` (the cost, item id → count), and what the piece gives from that
+  level on:
+  - `stat_bonus`: a share of the piece's added amounts given again (0.1 is +10%). It adds up
+    over the levels. Multipliers and overrides are left alone.
+  - `modifiers`: the level's own stat changes.
+  - `sockets`: more sockets for gems.
+  A level with no cost is a problem, because paying is how the worn set hears of the level.
+- **The cap** is `GearDefinition.upgrade_cap()`: the track's length, lowered by the piece's
+  `max_upgrade`, or when that is 0 by its rarity's `max_upgrade`.
+- **`GearUpgrades`** (gameplay). `upgrade(bag, piece)` pays the next level's items and raises
+  the level. `refusal` says why not: NOT_GEAR, NO_TRACK, CAPPED, COST.
+- **Saved as a flag**, `upgrade/<piece item id>` → the level. It belongs to the piece, not the
+  wearer.
+- **While worn**, the gains go on the sheet under the source `upgrades`, which `apply`
+  rebuilds from scratch, and `GearSockets` counts the levels' sockets.
+- **A power can wait for a level:** `Power.requires_upgrade`. The piece that carries the power
+  (a worn piece whose kit lists it, or the piece its `requires_gear` names) must have reached
+  that level. Otherwise it is refused with `PowerUse.Reason.UPGRADE`, and the menu says so.
+- **Awakening:** a track with `awaken_into` (an item id) and `awaken_items` (the cost).
+  `GearUpgrades.awaken(bag, piece)`, at the cap, takes the piece and the cost from the bag and
+  gives the new item, which starts at level 0. `awaken_refusal`: NOT_GEAR, NO_TRACK,
+  NOT_READY, COST, BAG_FULL. Crafting's AWAKEN recipes (C7.6) are a second way in.
+- **Gaps:**
+  - No money cost: the base has no money.
+  - No screen until C7.7.
+  - The level is per item, so two copies of a piece, and a foe wearing the same item, share
+    it.
+  - An awakened piece's gems stay recorded on the old item, and the new piece is not put on.
+
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
 | Field | Meaning |
@@ -256,8 +289,8 @@ kind, never dropped at random, never dismantled: IXA, Ea).
 - **`drop_weight` is live.** In a rolled table, a gear line's weight is multiplied by its
   tier's `drop_weight`. 0 means the piece is never rolled; a guaranteed `loot` list still
   gives it.
-- **`color`, `affixes` and `max_upgrade` are declared and not yet read:** the gear screen
-  (C7.7), affixes (C7.2b) and upgrading (C7.5) read them. `sockets` is read since C7.4c.
+- **`color` and `affixes` are declared and not yet read:** the gear screen (C7.7) and affixes
+  (C7.2b) read them. `sockets` is read since C7.4c and `max_upgrade` since C7.5.
 - **A `LootTable`** has `rolls` and `entries`. Each `LootEntry` has `item_id` (empty means
   "nothing this time"), `weight`, `min_count` to `max_count`, and `needs_flag` (the line is in
   the table only while that flag is true).
@@ -831,7 +864,7 @@ weapons themselves.
 | C7.4a | Who may wear what: `needs_level`, `needs_stats`, `cursed`: DONE (0.85.0) | C7.3 |
 | C7.4b | Sets: `GearSetBonus`: DONE (0.86.0) | C7.4a |
 | C7.4c | Sockets: `GemDefinition`: DONE (0.87.0) | C7.4a |
-| C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |
+| C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade`: DONE (0.88.0) | C7.3 |
 | C7.6 | Crafting, the logic: `Recipe`, `Crafting`, dismantle and transmute | C7.2 |
 | C7.7 | The gear screen: slots, compare, rarity colours; weapon and mode on the HUD and battle screen; the form's name beside each member | C7.3 |
 | C7.8 | The craft screen and `CraftStation` | C7.6, C7.7 |

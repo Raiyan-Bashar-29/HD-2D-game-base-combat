@@ -13,11 +13,13 @@ extends RefCounted
 ##     kits of the gear sets' reached tiers (C7.4b). A fighter with no powers of its own gets a
 ##     `PowerSet` the first time a piece or a set lends it a kit.
 ##   - the sets' stat changes, through `GearSetBonuses`, and the socketed gems' stat changes,
-##     through `GearSockets` (C7.4c); each owns its part.
+##     through `GearSockets` (C7.4c), and the upgrade levels' gains, through `GearUpgrades`
+##     (C7.5); each owns its part.
 ##
 ## OWNS: turning the worn pieces into what the wearer borrows.
 ## MUST NOT: decide what is worn, or touch the stat sheet itself. `GearSet` puts the pieces'
-## stat changes on it, `GearSetBonuses` the sets' and `GearSockets` the gems'.
+## stat changes on it, `GearSetBonuses` the sets', `GearSockets` the gems' and `GearUpgrades` the
+## upgrade levels'.
 
 ## Brings what `gear`'s wearer borrows in step with what `gear` has on.
 static func lend(gear: GearSet) -> void:
@@ -44,6 +46,7 @@ static func lend(gear: GearSet) -> void:
 				fighter.lent_tags.append(tag)
 	GearSetBonuses.apply(gear, kits)
 	GearSockets.apply(gear)
+	GearUpgrades.apply(gear)
 	var powers: PowerSet = PowerSet.of(body)
 	if powers == null and not kits.is_empty():
 		powers = PowerSet.new()

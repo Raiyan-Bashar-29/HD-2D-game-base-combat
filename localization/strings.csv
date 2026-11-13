@@ -288,6 +288,7 @@ ui.battle.reason.needs_status,,needs a state it lacks,[~~needs a state it lacks~
 ui.battle.reason.pool_low,,{pool} too low,[~~{pool} too low~~]
 ui.battle.reason.needs_gear,,needs gear it is not wearing,[~~needs gear it is not wearing~~]
 ui.battle.reason.once,,once per battle,[~~once per battle~~]
+ui.battle.reason.needs_upgrade,,its gear is not upgraded enough,[~~its gear is not upgraded enough~~]
 ui.battle.reason.not_equipped,,not equipped,[~~not equipped~~]
 ui.battle.powers,,Powers,[~~Powers~~]
 ui.battle.pool,,{pool} {current} / {max},[~~{pool} {current} / {max}~~]

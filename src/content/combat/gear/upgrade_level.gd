@@ -1,0 +1,51 @@
+class_name UpgradeLevel
+extends Resource
+## One step of a piece's upgrade track (C7.5). See `docs/GEAR.md` § Sets, sockets, upgrading.
+##
+## IN PLAIN WORDS: to reach this level, the player pays `items` from the bag. Once reached, and
+## for every level after it, the piece gives more while worn:
+##   - `stat_bonus`: a share of the piece's own added amounts, given again (0.1 is +10%). It adds
+##     up over the levels, so three levels of 0.1 give +30%. Multipliers and overrides are left
+##     alone.
+##   - `modifiers`: stat changes the piece gains at this level.
+##   - `sockets`: more sockets for gems.
+## A power in the piece's kit can wait for a level (`Power.requires_upgrade`).
+##
+## EVERY LEVEL COSTS SOMETHING. Paying changes the bag, and that is how the worn set hears that
+## the level went up. A level with no cost is a problem.
+##
+## OWNS: the data of one step, and checking it.
+## MUST NOT: know which piece it belongs to or its level, or touch an autoload.
+
+## What reaching this level uses up: item id -> how many.
+@export var items: Dictionary[StringName, int] = {}
+## A share of the piece's added amounts given again from this level on (0.1 is +10%).
+@export var stat_bonus: float = 0.0
+## Stat changes the piece gains from this level on. Leave `source` empty.
+@export var modifiers: Array[StatModifier] = []
+## Sockets the piece gains from this level on.
+@export var sockets: int = 0
+
+
+func problems(where: String) -> PackedStringArray:
+	var found: PackedStringArray = PackedStringArray()
+	if items.is_empty():
+		found.append("%s costs nothing, so the worn set would not hear it" % where)
+	found.append_array(cost_problems(where, items))
+	if stat_bonus < -1.0:
+		found.append("%s takes away more than the whole piece" % where)
+	if sockets < 0:
+		found.append("%s has fewer than zero sockets" % where)
+	for modifier: StatModifier in modifiers:
+		if modifier == null or modifier.stat == &"":
+			found.append("%s has an empty modifier or one with no stat" % where)
+	return found
+
+
+## The problems of a cost list: an unnamed item, or a count below one.
+static func cost_problems(where: String, cost: Dictionary[StringName, int]) -> PackedStringArray:
+	var found: PackedStringArray = PackedStringArray()
+	for item_id: StringName in cost:
+		if item_id == &"" or cost[item_id] < 1:
+			found.append("%s costs an unnamed item or fewer than one" % where)
+	return found

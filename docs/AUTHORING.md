@@ -1315,6 +1315,12 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      `gem/<name>`, its `item_id`, and `modifiers` and/or an `element`. Give pieces `sockets`
      (a rarity's `sockets` add more). To make taking a gem out cost something, name a remover
      item in the project setting `combat/gear/gem_remover`; left empty, it is free.
+   - An upgrade track (C7.5): give the piece an `upgrade`, an `UpgradeTrack` whose `levels`
+     each have a cost in `items` (never empty) and a gain: `stat_bonus` (0.1 is +10% of the
+     piece's added amounts), `modifiers` or `sockets`. Cap it lower with the piece's
+     `max_upgrade` or its rarity's. To make a power wait for a level, set the power's
+     `requires_upgrade`. To let the capped piece awaken, set the track's `awaken_into` (the
+     new item) and `awaken_items` (the cost).
    - A power used once per fight (C6.5f): tick `once_per_battle` on the `Power`. After one use
      it is refused ("once per battle") until the next battle, or in the field until the next
      area. It may also have a cooldown; a passive power must not set it.
