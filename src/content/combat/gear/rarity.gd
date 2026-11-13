@@ -12,8 +12,10 @@ extends ContentEntry
 ## A game adds a tier by adding a file at `data/rarities/<name>.tres` with the id
 ## `rarity/<name>`. No code names any tier.
 ##
-## READ LATER: `color` (the gear screen, C7.5), `affixes` (C7.2b), `sockets` and `max_upgrade`
-## (C7.4). They are here now so a tier is written once.
+## `sockets` adds sockets to every piece of the tier (C7.4c, `GearDefinition.socket_count`).
+##
+## READ LATER: `color` (the gear screen, C7.7), `affixes` (C7.2b) and `max_upgrade` (C7.5).
+## They are here now so a tier is written once.
 ##
 ## OWNS: the data of one tier, and the scaling rule for one stat change.
 ## MUST NOT: know which pieces have it, or touch an autoload.

@@ -29,6 +29,18 @@ extends ContentEntry
 ## ITS OWN SWING CHAIN (C7.3b): `moves` is the field chain the wearer plays while it is worn, in
 ## place of its own; empty means the type's. A dodge in it replaces the wearer's dodge too.
 ##
+## WHO MAY WEAR IT (C7.4a): `wearers` names the fighters allowed (empty means anyone),
+## `needs_level` a party level the wearer must have reached, and `needs_stats` a lowest value
+## for each named stat, read on the wearer's sheet when it is put on. A `cursed` piece cannot be
+## taken off in the ordinary way, and nothing can be put on where it would have to come off.
+## A fighter's starting pieces skip the level and stat checks: they are its own.
+##
+## SETS (C7.4b): `set_bonus` names the set the piece belongs to. Worn together, the set's pieces
+## give the tiers they reach (stat changes, a kit). `GearSetBonuses` counts them.
+##
+## SOCKETS (C7.4c): `sockets` is how many gems the piece holds, and its rarity's `sockets` adds
+## to it (`socket_count`). Which gems are in it is play state, kept by `GearSockets`.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -43,6 +55,14 @@ extends ContentEntry
 @export var modifiers: Array[StatModifier] = []
 ## The fighters who may wear it, by combatant id. Empty means anyone.
 @export var wearers: Array[StringName] = []
+## The party level the wearer must have reached to put it on (C7.4a). 0 means any level.
+@export var needs_level: int = 0
+## The lowest value each named stat must have on the wearer's sheet to put it on (C7.4a), such as
+## `strength` 12. Empty means no stat is needed.
+@export var needs_stats: Dictionary[StringName, float] = {}
+## True when it cannot be taken off in the ordinary way once worn (C7.4a). Losing the item, or a
+## script that forces it, still takes it off.
+@export var cursed: bool = false
 ## The element the wearer's plain attack gets. Empty means the type's.
 @export var element: StringName = &""
 ## What the wearer's plain attack counts as for a weakness, on top of the type's.
@@ -56,6 +76,10 @@ extends ContentEntry
 ## The field chain (and dodge, if it has one) the wearer plays while this is worn (C7.3b). Null
 ## means the type's, if it has one.
 @export var moves: MoveSet
+## The set this piece belongs to (C7.4b). Null means none.
+@export var set_bonus: GearSetBonus
+## How many gems it holds (C7.4c), before its rarity's extra sockets.
+@export var sockets: int = 0
 
 
 ## The slots this piece may be worn in, in the order to try them.
@@ -107,6 +131,17 @@ func all_blocks() -> Array[StringName]:
 	return _joined(type.blocks if type != null else ([] as Array[StringName]), blocks)
 
 
+## How many gems this piece holds: its own sockets plus its rarity's (C7.4c).
+func socket_count() -> int:
+	var tier: Rarity = RarityDb.of(rarity)
+	return sockets + (tier.sockets if tier != null else 0)
+
+
+## True when wearing this piece can lend a kit: its own, or one of its set's tiers.
+func lends_kit() -> bool:
+	return kit != null or (set_bonus != null and set_bonus.has_kit())
+
+
 func may_wear(who: StringName) -> bool:
 	return wearers.is_empty() or wearers.has(who)
 
@@ -133,6 +168,14 @@ func problems() -> PackedStringArray:
 		found.append_array(kit.problems(where))
 	if moves != null:
 		found.append_array(moves.problems(where + " moves"))
+	if set_bonus != null:
+		found.append_array(set_bonus.problems(where))
+	if sockets < 0:
+		found.append("%s has fewer than zero sockets" % where)
+	if needs_level < 0:
+		found.append("%s needs a level below zero" % where)
+	if needs_stats.has(&""):
+		found.append("%s needs an unnamed stat" % where)
 	if attack_tags.has(&""):
 		found.append("%s lists an unnamed attack tag" % where)
 	for blocked: StringName in blocks:

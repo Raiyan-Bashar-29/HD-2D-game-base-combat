@@ -74,8 +74,8 @@ row that builds it. The hero powers it leans on are in [`POWERS.md`](POWERS.md).
 | `passives` | Dropped in C7.3: give the piece a `kit` and list them in the kit's `passives` |
 | `wearers` | Combatant ids that may wear it; empty means anyone |
 | `needs_level`, `needs_stats` | Requirements to wear it |
-| `set_id` | The set it belongs to (§ Sets) |
-| `sockets` | How many gems it holds (§ Sockets) |
+| `set_bonus` | The set it belongs to, a `GearSetBonus` (§ Sets; the design first called this `set_id`) |
+| `sockets` | How many gems it holds, before its rarity's extra sockets (§ Sockets; built in C7.4c) |
 | `max_upgrade`, `upgrade` | The upgrade track (§ Upgrading) |
 | `blocks` | Slots the piece takes up besides its own. A two-handed weapon is `blocks = [offhand]` (built in C7.1c; the design first called this `two_handed`) |
 | `cursed` | Cannot be taken off in the ordinary way |
@@ -162,6 +162,65 @@ worn set. The rules:
 
 A foe drops what it wears when its `loot_table` lists the piece (C7.2).
 
+**As built (C7.4a, 0.85.0): who may wear what.**
+
+- **`needs_level`.** The party level the wearer must have reached (`Party.level_of`, the flag
+  `level/<id>`). A foe has level 1.
+- **`needs_stats`.** A lowest value for each named stat, read on the wearer's sheet as the piece
+  goes on (`strength` 12).
+- **A starting piece skips both**, as it skips the bag: it is the fighter's own.
+- **`cursed`.** Once worn, `take_off` leaves it on unless forced (`take_off(item_id, true)`, for a
+  script that lifts the curse). A piece that would push it out is refused: one put into its
+  slot, one that blocks its slot, or one put into a slot the cursed piece blocks. It may still
+  move between its own slots, and losing the item takes it off.
+- **Refusals.** `GearSet.refusal(item_id, into)` gives `LEVEL_TOO_LOW`, `STATS_TOO_LOW` or `CURSED`
+  beside the older ones; `into` is the slot asked for, as in `wear`.
+- **The lending moved** into `GearLending.lend`, so `GearSet` stays within its budget.
+- **Gaps.** The checks run only when a piece goes on: a level or a stat that drops later leaves it
+  worn. No remover item yet. No screen shows a refusal until C7.7.
+
+**As built (C7.4b, 0.86.0): sets.**
+
+- **`GearSetBonus`** (content): a `set_id` (`gear_set/<name>`) and `tiers`. Each piece of the set
+  names it in `set_bonus`, the way it names its `type`; one shared `.tres` is the tidy way.
+- **`GearSetTier`**: `pieces` (the worn count that reaches it), `modifiers` and a `kit`. Every
+  reached tier counts, so 4 pieces give the 2-piece tier too. A status at a tier is a kit
+  passive, as for special gear.
+- **`GearSetBonuses.apply`**, called by `GearLending` after every change: it takes every set's
+  stat changes off the sheet, counts the worn pieces per `set_id`, puts each reached tier's
+  stat changes on under `set/<set id>` and lends its kit under `set/<set id>/<pieces>` through
+  `PowerSet.lend`, beside the pieces' own kits. It keeps nothing, so a refresh or a load
+  cannot double a bonus.
+- **Gaps.** No set name or tier list on a screen until C7.7. Rarity does not scale a set's stat
+  changes. Two pieces of one set carrying different bonus files are not flagged: the first
+  worn decides.
+
+**As built (C7.4c, 0.87.0): sockets.**
+
+- **`GemDefinition`** (content, `data/gems/<name>.tres`, id `gem/<name>`, found by `GemDb`): the
+  `item_id` it is, `modifiers` and an `element`. A gem that gives neither is a problem.
+- **How many:** `GearDefinition.sockets` plus the piece's rarity's `sockets`
+  (`socket_count()`).
+- **`GearSockets`** (gameplay). `socket(bag, piece, gem)` puts the gem into the first free
+  socket and uses the item up. `unsocket(bag, piece, index)` gives it back. When the project
+  setting `combat/gear/gem_remover` names an item, taking a gem out uses up one of those, and
+  empty means free. `socket_refusal` and `removal_refusal` say why not: NOT_GEAR, NOT_GEM,
+  NOT_CARRIED, NO_FREE_SOCKET, EMPTY_SOCKET, NO_REMOVER, BAG_FULL. The piece need not be worn
+  or carried (a starting piece is the fighter's own).
+- **Saved as flags**, `socket/<piece item id>/<index>` → the gem's item id. They belong to the
+  piece, not the wearer, so whoever wears it next gets the gems.
+- **While worn:**
+  - A gem's stat changes go on the sheet under the source `gems`, which `apply` rebuilds from
+    scratch.
+  - Its element counts before the piece's own.
+  - Socketing always changes the bag, so every `GearSet` re-lends on `inventory_changed`.
+- **Gaps:**
+  - No screen until C7.7.
+  - Rarity doesn't scale a gem.
+  - There is no rule limiting a gem to certain slots.
+  - Two copies of one piece share their sockets, because the bag counts items by id.
+  - A piece that leaves the bag keeps its gems recorded.
+
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
 | Field | Meaning |
@@ -197,8 +256,8 @@ kind, never dropped at random, never dismantled: IXA, Ea).
 - **`drop_weight` is live.** In a rolled table, a gear line's weight is multiplied by its
   tier's `drop_weight`. 0 means the piece is never rolled; a guaranteed `loot` list still
   gives it.
-- **`color`, `affixes`, `sockets` and `max_upgrade` are declared and not yet read:** the gear
-  screen (C7.5), affixes (C7.2b) and sockets and upgrading (C7.4) read them.
+- **`color`, `affixes` and `max_upgrade` are declared and not yet read:** the gear screen
+  (C7.7), affixes (C7.2b) and upgrading (C7.5) read them. `sockets` is read since C7.4c.
 - **A `LootTable`** has `rolls` and `entries`. Each `LootEntry` has `item_id` (empty means
   "nothing this time"), `weight`, `min_count` to `max_count`, and `needs_flag` (the line is in
   the table only while that flag is true).
@@ -769,7 +828,9 @@ weapons themselves.
 | C6.9e | The caster's kit: `caster_kit`, held while the battlefield stands: DONE (0.81.0) | C6.9d |
 | C6.9f | The place: `PlaceLook`, `moves_fight`, `weather`: DONE (0.82.0) | C6.9e, C6.5d |
 | C6.9g | The log and HUD readout: `battlefield_raised`, `battlefield_lowered`, `battlefield_clashed`, the log lines and the HUD line: DONE (0.83.0) | C6.9f |
-| C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |
+| C7.4a | Who may wear what: `needs_level`, `needs_stats`, `cursed`: DONE (0.85.0) | C7.3 |
+| C7.4b | Sets: `GearSetBonus`: DONE (0.86.0) | C7.4a |
+| C7.4c | Sockets: `GemDefinition`: DONE (0.87.0) | C7.4a |
 | C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |
 | C7.6 | Crafting, the logic: `Recipe`, `Crafting`, dismantle and transmute | C7.2 |
 | C7.7 | The gear screen: slots, compare, rarity colours; weapon and mode on the HUD and battle screen; the form's name beside each member | C7.3 |
