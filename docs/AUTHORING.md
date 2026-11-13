@@ -1304,6 +1304,10 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      the `GearDefinition` (for this piece, which wins) a `moves` `MoveSet`. While it is worn, the
      wearer plays its `attack_chain` in the field, and its `dodge` if it has one; the wearer's own
      skills stay. A form's moves still go on top.
+   - Who may wear a piece (C7.4a): `wearers` (combatant ids; empty means anyone), `needs_level`
+     (a party level), `needs_stats` (a lowest value per stat, such as `strength` 12) and
+     `cursed` (once on, it stays on until the item is lost or a script forces it off). A
+     fighter's starting `gear` skips the level and stat checks.
    - A power used once per fight (C6.5f): tick `once_per_battle` on the `Power`. After one use
      it is refused ("once per battle") until the next battle, or in the field until the next
      area. It may also have a cooldown; a passive power must not set it.

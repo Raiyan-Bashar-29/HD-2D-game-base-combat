@@ -91,6 +91,7 @@ const LIST: Array[String] = [
 	"res://tests/unit/loot_test.gd",
 	"res://tests/unit/gear_powers_test.gd",
 	"res://tests/unit/gear_moves_test.gd",
+	"res://tests/unit/gear_requirements_test.gd",
 	"res://tests/unit/command_overlay_test.gd",
 	"res://tests/unit/party_rewards_test.gd",
 ]

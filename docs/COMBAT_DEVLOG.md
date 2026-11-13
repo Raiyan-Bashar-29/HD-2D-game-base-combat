@@ -3890,3 +3890,38 @@ their default mode a chain on the piece.
 
 **Gaps.** A field enemy's worn weapon lends no chain (its brain picks moves itself). A battle's
 ATTACK has no chain. A follower's brain still names its own first swing to start a chain.
+
+## 2026-11-13 — C7.4a · Who may wear what (combat 0.85.0)
+
+**Did.** C7.4 is split into three rows: C7.4a requirements, C7.4b sets and C7.4c sockets. This
+entry is C7.4a.
+
+- `GearDefinition.needs_level`, `needs_stats` and `cursed`. `problems()` flags a level below
+  zero and an unnamed stat.
+- `GearSet.refusal(item_id, into)` adds `LEVEL_TOO_LOW` (`Party.level_of`), `STATS_TOO_LOW` (the
+  wearer's sheet) and `CURSED` (a cursed piece would have to come off). A starting piece skips
+  the level and stat checks.
+- `take_off(item_id, force)` leaves a cursed piece on unless forced. Moving it between its own
+  slots and losing the item both force it.
+- `_displaced` is the one list of pieces a new one pushes out. Both the curse check and
+  `_make_room` read it.
+- The lending (element, tags, moves, kits) moved out of `GearSet` into `GearLending.lend`.
+  `GearSet` was at 243 of 250 lines and is now at 238.
+
+**Why.** `GEAR.md` lists `needs_level`, `needs_stats` and `cursed` among a piece's fields, and
+`refusal` was written as "the one question" a new rule goes into. Sets and sockets each need a
+new content shape and saved state, so they are separate rows.
+
+**Connects.** `Party.level_of` (C3), the `StatSheet`, `innate` starting pieces (C7.1b), `blocks`
+(C7.1c).
+
+**Verified.** Boot 0 warnings, 0 errors (the "4 resources still in use" line at exit was already
+there before this change). Suite 0 failed; `gear_requirements_test.gd` 13/13. Red first: with
+the curse and level checks disabled, 5 of its checks failed. Seven checkers exit 0. Stripped run
+0 failed.
+
+**Unblocks.** C7.4b (sets) and C7.4c (sockets). The signature pieces' `wearers` and curses (C7.9).
+
+**Gaps.** The checks run only as a piece goes on, so a level or a stat that drops later leaves it
+worn. There is no remover item for a curse yet: a script forces `take_off`. No screen shows a
+refusal until C7.7.

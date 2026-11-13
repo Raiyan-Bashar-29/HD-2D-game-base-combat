@@ -46,6 +46,14 @@ extends Node
 ## (a two-handed sword empties the off hand), and a piece put into a blocked slot takes the
 ## blocker off (a shield takes the two-handed sword off).
 ##
+## WHO MAY WEAR WHAT (C7.4a). Besides `wearers`, a piece may need a party level
+## (`needs_level`, read through `Party.level_of`) and stat values on the wearer's sheet
+## (`needs_stats`). A starting piece skips both. A `cursed` piece stays on: `take_off` refuses
+## it unless forced, and a piece that would push it out of its slot is refused (CURSED). Losing
+## the item still takes it off. The checks run when a piece is put on, not again later.
+##
+## The lending itself (element, tags, moves, kits) is done by `GearLending`.
+##
 ## THE SLOT LIST is one `GearRules` file a game names in `[combat] gear/rules`. With no setting,
 ## the nine default slots are used.
 ##
@@ -63,6 +71,12 @@ enum Refusal {
 	WRONG_WEARER,
 	## None of the piece's slots is in this set's slot list.
 	NO_SLOT,
+	## The wearer's party level is below the piece's `needs_level` (C7.4a).
+	LEVEL_TOO_LOW,
+	## A stat on the wearer's sheet is below what the piece's `needs_stats` asks (C7.4a).
+	STATS_TOO_LOW,
+	## A cursed piece would have to come off to make room (C7.4a).
+	CURSED,
 }
 
 const CATEGORY: String = "gear"
@@ -178,8 +192,8 @@ func key(item_id: StringName) -> StringName:
 
 
 ## Why `item_id` cannot be worn here, or NONE. Every caller asks this one question, so a new
-## rule (a level, a curse) goes here and nowhere else.
-func refusal(item_id: StringName) -> Refusal:
+## rule goes here and nowhere else. `into` is the slot asked for, as in `wear`.
+func refusal(item_id: StringName, into: StringName = &"") -> Refusal:
 	var piece: GearDefinition = GearDb.for_item(item_id)
 	if piece == null:
 		return Refusal.NOT_GEAR
@@ -192,6 +206,17 @@ func refusal(item_id: StringName) -> Refusal:
 		return Refusal.NOT_CARRIED
 	if _allowed(piece).is_empty():
 		return Refusal.NO_SLOT
+	if not innate.has(item_id):
+		if Party.level_of(who) < piece.needs_level:
+			return Refusal.LEVEL_TOO_LOW
+		for stat: StringName in piece.needs_stats:
+			if _sheet().value(stat) < piece.needs_stats[stat]:
+				return Refusal.STATS_TOO_LOW
+	var slot: StringName = _pick(piece, into)
+	if slot != &"":
+		for other_id: StringName in _displaced(piece, slot):
+			if GearDb.for_item(other_id).cursed:
+				return Refusal.CURSED
 	return Refusal.NONE
 
 
@@ -199,14 +224,14 @@ func refusal(item_id: StringName) -> Refusal:
 ## free slot is used, and when none is free, the first one. The piece that was there comes off.
 ## Returns whether anything changed.
 func wear(item_id: StringName, into: StringName = &"") -> bool:
-	if refusal(item_id) != Refusal.NONE:
+	if refusal(item_id, into) != Refusal.NONE:
 		return false
 	var piece: GearDefinition = GearDb.for_item(item_id)
 	var slot: StringName = _pick(piece, into)
 	if slot == &"" or slot_of(item_id) == slot:
 		return false
-	# A piece moved between two slots it fits comes off the old one first.
-	take_off(item_id)
+	# A piece moved between two slots it fits comes off the old one first, cursed or not.
+	take_off(item_id, true)
 	_make_room(piece, slot)
 	if kept:
 		Flags.set_flag(key(item_id), String(slot))
@@ -219,9 +244,11 @@ func wear(item_id: StringName, into: StringName = &"") -> bool:
 
 
 ## Takes a piece off. The flag is erased, not set empty, so an empty slot leaves nothing in a
-## save. Returns whether anything changed.
-func take_off(item_id: StringName) -> bool:
-	if slot_of(item_id) == &"":
+## save. A cursed piece stays on unless `force` is true (a script lifting the curse). Returns
+## whether anything changed.
+func take_off(item_id: StringName, force: bool = false) -> bool:
+	var piece: GearDefinition = GearDb.for_item(item_id)
+	if slot_of(item_id) == &"" or (not force and piece != null and piece.cursed):
 		return false
 	if kept:
 		Flags.erase_flag(key(item_id))
@@ -310,53 +337,32 @@ func _revalidate() -> void:
 		return
 	for item_id: StringName in worn_ids():
 		if not innate.has(item_id) and not bag.has(item_id):
-			take_off(item_id)
+			take_off(item_id, true)
 
 
-# Empties what `piece` needs to go into `slot`: the slot itself, every slot the piece blocks,
-# and any worn piece that blocks `slot`.
+# Empties what `piece` needs to go into `slot`. `refusal` already made sure none is cursed.
 func _make_room(piece: GearDefinition, slot: StringName) -> void:
+	for other_id: StringName in _displaced(piece, slot):
+		take_off(other_id, true)
+
+
+# The other worn pieces that must come off for `piece` to go into `slot`: the one in the slot,
+# those in every slot the piece blocks, and any that blocks `slot`.
+func _displaced(piece: GearDefinition, slot: StringName) -> Array[StringName]:
 	var needed: Array[StringName] = [slot]
 	needed.append_array(piece.all_blocks())
+	var out: Array[StringName] = []
 	for other_id: StringName in worn_ids():
 		var other: GearDefinition = GearDb.for_item(other_id)
 		var blocks_it: bool = other != null and other.all_blocks().has(slot)
-		if blocks_it or needed.has(slot_of(other_id)):
-			take_off(other_id)
+		if other_id != piece.item_id and (blocks_it or needed.has(slot_of(other_id))):
+			out.append(other_id)
+	return out
 
 
-# Writes what the worn pieces lend onto the wearer: the plain attack's element, its extra
-# weakness tags and the field chain (C7.3b). Slots are read in the slot list's order, so the
-# weapon speaks first.
+# What the worn pieces lend (element, tags, moves, kits) is written by `GearLending`.
 func _lend() -> void:
-	var fighter: Combatant = Combatant.of(get_parent())
-	if fighter == null:
-		return
-	fighter.lent_element = &""
-	fighter.lent_tags.clear()
-	fighter.lent_moves = null
-	var kits: Dictionary[StringName, PowerKit] = {}
-	for slot: StringName in rules.slots:
-		var piece: GearDefinition = GearDb.for_item(worn(slot))
-		if piece == null:
-			continue
-		if piece.kit != null:
-			kits[StringName(KIT_PREFIX + String(piece.item_id))] = piece.kit
-		if fighter.lent_element == &"":
-			fighter.lent_element = piece.strike_element()
-		if fighter.lent_moves == null:
-			fighter.lent_moves = piece.strike_moves()
-		for tag: StringName in piece.all_attack_tags():
-			if not fighter.lent_tags.has(tag):
-				fighter.lent_tags.append(tag)
-	# The wearer's `PowerSet` holds the kits. A fighter with no powers of its own gets a set the
-	# first time a piece lends it a kit.
-	var powers: PowerSet = PowerSet.of(get_parent())
-	if powers == null and not kits.is_empty():
-		powers = PowerSet.new()
-		get_parent().add_child(powers)
-	if powers != null:
-		powers.lend(kits)
+	GearLending.lend(self)
 
 
 func _apply(item_id: StringName, piece: GearDefinition) -> void:

@@ -29,6 +29,12 @@ extends ContentEntry
 ## ITS OWN SWING CHAIN (C7.3b): `moves` is the field chain the wearer plays while it is worn, in
 ## place of its own; empty means the type's. A dodge in it replaces the wearer's dodge too.
 ##
+## WHO MAY WEAR IT (C7.4a): `wearers` names the fighters allowed (empty means anyone),
+## `needs_level` a party level the wearer must have reached, and `needs_stats` a lowest value
+## for each named stat, read on the wearer's sheet when it is put on. A `cursed` piece cannot be
+## taken off in the ordinary way, and nothing can be put on where it would have to come off.
+## A fighter's starting pieces skip the level and stat checks: they are its own.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -43,6 +49,14 @@ extends ContentEntry
 @export var modifiers: Array[StatModifier] = []
 ## The fighters who may wear it, by combatant id. Empty means anyone.
 @export var wearers: Array[StringName] = []
+## The party level the wearer must have reached to put it on (C7.4a). 0 means any level.
+@export var needs_level: int = 0
+## The lowest value each named stat must have on the wearer's sheet to put it on (C7.4a), such as
+## `strength` 12. Empty means no stat is needed.
+@export var needs_stats: Dictionary[StringName, float] = {}
+## True when it cannot be taken off in the ordinary way once worn (C7.4a). Losing the item, or a
+## script that forces it, still takes it off.
+@export var cursed: bool = false
 ## The element the wearer's plain attack gets. Empty means the type's.
 @export var element: StringName = &""
 ## What the wearer's plain attack counts as for a weakness, on top of the type's.
@@ -133,6 +147,10 @@ func problems() -> PackedStringArray:
 		found.append_array(kit.problems(where))
 	if moves != null:
 		found.append_array(moves.problems(where + " moves"))
+	if needs_level < 0:
+		found.append("%s needs a level below zero" % where)
+	if needs_stats.has(&""):
+		found.append("%s needs an unnamed stat" % where)
 	if attack_tags.has(&""):
 		found.append("%s lists an unnamed attack tag" % where)
 	for blocked: StringName in blocks:

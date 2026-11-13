@@ -162,6 +162,23 @@ worn set. The rules:
 
 A foe drops what it wears when its `loot_table` lists the piece (C7.2).
 
+**As built (C7.4a, 0.85.0): who may wear what.**
+
+- **`needs_level`.** The party level the wearer must have reached (`Party.level_of`, the flag
+  `level/<id>`). A foe has level 1.
+- **`needs_stats`.** A lowest value for each named stat, read on the wearer's sheet as the piece
+  goes on (`strength` 12).
+- **A starting piece skips both**, as it skips the bag: it is the fighter's own.
+- **`cursed`.** Once worn, `take_off` leaves it on unless forced (`take_off(item_id, true)`, for a
+  script that lifts the curse). A piece that would push it out is refused: one put into its
+  slot, one that blocks its slot, or one put into a slot the cursed piece blocks. It may still
+  move between its own slots, and losing the item takes it off.
+- **Refusals.** `GearSet.refusal(item_id, into)` gives `LEVEL_TOO_LOW`, `STATS_TOO_LOW` or `CURSED`
+  beside the older ones; `into` is the slot asked for, as in `wear`.
+- **The lending moved** into `GearLending.lend`, so `GearSet` stays within its budget.
+- **Gaps.** The checks run only when a piece goes on: a level or a stat that drops later leaves it
+  worn. No remover item yet. No screen shows a refusal until C7.7.
+
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
 | Field | Meaning |
@@ -769,7 +786,9 @@ weapons themselves.
 | C6.9e | The caster's kit: `caster_kit`, held while the battlefield stands: DONE (0.81.0) | C6.9d |
 | C6.9f | The place: `PlaceLook`, `moves_fight`, `weather`: DONE (0.82.0) | C6.9e, C6.5d |
 | C6.9g | The log and HUD readout: `battlefield_raised`, `battlefield_lowered`, `battlefield_clashed`, the log lines and the HUD line: DONE (0.83.0) | C6.9f |
-| C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |
+| C7.4a | Who may wear what: `needs_level`, `needs_stats`, `cursed`: DONE (0.85.0) | C7.3 |
+| C7.4b | Sets: `GearSetBonus` | C7.4a |
+| C7.4c | Sockets: `GemDefinition` | C7.4a |
 | C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |
 | C7.6 | Crafting, the logic: `Recipe`, `Crafting`, dismantle and transmute | C7.2 |
 | C7.7 | The gear screen: slots, compare, rarity colours; weapon and mode on the HUD and battle screen; the form's name beside each member | C7.3 |
