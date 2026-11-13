@@ -81,6 +81,8 @@ const LIST: Array[String] = [
 	"res://tests/unit/battlefield_hit_test.gd",
 	"res://tests/unit/battlefield_clash_test.gd",
 	"res://tests/unit/battlefield_kit_test.gd",
+	"res://tests/unit/battlefield_place_test.gd",
+	"res://tests/unit/battlefield_news_test.gd",
 	"res://tests/unit/power_barrier_test.gd",
 	"res://tests/unit/power_timed_block_test.gd",
 	"res://tests/unit/gear_test.gd",
@@ -88,6 +90,7 @@ const LIST: Array[String] = [
 	"res://tests/unit/gear_attack_test.gd",
 	"res://tests/unit/loot_test.gd",
 	"res://tests/unit/gear_powers_test.gd",
+	"res://tests/unit/gear_moves_test.gd",
 	"res://tests/unit/command_overlay_test.gd",
 	"res://tests/unit/party_rewards_test.gd",
 ]

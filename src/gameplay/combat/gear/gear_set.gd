@@ -34,6 +34,9 @@ extends Node
 ## (`lent_element`, `lent_tags`). Pieces are read in the slot list's order, so the weapon comes
 ## first: the first piece with an element decides it, and every piece's tags are joined.
 ##
+## A WEAPON'S SWING CHAIN (C7.3b). The first worn piece with moves (the weapon, by the slot
+## order) is written onto the wearer as `lent_moves`; `Combatant.field_moves` plays it.
+##
 ## SPECIAL GEAR (C7.3). A piece with a `kit` lends the wearer hero powers while it is worn. This
 ## set hands the worn pieces' kits to the wearer's `PowerSet` after every change, in the slot
 ## list's order, so the weapon's powers are listed before an accessory's. A kit that stays worn
@@ -322,14 +325,16 @@ func _make_room(piece: GearDefinition, slot: StringName) -> void:
 			take_off(other_id)
 
 
-# Writes what the worn pieces lend onto the wearer: the plain attack's element and its extra
-# weakness tags. Slots are read in the slot list's order, so the weapon speaks first.
+# Writes what the worn pieces lend onto the wearer: the plain attack's element, its extra
+# weakness tags and the field chain (C7.3b). Slots are read in the slot list's order, so the
+# weapon speaks first.
 func _lend() -> void:
 	var fighter: Combatant = Combatant.of(get_parent())
 	if fighter == null:
 		return
 	fighter.lent_element = &""
 	fighter.lent_tags.clear()
+	fighter.lent_moves = null
 	var kits: Dictionary[StringName, PowerKit] = {}
 	for slot: StringName in rules.slots:
 		var piece: GearDefinition = GearDb.for_item(worn(slot))
@@ -339,6 +344,8 @@ func _lend() -> void:
 			kits[StringName(KIT_PREFIX + String(piece.item_id))] = piece.kit
 		if fighter.lent_element == &"":
 			fighter.lent_element = piece.strike_element()
+		if fighter.lent_moves == null:
+			fighter.lent_moves = piece.strike_moves()
 		for tag: StringName in piece.all_attack_tags():
 			if not fighter.lent_tags.has(tag):
 				fighter.lent_tags.append(tag)

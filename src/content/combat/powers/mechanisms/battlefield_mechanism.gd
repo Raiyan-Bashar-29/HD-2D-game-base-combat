@@ -29,6 +29,10 @@ extends FormMechanism
 ## `refinement` (scaled by `refinement_stat` when one is named) telling which is stronger
 ## (`BattlefieldClash`). `closed` is a barrier: nobody crosses its edge (`BattlefieldWall`).
 ##
+## THE PLACE (C6.9f): `place` is a `PlaceLook` the ground and sky take on while it stands. `moves_fight`
+## takes the fighters inside to a place of their own until it ends, the rest of the fight waiting
+## outside. `has_weather` with `weather` holds an upstream weather kind while it stands.
+##
 ## OWNS: the shape of a battlefield.
 ## MUST NOT: hold running state. `BattlefieldRun` (gameplay) runs it.
 
@@ -69,6 +73,13 @@ enum Clash { STRONGER_WINS, BOTH_END, OVERWRITE, BOTH_STAND }
 ## C6.9e: a kit the caster holds only while the battlefield stands (UBW's sword barrage). It goes on
 ## when the field rises and comes off when it ends, however it ends.
 @export var caster_kit: PowerKit = null
+## C6.9f: the look the ground and sky take on while it stands (null: none).
+@export var place: PlaceLook = null
+## C6.9f: the fighters inside are taken to another place until it ends; the rest wait outside.
+@export var moves_fight: bool = false
+## C6.9f: holds `weather` while it stands, when set (so CLEAR can be held too).
+@export var has_weather: bool = false
+@export var weather: GameEnums.WeatherKind = GameEnums.WeatherKind.CLEAR
 
 
 func kind() -> StringName:
@@ -110,4 +121,6 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has a negative radius, time, turn count or refinement" % context)
 	if caster_kit != null:
 		found.append_array(caster_kit.problems("%s caster kit" % context))
+	if place != null:
+		found.append_array(place.problems("%s place" % context))
 	return found

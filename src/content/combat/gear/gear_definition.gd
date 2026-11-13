@@ -26,6 +26,9 @@ extends ContentEntry
 ## gauges and stat bonuses for as long as it is worn. A weapon's modes are the kit's forms, and
 ## a weapon's own ammunition is a pool: give the piece a `max_<pool>` modifier.
 ##
+## ITS OWN SWING CHAIN (C7.3b): `moves` is the field chain the wearer plays while it is worn, in
+## place of its own; empty means the type's. A dodge in it replaces the wearer's dodge too.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -50,6 +53,9 @@ extends ContentEntry
 @export var rarity: StringName = &""
 ## Hero powers the wearer has while this is worn (C7.3). Null means none.
 @export var kit: PowerKit
+## The field chain (and dodge, if it has one) the wearer plays while this is worn (C7.3b). Null
+## means the type's, if it has one.
+@export var moves: MoveSet
 
 
 ## The slots this piece may be worn in, in the order to try them.
@@ -82,6 +88,13 @@ func strike_element() -> StringName:
 	if element != &"" or type == null:
 		return element
 	return type.element
+
+
+## The moves this piece lends in the field: its own, else its type's, else null (C7.3b).
+func strike_moves() -> MoveSet:
+	if moves != null or type == null:
+		return moves
+	return type.moves
 
 
 ## Every weakness tag this piece lends: the type's, then its own, each once.
@@ -118,6 +131,8 @@ func problems() -> PackedStringArray:
 		found.append("%s names the rarity %s, which does not exist" % [where, rarity])
 	if kit != null:
 		found.append_array(kit.problems(where))
+	if moves != null:
+		found.append_array(moves.problems(where + " moves"))
 	if attack_tags.has(&""):
 		found.append("%s lists an unnamed attack tag" % where)
 	for blocked: StringName in blocks:

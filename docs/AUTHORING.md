@@ -1300,6 +1300,10 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
    - Gear that grants powers (C7.3): give a `GearDefinition` a `kit` (a `PowerKit`). The wearer
      has its powers while the piece is worn. A power that needs a weapon in hand sets
      `requires_gear` to the item id, or to a gear type's id. See `GEAR.md` § Special gear.
+   - A weapon's own swing chain (C7.3b): give the `GearType` (for every piece of the kind) or
+     the `GearDefinition` (for this piece, which wins) a `moves` `MoveSet`. While it is worn, the
+     wearer plays its `attack_chain` in the field, and its `dodge` if it has one; the wearer's own
+     skills stay. A form's moves still go on top.
    - A power used once per fight (C6.5f): tick `once_per_battle` on the `Power`. After one use
      it is refused ("once per battle") until the next battle, or in the field until the next
      area. It may also have a cooldown; a passive power must not set it.
@@ -1352,6 +1356,7 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      `cancelled_by` is a status id: a target holding it is only rolled for. `broken_by_tags`:
      a landed field hit on the caster carrying one of them ends the battlefield at once, with no
      aftermath (a battle attack does not break it yet).
+      The place (C6.9f): `place` is a `PlaceLook` (`id` like `place/<name>`, a `name_key` in `localization/strings.csv`, and a `tint`) the field gives while it stands. `has_weather: true` with `weather` (a `GameEnums.WeatherKind`) holds that weather while it stands and puts the old one back after. `moves_fight: true` takes everyone in reach, the caster too, to a place of their own until it ends; give it a `radius` so it does not take the whole fight. Both work in the field; in a battle `moves_fight` changes nothing. The log and HUD (C6.9g) name a battlefield by its power's `name_key` and its place by the place's `name_key`, so give both a row in `strings.csv`.
       Caster kit (C6.9e): `caster_kit` (a `PowerKit`) is held by the caster only while the battlefield stands: it goes on at the raise, after the clash check, and comes off at the lower, however the field ends. Give its powers and stat bonuses the usual `kit_id`, since they are listed with the caster's own.
       Clashes (C6.9d): `layer` (TERRAIN, WEATHER or DOMAIN) keeps a battlefield apart from the others. Two in the same layer and on the same clock that overlap clash by `clash` (STRONGER_WINS, BOTH_END, OVERWRITE or BOTH_STAND), the newer one's rule deciding. `refinement` (a number, scaled by the caster's `refinement_stat` when named) says who is stronger. `closed: true` is a barrier: in the field a fighter who would walk out is held at the edge. In a battle a closed field changes nothing yet.
    - A form you can see (C6.5d): give a `FormMechanism` a `look` (a `LookDef`, saved under

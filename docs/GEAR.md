@@ -160,7 +160,7 @@ worn set. The rules:
   piece on empties those slots; putting a piece into one of them takes the blocker off. A
   two-handed sword is `blocks = [offhand]`. A file that blocks its own slot is a problem.
 
-Still to come: the weapon's own attack chain (C7.3b). A foe drops what it wears when its `loot_table` lists the piece (C7.2).
+A foe drops what it wears when its `loot_table` lists the piece (C7.2).
 
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
@@ -254,8 +254,22 @@ A piece with a `kit` gives its powers while worn. This is how every signature we
   list would be the same thing twice.
 - **Rules for authors.** Two kits on one fighter must not share a power id or a passive's
   status id; the set tells kits apart by those ids.
-- **Not built here:** the weapon's own swing chain (`moves`, C7.3b). A form of a gear kit held
-  at save time is found again on load only if the piece is still worn when the save is read.
+- **Not built here:** a form of a gear kit held at save time is found again on load only if the piece is still worn when the save is read.
+
+**As built (C7.3b, combat 0.84.0).**
+
+- `GearType.moves` and `GearDefinition.moves` are `MoveSet`s. `strike_moves()` is the piece's
+  own, else its type's, else none. `problems()` checks either set.
+- `GearSet` writes the first worn piece with moves, in the slot list's order (so the weapon),
+  into `Combatant.lent_moves`, after every change, beside `lent_element` and `lent_tags`.
+- `Combatant.field_moves(own)` is what the fighter plays before any power: the weapon's
+  `attack_chain` (the fighter's own if the weapon's is empty), the weapon's `dodge` (else the
+  fighter's own), and the fighter's own `skills`, the same rule a form's moves follow. The set
+  is kept until `own` or the lent moves change, so a form's cache keyed on it does not grow.
+- `ActionFighter.current_moves` and `PartyFollower` pass it to `PowerSet.moves_over`, so a form
+  puts its own chain on top: form over weapon over own.
+- **Not built here:** a field enemy's weapon lends no chain (its brain picks moves itself); a
+  battle's ATTACK has no chain.
 
 ### Sets, sockets, upgrading
 
@@ -525,9 +539,13 @@ strike, a skill and a battle attack alike. `cancelled_by` names a status that, h
 leaves that target to a roll. `broken_by_tags`: a landed hit on the caster carrying one of them
 brings the battlefield down at once (`BattlefieldRun.break_down`, no aftermath), checked in
 `Hurtbox`; **a battle attack does not break it yet**. A barrier's `bypass_tags` reads the hit's tags.
-**Still to build:** C6.9f (the place: `PlaceLook`, `moves_fight`, `weather`), C6.9g (the log and the HUD), `summons` (C8.10), a sphere left at a point and ZONE, fighters picked by tag, `resist_field_<id>`.
+**Still to build:** `summons` (C8.10), a sphere left at a point and ZONE, fighters picked by tag, `resist_field_<id>`.
 
 **As built (C6.9d, 0.80.0):** clashes and `closed`. `BattlefieldClash.allows` runs before a battlefield rises: it compares it with each standing battlefield in the same `layer`, on the same clock, that overlaps it (in a battle always; in the field when either has no radius or the casters are within the larger radius). The newer one's `clash` decides, and `refinement` (times one plus `refinement_stat`, when named) says who is stronger. A battlefield that loses is shattered at once, with no aftermath, and so is a rival it beats in BOTH_END. `closed` makes `BattlefieldRun._refresh` keep those already inside, and `BattlefieldWall.hold` walks their bodies back to the edge each tick. Not built yet: a battle's edge (no distances until summons) and clashes re-judged when a stat changes.
+
+**As built (C6.9g, 0.83.0):** the log and HUD. A battlefield says on `Events` when it stands (`battlefield_raised`), when it comes down (`battlefield_lowered`, `broken` when a hit, a lost clash or its caster's fall shattered it) and when it clashes (`battlefield_clashed`, newcomer first). The battle log writes a line for each, naming the battlefield and, on rising, its place; the field HUD shows a line for every battlefield standing in the player's fight, with its place in brackets. `BattlefieldNews` finds a battlefield and its name keys for both.
+
+**As built (C6.9f, 0.82.0):** the place. `place` is a `PlaceLook` (`id`, `name_key`, `tint`) the field gives while it stands; nothing draws it yet, and C6.9g's HUD names it. `has_weather` with `weather` forces that upstream `Weather` kind at the raise and puts the old one back at the lower, unless something else changed the weather meanwhile. `moves_fight` takes everyone the field lets in, the caster too, to a pocket far from the fight, all shifted by one vector so the group keeps its shape; the rest of the fight is then out of reach and waits. Those inside stay inside whatever their reach, the wall and the pull and push leave them alone, and each goes back where it stood when it leaves or the field ends. It works in the field only, since a battle has no distances. `BattlefieldStage` holds all three.
 
 **As built (C6.9e, 0.81.0):** the caster's kit. `caster_kit` is a `PowerKit` the caster holds only while the battlefield stands, so Unlimited Blade Works' sword barrage is on the caster while the field is up and gone when it ends. `BattlefieldRun` holds it on at the raise (after the clash check, so a battlefield that loses a clash never gives it) and releases it at the lower, whichever way the field ends. Its powers show in menus through `PowerSet.kits()`. Not yet built: `PlaceLook`, `moves_fight` and `weather` (C6.9f), the log and HUD (C6.9g), and `summons` (C8.10).
 
@@ -735,7 +753,7 @@ weapons themselves.
 | C7.1c | The worn weapon on attacks (built): `element` and `attack_tags` lent to the wearer's plain attack in both formulas; `blocks` for two-handed | C7.1b |
 | C7.2 | **DONE.** Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
 | C7.3 | **DONE.** Special gear: `PowerSet` holds several kits; a piece's `kit`; `Power.requires_gear`; weapon pools | C7.1 |
-| C7.3b | A weapon's own swing chain: `moves` on a piece and on a type | C7.3 |
+| C7.3b | A weapon's own swing chain: `moves` on a piece and on a type: DONE (0.84.0) | C7.3 |
 | C6.5d | **DONE.** Transformations you can see: `LookDef`, `LookSwap`, a form's `look` and `name_key`; shown on the body, the battle screen and the HUD with dummy looks | C6.5 |
 | C6.5e | **DONE.** A form's own commands: `commands`, `replaces_attack`, `aftermath` | C6.5d |
 | C6.5f | **DONE.** `Power.once_per_battle` (the sheet name moved to C7.7) | C6.5e |
@@ -749,8 +767,8 @@ weapons themselves.
 | C6.9c | Battlefields against each other, the hit side: `sure_hit`, `hit_tags`, `broken_by_tags`, `cancelled_by`: DONE (0.79.0) | C6.9b |
 | C6.9d | Clashes and `closed`: `layer`, `refinement`, the four clash rules, `closed`: DONE (0.80.0) | C6.9c |
 | C6.9e | The caster's kit: `caster_kit`, held while the battlefield stands: DONE (0.81.0) | C6.9d |
-| C6.9f | The place: `PlaceLook`, `moves_fight`, `weather` | C6.9e, C6.5d |
-| C6.9g | The log and HUD readout | C6.9f |
+| C6.9f | The place: `PlaceLook`, `moves_fight`, `weather`: DONE (0.82.0) | C6.9e, C6.5d |
+| C6.9g | The log and HUD readout: `battlefield_raised`, `battlefield_lowered`, `battlefield_clashed`, the log lines and the HUD line: DONE (0.83.0) | C6.9f |
 | C7.4 | Sets, sockets and requirements: `GearSetBonus`, `GemDefinition` | C7.3 |
 | C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |
 | C7.6 | Crafting, the logic: `Recipe`, `Crafting`, dismantle and transmute | C7.2 |

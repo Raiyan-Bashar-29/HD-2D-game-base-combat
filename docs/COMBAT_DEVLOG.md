@@ -3798,3 +3798,95 @@ default, shield mode, the remote-activated mine), but not built as data. That is
 **Unblocks.** C6.9f (the place) and the Unlimited Blade Works kit as data.
 
 **Gaps.** A held kit is not saved: it comes back when the field rises again on the next tick after a load, as the field itself does (NOT SAVED in `BattlefieldRun`). Kits are held by their power's source, so two battlefields on one caster each hold their own kit. Two kits that share a power id still overwrite each other's executor, as lent kits do (the header of `PowerSet` says so).
+
+## 2026-11-13 — C6.9f · The place (combat 0.82.0)
+
+**Did.** `PlaceLook` (content: `id`, `name_key`, `tint`), and `place`, `moves_fight`,
+`has_weather` and `weather` on `BattlefieldMechanism`. A new `BattlefieldStage` (gameplay) does the
+three things a battlefield does to the place: it keeps the place look while the field stands, forces
+the weather and puts the old one back, and moves the fighters of a `moves_fight` field to a pocket
+and back. `BattlefieldRun` calls it at the raise, the lower, each join and part, and the end of each
+refresh. `_drift` (pull and push) moved to `BattlefieldWall.drift`, to keep the run file in its
+budget (it is at 250 of 250).
+
+**Why.** The row's three parts are what a reality marble and weather magic need: the look of the
+inner world, the fighters taken into it, and a storm held while it stands.
+
+**Connects.** The pocketed fighters stay inside whatever their reach (the same rule `closed`
+uses), and the wall, the pull and the push skip them, so nothing drags them back. The moves are
+queued and done at the end of the refresh, all by one shift: the caster is inside its own field,
+and pocketing it partway through would have measured everyone after it from the pocket. Weather is
+restored only if it is still the held kind, so a plot change made meanwhile is kept.
+
+**Verified.** Boot 0 warnings, 0 errors (the "4 resources still in use" line is the same on
+`main`). Suite 4115 passed, 0 failed; `battlefield_place_test` 15/15. Red first: with the stage's
+raise and settle calls stubbed to `pass`, exactly its 6 look, weather and move assertions fail
+(a bare `return` stub is no good here: unreachable code is a compile error). All seven checkers
+exit 0. Stripped run (demo content deleted) 4018 passed, 0 failed, 25 skipped.
+
+**Unblocks.** C6.9g (the log and the HUD can name the place through `place_stage().place_id()`).
+
+**Gaps.** Nothing draws the look yet. The pocket is a far spot in the same scene, not a place of
+its own. `moves_fight` does nothing in a battle (no distances), like `closed`. Neither the pocket
+nor the held weather is saved, as the field is not: a load sets the weather from the save, and the
+next tick raises the field again. A fighter who falls in the pocket stays there until the field
+ends, like one who falls inside a closed field.
+
+## 2026-11-13 — C6.9g · The log and HUD (combat 0.83.0)
+
+**Did.** Battlefields now say what they do. Three signals on `Events`: `battlefield_raised(who,
+power_id)` once a battlefield stands (after any clash let it), `battlefield_lowered(who, power_id,
+broken)` as it comes down, and `battlefield_clashed(who, rival)` once per rival a rising one
+clashes with. `BattlefieldRun` sets a `_broken` flag in `break_down` and when its caster falls, so
+`broken` tells a shattering from an ending (ran out, cured, drained, kit off). `BattleLog` turns
+them into lines ("Wisp raises Iron Court: Ash Plain.", "… fades.", "… shatters!", "… clashes with
+…'s!"), and `CombatHud.field_text` adds a line for every battlefield standing in the player's
+fight, with its place in brackets. `BattlefieldNews` finds a battlefield by caster and power id,
+or every one standing in a fight, and reads its name keys. `_effects_for` and `_holds_any` moved
+to `BattlefieldGroups` to give `battlefield_run.gd` room.
+
+**Why.** The board row: the log and HUD must show a battlefield rising, lowering, clashing and
+breaking, and C6.9f left the place's name for the HUD.
+
+**Connects.** The bus stays ids only; the readouts look up names through `BattlefieldNews`
+(ui reads gameplay, downward). `battlefield_lowered` is emitted at the top of `_lower`, while the
+run is still in `PowerSet.running()`, so a listener can still read the battlefield's name.
+
+**Verified.** Boot 0 warnings, 0 errors. Suite: 0 failed (`battlefield_news_test` 12/12: the three
+signals, `broken` false on running out and true on a break and a lost clash, the log's place,
+fade, shatter, clash and plain lines, the HUD line on and off). Red first: with the emits stubbed,
+the signal and log assertions fail. Seven checkers exit 0. Stripped run passes.
+
+**Unblocks.** C7.3b and the rest of C7 in `GEAR.md`'s order; phase C6.9 is done.
+
+**Gaps.** No art or sound. The field has no log, only the HUD line. A battlefield that loses a
+clash as it rises gets a clash line but no "shatters" line, since it never stood. No windowed
+capture: the HUD line needs a battlefield raised in the field, and no dev command raises one yet.
+
+## 2026-11-13 — C7.3b · A weapon's own swing chain (combat 0.84.0)
+
+**Did.** A worn weapon now brings its own field chain.
+
+- `GearType.moves` and `GearDefinition.moves` (`MoveSet`), with `GearDefinition.strike_moves()`
+  (its own, else its type's). Both `problems()` check the set.
+- `GearSet._lend` writes the first worn piece's moves, in slot order, into
+  `Combatant.lent_moves`.
+- `Combatant.field_moves(own)` lays them over the fighter's own: the weapon's chain, its dodge or
+  the fighter's, the fighter's own skills. It keeps the built set until either side changes.
+- `ActionFighter.current_moves` and `PartyFollower._swing` pass that to `PowerSet.moves_over`.
+
+**Why.** `GEAR.md` had the field since C7.1a; C7.3 left it out by the 8-file rule. A lance should
+thrust and a sword slash without every wearer's loadout repeating it.
+
+**Connects.** It works the same way as the element and tags a piece lends (C7.1c). It sits under a
+form's moves (C6.5b), whose cache is keyed on the base set, which is why the merge is cached.
+
+**Verified.** Boot 0 warnings, 0 errors. Suite 0 failed; `gear_moves_test.gd` 12/12. Red first:
+with the `lent_moves` write removed, 2 of its checks failed. Seven checkers exit 0. Stripped run
+0 failed. No windowed capture: what changes is which move list is played, which the test reads.
+
+**Unblocks.** C7.4 next in `GEAR.md`'s order; the signature weapons' modes (C7.8+) can now give
+their default mode a chain on the piece.
+
+**Gaps.** A field enemy's worn weapon lends no chain (its brain picks moves itself). A battle's
+ATTACK has no chain. A follower's brain still names its own first swing to start a chain.
