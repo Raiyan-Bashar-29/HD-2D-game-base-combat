@@ -4129,3 +4129,13 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Verified:** suite 4229 passed, 0 failed; with `PassiveSet.before` doing nothing, 5 fail.
 - **Gaps:** a status tick or a field hazard that does not go through `Combatant.receive` is
   neither scaled nor survivable.
+
+## 2026-11-13 — C9.2c · Passive skill and form events (combat 0.92.0)
+
+- **Did:** new `PassiveMoments` (`skill`, `form`), called by `SkillUse.apply`, `PowerUse.use`
+  and `FormRun._tell`. Events SKILL_USED (`tag` filter), FORM_ENTERED, FORM_LEFT; effect
+  COOLDOWN_CUT (`share`, `amount`) through `PowerSet.cut_cooldowns`; `PassiveSet.happened`.
+- **Verified:** suite 4239 passed, 0 failed; with `PassiveSet.happened` waking nothing, 8 fail.
+- **Gaps:** a form cured from outside is heard as left only at its next tick or use.
+  `passive_set.gd` (241/250) and `power_set.gd` (247/250) are near their budgets.
+- **Unblocks:** C9.3.

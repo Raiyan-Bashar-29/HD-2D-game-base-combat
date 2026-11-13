@@ -95,6 +95,8 @@ static func use(user: Combatant, power: Power, aimed: Array[Combatant],
 	if skill != null:
 		SkillUse.pay(user, skill)
 		SkillUse.apply(user, scaled_skill(user, power, aimed, hour), aimed, rng)
+	else:
+		PassiveMoments.skill(user, [])
 	var powers: PowerSet = PowerSet.of(body)
 	var running: PowerExecutor = powers.executor(power.power_id)
 	if running != null:

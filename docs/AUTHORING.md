@@ -1484,6 +1484,11 @@ trigger changes the hit before it lands. SURVIVE on a LETHAL_HIT trigger leaves 
 (target OTHER for a pursuit or a counter). The conditions HIT_TAG and HIT_ELEMENT (name in `tag`)
 ask about the hit itself.
 
+**Skill and form events (C9.2c).** A SKILL_USED trigger wakes once each time the holder uses a
+skill or a power; set `tag` to wake only for skills carrying it. FORM_ENTERED and FORM_LEFT
+wake as a transformation starts and ends. The effect COOLDOWN_CUT shortens every power
+cooldown: `share` 0.5 halves what is left, `amount` takes off turns (or seconds in the field).
+
 ## Action combat: fighting in real time in the field (combat fork only)
 
 **The player swings, rolls and locks on in the field itself, with no battle screen.** It is

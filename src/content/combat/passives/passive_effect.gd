@@ -16,12 +16,14 @@ extends Resource
 ## - SURVIVE (C9.2b): in LETHAL_HIT only. The hit is cut so the holder is left at `leave` HP.
 ## - EXTRA_HIT (C9.2b): the holder lands `skill` on each target, at `amount` of its power (a
 ##   pursuit hit, a counter). It wakes none of the holder's own hit passives.
+## - COOLDOWN_CUT (C9.2c): every power cooldown of the target loses `share` of what is left,
+##   then `amount` more (turns in a battle, seconds in the field).
 ##
 ## OWNS: the data of one effect, and checking it.
 ## MUST NOT: apply itself. `PassiveEffects` (gameplay) does.
 
 enum Kind { POOL_FLAT, POOL_SHARE, POOL_FROM_DAMAGE, GIVE_STATUS, CURE, SCALE_HIT, SURVIVE,
-	EXTRA_HIT }
+	EXTRA_HIT, COOLDOWN_CUT }
 ## SELF is the holder; OTHER is the other fighter in the event (the one hit, the one who hit,
 ## the one felled); ALLIES and FOES are everyone standing on that side, the holder included
 ## among its allies.
@@ -41,6 +43,8 @@ enum Target { SELF, OTHER, ALLIES, FOES }
 @export var tag: StringName = &""
 ## The HP SURVIVE leaves the holder with.
 @export var leave: int = 1
+## The part of each cooldown COOLDOWN_CUT takes off (0.5 is half), before its `amount`.
+@export_range(0.0, 1.0, 0.01) var share: float = 0.0
 ## The skill EXTRA_HIT lands: its power, element, tags and sure-hit are read.
 @export var skill: Skill
 
@@ -72,4 +76,7 @@ func problems(where: String) -> PackedStringArray:
 		Kind.EXTRA_HIT:
 			if skill == null or amount <= 0.0:
 				found.append("%s lands an extra hit with no skill, or no power" % where)
+		Kind.COOLDOWN_CUT:
+			if amount < 0.0 or (amount == 0.0 and share == 0.0):
+				found.append("%s cuts cooldowns by nothing, or by less" % where)
 	return found

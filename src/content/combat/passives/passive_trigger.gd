@@ -22,6 +22,11 @@ extends Resource
 ## - STATUS_GAINED: a status landed on the holder; `tag`, when set, must be one of its tags.
 ## - LETHAL_HIT (C9.2b): a hit is about to take the holder to 0 HP. It wakes before the HP
 ##   changes, so a SURVIVE effect can cut the hit.
+## - SKILL_USED (C9.2c): the holder uses a skill or a power, once per use; `tag`, when set,
+##   must be one of the skill's tags. A counter, a reflect and a passive's own extra hit are
+##   not uses.
+## - FORM_ENTERED, FORM_LEFT (C9.2c): a transformation of the holder starts, or ends. Moving
+##   between the stages of one form is neither.
 ##
 ## AN EARLY TRIGGER (C9.2b) wakes BEFORE the hit lands and not after: every LETHAL_HIT trigger,
 ## and any hit trigger holding a SCALE_HIT effect. All its effects run at that moment, and the
@@ -34,7 +39,8 @@ extends Resource
 ## MUST NOT: listen to anything or count anything. `PassiveSet` (gameplay) does.
 
 enum Event { FIGHT_START, FIGHT_WON, TURN_START, HIT_DEALT, HIT_TAKEN, KILL, ALLY_DEFEATED,
-	CRIT_DEALT, DODGE, GUARD, HP_BELOW, HP_ABOVE, STATUS_GAINED, LETHAL_HIT }
+	CRIT_DEALT, DODGE, GUARD, HP_BELOW, HP_ABOVE, STATUS_GAINED, LETHAL_HIT, SKILL_USED,
+	FORM_ENTERED, FORM_LEFT }
 
 ## The events that carry another fighter, and those of them that carry a hit's damage.
 const PAIRED: Array[Event] = [Event.HIT_DEALT, Event.HIT_TAKEN, Event.KILL, Event.ALLY_DEFEATED,

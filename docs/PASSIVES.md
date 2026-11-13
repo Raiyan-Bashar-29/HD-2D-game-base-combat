@@ -225,6 +225,21 @@ other forever.
 - A heal and a hit on oneself are not scaled and are never lethal.
 - Not built yet: SKILL_USED, FORM_ENTERED, FORM_LEFT, COOLDOWN_CUT (C9.2c); BREAK_PIECE (C9.5).
 
+### As built (C9.2c, 0.92.0)
+
+- `PassiveMoments` (gameplay) carries the moments no signal does. `SkillUse.apply` and
+  `PowerUse.use` call `skill`; a `FormRun` calls `form`.
+- SKILL_USED wakes once per use, before the skill lands. `tag`, when set, must be one of the
+  skill's tags. A power with no skill has no tags. A counter, a reflect and a passive's own
+  EXTRA_HIT are not uses.
+- FORM_ENTERED and FORM_LEFT wake when the holder goes into or out of a form. A change of
+  stage in a cycle is neither. A form taken off from outside (a cure) is heard when the form
+  is next read (its next tick or use).
+- COOLDOWN_CUT: each power cooldown of the target loses `share` of what is left, then `amount`
+  (turns or seconds), through `PowerSet.cut_cooldowns`. On SKILL_USED it runs before the used
+  power's own cooldown starts, so it shortens the others, not that one.
+- Not built yet: BREAK_PIECE (C9.5).
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs

@@ -286,6 +286,18 @@ func start_cooldown(power: Power) -> void:
 		_announce(power.power_id, before, power.cooldown)
 
 
+## Every cooldown loses `share` of what is left, then `amount` more (a passive's COOLDOWN_CUT).
+func cut_cooldowns(amount: float, share: float) -> void:
+	for power_id: StringName in _cooling.keys():
+		var before: float = _cooling[power_id]
+		var after: float = maxf(0.0, before * (1.0 - share) - amount)
+		if after > 0.0:
+			_cooling[power_id] = after
+		else:
+			_cooling.erase(power_id)
+		_announce(power_id, before, after)
+
+
 ## Every running executor of the kit, in no set order: a form uses it to find its rivals (C6.5a).
 func running() -> Array[PowerExecutor]:
 	var out: Array[PowerExecutor] = []

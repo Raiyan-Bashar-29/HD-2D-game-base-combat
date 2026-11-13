@@ -224,6 +224,13 @@ func before(event: PassiveTrigger.Event, other: Combatant, damage: int) -> void:
 	_wake(event, other, damage, true)
 
 
+## A moment `PassiveMoments` tells of (C9.2c): a skill used, with its `tags`; a form's start or end.
+func happened(event: PassiveTrigger.Event, tags: Array[StringName]) -> void:
+	_gained = tags
+	_wake(event, null, 0)
+	_gained = []
+
+
 # `event` happened to the holder: every held trigger waiting for it gets its try. A hit the
 # holder deals while one of its own effects runs (an extra hit) wakes no dealt-hit trigger.
 func _wake(event: PassiveTrigger.Event, other: Combatant, damage: int, early: bool = false) -> void:
@@ -238,14 +245,14 @@ func _wake(event: PassiveTrigger.Event, other: Combatant, damage: int, early: bo
 				_try(trigger, me, other, damage)
 
 
-# What the event itself asks of a trigger: its HP line crossed, its status tag gained.
+# What the event itself asks of a trigger: its HP line crossed, its status or skill tag met.
 func _fits(trigger: PassiveTrigger) -> bool:
 	match trigger.event:
 		PassiveTrigger.Event.HP_BELOW:
 			return _was >= trigger.threshold and _now < trigger.threshold
 		PassiveTrigger.Event.HP_ABOVE:
 			return _was < trigger.threshold and _now >= trigger.threshold
-		PassiveTrigger.Event.STATUS_GAINED:
+		PassiveTrigger.Event.STATUS_GAINED, PassiveTrigger.Event.SKILL_USED:
 			return trigger.tag == &"" or _gained.has(trigger.tag)
 	return true
 

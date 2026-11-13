@@ -22,6 +22,8 @@ extends PowerExecutor
 ##   timed status running out, heard through `status_expired` while `StatusSet.running_out`),
 ##   the form's `aftermath` goes on. A rival of its group, a cure, a new game or the kit coming
 ##   off ends it with no aftermath.
+## - the holder's passives hear the form go on and off (C9.2c, `PassiveMoments.form`); a form
+##   taken off from outside is heard the next time the form is read.
 ## - `end`: the kit came off, so the form ends (its status comes off with it).
 ##
 ## OWNS: entering, leaving and draining one form on one fighter.
@@ -33,6 +35,8 @@ var stage: int = -1
 var _owed: float = 0.0
 # The move sets built over a base, by base and stage, so the same set comes back each frame.
 var _built: Dictionary[int, MoveSet] = {}
+# Whether the holder's passives were last told the form is on (C9.2c).
+var _told: bool = false
 
 
 ## The forms held on `body` now, in kit order, each one's `stage` read fresh. Empty with no kit.
@@ -138,6 +142,7 @@ func leave() -> void:
 			statuses.cure(held.id)
 	stage = -1
 	_owed = 0.0
+	_tell()
 
 
 # Enters stage `index`: the other forms of the group end, then this stage's status goes on.
@@ -161,6 +166,7 @@ func _enter(index: int) -> void:
 			Events.status_expired.connect(_on_expired)
 	else:
 		stage = -1
+	_tell()
 
 
 # Reads which stage is held from the statuses: the first stage whose status is held, or -1.
@@ -176,6 +182,15 @@ func _sync() -> void:
 	if found < 0:
 		_owed = 0.0
 	stage = found
+	_tell()
+
+
+# Tells the holder's passives when the form went on or off (FORM_ENTERED, FORM_LEFT). A change
+# of stage is neither.
+func _tell() -> void:
+	if _told != (stage >= 0) and holder != null:
+		_told = stage >= 0
+		PassiveMoments.form(holder.get_parent(), _told)
 
 
 # The set played over `base` at this stage: the stage's chain and dodge where it has them. When

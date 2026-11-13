@@ -42,6 +42,10 @@ static func run(effect: PassiveEffect, me: Combatant, other: Combatant, damage: 
 				var held: StatusSet = StatusSet.of(body)
 				if held != null:
 					held.cure_tagged(effect.tag)
+			PassiveEffect.Kind.COOLDOWN_CUT:
+				var powers: PowerSet = PowerSet.of(body)
+				if powers != null:
+					powers.cut_cooldowns(effect.amount, effect.share)
 			PassiveEffect.Kind.EXTRA_HIT:
 				me.hit(target, effect.skill.power * effect.amount,
 					me.strike_element(effect.skill.element), rng, effect.skill.sure_hit, effect.skill.tags)

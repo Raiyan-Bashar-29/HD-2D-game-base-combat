@@ -70,6 +70,7 @@ static func stance_on(user: Combatant, skill: Skill) -> bool:
 ## (a battlefield's growing tick, C6.9b); 1 leaves it as written.
 static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
 		rng: RandomNumberGenerator, boost: int = 0, strength: float = 1.0) -> void:
+	PassiveMoments.skill(user, skill.tags)
 	if skill.toggle_status != null:
 		_toggle(user, skill)
 		return
