@@ -252,7 +252,7 @@ func _fits(trigger: PassiveTrigger) -> bool:
 			return _was >= trigger.threshold and _now < trigger.threshold
 		PassiveTrigger.Event.HP_ABOVE:
 			return _was < trigger.threshold and _now >= trigger.threshold
-		PassiveTrigger.Event.STATUS_GAINED, PassiveTrigger.Event.SKILL_USED:
+		PassiveTrigger.Event.STATUS_GAINED, PassiveTrigger.Event.SKILL_USED, PassiveTrigger.Event.SKILL_DONE:
 			return trigger.tag == &"" or _gained.has(trigger.tag)
 	return true
 

@@ -6,7 +6,7 @@ extends RefCounted
 ## changed through `Vitals` directly, not as a hit, so a passive's heal or drain wakes no other
 ## passive and two passives cannot feed each other forever. A fallen fighter is skipped.
 ## Two kinds change the hit that is landing (`PassiveHits.now`): SCALE_HIT and SURVIVE.
-## EXTRA_HIT is a real hit by the holder (C9.2b).
+## EXTRA_HIT is a real hit by the holder (C9.2b). BREAK_PIECE is done by `GearBreak` (C9.5b).
 ##
 ## OWNS: applying an effect to its targets.
 ## MUST NOT: decide whether a trigger wakes, or remember anything.
@@ -35,9 +35,10 @@ static func run(effect: PassiveEffect, me: Combatant, other: Combatant, damage: 
 				vitals.change(effect.pool, roundi(damage * effect.amount))
 			PassiveEffect.Kind.GIVE_STATUS:
 				var statuses: StatusSet = StatusSet.of(body)
-				if statuses != null:
+				var given: StatusEffect = _status_for(effect)
+				if statuses != null and given != null:
 					for i: int in effect.stacks:
-						statuses.apply(effect.status, rng)
+						statuses.apply(given, rng)
 			PassiveEffect.Kind.CURE:
 				var held: StatusSet = StatusSet.of(body)
 				if held != null:
@@ -46,9 +47,19 @@ static func run(effect: PassiveEffect, me: Combatant, other: Combatant, damage: 
 				var powers: PowerSet = PowerSet.of(body)
 				if powers != null:
 					powers.cut_cooldowns(effect.amount, effect.share)
+			PassiveEffect.Kind.BREAK_PIECE:
+				GearBreak.giver(body, effect)
 			PassiveEffect.Kind.EXTRA_HIT:
 				me.hit(target, effect.skill.power * effect.amount,
 					me.strike_element(effect.skill.element), rng, effect.skill.sure_hit, effect.skill.tags)
+
+
+# The status a GIVE_STATUS gives now: its own, or with `per_element` filled, the one listed for
+# the element of the hit landing right now (null when there is none).
+static func _status_for(effect: PassiveEffect) -> StatusEffect:
+	if effect.per_element.is_empty():
+		return effect.status
+	return effect.per_element.get(PassiveHits.now.element) if PassiveHits.now != null else null
 
 
 # SCALE_HIT and SURVIVE change the hit landing right now and land on nobody. True when `effect`

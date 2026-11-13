@@ -3,7 +3,8 @@ extends RefCounted
 ## Tells a fighter's passives of the moments no signal carries (C9.2c): a skill or a power
 ## used, and a form starting or ending. See `docs/PASSIVES.md` § As built (C9.2c).
 ##
-## IN PLAIN WORDS: `SkillUse.apply` and `PowerUse.use` call `skill` once per use, and a
+## IN PLAIN WORDS: `SkillUse.apply` and `PowerUse.use` call `skill` once per use (`SkillUse`
+## once more when the strikes are done, C9.5b), and a
 ## `FormRun` calls `form` when its holder goes into, or comes out of, a transformation. Each
 ## call wakes the matching triggers of that fighter's `PassiveSet`; a fighter with no passives
 ## hears nothing.
@@ -12,11 +13,13 @@ extends RefCounted
 ## MUST NOT: decide whether a trigger wakes (`PassiveSet` does), or remember anything.
 
 
-## `user` used a skill carrying `tags` (none for a power with no skill): SKILL_USED.
-static func skill(user: Combatant, tags: Array[StringName]) -> void:
+## `user` used a skill carrying `tags` (none for a power with no skill): SKILL_USED. With
+## `done`, the skill's strikes have landed: SKILL_DONE (C9.5b).
+static func skill(user: Combatant, tags: Array[StringName], done: bool = false) -> void:
 	var passives: PassiveSet = PassiveSet.of(user.get_parent()) if user != null else null
 	if passives != null:
-		passives.happened(PassiveTrigger.Event.SKILL_USED, tags)
+		passives.happened(PassiveTrigger.Event.SKILL_DONE if done
+			else PassiveTrigger.Event.SKILL_USED, tags)
 
 
 ## The fighter under `body` went into a form (`entered`) or came out of one.

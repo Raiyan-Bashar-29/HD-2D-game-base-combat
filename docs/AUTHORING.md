@@ -1480,6 +1480,12 @@ nothing for that many seconds (field) or turns (battle). `max_overshield`: a sec
 layer; add `overshield_regen` (points a second or a turn) and `overshield_delay` (how long
 after a hit it waits). `healing_taken`: -1 means the holder cannot be healed.
 
+**A piece that breaks, and an armour that adapts (C9.5b).** Put a passive on the piece whose
+trigger ends in the effect `BREAK_PIECE`: with `LETHAL_HIT` and `SURVIVE` before it, the piece
+saves its wearer once and is gone; with `SKILL_DONE` and a `tag`, the piece breaks after the
+skill carrying that tag has landed. For adapting, give a `HIT_TAKEN` trigger a `GIVE_STATUS`
+effect and fill `per_element`: one resist status for each element it can learn.
+
 Examples: life steal is HIT_DEALT with POOL_FROM_DAMAGE `hp` 0.2. An opening buff is
 FIGHT_START with GIVE_STATUS. A wave-end heal is FIGHT_WON with POOL_SHARE `hp` 0.3. A drain
 that pays for a strong `held` status is TURN_START with POOL_SHARE `hp` -0.05.

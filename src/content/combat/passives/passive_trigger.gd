@@ -25,6 +25,8 @@ extends Resource
 ## - SKILL_USED (C9.2c): the holder uses a skill or a power, once per use; `tag`, when set,
 ##   must be one of the skill's tags. A counter, a reflect and a passive's own extra hit are
 ##   not uses.
+## - SKILL_DONE (C9.5b): the same use, told again AFTER the skill's strikes landed, with the
+##   same `tag` filter. A power with no skill tells only SKILL_USED.
 ## - FORM_ENTERED, FORM_LEFT (C9.2c): a transformation of the holder starts, or ends. Moving
 ##   between the stages of one form is neither.
 ##
@@ -40,7 +42,7 @@ extends Resource
 
 enum Event { FIGHT_START, FIGHT_WON, TURN_START, HIT_DEALT, HIT_TAKEN, KILL, ALLY_DEFEATED,
 	CRIT_DEALT, DODGE, GUARD, HP_BELOW, HP_ABOVE, STATUS_GAINED, LETHAL_HIT, SKILL_USED,
-	FORM_ENTERED, FORM_LEFT }
+	FORM_ENTERED, FORM_LEFT, SKILL_DONE }
 
 ## The events that carry another fighter, and those of them that carry a hit's damage.
 const PAIRED: Array[Event] = [Event.HIT_DEALT, Event.HIT_TAKEN, Event.KILL, Event.ALLY_DEFEATED,
@@ -56,7 +58,8 @@ const SCALABLE: Array[Event] = [Event.HIT_DEALT, Event.HIT_TAKEN, Event.CRIT_DEA
 @export var effects: Array[PassiveEffect] = []
 ## The HP share HP_BELOW and HP_ABOVE watch (0.5 is half).
 @export_range(0.0, 1.0, 0.01) var threshold: float = 0.5
-## The status tag STATUS_GAINED waits for. Empty means any status.
+## The status tag STATUS_GAINED waits for, or the skill tag SKILL_USED and SKILL_DONE wait for.
+## Empty means any.
 @export var tag: StringName = &""
 ## Turns in a battle, seconds in the field, before it can wake again. 0 means no wait.
 @export var cooldown: float = 0.0

@@ -141,7 +141,7 @@ R019 and R020 of the reference.)*
 |---|---|
 | `POOL_FLAT`, `POOL_SHARE` | Changes `pool` by an amount, or by a share of its maximum |
 | `POOL_FROM_DAMAGE` | Changes `pool` by a share of the damage in the event (life steal, MP from hits) |
-| `GIVE_STATUS` | Gives a `StatusEffect` (a timed buff, an ailment), with `stacks` |
+| `GIVE_STATUS` | Gives a `StatusEffect` (a timed buff, an ailment), with `stacks`; with `per_element`, the one listed for the hit's element |
 | `CURE` | Takes off statuses tagged `tag` |
 | `EXTRA_HIT` | Lands a `Skill` on the target at `power_scale` (a pursuit hit, a second weapon) |
 | `SURVIVE` | In `LETHAL_HIT` only: the holder is left at `leave_hp` and the hit is spent |
@@ -238,7 +238,7 @@ other forever.
 - COOLDOWN_CUT: each power cooldown of the target loses `share` of what is left, then `amount`
   (turns or seconds), through `PowerSet.cut_cooldowns`. On SKILL_USED it runs before the used
   power's own cooldown starts, so it shortens the others, not that one.
-- Not built yet: BREAK_PIECE (C9.5).
+- BREAK_PIECE came in C9.5b.
 
 ### As built (C9.3a, 0.93.0)
 
@@ -296,6 +296,19 @@ other forever.
   so -1 is "cannot be healed". `set_to` and `revive` are not scaled.
 - Not built yet: no HUD bar for the overshield; an invincible fighter can still be given a
   status; the three clocks are not saved.
+
+### As built (C9.5b, 0.97.0)
+
+- `BREAK_PIECE`: `GearBreak.giver` finds the source of the effect. A worn piece (`gear/<item
+  id>`) comes off, cursed or not, and leaves the bag and a foe's starting gear. Any other
+  source breaks nothing.
+- `SKILL_DONE`: `SKILL_USED`'s twin, told after the skill's strikes, with the same `tag`
+  filter. A trump card is a tagged skill of the piece's kit, and a passive on the piece:
+  `SKILL_DONE` (that tag) → `BREAK_PIECE`.
+- Adapting: a `GIVE_STATUS` with `per_element` filled gives the status listed for the element
+  of the hit landing now. `HIT_TAKEN` → that effect is "adapts to what hit it".
+- Not built yet: a power with no skill tells no `SKILL_DONE`; the gems in a broken piece are
+  lost with it; nothing on screen says a piece broke.
 
 ## The catalogue
 
@@ -453,7 +466,8 @@ answer.
 | C9.3 | Passives on kits and gear: `PowerKit.passive_skills`, `GearDefinition.passives`, and the same list on `GearSetTier`, `GemDefinition` and `UpgradeLevel`; the sample library in `data/passives/` (one file per catalogue family) with CSV rows | C9.2 |
 | C9.4 | The loadout: budget, learned passives, `GearDefinition.teaches`, progress from won fights, the refusals, saved as flags | C9.3 |
 | C9.5a | DONE (0.96.0): `HitGuard`, the invincible status, mercy time, the overshield, `healing_taken` | C9.2 |
-| C9.5b | Armour functions the engine lacks: the berserk status, `BREAK_PIECE` on a power, levels won by fights, adapting resistance | C9.2 |
+| C9.5b | DONE (0.97.0): `BREAK_PIECE` (`GearBreak`), `SKILL_DONE`, `per_element` on `GIVE_STATUS` | C9.5a |
+| C9.5c | The berserk status, and upgrade levels won by fights | C9.5b |
 | C9.6 | The kakujas: the shared kakuja passives, each form on its character's kit, and each quinque armour, as data, with a probe and captures | C9.5, C6.5d, C8.6 for the heavy ones |
 | C9.7 | The loadout screen, with the gear screen | C9.4, C7.7 |
 

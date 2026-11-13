@@ -73,6 +73,7 @@ static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
 	PassiveMoments.skill(user, skill.tags)
 	if skill.toggle_status != null:
 		_toggle(user, skill)
+		PassiveMoments.skill(user, skill.tags, true)
 		return
 	var scale: float = (1.0 + skill.boost_power * boost) * maxf(0.0, strength)
 	var hits: int = maxi(1, skill.hits) + skill.boost_hits * boost
@@ -88,6 +89,7 @@ static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
 		for status: StatusEffect in skill.statuses:
 			if rng.randf() < skill.status_chance:
 				statuses.apply(status, rng)
+	PassiveMoments.skill(user, skill.tags, true)
 
 
 ## `defender` strikes back at `attacker` when the attack `landed` (a miss is not answered) and

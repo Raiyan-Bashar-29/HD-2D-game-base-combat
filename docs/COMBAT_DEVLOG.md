@@ -4189,3 +4189,15 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** no HUD bar for the overshield. An invincible fighter can still be given a status.
   The three clocks are not saved. No data file uses these yet.
 - **Unblocks:** C9.5b, C9.6, C7.10.
+
+## 2026-11-13 — C9.5b · A piece that breaks, and adapting resistance (combat 0.97.0)
+
+- **Did:** new `GearBreak.giver`, called by `PassiveEffects` for the new kind `BREAK_PIECE`.
+  New event `SKILL_DONE`, told by `SkillUse.apply` after the strikes. `PassiveEffect.per_element`
+  lets `GIVE_STATUS` pick its status by the element of the hit. The row was split again by the
+  8-file rule; C9.5c keeps berserk and levels won by fights.
+- **Verified:** suite 4297 passed, 0 failed (9 new checks). With `GearBreak.giver` doing
+  nothing, 5 checks fail.
+- **Gaps:** a power with no skill tells no `SKILL_DONE`. The gems in a broken piece are lost
+  with it. Nothing on screen says a piece broke. No data file uses these yet.
+- **Unblocks:** C9.5c, then C9.6 and C7.10.

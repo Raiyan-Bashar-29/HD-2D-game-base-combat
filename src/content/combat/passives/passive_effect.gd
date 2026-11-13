@@ -9,7 +9,8 @@ extends Resource
 ## - POOL_SHARE: `pool` changes by `amount` of its maximum (0.1 is a tenth).
 ## - POOL_FROM_DAMAGE: `pool` changes by `amount` of the damage in the event (0.2 is life steal
 ##   of a fifth). Only a hit or a kill carries damage; elsewhere it does nothing.
-## - GIVE_STATUS: gives `status`, `stacks` times.
+## - GIVE_STATUS: gives `status`, `stacks` times. With `per_element` filled (C9.5b), the status
+##   is the one listed for the element of the hit landing now (an armour that adapts).
 ## - CURE: takes off every status tagged `tag`.
 ## - SCALE_HIT (C9.2b): multiplies the hit in the event by `amount`, BEFORE it lands (1.5 is a
 ##   killer bonus, 0.5 a guard). Only in HIT_DEALT, CRIT_DEALT and HIT_TAKEN.
@@ -18,12 +19,14 @@ extends Resource
 ##   pursuit hit, a counter). It wakes none of the holder's own hit passives.
 ## - COOLDOWN_CUT (C9.2c): every power cooldown of the target loses `share` of what is left,
 ##   then `amount` more (turns in a battle, seconds in the field).
+## - BREAK_PIECE (C9.5b): the worn piece that gave this passive breaks: it comes off, cursed
+##   or not, and is gone from the bag. A passive from any other source breaks nothing.
 ##
 ## OWNS: the data of one effect, and checking it.
 ## MUST NOT: apply itself. `PassiveEffects` (gameplay) does.
 
 enum Kind { POOL_FLAT, POOL_SHARE, POOL_FROM_DAMAGE, GIVE_STATUS, CURE, SCALE_HIT, SURVIVE,
-	EXTRA_HIT, COOLDOWN_CUT }
+	EXTRA_HIT, COOLDOWN_CUT, BREAK_PIECE }
 ## SELF is the holder; OTHER is the other fighter in the event (the one hit, the one who hit,
 ## the one felled); ALLIES and FOES are everyone standing on that side, the holder included
 ## among its allies.
@@ -39,6 +42,9 @@ enum Target { SELF, OTHER, ALLIES, FOES }
 ## What GIVE_STATUS gives, and how many times (for a status that stacks).
 @export var status: StatusEffect
 @export var stacks: int = 1
+## GIVE_STATUS, when filled: the status for each element of the hit landing now. An element
+## not listed here, or no hit landing, gives nothing, and `status` is not read.
+@export var per_element: Dictionary[StringName, StatusEffect] = {}
 ## What CURE takes off.
 @export var tag: StringName = &""
 ## The HP SURVIVE leaves the holder with.
@@ -58,10 +64,13 @@ func problems(where: String) -> PackedStringArray:
 			if amount == 0.0:
 				found.append("%s changes a pool by nothing" % where)
 		Kind.GIVE_STATUS:
-			if status == null:
+			if status == null and per_element.is_empty():
 				found.append("%s gives a status but has none" % where)
-			elif not status.problems().is_empty():
-				found.append("%s gives a broken status (%s)" % [where, status.id])
+			for given: StatusEffect in per_element.values() + [status]:
+				if given != null and not given.problems().is_empty():
+					found.append("%s gives a broken status (%s)" % [where, given.id])
+			if per_element.values().has(null):
+				found.append("%s lists an element with no status" % where)
 			if stacks < 1:
 				found.append("%s gives a status fewer than once" % where)
 		Kind.CURE:
@@ -79,4 +88,7 @@ func problems(where: String) -> PackedStringArray:
 		Kind.COOLDOWN_CUT:
 			if amount < 0.0 or (amount == 0.0 and share == 0.0):
 				found.append("%s cuts cooldowns by nothing, or by less" % where)
+		Kind.BREAK_PIECE:
+			if target != Target.SELF:
+				found.append("%s breaks a piece of somebody else" % where)
 	return found
