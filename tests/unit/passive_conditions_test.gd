@@ -230,7 +230,7 @@ func _body(id: StringName, side: StringName, real_time: bool, passives: Array[Pa
 	Vitals.of(body).set_to(&"mp", 20)
 	var def := CombatantDef.new()
 	def.passives = passives
-	PassiveSet.fit(body, def)
+	PassiveLending.own(body, def)
 	return body
 
 

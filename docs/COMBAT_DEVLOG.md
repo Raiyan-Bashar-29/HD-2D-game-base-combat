@@ -4139,3 +4139,15 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** a form cured from outside is heard as left only at its next tick or use.
   `passive_set.gd` (241/250) and `power_set.gd` (247/250) are near their budgets.
 - **Unblocks:** C9.3.
+
+## 2026-11-13 — C9.3a · Passives on kits and gear (combat 0.93.0)
+
+- **Did:** new `PassiveLending` (`own`, `kit`, `gear`). Fields `PowerKit.passive_skills`, and
+  `passives` on `GearDefinition`, `GearSetTier`, `GemDefinition`, `UpgradeLevel`.
+  `GearSetBonuses.reached` and `GearUpgrades.reached` are public; `PassiveSet.sources`;
+  `PassiveSet.fit` became `PassiveLending.own`.
+- **Why split:** the sample library is C9.3b (8-file rule).
+- **Verified:** suite 4251 passed, 0 failed; with `PassiveLending._give` doing nothing, 252 fail.
+- **Gaps:** a form stage has no passive list of its own. A set made in the middle of a battle
+  rolls its chances with its own random numbers, not the battle's seed.
+- **Unblocks:** C9.3b, C9.4.

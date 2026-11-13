@@ -15,6 +15,7 @@ extends RefCounted
 ##   - the sets' stat changes, through `GearSetBonuses`, and the socketed gems' stat changes,
 ##     through `GearSockets` (C7.4c), and the upgrade levels' gains, through `GearUpgrades`
 ##     (C7.5); each owns its part.
+##   - the passives of all of these, through `PassiveLending` (C9.3).
 ##
 ## OWNS: turning the worn pieces into what the wearer borrows.
 ## MUST NOT: decide what is worn, or touch the stat sheet itself. `GearSet` puts the pieces'
@@ -47,6 +48,7 @@ static func lend(gear: GearSet) -> void:
 	GearSetBonuses.apply(gear, kits)
 	GearSockets.apply(gear)
 	GearUpgrades.apply(gear)
+	PassiveLending.gear(gear)
 	var powers: PowerSet = PowerSet.of(body)
 	if powers == null and not kits.is_empty():
 		powers = PowerSet.new()

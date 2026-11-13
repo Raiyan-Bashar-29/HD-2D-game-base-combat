@@ -182,7 +182,7 @@ func _body(id: StringName, side: StringName, passives: Array[PassiveSkill]) -> N
 	Vitals.of(body).set_to(&"mp", 20)
 	var def := CombatantDef.new()
 	def.passives = passives
-	PassiveSet.fit(body, def)
+	PassiveLending.own(body, def)
 	return body
 
 

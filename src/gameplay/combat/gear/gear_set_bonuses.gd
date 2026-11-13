@@ -22,6 +22,19 @@ static func apply(gear: GearSet, kits: Dictionary[StringName, PowerKit]) -> void
 		return
 	for set_id: StringName in GearDb.set_ids():
 		fighter.sheet.remove_from(StringName(SOURCE_PREFIX + String(set_id)))
+	var tiers: Dictionary[StringName, GearSetTier] = reached(gear)
+	for key: StringName in tiers:
+		for modifier: StatModifier in tiers[key].modifiers:
+			if modifier != null:
+				fighter.sheet.add(StatModifier.of(
+					modifier.stat, modifier.op, modifier.value, StringName(String(key).get_base_dir())))
+		if tiers[key].kit != null:
+			kits[key] = tiers[key].kit
+
+
+## The set tiers `gear` has reached, each under `set/<set id>/<pieces>`.
+static func reached(gear: GearSet) -> Dictionary[StringName, GearSetTier]:
+	var out: Dictionary[StringName, GearSetTier] = {}
 	var counts: Dictionary[StringName, int] = {}
 	var bonuses: Dictionary[StringName, GearSetBonus] = {}
 	for item_id: StringName in gear.worn_ids():
@@ -33,13 +46,7 @@ static func apply(gear: GearSet, kits: Dictionary[StringName, PowerKit]) -> void
 			bonuses[set_id] = piece.set_bonus
 		counts[set_id] = counts.get(set_id, 0) + 1
 	for set_id: StringName in bonuses:
-		var source: String = SOURCE_PREFIX + String(set_id)
 		for tier: GearSetTier in bonuses[set_id].tiers:
-			if tier == null or tier.pieces > counts[set_id]:
-				continue
-			for modifier: StatModifier in tier.modifiers:
-				if modifier != null:
-					fighter.sheet.add(
-						StatModifier.of(modifier.stat, modifier.op, modifier.value, StringName(source)))
-			if tier.kit != null:
-				kits[StringName("%s/%d" % [source, tier.pieces])] = tier.kit
+			if tier != null and tier.pieces <= counts[set_id]:
+				out[StringName("%s%s/%d" % [SOURCE_PREFIX, set_id, tier.pieces])] = tier
+	return out

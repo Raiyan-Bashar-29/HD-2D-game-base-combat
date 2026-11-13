@@ -25,6 +25,8 @@ extends Resource
 @export var modifiers: Array[StatModifier] = []
 ## Sockets the piece gains from this level on.
 @export var sockets: int = 0
+## Passives (C9.3) the wearer holds from this level on.
+@export var passives: Array[PassiveSkill] = []
 
 
 func problems(where: String) -> PackedStringArray:

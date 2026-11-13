@@ -109,7 +109,7 @@ static func awaken(bag: Inventory, piece_id: StringName) -> bool:
 ## The sockets `piece` has gained from its levels.
 static func extra_sockets(piece: GearDefinition) -> int:
 	var out: int = 0
-	for step: UpgradeLevel in _reached(piece):
+	for step: UpgradeLevel in reached(piece):
 		out += step.sockets
 	return out
 
@@ -143,7 +143,7 @@ static func apply(gear: GearSet) -> void:
 			continue
 		var bonus: float = 0.0
 		var gains: Array[StatModifier] = []
-		for step: UpgradeLevel in _reached(piece):
+		for step: UpgradeLevel in reached(piece):
 			bonus += step.stat_bonus
 			gains.append_array(step.modifiers)
 		for modifier: StatModifier in piece.all_modifiers():
@@ -154,8 +154,8 @@ static func apply(gear: GearSet) -> void:
 				fighter.sheet.add(StatModifier.of(gain.stat, gain.op, gain.value, SOURCE))
 
 
-# The levels `piece` has reached, lowest first, never past its cap.
-static func _reached(piece: GearDefinition) -> Array[UpgradeLevel]:
+## The levels `piece` has reached, lowest first, never past its cap.
+static func reached(piece: GearDefinition) -> Array[UpgradeLevel]:
 	var out: Array[UpgradeLevel] = []
 	if piece == null or piece.upgrade == null:
 		return out

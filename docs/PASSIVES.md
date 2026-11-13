@@ -240,6 +240,19 @@ other forever.
   power's own cooldown starts, so it shortens the others, not that one.
 - Not built yet: BREAK_PIECE (C9.5).
 
+### As built (C9.3a, 0.93.0)
+
+- `PassiveLending` (gameplay) is the one place a source gives its list. The source names:
+  `own`, `kit/<the kit's source>` (the fighter's own kit is `kit/<kit id>`, one lent by a piece
+  `kit/gear_kit/<item id>`), `gear/<item id>`, `set/<set id>/<pieces>`, `gems`, `upgrades`.
+- `PowerSet` gives a kit's `passive_skills` when the kit goes on and takes them back when it
+  comes off. `GearLending` calls `PassiveLending.gear` after every change to what is worn.
+- A fighter with no passive has no `PassiveSet`; the first source with one makes it.
+- A refresh of the gear keeps each trigger's cooldown and count.
+- A gem that gives only a passive is sound.
+- Not built yet: the sample files (C9.3b); a form stage has no passive list of its own (use a
+  FORM_ENTERED trigger, or the form's status); the `loadout` source (C9.4).
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs

@@ -222,6 +222,7 @@ func _put_on(added: PowerKit, source: StringName) -> void:
 			if bonus != null:
 				sheet.add(StatModifier.of(bonus.stat, bonus.op, bonus.value, source))
 	_hold_passives()
+	PassiveLending.kit(get_parent(), source, added.passive_skills)
 	_regauge()
 	for power: Power in added.powers:
 		if power == null or power.mechanism == null:
@@ -238,6 +239,7 @@ func _take_off(removed: PowerKit, source: StringName) -> void:
 	var sheet: StatSheet = _sheet()
 	if sheet != null:
 		sheet.remove_from(source)
+	PassiveLending.kit(get_parent(), source, [])
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	for passive: StatusEffect in removed.passives:
 		if passive != null and _passives.has(passive.id):

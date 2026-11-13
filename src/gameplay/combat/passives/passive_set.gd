@@ -3,9 +3,9 @@ extends Node
 ## The passives one fighter holds (C9.1): a child of the body, beside its `Vitals`, `StatusSet`
 ## and `Combatant`. See `docs/PASSIVES.md` § The passive.
 ##
-## IN PLAIN WORDS: each source (the character itself, later a kit, a piece of gear, the loadout)
-## hands this set its list of `PassiveSkill`s under its own name (`hold`), and takes it back
-## with `release`. While a passive is held:
+## IN PLAIN WORDS: each source (the character itself, a kit, a piece of gear, later the loadout)
+## hands this set its list of `PassiveSkill`s under its own name (`hold`, through
+## `PassiveLending`), and takes it back with `release`. While a passive is held:
 ## - its `held` status sits on the fighter (and comes off when no source holds it any more);
 ## - each of its triggers waits for its event. When the event happens this set rolls the
 ##   trigger's chance, checks its cooldown and limit, and runs its effects.
@@ -76,16 +76,6 @@ static func of(who: Node) -> PassiveSet:
 		if found != null:
 			return found
 	return null
-
-
-## Gives the fighter under `body` a set holding its definition's own passives. Call it after
-## the `Combatant` is added. A definition with none gets no set.
-static func fit(body: Node, def: CombatantDef) -> void:
-	if def == null or def.passives.is_empty():
-		return
-	var passives := PassiveSet.new()
-	body.add_child(passives)
-	passives.hold(OWN, def.passives)
 
 
 ## The held status `status_id` of a passive on `who`, or null. Such a status may live only in
@@ -174,6 +164,11 @@ func hold(source: StringName, given: Array[PassiveSkill]) -> void:
 func release(source: StringName) -> void:
 	if _sources.erase(source):
 		_sync_held()
+
+
+## The names passives are held under now.
+func sources() -> Array[StringName]:
+	return _sources.keys()
 
 
 ## Every passive that counts, each once, in the order the sources gave them. Of passives in

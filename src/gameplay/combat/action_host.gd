@@ -94,7 +94,7 @@ static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 		var powers := PowerSet.new()
 		body.add_child(powers)
 		powers.equip(def.power_kit)
-	PassiveSet.fit(body, def)
+	PassiveLending.own(body, def)
 	# What the member wears (C7.1b), saved, with its starting pieces put on once.
 	GearSet.fit(body, def, true)
 	# The hybrid's ATB gauge (C4.2), only when the loadout asks for one.

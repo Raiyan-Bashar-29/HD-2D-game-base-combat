@@ -77,6 +77,8 @@ extends ContentEntry
 @export var rarity: StringName = &""
 ## Hero powers the wearer has while this is worn (C7.3). Null means none.
 @export var kit: PowerKit
+## Passives (C9.3) the wearer holds while the piece is worn.
+@export var passives: Array[PassiveSkill] = []
 ## The field chain (and dodge, if it has one) the wearer plays while this is worn (C7.3b). Null
 ## means the type's, if it has one.
 @export var moves: MoveSet
