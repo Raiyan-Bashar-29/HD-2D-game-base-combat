@@ -1471,6 +1471,13 @@ Examples: life steal is HIT_DEALT with POOL_FROM_DAMAGE `hp` 0.2. An opening buf
 FIGHT_START with GIVE_STATUS. A wave-end heal is FIGHT_WON with POOL_SHARE `hp` 0.3. A drain
 that pays for a strong `held` status is TURN_START with POOL_SHARE `hp` -0.05.
 
+**Conditions and more events (C9.2a).** A trigger's `conditions` must all hold or it stays
+asleep. Each is a `PassiveCondition`: POOL_SHARE (`pool`, `low`, `high`), HOLDS_TAG,
+TARGET_HOLDS_TAG, TARGET_TRAIT (the target's `CombatantDef.traits`, for a "killer"), WEARING,
+ALONE, ALLIES_STANDING (`count`), IN_FIELD, HOUR; `negate` flips one. More events: CRIT_DEALT,
+DODGE, GUARD, HP_BELOW and HP_ABOVE (set `threshold`), STATUS_GAINED (set `tag`). Give two sizes
+of one passive the same `group` and different `rank`s, and only the larger counts.
+
 ## Action combat: fighting in real time in the field (combat fork only)
 
 **The player swings, rolls and locks on in the field itself, with no battle screen.** It is

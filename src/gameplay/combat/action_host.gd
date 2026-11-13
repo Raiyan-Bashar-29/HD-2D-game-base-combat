@@ -84,6 +84,7 @@ static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 	combatant.base_stats = def.base_stats
 	combatant.weak_to = def.weak_to
 	combatant.attack_tags = def.attack_tags
+	combatant.traits = def.traits
 	combatant.kind = def.combatant_id
 	# The field counts in seconds, so a break here is a stagger (C4.6).
 	combatant.real_time = true

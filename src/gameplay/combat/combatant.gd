@@ -51,6 +51,8 @@ const GROUP: StringName = &"combatants"
 ## Which kind of fighter this is, shared by every copy (two wisps are both `wisp`), so a
 ## revealed weakness shows on all of them. Empty means the combatant id.
 @export var kind: StringName = &""
+## What kind of creature this is (dragon, undead), copied from its definition (C9.2a).
+@export var traits: Array[StringName] = []
 
 ## True when this fighter lives in real time, so its statuses count in seconds (C4.6). Set by
 ## whoever builds a field fighter (`ActionHost.equip`, `ActionEnemy`); a battle builds fresh

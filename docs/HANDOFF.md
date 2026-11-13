@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C9.2, passive conditions and hit effects** (read [`PASSIVES.md`](PASSIVES.md) first, § As built). C9.1 (0.89.0) built the core: `PassiveSkill` files listed in `CombatantDef.passives`, run by `PassiveSet`. C9.0 (0.88.1) designed the passive library, the loadout, the armour functions and the kakujas; by the owner's order C9.1 to C9.4 are built before C7.6.
+- **Next: C9.2b, passive hit effects** (read [`PASSIVES.md`](PASSIVES.md) first, § As built). C9.2a (0.90.0) added conditions, six more events and the `group` rule. C9.1 (0.89.0) built the core: `PassiveSkill` files listed in `CombatantDef.passives`, run by `PassiveSet`. C9.0 (0.88.1) designed the passive library, the loadout, the armour functions and the kakujas; by the owner's order C9.1 to C9.4 are built before C7.6.
   The build order is the table at the foot of `GEAR.md`, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.

@@ -9,7 +9,15 @@ extends Node
 ## - its `held` status sits on the fighter (and comes off when no source holds it any more);
 ## - each of its triggers waits for its event. When the event happens this set rolls the
 ##   trigger's chance, checks its cooldown and limit, and runs its effects.
-## The same passive from two sources counts once.
+## The same passive from two sources counts once, and of passives sharing a `group` only the
+## highest `rank` counts (C9.2a).
+##
+## A trigger's `conditions` are asked just before it wakes (`PassiveConditions`). The HP-line
+## events wake once as the holder's HP share crosses the line; a status gained while one of
+## this set's own effects is running wakes nothing, so a passive cannot feed itself.
+##
+## A FIELD BODY SLEEPS DURING A TURN-BASED BATTLE: a party member's battle copy shares its id
+## and its pools, and only the copy's set may answer the battle's events.
 ##
 ## WHAT IT HEARS. A battle tells it when the holder's turn begins (`turn`). Everything else comes
 ## from `Events`: a battle starting, an area entered, a hit, a fighter falling. A kill is told
@@ -43,6 +51,12 @@ var _cooling: Dictionary[PassiveTrigger, float] = {}
 var _woken: Dictionary[PassiveTrigger, int] = {}
 var _waited: Dictionary[PassiveTrigger, float] = {}
 var _just_fell: StringName = &""
+var _battling: bool = false
+var _busy: bool = false
+# The holder's HP share before and after the last change, for the HP-line events.
+var _was: float = -1.0
+var _now: float = -1.0
+var _gained: Array[StringName] = []
 
 
 ## The set under `who`, or null.
@@ -133,7 +147,9 @@ func _listens() -> Array[Array]:
 	return [[Events.game_started, _sync_held], [Events.game_loaded, _on_game_loaded],
 		[Events.battle_started, _on_battle_started], [Events.area_entered, _on_area_entered],
 		[Events.combatant_damaged, _on_damaged], [Events.combatant_defeated, _on_defeated],
-		[Events.combatant_revived, _on_revived]]
+		[Events.combatant_revived, _on_revived], [Events.battle_ended, _on_battle_ended],
+		[Events.attack_dodged, _on_dodged], [Events.attack_blocked, _on_blocked],
+		[Events.vitals_changed, _on_vitals], [Events.status_applied, _on_status]]
 
 
 ## Holds `given` under `source`, in place of whatever that source gave before.
@@ -152,14 +168,20 @@ func release(source: StringName) -> void:
 		_sync_held()
 
 
-## Every passive held, each once, in the order the sources gave them.
+## Every passive that counts, each once, in the order the sources gave them. Of passives in
+## one `group`, only the highest `rank` is here (the first given, on a tie).
 func passives() -> Array[PassiveSkill]:
 	var out: Array[PassiveSkill] = []
+	var best: Dictionary[StringName, PassiveSkill] = {}
 	for source: StringName in _sources:
 		for passive: PassiveSkill in _sources[source]:
-			if not out.has(passive):
-				out.append(passive)
-	return out
+			if out.has(passive):
+				continue
+			out.append(passive)
+			if passive.group != &"" and (not best.has(passive.group) or passive.rank > best[passive.group].rank):
+				best[passive.group] = passive
+	return out.filter(func(passive: PassiveSkill) -> bool:
+		return passive.group == &"" or best[passive.group] == passive)
 
 
 # Puts on the held status of every passive, and takes off one no passive gives any more.
@@ -192,12 +214,24 @@ func _count_down(amount: float) -> void:
 # `event` happened to the holder: every held trigger waiting for it gets its try.
 func _wake(event: PassiveTrigger.Event, other: Combatant, damage: int) -> void:
 	var me: Combatant = Combatant.of(get_parent())
-	if me == null:
+	if me == null or (me.real_time and _battling):
 		return
 	for passive: PassiveSkill in passives():
 		for trigger: PassiveTrigger in passive.triggers:
-			if trigger != null and trigger.event == event:
+			if trigger != null and trigger.event == event and _fits(trigger):
 				_try(trigger, me, other, damage)
+
+
+# What the event itself asks of a trigger: its HP line crossed, its status tag gained.
+func _fits(trigger: PassiveTrigger) -> bool:
+	match trigger.event:
+		PassiveTrigger.Event.HP_BELOW:
+			return _was >= trigger.threshold and _now < trigger.threshold
+		PassiveTrigger.Event.HP_ABOVE:
+			return _was < trigger.threshold and _now >= trigger.threshold
+		PassiveTrigger.Event.STATUS_GAINED:
+			return trigger.tag == &"" or _gained.has(trigger.tag)
+	return true
 
 
 func _try(trigger: PassiveTrigger, me: Combatant, other: Combatant, damage: int) -> void:
@@ -206,14 +240,19 @@ func _try(trigger: PassiveTrigger, me: Combatant, other: Combatant, damage: int)
 		return
 	if trigger.limit > 0 and _woken.get(trigger, 0) >= trigger.limit:
 		return
+	if not PassiveConditions.all(trigger.conditions, me, other):
+		return
 	if trigger.chance < 1.0 and rng.randf() >= trigger.chance:
 		return
 	_woken[trigger] = _woken.get(trigger, 0) + 1
 	if trigger.cooldown > 0.0:
 		_cooling[trigger] = trigger.cooldown
+	var outer: bool = _busy
+	_busy = true
 	for effect: PassiveEffect in trigger.effects:
 		if effect != null:
 			PassiveEffects.run(effect, me, other, damage, rng)
+	_busy = outer
 
 
 func _on_game_loaded(_slot: int) -> void:
@@ -221,6 +260,7 @@ func _on_game_loaded(_slot: int) -> void:
 
 
 func _on_battle_started(_enemy_ids: Array[StringName]) -> void:
+	_battling = true
 	var me: Combatant = Combatant.of(get_parent())
 	if me != null and not me.real_time:
 		_wake(PassiveTrigger.Event.FIGHT_START, null, 0)
@@ -229,6 +269,7 @@ func _on_battle_started(_enemy_ids: Array[StringName]) -> void:
 # A new area is a new fight in the field: counts and waits start again.
 func _on_area_entered(_area_id: StringName) -> void:
 	var me: Combatant = Combatant.of(get_parent())
+	_battling = false
 	if me != null and me.real_time:
 		_woken.clear()
 		_cooling.clear()
@@ -236,7 +277,7 @@ func _on_area_entered(_area_id: StringName) -> void:
 
 
 # A hit landed. A heal (a negative amount) is not a hit.
-func _on_damaged(who: StringName, by: StringName, amount: int, _critical: bool) -> void:
+func _on_damaged(who: StringName, by: StringName, amount: int, critical: bool) -> void:
 	var me: Combatant = Combatant.of(get_parent())
 	var felled: bool = who != &"" and who == _just_fell
 	_just_fell = &""
@@ -245,6 +286,8 @@ func _on_damaged(who: StringName, by: StringName, amount: int, _critical: bool) 
 	if by == me.combatant_id:
 		var struck: Combatant = PassiveEffects.find(me, who)
 		_wake(PassiveTrigger.Event.HIT_DEALT, struck, amount)
+		if critical:
+			_wake(PassiveTrigger.Event.CRIT_DEALT, struck, amount)
 		if felled:
 			_wake(PassiveTrigger.Event.KILL, struck, amount)
 	elif who == me.combatant_id:
@@ -268,3 +311,44 @@ func _on_defeated(who: StringName) -> void:
 func _on_revived(who: StringName) -> void:
 	if who == _just_fell:
 		_just_fell = &""
+
+
+func _on_battle_ended(_outcome: int) -> void:
+	_battling = false
+
+
+func _on_dodged(who: StringName, by: StringName) -> void:
+	var me: Combatant = Combatant.of(get_parent())
+	if me != null and who == me.combatant_id:
+		_wake(PassiveTrigger.Event.DODGE, PassiveEffects.find(me, by), 0)
+
+
+func _on_blocked(who: StringName, by: StringName) -> void:
+	var me: Combatant = Combatant.of(get_parent())
+	if me != null and who == me.combatant_id:
+		_wake(PassiveTrigger.Event.GUARD, PassiveEffects.find(me, by), 0)
+
+
+# The holder's own pool is read, not the event's numbers: a battle copy shares this id.
+func _on_vitals(who: StringName, pool: StringName, _value: int, _maximum: int) -> void:
+	var me: Combatant = Combatant.of(get_parent())
+	var vitals: Vitals = Vitals.of(get_parent())
+	if me == null or vitals == null or who != me.combatant_id or pool != me.damage_pool:
+		return
+	_was = _now if _now >= 0.0 else 1.0
+	_now = float(vitals.current(pool)) / float(maxi(1, vitals.maximum(pool)))
+	_wake(PassiveTrigger.Event.HP_BELOW, null, 0)
+	_wake(PassiveTrigger.Event.HP_ABOVE, null, 0)
+	_was = _now
+
+
+func _on_status(who: StringName, status_id: StringName, _stacks: int) -> void:
+	var me: Combatant = Combatant.of(get_parent())
+	var statuses: StatusSet = StatusSet.of(get_parent())
+	if me == null or statuses == null or _busy or who != me.combatant_id:
+		return
+	for status: StatusEffect in statuses.held():
+		if status.id == status_id:
+			_gained = status.tags
+			_wake(PassiveTrigger.Event.STATUS_GAINED, null, 0)
+	_gained = []

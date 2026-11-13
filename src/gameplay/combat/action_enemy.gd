@@ -231,6 +231,7 @@ func _build() -> void:
 	combatant.base_stats = fighter.base_stats
 	combatant.weak_to = fighter.weak_to
 	combatant.attack_tags = fighter.attack_tags
+	combatant.traits = fighter.traits
 	combatant.kind = fighter.combatant_id
 	combatant.real_time = true
 	add_child(combatant)

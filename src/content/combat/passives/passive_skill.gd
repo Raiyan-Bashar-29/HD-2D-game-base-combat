@@ -22,6 +22,10 @@ extends ContentEntry
 @export var cost: int = 0
 @export var held: StatusEffect
 @export var triggers: Array[PassiveTrigger] = []
+## Passives sharing a `group` do not add up (C9.2a): of those a fighter holds, only the one
+## with the highest `rank` counts (a small and a large "attack up"). Empty means it always counts.
+@export var group: StringName = &""
+@export var rank: int = 0
 ## For filters and screens: `offence`, `defence`, `drawback` and so on.
 @export var tags: Array[StringName] = []
 

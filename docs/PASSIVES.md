@@ -186,7 +186,25 @@ other forever.
   within 20 metres (`PassiveEffects.NEAR`) count as its allies and foes.
 - A pool effect changes the pool directly, not as a hit, so it wakes no other passive.
 - A fallen holder's passives do nothing.
-- Not built yet: `gauges`, `group`, `rank`, conditions and the other events and effects (C9.2).
+- Not built yet: `gauges`, and the effects and events of C9.2b.
+
+### As built (C9.2a, 0.90.0)
+
+- `PassiveCondition` kinds: POOL_SHARE (HP_SHARE is this with pool `hp`), HOLDS_TAG,
+  TARGET_HOLDS_TAG, TARGET_TRAIT (the design's TARGET_KIND; a fighter's species are
+  `CombatantDef.traits`), WEARING, ALONE, ALLIES_STANDING (`count`), IN_FIELD (the design's
+  FORMULA; negate it for a turn-based battle), HOUR (`low` above `high` crosses midnight).
+  `PassiveConditions.all` answers them. HIT_TAG and HIT_ELEMENT wait for C9.2b.
+- A trigger kept asleep by a condition spends neither its cooldown nor its limit.
+- New events: CRIT_DEALT (after HIT_DEALT), DODGE (i-frames, field only), GUARD (a hit stopped
+  whole by a barrier or a perfect block), HP_BELOW and HP_ABOVE (`threshold`, once per
+  crossing), STATUS_GAINED (`tag`, empty for any status).
+- A status given by one of the set's own effects wakes no STATUS_GAINED.
+- `group` and `rank`: `PassiveSet.passives()` returns only the highest rank of each group; the
+  lower one's held status comes off and returns when the higher one is released.
+- A field body's set sleeps from `battle_started` to `battle_ended` (or the next area).
+- Not built yet (C9.2b): SCALE_HIT, SURVIVE with LETHAL_HIT, EXTRA_HIT, COOLDOWN_CUT,
+  BREAK_PIECE, SKILL_USED, FORM_ENTERED, FORM_LEFT.
 
 ## The catalogue
 

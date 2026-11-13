@@ -4103,3 +4103,17 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - By the owner's word (2026-11-13) batch PRs stop until the remaining rows are done; an
   `invincible` status, mercy time and the overshield were added to row C9.5.
 
+
+## 2026-11-13 — C9.2a · Passive conditions and more events (combat 0.90.0)
+
+- **Did:** `PassiveCondition` (content) and `PassiveConditions` (gameplay); `PassiveTrigger`
+  gained `conditions`, `threshold`, `tag` and six events (CRIT_DEALT, DODGE, GUARD, HP_BELOW,
+  HP_ABOVE, STATUS_GAINED); `PassiveSkill.group` and `rank`; `traits` on `CombatantDef` and
+  `Combatant`, copied by the three builders.
+- **Why split:** C9.2 as one row was over the 8-file rule. The hit effects are C9.2b.
+- **Fix found on the way:** a party member's field body and battle copy share an id and
+  pools, so the field body's passives answered the battle's hits too. A field set now sleeps
+  from `battle_started` to `battle_ended` (or the next area).
+- **Verified:** suite 4219 passed, 0 failed; with `PassiveConditions` answering true, 3 fail.
+- **Gaps:** HIT_TAG and HIT_ELEMENT need the hit itself (C9.2b). DODGE exists only in the
+  field, as i-frames do.

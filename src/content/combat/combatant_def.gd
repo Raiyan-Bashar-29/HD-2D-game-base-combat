@@ -22,6 +22,8 @@ extends Resource
 ## Give it a `max_shield` stat too, or a weakness is revealed but nothing ever breaks.
 @export var weak_to: Array[StringName] = []
 @export var attack_tags: Array[StringName] = []
+## What kind of creature this is (dragon, undead), for a passive's "killer" check (C9.2a).
+@export var traits: Array[StringName] = []
 ## The command menu, for one the player controls. Empty means ATTACK, DEFEND and FLEE.
 @export var commands: Array[BattleCommand] = []
 ## How it plays when nobody controls it. Null means the fallback: attack, then defend.
