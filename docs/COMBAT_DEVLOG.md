@@ -3862,3 +3862,31 @@ the signal and log assertions fail. Seven checkers exit 0. Stripped run passes.
 **Gaps.** No art or sound. The field has no log, only the HUD line. A battlefield that loses a
 clash as it rises gets a clash line but no "shatters" line, since it never stood. No windowed
 capture: the HUD line needs a battlefield raised in the field, and no dev command raises one yet.
+
+## 2026-11-13 — C7.3b · A weapon's own swing chain (combat 0.84.0)
+
+**Did.** A worn weapon now brings its own field chain.
+
+- `GearType.moves` and `GearDefinition.moves` (`MoveSet`), with `GearDefinition.strike_moves()`
+  (its own, else its type's). Both `problems()` check the set.
+- `GearSet._lend` writes the first worn piece's moves, in slot order, into
+  `Combatant.lent_moves`.
+- `Combatant.field_moves(own)` lays them over the fighter's own: the weapon's chain, its dodge or
+  the fighter's, the fighter's own skills. It keeps the built set until either side changes.
+- `ActionFighter.current_moves` and `PartyFollower._swing` pass that to `PowerSet.moves_over`.
+
+**Why.** `GEAR.md` had the field since C7.1a; C7.3 left it out by the 8-file rule. A lance should
+thrust and a sword slash without every wearer's loadout repeating it.
+
+**Connects.** It works the same way as the element and tags a piece lends (C7.1c). It sits under a
+form's moves (C6.5b), whose cache is keyed on the base set, which is why the merge is cached.
+
+**Verified.** Boot 0 warnings, 0 errors. Suite 0 failed; `gear_moves_test.gd` 12/12. Red first:
+with the `lent_moves` write removed, 2 of its checks failed. Seven checkers exit 0. Stripped run
+0 failed. No windowed capture: what changes is which move list is played, which the test reads.
+
+**Unblocks.** C7.4 next in `GEAR.md`'s order; the signature weapons' modes (C7.8+) can now give
+their default mode a chain on the piece.
+
+**Gaps.** A field enemy's worn weapon lends no chain (its brain picks moves itself). A battle's
+ATTACK has no chain. A follower's brain still names its own first swing to start a chain.

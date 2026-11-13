@@ -160,7 +160,7 @@ worn set. The rules:
   piece on empties those slots; putting a piece into one of them takes the blocker off. A
   two-handed sword is `blocks = [offhand]`. A file that blocks its own slot is a problem.
 
-Still to come: the weapon's own attack chain (C7.3b). A foe drops what it wears when its `loot_table` lists the piece (C7.2).
+A foe drops what it wears when its `loot_table` lists the piece (C7.2).
 
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
@@ -254,8 +254,22 @@ A piece with a `kit` gives its powers while worn. This is how every signature we
   list would be the same thing twice.
 - **Rules for authors.** Two kits on one fighter must not share a power id or a passive's
   status id; the set tells kits apart by those ids.
-- **Not built here:** the weapon's own swing chain (`moves`, C7.3b). A form of a gear kit held
-  at save time is found again on load only if the piece is still worn when the save is read.
+- **Not built here:** a form of a gear kit held at save time is found again on load only if the piece is still worn when the save is read.
+
+**As built (C7.3b, combat 0.84.0).**
+
+- `GearType.moves` and `GearDefinition.moves` are `MoveSet`s. `strike_moves()` is the piece's
+  own, else its type's, else none. `problems()` checks either set.
+- `GearSet` writes the first worn piece with moves, in the slot list's order (so the weapon),
+  into `Combatant.lent_moves`, after every change, beside `lent_element` and `lent_tags`.
+- `Combatant.field_moves(own)` is what the fighter plays before any power: the weapon's
+  `attack_chain` (the fighter's own if the weapon's is empty), the weapon's `dodge` (else the
+  fighter's own), and the fighter's own `skills`, the same rule a form's moves follow. The set
+  is kept until `own` or the lent moves change, so a form's cache keyed on it does not grow.
+- `ActionFighter.current_moves` and `PartyFollower` pass it to `PowerSet.moves_over`, so a form
+  puts its own chain on top: form over weapon over own.
+- **Not built here:** a field enemy's weapon lends no chain (its brain picks moves itself); a
+  battle's ATTACK has no chain.
 
 ### Sets, sockets, upgrading
 
@@ -739,7 +753,7 @@ weapons themselves.
 | C7.1c | The worn weapon on attacks (built): `element` and `attack_tags` lent to the wearer's plain attack in both formulas; `blocks` for two-handed | C7.1b |
 | C7.2 | **DONE.** Rarity and drops: `Rarity`, `LootTable`, rolled loot in `Rewards` | C7.1 |
 | C7.3 | **DONE.** Special gear: `PowerSet` holds several kits; a piece's `kit`; `Power.requires_gear`; weapon pools | C7.1 |
-| C7.3b | A weapon's own swing chain: `moves` on a piece and on a type | C7.3 |
+| C7.3b | A weapon's own swing chain: `moves` on a piece and on a type: DONE (0.84.0) | C7.3 |
 | C6.5d | **DONE.** Transformations you can see: `LookDef`, `LookSwap`, a form's `look` and `name_key`; shown on the body, the battle screen and the HUD with dummy looks | C6.5 |
 | C6.5e | **DONE.** A form's own commands: `commands`, `replaces_attack`, `aftermath` | C6.5d |
 | C6.5f | **DONE.** `Power.once_per_battle` (the sheet name moved to C7.7) | C6.5e |

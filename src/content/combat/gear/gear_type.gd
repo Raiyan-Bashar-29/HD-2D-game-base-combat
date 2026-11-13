@@ -11,6 +11,9 @@ extends Resource
 ## what it counts as for a weakness (a lance is `pierce`). It may also list slots its pieces
 ## take up besides their own, in `blocks`: a two-handed sword blocks the off hand.
 ##
+## A WEAPON'S SWING CHAIN (C7.3b): `moves` is the field chain every piece of the type plays while
+## worn, in place of the wearer's own (a lance thrusts, a sword slashes). A piece's own wins.
+##
 ## A type is a data file, `data/gear_types/<name>.tres`, that pieces point at. Adding a kind of
 ## gear is adding a file: no code changes.
 ##
@@ -34,6 +37,9 @@ enum Family { WEAPON, ARMOUR, ACCESSORY, SPECIAL }
 @export var attack_tags: Array[StringName] = []
 ## Slots a piece of this type takes up besides the one it is worn in. Two-handed: the off hand.
 @export var blocks: Array[StringName] = []
+## The field chain (and dodge, if it has one) every piece of this type plays while worn. Null
+## means the wearer swings its own.
+@export var moves: MoveSet
 
 
 func problems(context: String) -> PackedStringArray:
@@ -57,4 +63,6 @@ func problems(context: String) -> PackedStringArray:
 			found.append("%s blocks an unnamed slot" % where)
 		elif slots.has(slot):
 			found.append("%s blocks %s, a slot it is worn in" % [where, slot])
+	if moves != null:
+		found.append_array(moves.problems(where + " moves"))
 	return found

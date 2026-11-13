@@ -24,7 +24,8 @@ extends CharacterBody3D
 ##   drawn from the brain. A move that opens the member's attack chain plays the whole chain,
 ##   pressed swing after swing as the player would; any other move plays alone. Its own
 ##   `Hitbox` strikes as its member, then it waits the brain's `attack_cooldown`;
-##   in a form (C6.5b) the chain played is the form's own, through `PowerSet.moves_over`;
+##   a worn weapon's chain replaces the member's own (`Combatant.field_moves`, C7.3b), and in a
+##   form (C6.5b) the chain played is the form's own, through `PowerSet.moves_over`;
 ## - hurt below `retreat_below`, it backs away;
 ## - strayed further than `leash_radius` from its place, it gives up and walks back;
 ## - with no foe in sight it keeps its place in the line, as before.
@@ -207,8 +208,8 @@ func _aim_hitbox() -> void:
 ## Starts or carries on the attack the decider chose: the whole attack chain when the chosen
 ## move opens it, pressed every frame so each next swing plays as its window opens (the press
 ## after the last swing is dropped, so the chain plays once); otherwise the chosen move alone.
-## In a form (C6.5b), the brain still names the member's own first swing, and the form's chain
-## plays in its place.
+## In a form (C6.5b), or with a weapon that has its own chain (C7.3b), the brain still names the
+## member's own first swing, and the form's or the weapon's chain plays in its place.
 func _swing() -> void:
 	var own: Array[ActionMove] = loadout.moves.attack_chain if loadout.moves != null else []
 	if decider.chosen != null:
@@ -216,8 +217,10 @@ func _swing() -> void:
 		if not _chaining:
 			timeline.start(decider.chosen)
 	if _chaining:
+		var me: Combatant = Combatant.of(self)
+		var base: MoveSet = me.field_moves(loadout.moves) if me != null else loadout.moves
 		var powers: PowerSet = PowerSet.of(self)
-		var playing: MoveSet = powers.moves_over(loadout.moves) if powers != null else loadout.moves
+		var playing: MoveSet = powers.moves_over(base) if powers != null else base
 		timeline.press(playing.attack_chain)
 
 

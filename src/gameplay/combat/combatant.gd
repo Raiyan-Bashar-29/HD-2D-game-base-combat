@@ -19,6 +19,8 @@ extends Node
 ## WHAT WORN GEAR LENDS (C7.1c). A worn weapon can give the plain attack an element and extra
 ## weakness tags. The worn set writes them into `lent_element` and `lent_tags`; this node does
 ## not know what gear is. Whoever resolves a plain attack asks `strike_element` and `strike_tags`.
+## A worn weapon's field chain (C7.3b) is written into `lent_moves`; `field_moves` lays it over the
+## fighter's own: the weapon's chain, its dodge if it has one, and the fighter's own skills.
 ##
 ## EVERY COMBATANT IS IN THE GROUP `GROUP`, so `find` can turn an id from an event back into
 ## its fighter (C6.4b: a kit gauge asks whether the one who fell was an ally).
@@ -58,7 +60,13 @@ var real_time: bool = false
 var lent_element: StringName = &""
 ## The weakness tags worn gear adds to this fighter's plain attack. Written by `GearSet`.
 var lent_tags: Array[StringName] = []
+## The field moves worn gear gives this fighter, or null. Written by `GearSet` (C7.3b).
+var lent_moves: MoveSet
 var sheet: StatSheet = StatSheet.new()
+# The last `field_moves` built, and what it was built from.
+var _merged: MoveSet
+var _merged_own: MoveSet
+var _merged_lent: MoveSet
 
 
 func _ready() -> void:
@@ -125,6 +133,22 @@ func strike_tags() -> Array[StringName]:
 		if not out.has(tag):
 			out.append(tag)
 	return out
+
+
+## The moves this fighter plays in the field before any power (C7.3b): `own`, with a worn
+## weapon's chain, and its dodge when it has one, in their place. The same set comes back until
+## `own` or the weapon changes, so a form's cache keyed on it stays small.
+func field_moves(own: MoveSet) -> MoveSet:
+	if lent_moves == null or own == null:
+		return own
+	if _merged == null or _merged_own != own or _merged_lent != lent_moves:
+		_merged_own = own
+		_merged_lent = lent_moves
+		_merged = MoveSet.new()
+		_merged.attack_chain = own.attack_chain if lent_moves.attack_chain.is_empty() else lent_moves.attack_chain
+		_merged.dodge = lent_moves.dodge if lent_moves.dodge != null else own.dodge
+		_merged.skills = own.skills
+	return _merged
 
 
 ## Resolves one hit on `target` and applies it. Null when there is nobody to hit.

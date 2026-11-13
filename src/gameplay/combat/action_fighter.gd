@@ -15,7 +15,8 @@ extends Node
 ##    faces, and sweeps while the move is live.
 ## 4a. Each move started, other than the dodge, is told to the fighter's `PowerSet` (C6.4b), so a
 ##    kit gauge can count a new move.
-## 4c. The moves played are the fighter's own, unless a running power hands over others: a
+## 4c. The moves played are the fighter's own, with a worn weapon's chain in their place
+##    (`Combatant.field_moves`, C7.3b), unless a running power hands over others on top: a
 ##    form's own attack chain and dodge (`current_moves`, C6.5b).
 ## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
 ## 4d. A counter stance's move (C6.6d) is started on this timeline by the `Hurtbox`; the fighter
@@ -125,11 +126,13 @@ func press_slot(slot: int) -> bool:
 	return PowerSlots.press(me, slot, _rng)
 
 
-## The moves the fighter plays now: its own `moves`, or what a running power puts in their place
-## (a form's chain and dodge, C6.5b).
+## The moves the fighter plays now: its own `moves`, with a worn weapon's chain in their place
+## (C7.3b), and over that what a running power puts in (a form's chain and dodge, C6.5b).
 func current_moves() -> MoveSet:
+	var me: Combatant = Combatant.of(get_parent())
+	var base: MoveSet = me.field_moves(moves) if me != null else moves
 	var powers: PowerSet = PowerSet.of(get_parent())
-	return powers.moves_over(moves) if powers != null else moves
+	return powers.moves_over(base) if powers != null else base
 
 
 ## True while the fighter cannot start moves: knocked back, or under a status counted in
