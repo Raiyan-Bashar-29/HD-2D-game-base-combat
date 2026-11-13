@@ -1,0 +1,11 @@
+﻿metric,value,meaning
+Game encyclopedia coverage,21,Number of distinct games with at least one mechanics row
+Mechanic entries,248,"Curated mechanic and select named-skill descriptions, not full character ability rosters"
+Boss-specific or generic encounter entries,60,Sources include named bosses and explicitly labeled generic boss-system examples
+Curated families,20,"Cross-game analysis categories, not official tags"
+Cross-game comparisons,16,Examples of analogous-but-not-identical mechanics
+Coding templates,20,"Original pseudocode recipes, not reverse-engineered proprietary game code"
+Prior Last Cloudia name-index rows,80,Only name and occasional rarity; missing detailed effects and boss descriptions
+Last Cloudia skill/ark full database extracted,NO,The earlier Goldmine full-site data collection was not completed
+All character skills and all boss phases of all games collected,NO,Curated representative sample of high-value systems only
+Version date,2026-11-11,Research snapshot timestamp; games change over time

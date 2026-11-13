@@ -4038,3 +4038,36 @@ weapons).
 - No screen yet (C7.7).
 - The level is per item: two copies of a piece, and a foe wearing the same item, share it.
 - An awakened piece's gems stay recorded on the old item, and the new piece is not put on.
+
+## 2026-11-13 — C9.0 · Design: passives, armours and kakujas (documents only, combat 0.88.1)
+
+**Did.**
+
+- New `docs/PASSIVES.md`: the passive as one file (when, if, what), what the engine already
+  runs, the catalogue of passive families, the loadout, the armour functions, new armour rows
+  (the Akame ga Kill armours, the quinque armours), and every kakuja as a form and as an
+  armour.
+- New phase C9 on the board, rows C9.1 to C9.8. C9.1 to C9.4 are built before C7.6.
+- The owner's mechanics encyclopedia and Last Cloudia names list are in `docs/reference/`.
+- Pointers in `GEAR.md`, `HANDOFF.md`, `CLAUDE.md` and the reference README.
+
+**Why.** The owner asked for every ability to be a separate passive that characters and gear
+are given, in Last Cloudia's way, and for armours and kakujas built from them by changing
+numbers. Most always-on passives already run through `StatusEffect`; the missing part is a
+passive that waits for an event and then acts once, so that is what the new rows build.
+
+**Connects.** `StatusEffect`, `GaugeRule`, `PowerScaling`, `FormMechanism`, `PowerSet.lend`,
+gear (C7.3 to C7.5), and rows C8.6, C8.10 and C8.12.
+
+**Verified.** Boot: 0 warnings, 0 errors. The suite has 0 failed. All seven checkers exit 0,
+and the stripped run has 0 failed. No file under `src/` or `tests/` changed.
+
+**Unblocks.** C9.1.
+
+**Gaps.**
+
+- The encyclopedia has no full Last Cloudia skill list (names only), so the catalogue is built
+  from mechanic families and not from that game's exact skills.
+- Three kakuja lines are marked "to confirm" against the source.
+- Only Arata is an armour in the source; the other armour versions are a reading.
+- C9.8 (studying fan-made fighting-game character files) is not started.

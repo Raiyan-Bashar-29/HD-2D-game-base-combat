@@ -487,6 +487,10 @@ not. Each kit row (C6.14 onward) decides its split.
 
 ### The armours
 
+**More rows, the armour functions, and every kakuja with its armour version are in
+[`PASSIVES.md`](PASSIVES.md)** (C9.0): the Akame ga Kill armours and the quinque armours are
+there. C7.10 builds both tables.
+
 | Piece | From | Slot | The idea as game rules |
 |---|---|---|---|
 | Berserker Armor | Berserk | `body`, set of 3, cursed | A transformation (Part 4): attack ×1.6, no flinch (`knockback_taken` −1), pain ignored (`damage_taken` −20 %), but it drains HP each second or turn, the wearer cannot be given orders from the menu while it rages (auto-battle brain), and it cannot be taken off mid-fight |

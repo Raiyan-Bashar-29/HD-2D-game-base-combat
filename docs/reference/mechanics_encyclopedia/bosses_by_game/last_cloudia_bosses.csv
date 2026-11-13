@@ -1,0 +1,2 @@
+﻿id,game,boss_or_encounter,phase,activation_trigger,telegraph_or_indicator,mechanic,player_counterplay,implementation_logic,source_url,evidence,as_of,family,implementation_type
+B0001,Last Cloudia,General bosses (unnamed system),Combat,Break gauge reaches zero,Visible Break gauge,Defense falls significantly for a Break window,Time damage and Specials during Break,onBreak: lowerDefense(); scheduleRecovery(),https://lastcloudia.com/en/system/battle02/,source-grounded paraphrase,2026-11-11,Boss Phases & Telegraphs,"Original simplified pseudocode, not game source code"
