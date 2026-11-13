@@ -7,8 +7,8 @@ extends RefCounted
 ## inside inside, and this holds their bodies at the edge each tick. It only moves bodies; it does
 ## not decide who is inside, and it changes no statuses or modifiers.
 ##
-## OWNS: holding a closed battlefield's fighters at its edge, and the body step the pull and push
-## share (`step_body`).
+## OWNS: holding a closed battlefield's fighters at its edge, the pull and push (`drift`), and the
+## body step they share (`step_body`).
 ## MUST NOT: decide who is inside, or change statuses, modifiers or hit points.
 
 ## Walks each fighter in `inside` (a list of `Combatant`s) that stands beyond `radius` from `me`
@@ -28,6 +28,25 @@ static func hold(me: Combatant, radius: float, inside: Array) -> void:
 		gap.y = 0.0
 		if gap.length() > radius:
 			step_body(body, gap.normalized() * radius - gap)
+
+
+## Draws each standing fighter of `members` toward `me` (`speed` above 0, a pull) or away (below
+## 0, a push) for `seconds`, on the ground, never past `me`. `me` itself never moves. Moved here
+## from `BattlefieldRun` in C6.9f, to keep that file in its budget.
+static func drift(me: Combatant, members: Array[Combatant], speed: float, seconds: float) -> void:
+	var centre := me.get_parent() as Node3D
+	if is_zero_approx(speed) or centre == null:
+		return
+	for other: Combatant in members:
+		var body: Node3D = (other.get_parent() as Node3D) if is_instance_valid(other) else null
+		var vitals: Vitals = Vitals.of(body) if body != null else null
+		if other == me or body == null or vitals == null or vitals.is_defeated():
+			continue
+		var gap: Vector3 = centre.global_position - body.global_position
+		gap.y = 0.0
+		if gap.length() < 0.001:
+			continue
+		step_body(body, gap.normalized() * minf(speed * seconds, gap.length()))
 
 
 ## Moves `body` by `step` on the ground. A physics body slides and stops at walls; any other moves

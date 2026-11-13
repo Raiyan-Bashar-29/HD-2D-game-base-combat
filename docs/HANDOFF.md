@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C6.9f, the place (`PlaceLook`, `moves_fight`, `weather`), then C6.9g, the log and HUD.** C6.9e (a battlefield's `caster_kit`, held while it stands) is done at 0.81.0; `summons` moved to C8.10. C6.9d (clashes and `closed`) is done at 0.80.0, see the bullet above.
+- **Next: C6.9g, the log and HUD.** C6.9f (the place: `place`, `moves_fight`, `weather`, run by `BattlefieldStage`) is done at 0.82.0. C6.9e (a battlefield's `caster_kit`, held while it stands) is done at 0.81.0; `summons` moved to C8.10. C6.9d (clashes and `closed`) is done at 0.80.0, see the bullet above.
   The build order is the table at the foot of `GEAR.md`, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.
