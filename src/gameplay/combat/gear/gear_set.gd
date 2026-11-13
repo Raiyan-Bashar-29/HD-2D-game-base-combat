@@ -56,6 +56,10 @@ extends Node
 ## `set/<set id>`, kits under `set/<set id>/<pieces>`) while worn together. `GearSetBonuses`
 ## counts them, called by `GearLending`.
 ##
+## SOCKETS (C7.4c). A worn piece's socketed gems give their stat changes (under `gems`) and an
+## element. Socketing always changes the bag, so `inventory_changed` re-lends, and
+## `GearSockets` puts the gems on through `GearLending`.
+##
 ## The lending itself (element, tags, moves, kits) is done by `GearLending`.
 ##
 ## THE SLOT LIST is one `GearRules` file a game names in `[combat] gear/rules`. With no setting,
@@ -334,7 +338,8 @@ func _start() -> void:
 
 
 # Takes off anything that left the bag. This is the price of leaving the item in the bag, paid
-# here once and not by everyone who removes an item.
+# here once and not by everyone who removes an item. Then it re-lends, because a gem socketed or
+# taken out changed the bag too (C7.4c).
 func _revalidate() -> void:
 	var bag: Inventory = Inventory.of(get_parent())
 	if bag == null:
@@ -342,6 +347,7 @@ func _revalidate() -> void:
 	for item_id: StringName in worn_ids():
 		if not innate.has(item_id) and not bag.has(item_id):
 			take_off(item_id, true)
+	_lend()
 
 
 # Empties what `piece` needs to go into `slot`. `refusal` already made sure none is cursed.

@@ -1311,6 +1311,10 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
    - A gear set (C7.4b): make one `GearSetBonus` (`set_id` such as `gear_set/<name>`) with
      `GearSetTier`s, each with the worn `pieces` that reach it, its `modifiers` and an optional
      `kit` (a status at a tier is the kit's passive). Point every piece's `set_bonus` at it.
+   - A gem (C7.4c): add the item, then `data/gems/<name>.tres`, a `GemDefinition` with id
+     `gem/<name>`, its `item_id`, and `modifiers` and/or an `element`. Give pieces `sockets`
+     (a rarity's `sockets` add more). To make taking a gem out cost something, name a remover
+     item in the project setting `combat/gear/gem_remover`; left empty, it is free.
    - A power used once per fight (C6.5f): tick `once_per_battle` on the `Power`. After one use
      it is refused ("once per battle") until the next battle, or in the field until the next
      area. It may also have a cooldown; a passive power must not set it.

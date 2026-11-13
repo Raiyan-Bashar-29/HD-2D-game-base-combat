@@ -38,6 +38,9 @@ extends ContentEntry
 ## SETS (C7.4b): `set_bonus` names the set the piece belongs to. Worn together, the set's pieces
 ## give the tiers they reach (stat changes, a kit). `GearSetBonuses` counts them.
 ##
+## SOCKETS (C7.4c): `sockets` is how many gems the piece holds, and its rarity's `sockets` adds
+## to it (`socket_count`). Which gems are in it is play state, kept by `GearSockets`.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -75,6 +78,8 @@ extends ContentEntry
 @export var moves: MoveSet
 ## The set this piece belongs to (C7.4b). Null means none.
 @export var set_bonus: GearSetBonus
+## How many gems it holds (C7.4c), before its rarity's extra sockets.
+@export var sockets: int = 0
 
 
 ## The slots this piece may be worn in, in the order to try them.
@@ -126,6 +131,12 @@ func all_blocks() -> Array[StringName]:
 	return _joined(type.blocks if type != null else ([] as Array[StringName]), blocks)
 
 
+## How many gems this piece holds: its own sockets plus its rarity's (C7.4c).
+func socket_count() -> int:
+	var tier: Rarity = RarityDb.of(rarity)
+	return sockets + (tier.sockets if tier != null else 0)
+
+
 ## True when wearing this piece can lend a kit: its own, or one of its set's tiers.
 func lends_kit() -> bool:
 	return kit != null or (set_bonus != null and set_bonus.has_kit())
@@ -159,6 +170,8 @@ func problems() -> PackedStringArray:
 		found.append_array(moves.problems(where + " moves"))
 	if set_bonus != null:
 		found.append_array(set_bonus.problems(where))
+	if sockets < 0:
+		found.append("%s has fewer than zero sockets" % where)
 	if needs_level < 0:
 		found.append("%s needs a level below zero" % where)
 	if needs_stats.has(&""):

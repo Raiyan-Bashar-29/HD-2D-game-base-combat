@@ -3956,3 +3956,43 @@ with the `apply` call commented out, its bonus checks failed. Seven checkers exi
 **Gaps.** No set name or tier list on a screen until C7.7. Rarity does not scale a set's stat
 changes. Two pieces of one set carrying different bonus files are not flagged: the first worn
 decides.
+
+## 2026-11-13 — C7.4c · Gem sockets (combat 0.87.0)
+
+**Did.**
+
+- New content `GemDefinition` (`item_id`, `modifiers`, `element`, `problems()`) and `GemDb`
+  (`data/gems/`, `GearDb`'s shape).
+- `GearDefinition.sockets` and `socket_count()` (plus the rarity's `sockets`, which is now read).
+- New `GearSockets` (gameplay):
+  - socketing a gem uses up the item, and unsocketing gives it back;
+  - uses up the remover item named in `combat/gear/gem_remover`, when one is named;
+  - says why not, through `socket_refusal` and `removal_refusal`;
+  - lends the element (`element_of`);
+  - puts the worn gems' stat changes on the sheet under `gems` (`apply`).
+- `GearLending` calls it, and `GearSet._revalidate` re-lends after every bag change.
+
+**Why.** It is `GEAR.md` § Sets, sockets, upgrading. Sockets are flags, as worn gear is, so they
+need no new save code. The stat changes are rebuilt from scratch, as sets' are, so a refresh
+can't double them. Socketing always changes the bag, so `inventory_changed` is the one place
+that re-lends.
+
+**Connects.** `Inventory` (the gem and the remover), `Flags`, `GearLending` (C7.3), `Rarity`
+(C7.2), and the lent element (C7.1c).
+
+**Verified.**
+
+- Boot: 0 warnings, 0 errors.
+- The suite has 0 failed, and `gear_sockets_test.gd` passes 13/13.
+- Red first: with the `apply` call commented out, 3 checks failed.
+- All seven checkers exit 0, and the stripped run has 0 failed.
+
+**Unblocks.** C7.5 (upgrading can add a socket at a level) and the gear screen (C7.7).
+
+**Gaps.**
+
+- No screen yet.
+- Rarity doesn't scale gems.
+- There is no rule limiting a gem to certain slots.
+- Two copies of one piece share their sockets.
+- A piece that leaves the bag keeps its gems recorded.
