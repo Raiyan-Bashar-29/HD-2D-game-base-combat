@@ -16,6 +16,11 @@ extends Node
 ## events wake once as the holder's HP share crosses the line; a status gained while one of
 ## this set's own effects is running wakes nothing, so a passive cannot feed itself.
 ##
+## EARLY TRIGGERS (C9.2b) wake before a hit lands, through `before` (`PassiveHits` calls it):
+## those that scale the hit, and LETHAL_HIT. A trigger never wakes inside itself, and a hit the
+## holder deals from one of its own effects (EXTRA_HIT) wakes none of its dealt-hit triggers,
+## so two passives cannot feed each other forever.
+##
 ## A FIELD BODY SLEEPS DURING A TURN-BASED BATTLE: a party member's battle copy shares its id
 ## and its pools, and only the copy's set may answer the battle's events.
 ##
@@ -41,6 +46,8 @@ extends Node
 
 ## The source a fighter's own passives (`CombatantDef.passives`) are held under.
 const OWN: StringName = &"own"
+## The events of a hit the holder deals.
+const DEALT: Array[PassiveTrigger.Event] = [PassiveTrigger.Event.HIT_DEALT, PassiveTrigger.Event.CRIT_DEALT]
 
 ## The random numbers chances are rolled with. A battle hands over its own (`join`), so a
 ## seeded battle replays the same.
@@ -52,7 +59,8 @@ var _woken: Dictionary[PassiveTrigger, int] = {}
 var _waited: Dictionary[PassiveTrigger, float] = {}
 var _just_fell: StringName = &""
 var _battling: bool = false
-var _busy: bool = false
+# The triggers whose effects are running right now. A trigger never wakes inside itself.
+var _running: Array[PassiveTrigger] = []
 # The holder's HP share before and after the last change, for the HP-line events.
 var _was: float = -1.0
 var _now: float = -1.0
@@ -211,14 +219,22 @@ func _count_down(amount: float) -> void:
 			_cooling.erase(trigger)
 
 
-# `event` happened to the holder: every held trigger waiting for it gets its try.
-func _wake(event: PassiveTrigger.Event, other: Combatant, damage: int) -> void:
+## A hit is about to land (`PassiveHits`): the EARLY triggers of `event` get their try.
+func before(event: PassiveTrigger.Event, other: Combatant, damage: int) -> void:
+	_wake(event, other, damage, true)
+
+
+# `event` happened to the holder: every held trigger waiting for it gets its try. A hit the
+# holder deals while one of its own effects runs (an extra hit) wakes no dealt-hit trigger.
+func _wake(event: PassiveTrigger.Event, other: Combatant, damage: int, early: bool = false) -> void:
 	var me: Combatant = Combatant.of(get_parent())
 	if me == null or (me.real_time and _battling):
 		return
+	if not _running.is_empty() and DEALT.has(event):
+		return
 	for passive: PassiveSkill in passives():
 		for trigger: PassiveTrigger in passive.triggers:
-			if trigger != null and trigger.event == event and _fits(trigger):
+			if trigger != null and trigger.event == event and trigger.early() == early and _fits(trigger):
 				_try(trigger, me, other, damage)
 
 
@@ -236,7 +252,7 @@ func _fits(trigger: PassiveTrigger) -> bool:
 
 func _try(trigger: PassiveTrigger, me: Combatant, other: Combatant, damage: int) -> void:
 	var vitals: Vitals = Vitals.of(get_parent())
-	if vitals == null or vitals.is_defeated() or _cooling.has(trigger):
+	if vitals == null or vitals.is_defeated() or _cooling.has(trigger) or _running.has(trigger):
 		return
 	if trigger.limit > 0 and _woken.get(trigger, 0) >= trigger.limit:
 		return
@@ -247,12 +263,11 @@ func _try(trigger: PassiveTrigger, me: Combatant, other: Combatant, damage: int)
 	_woken[trigger] = _woken.get(trigger, 0) + 1
 	if trigger.cooldown > 0.0:
 		_cooling[trigger] = trigger.cooldown
-	var outer: bool = _busy
-	_busy = true
+	_running.append(trigger)
 	for effect: PassiveEffect in trigger.effects:
 		if effect != null:
 			PassiveEffects.run(effect, me, other, damage, rng)
-	_busy = outer
+	_running.erase(trigger)
 
 
 func _on_game_loaded(_slot: int) -> void:
@@ -345,7 +360,7 @@ func _on_vitals(who: StringName, pool: StringName, _value: int, _maximum: int) -
 func _on_status(who: StringName, status_id: StringName, _stacks: int) -> void:
 	var me: Combatant = Combatant.of(get_parent())
 	var statuses: StatusSet = StatusSet.of(get_parent())
-	if me == null or statuses == null or _busy or who != me.combatant_id:
+	if me == null or statuses == null or not _running.is_empty() or who != me.combatant_id:
 		return
 	for status: StatusEffect in statuses.held():
 		if status.id == status_id:

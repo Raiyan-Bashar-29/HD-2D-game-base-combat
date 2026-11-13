@@ -15,12 +15,14 @@ extends Resource
 ## - ALLIES_STANDING: at least `count` allies stand, the holder not counted.
 ## - IN_FIELD: the fight is in real time (negate it for a turn-based battle).
 ## - HOUR: the clock's hour is from `low` to `high`; low 20 and high 5 means the night.
+## - HIT_TAG: the hit in the event carries the tag `tag` (a skill's tag, `sure_hit`). C9.2b.
+## - HIT_ELEMENT: the hit in the event is of the element `tag`. C9.2b.
 ##
 ## OWNS: the data of one condition, and checking it.
 ## MUST NOT: answer itself. `PassiveConditions` (gameplay) does.
 
 enum Kind { POOL_SHARE, HOLDS_TAG, TARGET_HOLDS_TAG, TARGET_TRAIT, WEARING, ALONE,
-	ALLIES_STANDING, IN_FIELD, HOUR }
+	ALLIES_STANDING, IN_FIELD, HOUR, HIT_TAG, HIT_ELEMENT }
 
 @export var kind: Kind = Kind.POOL_SHARE
 @export var negate: bool = false
@@ -37,13 +39,19 @@ func needs_other() -> bool:
 	return kind == Kind.TARGET_HOLDS_TAG or kind == Kind.TARGET_TRAIT
 
 
+## True for a check of the hit itself, which only an event with a hit can answer.
+func needs_hit() -> bool:
+	return kind == Kind.HIT_TAG or kind == Kind.HIT_ELEMENT
+
+
 func problems(where: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
 	match kind:
 		Kind.POOL_SHARE:
 			if pool == &"" or low > high:
 				found.append("%s has a pool condition with no pool, or low above high" % where)
-		Kind.HOLDS_TAG, Kind.TARGET_HOLDS_TAG, Kind.TARGET_TRAIT, Kind.WEARING:
+		Kind.HOLDS_TAG, Kind.TARGET_HOLDS_TAG, Kind.TARGET_TRAIT, Kind.WEARING, Kind.HIT_TAG, \
+				Kind.HIT_ELEMENT:
 			if tag == &"":
 				found.append("%s has a condition that names no tag" % where)
 		Kind.ALLIES_STANDING:

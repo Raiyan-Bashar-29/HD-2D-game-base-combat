@@ -206,6 +206,25 @@ other forever.
 - Not built yet (C9.2b): SCALE_HIT, SURVIVE with LETHAL_HIT, EXTRA_HIT, COOLDOWN_CUT,
   BREAK_PIECE, SKILL_USED, FORM_ENTERED, FORM_LEFT.
 
+### As built (C9.2b, 0.91.0)
+
+- `PassiveHits` (gameplay) sits in `Combatant.receive`. `scale` runs before the barriers,
+  `lethal` after them and before the HP changes. The hit landing is `PassiveHits.now`.
+- An EARLY trigger wakes before the hit lands and not after: every LETHAL_HIT trigger, and any
+  HIT_DEALT, CRIT_DEALT or HIT_TAKEN trigger holding a SCALE_HIT effect. All its effects run
+  then; the damage they see is the hit's amount so far.
+- SCALE_HIT multiplies the hit by `amount`. Order: the attacker's HIT_DEALT, its CRIT_DEALT,
+  then the target's HIT_TAKEN.
+- SURVIVE (LETHAL_HIT only) cuts the hit so the holder is left at `leave` HP (default 1). Give
+  the trigger a `limit` for "once per battle".
+- EXTRA_HIT lands `skill` (its power times `amount`, its element, tags and sure-hit) on each
+  target as a real hit by the holder. It wakes none of the holder's own HIT_DEALT or
+  CRIT_DEALT triggers; the target's HIT_TAKEN triggers do wake.
+- A trigger never wakes inside itself, so two counters answer each other once and stop.
+- HIT_TAG and HIT_ELEMENT (the element's name goes in `tag`) read the hit landing.
+- A heal and a hit on oneself are not scaled and are never lethal.
+- Not built yet: SKILL_USED, FORM_ENTERED, FORM_LEFT, COOLDOWN_CUT (C9.2c); BREAK_PIECE (C9.5).
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs

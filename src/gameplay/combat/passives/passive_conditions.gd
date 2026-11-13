@@ -4,7 +4,8 @@ extends RefCounted
 ## dragon, is it night. See `PassiveCondition` for what each kind means.
 ##
 ## IN PLAIN WORDS: `PassiveSet` asks `all` just before a trigger wakes. Every condition must
-## hold. A check about the other fighter is false when the event has none.
+## hold. A check about the other fighter is false when the event has none, and a check of the
+## hit (its tag, its element) reads the hit landing right now (`PassiveHits.now`).
 ##
 ## OWNS: reading the fight to answer one condition.
 ## MUST NOT: change anything, or remember anything.
@@ -37,6 +38,10 @@ static func _holds(condition: PassiveCondition, me: Combatant, other: Combatant)
 			return PassiveEffects.side(me, false).size() - 1 >= condition.count
 		PassiveCondition.Kind.IN_FIELD:
 			return me.real_time
+		PassiveCondition.Kind.HIT_TAG:
+			return PassiveHits.now != null and PassiveHits.now.tags.has(condition.tag)
+		PassiveCondition.Kind.HIT_ELEMENT:
+			return PassiveHits.now != null and PassiveHits.now.element == condition.tag
 	var hour: float = float(Clock.hour)
 	if condition.low <= condition.high:
 		return hour >= condition.low and hour <= condition.high

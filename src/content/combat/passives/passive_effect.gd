@@ -11,11 +11,17 @@ extends Resource
 ##   of a fifth). Only a hit or a kill carries damage; elsewhere it does nothing.
 ## - GIVE_STATUS: gives `status`, `stacks` times.
 ## - CURE: takes off every status tagged `tag`.
+## - SCALE_HIT (C9.2b): multiplies the hit in the event by `amount`, BEFORE it lands (1.5 is a
+##   killer bonus, 0.5 a guard). Only in HIT_DEALT, CRIT_DEALT and HIT_TAKEN.
+## - SURVIVE (C9.2b): in LETHAL_HIT only. The hit is cut so the holder is left at `leave` HP.
+## - EXTRA_HIT (C9.2b): the holder lands `skill` on each target, at `amount` of its power (a
+##   pursuit hit, a counter). It wakes none of the holder's own hit passives.
 ##
 ## OWNS: the data of one effect, and checking it.
 ## MUST NOT: apply itself. `PassiveEffects` (gameplay) does.
 
-enum Kind { POOL_FLAT, POOL_SHARE, POOL_FROM_DAMAGE, GIVE_STATUS, CURE }
+enum Kind { POOL_FLAT, POOL_SHARE, POOL_FROM_DAMAGE, GIVE_STATUS, CURE, SCALE_HIT, SURVIVE,
+	EXTRA_HIT }
 ## SELF is the holder; OTHER is the other fighter in the event (the one hit, the one who hit,
 ## the one felled); ALLIES and FOES are everyone standing on that side, the holder included
 ## among its allies.
@@ -25,13 +31,18 @@ enum Target { SELF, OTHER, ALLIES, FOES }
 @export var target: Target = Target.SELF
 ## The pool the three POOL kinds change: `hp`, `mp`, or any pool the fighter has.
 @export var pool: StringName = &"hp"
-## Points for POOL_FLAT; a share for POOL_SHARE and POOL_FROM_DAMAGE.
+## Points for POOL_FLAT; a share for POOL_SHARE and POOL_FROM_DAMAGE; what SCALE_HIT multiplies
+## the hit by; the share of the skill's power EXTRA_HIT lands.
 @export var amount: float = 0.0
 ## What GIVE_STATUS gives, and how many times (for a status that stacks).
 @export var status: StatusEffect
 @export var stacks: int = 1
 ## What CURE takes off.
 @export var tag: StringName = &""
+## The HP SURVIVE leaves the holder with.
+@export var leave: int = 1
+## The skill EXTRA_HIT lands: its power, element, tags and sure-hit are read.
+@export var skill: Skill
 
 
 func problems(where: String) -> PackedStringArray:
@@ -52,4 +63,13 @@ func problems(where: String) -> PackedStringArray:
 		Kind.CURE:
 			if tag == &"":
 				found.append("%s cures but names no tag" % where)
+		Kind.SCALE_HIT:
+			if amount < 0.0 or amount == 1.0:
+				found.append("%s scales a hit by a negative number, or by 1" % where)
+		Kind.SURVIVE:
+			if leave < 1:
+				found.append("%s survives a hit with less than 1 HP" % where)
+		Kind.EXTRA_HIT:
+			if skill == null or amount <= 0.0:
+				found.append("%s lands an extra hit with no skill, or no power" % where)
 	return found

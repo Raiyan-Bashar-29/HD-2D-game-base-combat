@@ -20,6 +20,12 @@ extends Resource
 ## - HP_BELOW, HP_ABOVE: the holder's HP share crossed `threshold` downward, or upward. It wakes
 ##   once per crossing, not for as long as the HP stays there.
 ## - STATUS_GAINED: a status landed on the holder; `tag`, when set, must be one of its tags.
+## - LETHAL_HIT (C9.2b): a hit is about to take the holder to 0 HP. It wakes before the HP
+##   changes, so a SURVIVE effect can cut the hit.
+##
+## AN EARLY TRIGGER (C9.2b) wakes BEFORE the hit lands and not after: every LETHAL_HIT trigger,
+## and any hit trigger holding a SCALE_HIT effect. All its effects run at that moment, and the
+## damage they see is the hit's amount so far.
 ##
 ## `conditions` (C9.2a) must all hold at that moment, or the trigger stays asleep and spends
 ## neither its cooldown nor its limit.
@@ -28,12 +34,15 @@ extends Resource
 ## MUST NOT: listen to anything or count anything. `PassiveSet` (gameplay) does.
 
 enum Event { FIGHT_START, FIGHT_WON, TURN_START, HIT_DEALT, HIT_TAKEN, KILL, ALLY_DEFEATED,
-	CRIT_DEALT, DODGE, GUARD, HP_BELOW, HP_ABOVE, STATUS_GAINED }
+	CRIT_DEALT, DODGE, GUARD, HP_BELOW, HP_ABOVE, STATUS_GAINED, LETHAL_HIT }
 
 ## The events that carry another fighter, and those of them that carry a hit's damage.
 const PAIRED: Array[Event] = [Event.HIT_DEALT, Event.HIT_TAKEN, Event.KILL, Event.ALLY_DEFEATED,
-	Event.CRIT_DEALT, Event.DODGE, Event.GUARD]
-const DAMAGING: Array[Event] = [Event.HIT_DEALT, Event.HIT_TAKEN, Event.KILL, Event.CRIT_DEALT]
+	Event.CRIT_DEALT, Event.DODGE, Event.GUARD, Event.LETHAL_HIT]
+const DAMAGING: Array[Event] = [Event.HIT_DEALT, Event.HIT_TAKEN, Event.KILL, Event.CRIT_DEALT,
+	Event.LETHAL_HIT]
+## The events whose hit can still be changed before it lands.
+const SCALABLE: Array[Event] = [Event.HIT_DEALT, Event.HIT_TAKEN, Event.CRIT_DEALT]
 
 @export var event: Event = Event.FIGHT_START
 @export_range(0.0, 1.0, 0.01) var chance: float = 1.0
@@ -49,6 +58,16 @@ const DAMAGING: Array[Event] = [Event.HIT_DEALT, Event.HIT_TAKEN, Event.KILL, Ev
 @export var limit: int = 0
 ## In the field, how many seconds stand for one turn of TURN_START.
 @export var interval: float = 1.0
+
+
+## True when the trigger wakes before the hit lands (see the header).
+func early() -> bool:
+	if event == Event.LETHAL_HIT:
+		return true
+	for effect: PassiveEffect in effects:
+		if effect != null and effect.kind == PassiveEffect.Kind.SCALE_HIT:
+			return true
+	return false
 
 
 func problems(where: String) -> PackedStringArray:
@@ -71,6 +90,10 @@ func problems(where: String) -> PackedStringArray:
 			found.append("%s takes a share of damage in an event that has none" % where)
 		if effect.target == PassiveEffect.Target.OTHER and not PAIRED.has(event):
 			found.append("%s aims at the other fighter in an event that has none" % where)
+		if effect.kind == PassiveEffect.Kind.SCALE_HIT and not SCALABLE.has(event):
+			found.append("%s scales a hit in an event with no hit still to land" % where)
+		if effect.kind == PassiveEffect.Kind.SURVIVE and event != Event.LETHAL_HIT:
+			found.append("%s survives outside LETHAL_HIT" % where)
 	for condition: PassiveCondition in conditions:
 		if condition == null:
 			found.append("%s has a trigger with an empty condition" % where)
@@ -78,4 +101,6 @@ func problems(where: String) -> PackedStringArray:
 		found.append_array(condition.problems(where))
 		if condition.needs_other() and not PAIRED.has(event):
 			found.append("%s checks the other fighter in an event that has none" % where)
+		if condition.needs_hit() and not DAMAGING.has(event):
+			found.append("%s checks the hit in an event that has none" % where)
 	return found

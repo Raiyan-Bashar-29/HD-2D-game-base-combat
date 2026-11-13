@@ -177,7 +177,8 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 
 
 ## Applies a resolved hit and announces it. A defeated combatant takes nothing and says nothing;
-## a negative total heals (an absorbed element). Returns the pool's change.
+## a negative total heals (an absorbed element). Returns the pool's change. While it lands the
+## hit is `PassiveHits.now`, for the passives that ask about it or change it (C9.2b).
 func receive(result: DamageResult, from: StringName) -> int:
 	var vitals: Vitals = Vitals.of(get_parent())
 	if result == null or vitals == null or vitals.is_defeated():
@@ -186,12 +187,24 @@ func receive(result: DamageResult, from: StringName) -> int:
 	if result.missed:
 		Events.attack_missed.emit(combatant_id, from)
 		return 0
-	# A barrier of this fighter's kit, or of an ally's, may stop or soften the hit first (C6.6a).
+	var outer: DamageResult = PassiveHits.now
+	PassiveHits.now = result
+	var change: int = _land(result, from, vitals)
+	PassiveHits.now = outer
+	return change
+
+
+func _land(result: DamageResult, from: StringName, vitals: Vitals) -> int:
+	# Passives of the attacker, then of this fighter, may scale the hit first (C9.2b).
+	PassiveHits.scale(self, result, from)
+	# A barrier of this fighter's kit, or of an ally's, may stop or soften the hit (C6.6a).
 	PowerGuard.incoming(self, result, from)
 	# A hit stopped whole is announced as blocked, not as 0 damage (C6.6b).
 	if result.blocked:
 		Events.attack_blocked.emit(combatant_id, from)
 		return 0
+	# A hit that would fell this fighter may be survived (C9.2b).
+	PassiveHits.lethal(self, result, from)
 	var before: int = vitals.current(damage_pool)
 	var after: int = vitals.change(damage_pool, -result.total())
 	# A hit that really hurt wakes a sleeper (a status with breaks_on_hit) (C2.14).

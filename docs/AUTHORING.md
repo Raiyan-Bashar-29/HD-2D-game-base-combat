@@ -1478,6 +1478,12 @@ ALONE, ALLIES_STANDING (`count`), IN_FIELD, HOUR; `negate` flips one. More event
 DODGE, GUARD, HP_BELOW and HP_ABOVE (set `threshold`), STATUS_GAINED (set `tag`). Give two sizes
 of one passive the same `group` and different `rank`s, and only the larger counts.
 
+**Hit effects (C9.2b).** SCALE_HIT (`amount` 1.5 or 0.5) on a HIT_DEALT, CRIT_DEALT or HIT_TAKEN
+trigger changes the hit before it lands. SURVIVE on a LETHAL_HIT trigger leaves the holder at
+`leave` HP; add `limit` 1 for once per battle. EXTRA_HIT lands `skill` at `amount` of its power
+(target OTHER for a pursuit or a counter). The conditions HIT_TAG and HIT_ELEMENT (name in `tag`)
+ask about the hit itself.
+
 ## Action combat: fighting in real time in the field (combat fork only)
 
 **The player swings, rolls and locks on in the field itself, with no battle screen.** It is

@@ -4117,3 +4117,15 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Verified:** suite 4219 passed, 0 failed; with `PassiveConditions` answering true, 3 fail.
 - **Gaps:** HIT_TAG and HIT_ELEMENT need the hit itself (C9.2b). DODGE exists only in the
   field, as i-frames do.
+
+## 2026-11-13 — C9.2b · Passive hit effects (combat 0.91.0)
+
+- **Did:** new `PassiveHits` in the hit path (`Combatant.receive` → `scale`, barriers,
+  `lethal`, HP). Effects SCALE_HIT, SURVIVE, EXTRA_HIT; event LETHAL_HIT; conditions HIT_TAG,
+  HIT_ELEMENT. `PassiveSet._busy` became `_running` (the triggers running now), so a trigger
+  never wakes inside itself.
+- **Why split:** the skill-used and form events and COOLDOWN_CUT are C9.2c (8-file rule);
+  BREAK_PIECE needs a gear source, so it moved to C9.5.
+- **Verified:** suite 4229 passed, 0 failed; with `PassiveSet.before` doing nothing, 5 fail.
+- **Gaps:** a status tick or a field hazard that does not go through `Combatant.receive` is
+  neither scaled nor survivable.

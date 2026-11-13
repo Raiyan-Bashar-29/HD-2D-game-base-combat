@@ -5,6 +5,8 @@ extends RefCounted
 ## IN PLAIN WORDS: `PassiveSet` decides WHEN a passive wakes; this does WHAT it says. Pools are
 ## changed through `Vitals` directly, not as a hit, so a passive's heal or drain wakes no other
 ## passive and two passives cannot feed each other forever. A fallen fighter is skipped.
+## Two kinds change the hit that is landing (`PassiveHits.now`): SCALE_HIT and SURVIVE.
+## EXTRA_HIT is a real hit by the holder (C9.2b).
 ##
 ## OWNS: applying an effect to its targets.
 ## MUST NOT: decide whether a trigger wakes, or remember anything.
@@ -17,6 +19,8 @@ const NEAR: float = 20.0
 ## and `damage` the hit's amount (0 when the event has none).
 static func run(effect: PassiveEffect, me: Combatant, other: Combatant, damage: int,
 		rng: RandomNumberGenerator) -> void:
+	if _changes_hit(effect, me):
+		return
 	for target: Combatant in _targets(effect.target, me, other):
 		var body: Node = target.get_parent()
 		var vitals: Vitals = Vitals.of(body)
@@ -38,6 +42,27 @@ static func run(effect: PassiveEffect, me: Combatant, other: Combatant, damage: 
 				var held: StatusSet = StatusSet.of(body)
 				if held != null:
 					held.cure_tagged(effect.tag)
+			PassiveEffect.Kind.EXTRA_HIT:
+				me.hit(target, effect.skill.power * effect.amount,
+					me.strike_element(effect.skill.element), rng, effect.skill.sure_hit, effect.skill.tags)
+
+
+# SCALE_HIT and SURVIVE change the hit landing right now and land on nobody. True when `effect`
+# was one of them.
+static func _changes_hit(effect: PassiveEffect, me: Combatant) -> bool:
+	var hit: DamageResult = PassiveHits.now
+	match effect.kind:
+		PassiveEffect.Kind.SCALE_HIT:
+			if hit != null:
+				hit.amount *= effect.amount
+			return true
+		PassiveEffect.Kind.SURVIVE:
+			var vitals: Vitals = Vitals.of(me.get_parent())
+			if hit != null and vitals != null:
+				var room: int = maxi(0, vitals.current(me.damage_pool) - effect.leave)
+				hit.amount = minf(hit.amount, float(room))
+			return true
+	return false
 
 
 ## Everyone standing on `me`'s side (`foes` false, `me` included) or against it (`foes` true),
