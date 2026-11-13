@@ -1473,6 +1473,13 @@ a `PassiveLesson` to the piece's `teaches` (the passive file, and the won fights
 quest can teach one outright with `PassiveLoadout.teach(who, passive_id)`. The player's choice
 is made with `PassiveLoadout.choose` and `drop`; the screen comes in C9.7.
 
+**Defences that need no power (C9.5a).** All are stats or one status mark, so a passive's held
+status, a worn piece or a form can give them. `invincible` on a status: no hit touches the
+holder (list hit tags in `pierced_by` to let some through). `mercy_time`: after a hit, hits do
+nothing for that many seconds (field) or turns (battle). `max_overshield`: a second health
+layer; add `overshield_regen` (points a second or a turn) and `overshield_delay` (how long
+after a hit it waits). `healing_taken`: -1 means the holder cannot be healed.
+
 Examples: life steal is HIT_DEALT with POOL_FROM_DAMAGE `hp` 0.2. An opening buff is
 FIGHT_START with GIVE_STATUS. A wave-end heal is FIGHT_WON with POOL_SHARE `hp` 0.3. A drain
 that pays for a strong `held` status is TURN_START with POOL_SHARE `hp` -0.05.

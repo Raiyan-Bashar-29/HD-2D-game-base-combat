@@ -133,6 +133,8 @@ func next_turn() -> Combatant:
 		# Each `regen_<pool>` stat refills (or drains) its pool once a turn, asleep or not
 		# (C2.16). It runs before the defeat check, so a drain that empties hp counts too.
 		Meters.regen_turn(actor)
+		# The mercy time runs down and an overshield left alone refills (C9.5a).
+		HitGuard.pass_time(actor, 1.0)
 		if _vitals(actor).is_defeated():
 			# The tick or the drain knocked them out: take them out of the queue and look for
 			# the next actor.

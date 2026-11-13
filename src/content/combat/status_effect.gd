@@ -71,6 +71,10 @@ enum Reaction { COUNTER, REFLECT }
 @export var grants_hit_tags: Array[StringName] = []
 ## C6.9c: the id of a status that, held by a TARGET, stops this holder's sure hits against it.
 @export var cancelled_by: StringName = &""
+## C9.5a: while held, no hit touches the holder (`HitGuard`): each is announced as blocked. A
+## hit carrying one of the `pierced_by` tags goes through. Heals and status ticks still land.
+@export var invincible: bool = false
+@export var pierced_by: Array[StringName] = []
 
 
 ## True when this status carries `block`.
@@ -99,6 +103,8 @@ func problems() -> PackedStringArray:
 	if reactions.has(Reaction.REFLECT) and reflect_tag == &"":
 		# With no tag to match, nothing would ever be reflected: almost certainly a slip.
 		found.append("%s (%s) reflects but names no reflect_tag" % [resource_path, id])
+	if not pierced_by.is_empty() and not invincible:
+		found.append("%s (%s) has pierced_by tags but is not invincible" % [resource_path, id])
 	if counter_move != null:
 		if not reactions.has(Reaction.COUNTER):
 			found.append("%s (%s) has a counter_move but no COUNTER reaction" % [resource_path, id])

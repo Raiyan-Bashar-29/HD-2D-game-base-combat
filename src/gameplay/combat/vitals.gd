@@ -17,6 +17,10 @@ extends Node
 ## the defeat pool from above zero to zero, and never again until a revive. Hitting a defeated
 ## combatant changes nothing, so a listener counting defeats never counts one twice.
 ##
+## A HEAL IS SCALED BY THE STAT `healing_taken` (C9.5a). `change` multiplies a rise of the defeat
+## pool by 1 plus that stat, as a hit is by `damage_taken`: -1 is "cannot be healed", 0.5 is half
+## as much again. `set_to` and `revive` are not scaled, so a rest and a revive still work.
+##
 ## OWNS: the current value of each pool, clamping it to 0..maximum, and the defeat edge.
 ## MUST NOT: compute damage, know where damage came from, choose what defeat means, or own the
 ## sheet's modifiers. Damage is C1.4's; what defeat does is a formula's (C2, C3) or a game's.
@@ -26,6 +30,8 @@ const PREFIX: String = "vital/"
 const MAX_PREFIX: String = "max_"
 ## A pool's starting fraction, when it should not start full, is the stat `start_<pool>`.
 const START_PREFIX: String = "start_"
+## A rise of the defeat pool through `change` is multiplied by 1 plus this stat.
+const HEALING_STAT: StringName = &"healing_taken"
 
 ## Unique per combatant, and it namespaces every flag this component writes. Equipment's rule:
 ## a second combatant that keeps the default shares the first one's pools.
@@ -74,6 +80,8 @@ func _start(pool: StringName) -> int:
 
 ## Negative to hurt, positive to heal. Returns the value after.
 func change(pool: StringName, delta: int) -> int:
+	if delta > 0 and pool == defeat_pool:
+		delta = roundi(delta * maxf(0.0, 1.0 + sheet.value(HEALING_STAT)))
 	return set_to(pool, current(pool) + delta)
 
 

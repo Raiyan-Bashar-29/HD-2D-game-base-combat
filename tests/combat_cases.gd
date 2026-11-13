@@ -102,6 +102,7 @@ const LIST: Array[String] = [
 	"res://tests/unit/passive_lending_test.gd",
 	"res://tests/unit/passive_library_test.gd",
 	"res://tests/unit/passive_loadout_test.gd",
+	"res://tests/unit/hit_guard_test.gd",
 	"res://tests/unit/command_overlay_test.gd",
 	"res://tests/unit/party_rewards_test.gd",
 ]

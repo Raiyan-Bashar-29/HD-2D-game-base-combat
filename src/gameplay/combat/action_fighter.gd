@@ -99,6 +99,7 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	var me: Combatant = Combatant.of(get_parent())
 	if me != null:
 		Weakness.recover(me)
+		HitGuard.pass_time(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Locked on, the fighter always faces its target, so every swing and roll aims at it (C3.5).
 	if _lock_on != null and _lock_on.target != null and _lock_on.direction() != Vector3.ZERO:

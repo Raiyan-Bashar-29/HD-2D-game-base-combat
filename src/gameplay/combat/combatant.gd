@@ -10,7 +10,9 @@ extends Node
 ## A BARRIER STEPS IN BEFORE THE HIT LANDS (C6.6a). `receive` hands the resolved hit to
 ## `PowerGuard.incoming`, the one hook the hero powers have in the damage path: a barrier may bring
 ## it to nothing, make it smaller, or drink its element. A hit stopped whole is announced as
-## `attack_blocked` and changes nothing (C6.6b).
+## `attack_blocked` and changes nothing (C6.6b). `HitGuard` stands before it (C9.5a): an
+## invincible fighter, or one in its mercy time, is not touched, and an overshield takes the hit
+## before the damage pool does.
 ##
 ## THE ATTACKER'S FORMULA RESOLVES THE HIT. `hit` builds the request from both sheets, resolves it
 ## through this combatant's `formula` with the caller's seeded `rng`, and hands the RESULT to the
@@ -65,6 +67,11 @@ var lent_tags: Array[StringName] = []
 ## The field moves worn gear gives this fighter, or null. Written by `GearSet` (C7.3b).
 var lent_moves: MoveSet
 var sheet: StatSheet = StatSheet.new()
+## `HitGuard`'s clocks (C9.5a): the mercy time left, how long the overshield still waits before
+## it refills, and the part of a point it has refilled. Seconds in the field, turns in a battle.
+var mercy_left: float = 0.0
+var shield_wait: float = 0.0
+var shield_carry: float = 0.0
 # The last `field_moves` built, and what it was built from.
 var _merged: MoveSet
 var _merged_own: MoveSet
@@ -197,12 +204,18 @@ func receive(result: DamageResult, from: StringName) -> int:
 func _land(result: DamageResult, from: StringName, vitals: Vitals) -> int:
 	# Passives of the attacker, then of this fighter, may scale the hit first (C9.2b).
 	PassiveHits.scale(self, result, from)
-	# A barrier of this fighter's kit, or of an ally's, may stop or soften the hit (C6.6a).
-	PowerGuard.incoming(self, result, from)
+	# An invincible fighter is not touched (C9.5a). Otherwise a barrier of this fighter's kit,
+	# or of an ally's, may stop or soften the hit (C6.6a).
+	if HitGuard.stops(self, result):
+		result.blocked = true
+	else:
+		PowerGuard.incoming(self, result, from)
 	# A hit stopped whole is announced as blocked, not as 0 damage (C6.6b).
 	if result.blocked:
 		Events.attack_blocked.emit(combatant_id, from)
 		return 0
+	# The overshield takes the hit first (C9.5a); the event below still tells the whole hit.
+	var soaked: int = HitGuard.soak(vitals, result)
 	# A hit that would fell this fighter may be survived (C9.2b).
 	PassiveHits.lethal(self, result, from)
 	var before: int = vitals.current(damage_pool)
@@ -213,5 +226,6 @@ func _land(result: DamageResult, from: StringName, vitals: Vitals) -> int:
 		statuses.wake()
 	# Damage taken feeds any `fill_on_hit_<pool>` meter, such as a limit gauge (C2.16).
 	Meters.fill_on_hit(self, before - after)
-	Events.combatant_damaged.emit(combatant_id, from, result.total(), result.critical)
+	HitGuard.hurt(self, before - after + soaked)
+	Events.combatant_damaged.emit(combatant_id, from, result.total() + soaked, result.critical)
 	return after - before

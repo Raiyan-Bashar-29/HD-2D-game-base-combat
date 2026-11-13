@@ -100,6 +100,7 @@ func act(delta: float) -> ActionDecider.State:
 	var me: Combatant = Combatant.of(self)
 	if me != null:
 		Weakness.recover(me)
+		HitGuard.pass_time(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Staggered, it stands still and drops the swing it was in, as under a knockback.
 	var halted: bool = statuses != null and statuses.halts()

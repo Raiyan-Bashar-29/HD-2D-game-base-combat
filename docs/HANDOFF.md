@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C9.5, the armour functions** (read [`PASSIVES.md`](PASSIVES.md) § Armour functions). C9.4 (0.95.0) added the passive loadout: `PassiveLoadout` keeps what a character learned and chose as flags, gear teaches through `GearDefinition.teaches`, and the budget is on `CombatantDef`. The screen for it is C9.7.
+- **Next: C9.5b, the rest of the armour functions** (berserk, a power that breaks its piece, levels won by fights, adapting resistance; read [`PASSIVES.md`](PASSIVES.md) § Armour functions). C9.5a (0.96.0) added `HitGuard`: an `invincible` status, mercy time, an overshield that refills, and the `healing_taken` stat, all read from stats so a passive or a piece can give them.
   The build order is the table at the foot of `GEAR.md`, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.

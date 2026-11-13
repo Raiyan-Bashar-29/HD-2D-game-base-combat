@@ -282,6 +282,21 @@ other forever.
   over budget. A level never goes down, so a refit does not check the budget again.
 - Not built yet: the screen (C9.7); no demo gear teaches anything, because the demo has no gear.
 
+### As built (C9.5a, 0.96.0)
+
+- `HitGuard` (gameplay, static) stands in `Combatant.receive` before the barriers.
+- Invincible: a status with `invincible` on. A hit is announced as blocked; a hit carrying one
+  of the status's `pierced_by` tags goes through. Heals and status ticks still land.
+- Mercy time: the stat `mercy_time` (seconds in the field, the fighter's own turns in a
+  battle). After a hit that took something, hits do nothing for that long.
+- Overshield: the stat `max_overshield` makes the pool `overshield`. A hit empties it first.
+  It refills by `overshield_regen` a second (or turn) once `overshield_delay` has passed
+  with no hit. This is the "recharging second health layer" row; C8.6 keeps aggro and taunt.
+- `healing_taken`: `Vitals.change` multiplies a rise of the defeat pool by 1 plus the stat,
+  so -1 is "cannot be healed". `set_to` and `revive` are not scaled.
+- Not built yet: no HUD bar for the overshield; an invincible fighter can still be given a
+  status; the three clocks are not saved.
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs
@@ -437,7 +452,8 @@ answer.
 | C9.2 | Conditions and the hit effects: `PassiveCondition`, the events `CRIT_DEALT`, `DODGE`, `GUARD`, `HP_BELOW`, `HP_ABOVE`, `LETHAL_HIT`, `SKILL_USED`, `STATUS_GAINED`, the form events; `SCALE_HIT`, `SURVIVE`, `EXTRA_HIT`, `COOLDOWN_CUT`, `BREAK_PIECE`; `group` and `rank`. Split if it passes 8 files | C9.1 |
 | C9.3 | Passives on kits and gear: `PowerKit.passive_skills`, `GearDefinition.passives`, and the same list on `GearSetTier`, `GemDefinition` and `UpgradeLevel`; the sample library in `data/passives/` (one file per catalogue family) with CSV rows | C9.2 |
 | C9.4 | The loadout: budget, learned passives, `GearDefinition.teaches`, progress from won fights, the refusals, saved as flags | C9.3 |
-| C9.5 | Armour functions the engine lacks: `healing_taken`, the berserk status, `BREAK_PIECE` on a power, levels won by fights, adapting resistance | C9.2 |
+| C9.5a | DONE (0.96.0): `HitGuard`, the invincible status, mercy time, the overshield, `healing_taken` | C9.2 |
+| C9.5b | Armour functions the engine lacks: the berserk status, `BREAK_PIECE` on a power, levels won by fights, adapting resistance | C9.2 |
 | C9.6 | The kakujas: the shared kakuja passives, each form on its character's kit, and each quinque armour, as data, with a probe and captures | C9.5, C6.5d, C8.6 for the heavy ones |
 | C9.7 | The loadout screen, with the gear screen | C9.4, C7.7 |
 

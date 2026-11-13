@@ -4175,3 +4175,17 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** no screen yet (C9.7). No demo gear teaches a passive, because the demo has no
   gear files. A refit does not check the budget again.
 - **Unblocks:** C9.5, C9.7.
+
+## 2026-11-13 — C9.5a · Defences that need no power (combat 0.96.0)
+
+- **Did:** new `HitGuard` (`stops`, `soak`, `hurt`, `pass_time`), called from
+  `Combatant._land`, `Battle.next_turn` and the three field fighters. `StatusEffect.invincible`
+  and `pierced_by`. Stats `mercy_time`, `max_overshield`, `overshield_regen`,
+  `overshield_delay`. `Vitals.change` scales a heal by `healing_taken`. C9.5 was split by the
+  8-file rule; C9.5b keeps berserk, the breaking power, levels won by fights and adapting
+  resistance.
+- **Verified:** suite 4288 passed, 0 failed (14 new checks). With `HitGuard.stops` turned off
+  in `Combatant._land`, 3 checks fail.
+- **Gaps:** no HUD bar for the overshield. An invincible fighter can still be given a status.
+  The three clocks are not saved. No data file uses these yet.
+- **Unblocks:** C9.5b, C9.6, C7.10.
