@@ -28,6 +28,17 @@ static func for_item(item_id: StringName) -> GearDefinition:
 	return _by_item[item_id]
 
 
+## Every set id any piece names (C7.4b), each once. Read fresh each time, so a piece changed
+## after loading counts.
+static func set_ids() -> Array[StringName]:
+	_ensure_loaded()
+	var out: Array[StringName] = []
+	for piece: GearDefinition in _by_id.values():
+		if piece.set_bonus != null and not out.has(piece.set_bonus.set_id):
+			out.append(piece.set_bonus.set_id)
+	return out
+
+
 static func problems() -> PackedStringArray:
 	_ensure_loaded()
 	return _problems

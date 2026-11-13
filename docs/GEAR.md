@@ -74,7 +74,7 @@ row that builds it. The hero powers it leans on are in [`POWERS.md`](POWERS.md).
 | `passives` | Dropped in C7.3: give the piece a `kit` and list them in the kit's `passives` |
 | `wearers` | Combatant ids that may wear it; empty means anyone |
 | `needs_level`, `needs_stats` | Requirements to wear it |
-| `set_id` | The set it belongs to (§ Sets) |
+| `set_bonus` | The set it belongs to, a `GearSetBonus` (§ Sets; the design first called this `set_id`) |
 | `sockets` | How many gems it holds (§ Sockets) |
 | `max_upgrade`, `upgrade` | The upgrade track (§ Upgrading) |
 | `blocks` | Slots the piece takes up besides its own. A two-handed weapon is `blocks = [offhand]` (built in C7.1c; the design first called this `two_handed`) |
@@ -178,6 +178,22 @@ A foe drops what it wears when its `loot_table` lists the piece (C7.2).
 - **The lending moved** into `GearLending.lend`, so `GearSet` stays within its budget.
 - **Gaps.** The checks run only when a piece goes on: a level or a stat that drops later leaves it
   worn. No remover item yet. No screen shows a refusal until C7.7.
+
+**As built (C7.4b, 0.86.0): sets.**
+
+- **`GearSetBonus`** (content): a `set_id` (`gear_set/<name>`) and `tiers`. Each piece of the set
+  names it in `set_bonus`, the way it names its `type`; one shared `.tres` is the tidy way.
+- **`GearSetTier`**: `pieces` (the worn count that reaches it), `modifiers` and a `kit`. Every
+  reached tier counts, so 4 pieces give the 2-piece tier too. A status at a tier is a kit
+  passive, as for special gear.
+- **`GearSetBonuses.apply`**, called by `GearLending` after every change: it takes every set's
+  stat changes off the sheet, counts the worn pieces per `set_id`, puts each reached tier's
+  stat changes on under `set/<set id>` and lends its kit under `set/<set id>/<pieces>` through
+  `PowerSet.lend`, beside the pieces' own kits. It keeps nothing, so a refresh or a load
+  cannot double a bonus.
+- **Gaps.** No set name or tier list on a screen until C7.7. Rarity does not scale a set's stat
+  changes. Two pieces of one set carrying different bonus files are not flagged: the first
+  worn decides.
 
 ### Rarity (`Rarity`, `data/rarities/<name>.tres`)
 
@@ -787,7 +803,7 @@ weapons themselves.
 | C6.9f | The place: `PlaceLook`, `moves_fight`, `weather`: DONE (0.82.0) | C6.9e, C6.5d |
 | C6.9g | The log and HUD readout: `battlefield_raised`, `battlefield_lowered`, `battlefield_clashed`, the log lines and the HUD line: DONE (0.83.0) | C6.9f |
 | C7.4a | Who may wear what: `needs_level`, `needs_stats`, `cursed`: DONE (0.85.0) | C7.3 |
-| C7.4b | Sets: `GearSetBonus` | C7.4a |
+| C7.4b | Sets: `GearSetBonus`: DONE (0.86.0) | C7.4a |
 | C7.4c | Sockets: `GemDefinition` | C7.4a |
 | C7.5 | Upgrading and awakening: `UpgradeTrack`, `Power.requires_upgrade` | C7.3 |
 | C7.6 | Crafting, the logic: `Recipe`, `Crafting`, dismantle and transmute | C7.2 |

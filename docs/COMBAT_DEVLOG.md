@@ -3925,3 +3925,34 @@ the curse and level checks disabled, 5 of its checks failed. Seven checkers exit
 **Gaps.** The checks run only as a piece goes on, so a level or a stat that drops later leaves it
 worn. There is no remover item for a curse yet: a script forces `take_off`. No screen shows a
 refusal until C7.7.
+
+## 2026-11-13 — C7.4b · Gear sets (combat 0.86.0)
+
+**Did.**
+
+- New content `GearSetBonus` (`set_id`, `tiers`, `has_kit()`, `problems()`) and `GearSetTier`
+  (`pieces`, `modifiers`, `kit`).
+- `GearDefinition.set_bonus` names a piece's set; `problems()` checks the set with the piece, and
+  `lends_kit()` says whether the piece or its set can lend a kit. `GearDb.set_ids()` lists every
+  set any piece names.
+- New `GearSetBonuses.apply`, called by `GearLending.lend`: it takes every set's stat changes off
+  the sheet, counts the worn pieces per `set_id`, and gives each reached tier's stat changes
+  (source `set/<set id>`) and kit (`set/<set id>/<pieces>`, lent with the pieces' kits).
+- `GearSet` makes a `PowerSet` for starting pieces whose set lends a kit (`lends_kit()`); no new
+  code lines there.
+
+**Why.** `GEAR.md` § Sets. `gear_set.gd` sits at 238 of 250, so the counting is its own file. A
+status at a tier is a kit passive, as special gear already does it, so no new status path.
+
+**Connects.** `GearLending` and `PowerSet.lend` (C7.3), the `StatSheet` sources, `innate` starting
+pieces (C7.1b).
+
+**Verified.** Boot 0 warnings, 0 errors. Suite 0 failed; `gear_sets_test.gd` 11/11. Red first:
+with the `apply` call commented out, its bonus checks failed. Seven checkers exit 0. Stripped run
+0 failed.
+
+**Unblocks.** C7.4c (sockets). The signature sets of a game (C7.9).
+
+**Gaps.** No set name or tier list on a screen until C7.7. Rarity does not scale a set's stat
+changes. Two pieces of one set carrying different bonus files are not flagged: the first worn
+decides.

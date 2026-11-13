@@ -52,6 +52,10 @@ extends Node
 ## it unless forced, and a piece that would push it out of its slot is refused (CURSED). Losing
 ## the item still takes it off. The checks run when a piece is put on, not again later.
 ##
+## SETS (C7.4b). Pieces sharing a `set_bonus` give its reached tiers (stat changes under
+## `set/<set id>`, kits under `set/<set id>/<pieces>`) while worn together. `GearSetBonuses`
+## counts them, called by `GearLending`.
+##
 ## The lending itself (element, tags, moves, kits) is done by `GearLending`.
 ##
 ## THE SLOT LIST is one `GearRules` file a game names in `[combat] gear/rules`. With no setting,
@@ -119,7 +123,7 @@ func _notification(what: int) -> void:
 		return
 	for item_id: StringName in worn_ids() + innate:
 		var piece: GearDefinition = GearDb.for_item(item_id)
-		if piece != null and piece.kit != null:
+		if piece != null and piece.lends_kit():
 			get_parent().add_child(PowerSet.new())
 			return
 

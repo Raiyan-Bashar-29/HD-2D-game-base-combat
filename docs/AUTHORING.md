@@ -1308,6 +1308,9 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      (a party level), `needs_stats` (a lowest value per stat, such as `strength` 12) and
      `cursed` (once on, it stays on until the item is lost or a script forces it off). A
      fighter's starting `gear` skips the level and stat checks.
+   - A gear set (C7.4b): make one `GearSetBonus` (`set_id` such as `gear_set/<name>`) with
+     `GearSetTier`s, each with the worn `pieces` that reach it, its `modifiers` and an optional
+     `kit` (a status at a tier is the kit's passive). Point every piece's `set_bonus` at it.
    - A power used once per fight (C6.5f): tick `once_per_battle` on the `Power`. After one use
      it is refused ("once per battle") until the next battle, or in the field until the next
      area. It may also have a cooldown; a passive power must not set it.

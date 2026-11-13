@@ -35,6 +35,9 @@ extends ContentEntry
 ## taken off in the ordinary way, and nothing can be put on where it would have to come off.
 ## A fighter's starting pieces skip the level and stat checks: they are its own.
 ##
+## SETS (C7.4b): `set_bonus` names the set the piece belongs to. Worn together, the set's pieces
+## give the tiers they reach (stat changes, a kit). `GearSetBonuses` counts them.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -70,6 +73,8 @@ extends ContentEntry
 ## The field chain (and dodge, if it has one) the wearer plays while this is worn (C7.3b). Null
 ## means the type's, if it has one.
 @export var moves: MoveSet
+## The set this piece belongs to (C7.4b). Null means none.
+@export var set_bonus: GearSetBonus
 
 
 ## The slots this piece may be worn in, in the order to try them.
@@ -121,6 +126,11 @@ func all_blocks() -> Array[StringName]:
 	return _joined(type.blocks if type != null else ([] as Array[StringName]), blocks)
 
 
+## True when wearing this piece can lend a kit: its own, or one of its set's tiers.
+func lends_kit() -> bool:
+	return kit != null or (set_bonus != null and set_bonus.has_kit())
+
+
 func may_wear(who: StringName) -> bool:
 	return wearers.is_empty() or wearers.has(who)
 
@@ -147,6 +157,8 @@ func problems() -> PackedStringArray:
 		found.append_array(kit.problems(where))
 	if moves != null:
 		found.append_array(moves.problems(where + " moves"))
+	if set_bonus != null:
+		found.append_array(set_bonus.problems(where))
 	if needs_level < 0:
 		found.append("%s needs a level below zero" % where)
 	if needs_stats.has(&""):

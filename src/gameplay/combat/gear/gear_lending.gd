@@ -8,11 +8,14 @@ extends RefCounted
 ##   - `Combatant.lent_element`: the first piece with an element decides the plain attack's element.
 ##   - `Combatant.lent_tags`: every piece's weakness tags, each once.
 ##   - `Combatant.lent_moves`: the first piece with moves gives the field chain.
-##   - the wearer's `PowerSet`: every piece's `kit`, held under `gear_kit/<item id>`. A fighter
-##     with no powers of its own gets a `PowerSet` the first time a piece lends it a kit.
+##   - the wearer's `PowerSet`: every piece's `kit`, held under `gear_kit/<item id>`, and the
+##     kits of the gear sets' reached tiers (C7.4b). A fighter with no powers of its own gets a
+##     `PowerSet` the first time a piece or a set lends it a kit.
+##   - the sets' stat changes, through `GearSetBonuses`, which owns that part.
 ##
 ## OWNS: turning the worn pieces into what the wearer borrows.
-## MUST NOT: decide what is worn, or touch the stat sheet. `GearSet` does both.
+## MUST NOT: decide what is worn, or touch the stat sheet itself. `GearSet` puts the pieces'
+## stat changes on it, and `GearSetBonuses` the sets'.
 
 ## Brings what `gear`'s wearer borrows in step with what `gear` has on.
 static func lend(gear: GearSet) -> void:
@@ -37,6 +40,7 @@ static func lend(gear: GearSet) -> void:
 		for tag: StringName in piece.all_attack_tags():
 			if not fighter.lent_tags.has(tag):
 				fighter.lent_tags.append(tag)
+	GearSetBonuses.apply(gear, kits)
 	var powers: PowerSet = PowerSet.of(body)
 	if powers == null and not kits.is_empty():
 		powers = PowerSet.new()
