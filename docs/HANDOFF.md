@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C9.4, the passive loadout** (read [`PASSIVES.md`](PASSIVES.md) § The loadout and § As built). C9.3b (0.94.0) added the sample library: 22 files in `data/passives/`, one per catalogue family, checked by `check_content` and by `passive_library_test`. Copy one and change its numbers to make a new passive.
+- **Next: C9.5, the armour functions** (read [`PASSIVES.md`](PASSIVES.md) § Armour functions). C9.4 (0.95.0) added the passive loadout: `PassiveLoadout` keeps what a character learned and chose as flags, gear teaches through `GearDefinition.teaches`, and the budget is on `CombatantDef`. The screen for it is C9.7.
   The build order is the table at the foot of `GEAR.md`, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.

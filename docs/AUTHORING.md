@@ -1467,6 +1467,12 @@ roster, or an enemy in an encounter or on an `ActionEnemy`). The design is in
 | an effect | A `PassiveEffect`: `kind` POOL_FLAT (points), POOL_SHARE (a share of the pool's maximum), POOL_FROM_DAMAGE (a share of the hit's damage), GIVE_STATUS or CURE; and a `target`: SELF, OTHER (the other fighter in the event), ALLIES or FOES. A negative `amount` is a cost or a drain. |
 | `cost`, `tags` | The skill cost for the loadout (C9.4), and labels for screens. |
 
+**The loadout (C9.4).** Give a party member a budget: `passive_budget` and
+`passive_budget_per_level` on its `CombatantDef`. To make a piece of gear teach a passive, add
+a `PassiveLesson` to the piece's `teaches` (the passive file, and the won fights needed). A
+quest can teach one outright with `PassiveLoadout.teach(who, passive_id)`. The player's choice
+is made with `PassiveLoadout.choose` and `drop`; the screen comes in C9.7.
+
 Examples: life steal is HIT_DEALT with POOL_FROM_DAMAGE `hp` 0.2. An opening buff is
 FIGHT_START with GIVE_STATUS. A wave-end heal is FIGHT_WON with POOL_SHARE `hp` 0.3. A drain
 that pays for a strong `held` status is TURN_START with POOL_SHARE `hp` -0.05.

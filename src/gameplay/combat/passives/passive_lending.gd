@@ -12,6 +12,9 @@ extends RefCounted
 ##   - `set/<set id>/<pieces>`: a reached set tier (`GearSetTier.passives`);
 ##   - `gems`: every gem in the worn pieces (`GemDefinition.passives`);
 ##   - `upgrades`: every reached upgrade level of the worn pieces (`UpgradeLevel.passives`).
+##   - `loadout`: the passives the player chose (C9.4). `PassiveLoadout` owns that list; this
+##     file only asks it to refit after the gear of a saved fighter is read, which is also when
+##     a fighter is built, a save is loaded and a new game starts.
 ## When a kit comes off or a piece is taken off, its source is released, and only its passives
 ## go. A fighter with no passives has no `PassiveSet`; the first source with one makes it.
 ##
@@ -28,12 +31,12 @@ const UPGRADES: StringName = &"upgrades"
 ## is added.
 static func own(body: Node, def: CombatantDef) -> void:
 	if def != null:
-		_give(body, PassiveSet.OWN, def.passives)
+		give(body, PassiveSet.OWN, def.passives)
 
 
 ## The kit put on under `source` gives `given`. An empty list takes them back.
 static func kit(body: Node, source: StringName, given: Array[PassiveSkill]) -> void:
-	_give(body, StringName(KIT_PREFIX + String(source)), given)
+	give(body, StringName(KIT_PREFIX + String(source)), given)
 
 
 ## Brings the passives of what `gear`'s wearer has on in step with what `gear` has on.
@@ -62,7 +65,10 @@ static func gear(worn: GearSet) -> void:
 	for source: StringName in wanted:
 		var given: Array[PassiveSkill] = []
 		given.assign(wanted[source])
-		_give(body, source, given)
+		give(body, source, given)
+	# A foe's gear is not kept, and a foe has no loadout.
+	if worn.kept:
+		PassiveLoadout.fit(body)
 
 
 static func _from_gear(source: StringName) -> bool:
@@ -70,9 +76,9 @@ static func _from_gear(source: StringName) -> bool:
 	return text.begins_with(GEAR_PREFIX) or text.begins_with(GearSetBonuses.SOURCE_PREFIX)
 
 
-# Holds `given` under `source`, making the set when the fighter has none yet. An empty list
-# releases the source, and makes nothing.
-static func _give(body: Node, source: StringName, given: Array[PassiveSkill]) -> void:
+## Holds `given` under `source`, making the set when the fighter has none yet. An empty list
+## releases the source, and makes nothing.
+static func give(body: Node, source: StringName, given: Array[PassiveSkill]) -> void:
 	var passives: PassiveSet = PassiveSet.of(body)
 	if given.is_empty():
 		if passives != null:

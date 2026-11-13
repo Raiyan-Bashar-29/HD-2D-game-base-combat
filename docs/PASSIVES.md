@@ -267,6 +267,21 @@ other forever.
 - `tools/check_content.gd` fails a broken passive, and one whose name or description is not
   in the CSV. `tests/unit/passive_library_test.gd` holds the whole library on one fighter.
 
+### As built (C9.4, 0.95.0)
+
+- `PassiveLoadout` (gameplay, static) owns what is learned and chosen. `teach`, `knows`,
+  `known`; `choose`, `drop`, `chosen`; `budget(def)`, `spent(who)`; `refusal` and
+  `refusal_key`; `practise(who)` and `progress`.
+- The chosen passives are held under the source `loadout`. `PassiveLending.gear` refits them
+  for a saved fighter, so they are on when the fighter is built, after a load, and gone after
+  a new game.
+- `GearDefinition.teaches` is a list of `PassiveLesson` (`passive`, `fights`). `Rewards.give`
+  calls `practise` for each rewarded member, after a battle and after a field kill, and
+  `Rewards.learned` says what was learned. A taught passive must be a file `PassiveDb` finds.
+- Refusals in order: no such passive, not learned, already chosen, same group (any source),
+  over budget. A level never goes down, so a refit does not check the budget again.
+- Not built yet: the screen (C9.7); no demo gear teaches anything, because the demo has no gear.
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs

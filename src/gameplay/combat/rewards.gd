@@ -13,6 +13,9 @@ extends RefCounted
 ## encounter's `loot_table` and each enemy's own, with the battle's random numbers. A field
 ## enemy rolls its own table when it falls and hands the result in as part of `loot`.
 ##
+## LESSONS (C9.4): each rewarded member's worn gear moves one step towards the passives it
+## teaches (`PassiveLoadout.practise`), and `learned` lists what was learned just now.
+##
 ## OWNS: the template's reward rule, and the summary of one grant.
 ## MUST NOT: choose the encounter, draw anything, or decide what losing means.
 
@@ -23,6 +26,9 @@ var levelled: Array[StringName] = []
 ## Item ids added, and those that did not fit.
 var items: Array[StringName] = []
 var left_behind: Array[StringName] = []
+## Passives learned from worn gear by this win: member id -> passive ids. Members who learned
+## nothing are not listed.
+var learned: Dictionary[StringName, Array] = {}
 
 
 static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) -> Rewards:
@@ -49,6 +55,9 @@ static func give(experience: int, loot: Array[StringName], members: Array[Combat
 	for def: CombatantDef in members:
 		if Party.gain(def, experience) > 0:
 			given.levelled.append(def.combatant_id)
+		var lessons: Array[StringName] = PassiveLoadout.practise(def.combatant_id)
+		if not lessons.is_empty():
+			given.learned[def.combatant_id] = lessons
 	for item_id: StringName in loot:
 		if inventory != null and inventory.add(item_id, 1):
 			given.items.append(item_id)

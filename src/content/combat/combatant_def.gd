@@ -33,6 +33,10 @@ extends Resource
 @export var power_kit: PowerKit
 ## The passives this fighter always holds (C9.1), party member or foe: see `docs/PASSIVES.md`.
 @export var passives: Array[PassiveSkill] = []
+## The skill-cost budget for passives the player chooses (C9.4), and what each party level
+## after the first adds to it. 0 and 0 means this fighter chooses none.
+@export var passive_budget: int = 0
+@export var passive_budget_per_level: int = 0
 ## The gear this fighter starts with, by item id (C7.1b). Each needs a gear file. A party member
 ## puts them on once and may change them after; a foe wears them every fight. Empty means none.
 @export var gear: Array[StringName] = []
@@ -66,6 +70,8 @@ func problems(context: String) -> PackedStringArray:
 			found.append("%s has an empty passive" % where)
 		else:
 			found.append_array(passive.problems())
+	if passive_budget < 0 or passive_budget_per_level < 0:
+		found.append("%s has a passive budget below zero" % where)
 	for item_id: StringName in gear:
 		if GearDb.for_item(item_id) == null:
 			found.append("%s starts with '%s', which has no gear file" % [where, item_id])

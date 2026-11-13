@@ -106,6 +106,8 @@ base_stats = Dictionary[StringName, float]({
 attack_tags = Array[StringName]([&"blade"])
 commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("ember"), SubResource("lull"), SubResource("hex"), SubResource("skyfall"), SubResource("keen_edge"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
+passive_budget = 4
+passive_budget_per_level = 1
 
 [sub_resource type="Resource" id="keeper"]
 script = ExtResource("2_def")
@@ -122,6 +124,8 @@ base_stats = Dictionary[StringName, float]({
 })
 commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("salve"), SubResource("cleanse"), SubResource("raise"), SubResource("bulwark"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
+passive_budget = 4
+passive_budget_per_level = 1
 
 [resource]
 script = ExtResource("1_roster")

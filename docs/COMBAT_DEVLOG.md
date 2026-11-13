@@ -4162,3 +4162,16 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** the samples are held and checked as a whole; each family's behaviour is proven by
   the fixture tests of C9.1 to C9.2c, not once more per file.
 - **Unblocks:** C9.4.
+
+## 2026-11-13 — C9.4 · The passive loadout (combat 0.95.0)
+
+- **Did:** new `PassiveLoadout` (learned, chosen, budget, refusals, `practise`) and
+  `PassiveLesson`; `GearDefinition.teaches`; `CombatantDef.passive_budget` and
+  `passive_budget_per_level`; `Rewards.learned`; `PassiveSet.given_by`; `PassiveLending.give`
+  public, and `gear` refits the loadout of a saved fighter. Four refusal rows in the CSV. The
+  demo party members have a budget of 4, plus 1 per level.
+- **Verified:** suite 4272 passed, 0 failed (15 new checks). With the refit in
+  `PassiveLending.gear` turned off, 1 check fails.
+- **Gaps:** no screen yet (C9.7). No demo gear teaches a passive, because the demo has no
+  gear files. A refit does not check the budget again.
+- **Unblocks:** C9.5, C9.7.

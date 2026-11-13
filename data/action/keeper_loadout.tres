@@ -59,6 +59,8 @@ base_stats = Dictionary[StringName, float]({
 &"max_mp": 14.0
 })
 level_curve = SubResource("curve")
+passive_budget = 4
+passive_budget_per_level = 1
 brain = SubResource("brain")
 
 [sub_resource type="Resource" id="staff_one"]

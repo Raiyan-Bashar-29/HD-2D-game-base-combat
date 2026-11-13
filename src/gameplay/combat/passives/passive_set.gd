@@ -171,6 +171,11 @@ func sources() -> Array[StringName]:
 	return _sources.keys()
 
 
+## What `source` gave, counting or not (the loadout asks, C9.4).
+func given_by(source: StringName) -> Array:
+	return _sources.get(source, [])
+
+
 ## Every passive that counts, each once, in the order the sources gave them. Of passives in
 ## one `group`, only the highest `rank` is here (the first given, on a tie).
 func passives() -> Array[PassiveSkill]:
