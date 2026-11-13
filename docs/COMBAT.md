@@ -920,7 +920,7 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C9.5 | Armour functions the engine lacks | TODO. `healing_taken`, the berserk status, a power that breaks its piece, upgrade levels won by fights, adapting resistance. Needs C9.2 |
 | C9.6 | The kakujas | TODO. The shared kakuja passives, each kakuja as a form and as a quinque armour, as data, with a probe and captures. Needs C9.5, C6.5d; C8.6 for the heavy ones |
 | C9.7 | The loadout screen | TODO. With the gear screen. Needs C9.4, C7.7 |
-| C9.8 | Research: fighting-game character files | TODO, documents only. At the owner's suggestion (2026-11-13): study how fan-made M.U.G.E.N-style characters (Jump Force Mugen and similar) write a character as states, triggers and controllers, and note the ideas worth having in `PASSIVES.md` and `POWERS.md`. Ideas only: no file, sprite, sound or code from them enters this repository, because their art and names belong to their owners |
+| C9.8 | Research: fighting-game character files | TODO, documents only. At the owner's suggestion (2026-11-13): study how fan-made M.U.G.E.N-style characters (Jump Force Mugen and similar) write a character as states, triggers and controllers, and note the ideas worth having in `PASSIVES.md` and `POWERS.md`. The owner's rule (2026-11-13): their character logic may be downloaded, read and used as a guide, since only code is being made now; the logic is rewritten here in GDScript on this engine's parts. No sprite or sound from them enters this repository: the owner will draw the art or ask permission later |
 
 **Rules for the rows:** the same as upstream's board (`WORK_PACKAGES.md` § The rules), unchanged:
 

@@ -154,6 +154,8 @@ between them, written in plain words.
 
 ## Working rhythm (the owner's standing preference)
 
+**Merging while the Actions quota is used up (owner, 2026-11-13):** until the monthly quota resets, a batch PR is merged WITHOUT waiting for CI. The full ladder is run locally first (import, boot, the suite, all seven checkers, the stripped run), and the PR body says so. When the quota is back, green CI is required again.
+
 - **One package at a time, all the way to done:** tested and verified locally, committed, and
   pushed.
 - **Pull requests come in batches (owner, 2026-11-11, to save the GitHub Actions quota):**
