@@ -140,12 +140,17 @@ static func awaken(bag: Inventory, piece_id: StringName) -> bool:
 	if awaken_refusal(bag, piece_id) != Refusal.NONE:
 		return false
 	var track: UpgradeTrack = GearDb.for_item(piece_id).upgrade
-	Flags.erase_flag(_key(piece_id))
-	Flags.erase_flag(_fights_key(piece_id))
+	forget(piece_id)
 	_pay(bag, track.awaken_items)
 	bag.remove(piece_id)
 	bag.add(track.awaken_into)
 	return true
+
+
+## Forgets the level of `piece_id` and its counted fights: the piece was used up or remade.
+static func forget(piece_id: StringName) -> void:
+	Flags.erase_flag(_key(piece_id))
+	Flags.erase_flag(_fights_key(piece_id))
 
 
 ## The sockets `piece` has gained from its levels.

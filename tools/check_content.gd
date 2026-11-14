@@ -195,10 +195,10 @@ func _check_passives() -> void:
 
 
 ## The kits (C9.6b): every file under `data/powers` is sound, a form's drained pool is given by
-## its kit, and the kit's name is in the CSV.
+## its kit, and the kit's name is in the CSV. The recipes (C7.6) are checked here too.
 func _check_kits() -> void:
 	PowerKitDb.rescan()
-	for problem: String in PowerKitDb.problems():
+	for problem: String in PowerKitDb.problems() + RecipeDb.unsound(_keys):
 		_fail(problem)
 	print("  kits: %d" % PowerKitDb.ids().size())
 	for kit_id: StringName in PowerKitDb.ids():

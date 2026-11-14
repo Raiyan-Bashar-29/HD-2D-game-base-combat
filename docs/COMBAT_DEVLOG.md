@@ -4349,3 +4349,17 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Why:** the owner's suggestion (2026-11-13).
 - **Verified:** boot, suite and checkers unchanged (no code).
 - **Gaps:** one character was read, not several; other authors may use parts this one does not.
+
+## 2026-11-14 — C7.6 · Crafting, the logic (combat 0.109.0)
+
+- **Did:** `Recipe` and `RecipeDb` (content), `Crafting` (gameplay): recipes known by station
+  and flag, a refusal with a reason, craft, transmute, upgrade (the piece's own track), awaken
+  (the piece at its cap) and dismantle (the piece's own recipe, else a share of the recipe that
+  makes it, by `Rarity.salvage`). `GearUpgrades.forget`. `check_content` checks recipes. One
+  sample recipe (`data/recipes/quinque_owl.tres`) and its material.
+- **Why:** board row C7.6, the owner's order.
+- **Connects:** `Inventory`, `Flags`, `GearUpgrades`, `GearDb`, `RarityDb`.
+- **Verified:** `tests/unit/crafting_test.gd`, 13 checks; the full ladder.
+- **Unblocks:** C7.8 (the craft screen and `CraftStation`).
+- **Gaps:** no screen, so only tests call `Crafting`; no money cost; a used-up piece's gems
+  stay recorded; a lucky result is a second output list, not a rarity per copy.

@@ -37,6 +37,9 @@ extends ContentEntry
 @export var sockets: int = 0
 ## The highest upgrade level a piece of this tier reaches (C7.5). 0 means no cap of its own.
 @export var max_upgrade: int = 0
+## The share of a piece's recipe given back when it is taken apart (C7.6, `Crafting.salvage`).
+## 0 means a piece of this tier is never taken apart.
+@export var salvage: float = 0.5
 
 
 ## `modifier` as a piece of this tier gives it. An added amount is multiplied. A multiplier
@@ -56,6 +59,8 @@ func problems() -> PackedStringArray:
 	var where: String = "%s (%s)" % [resource_path, id]
 	if name_key == "":
 		found.append("%s has no name_key" % where)
+	if salvage < 0.0 or salvage > 1.0:
+		found.append("%s has a salvage share outside 0 to 1" % where)
 	if stat_scale < 0.0:
 		found.append("%s has a negative stat_scale" % where)
 	if drop_weight < 0.0:

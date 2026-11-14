@@ -397,6 +397,12 @@ reason, `make(recipe, inventory, rng)`. A `CraftStation` interactable opens the 
 for its `station`. **Dismantling** gives back part of a piece's recipe, by rarity. A quinque
 recipe takes a "kakuhou" material that a named foe drops, which is how the Owl is made.
 
+**As built (C7.6).** `outputs` is a list (item id to count) in place of `output` and `count`.
+`piece` names the piece an UPGRADE, AWAKEN or DISMANTLE recipe works on. `lucky_outputs` with
+`lucky_chance` stands in for `rarity_chances`, because rarity belongs to the item, not to one
+copy. There is no money cost. `Crafting` has `known(station)`, `refusal`, `make`, `salvage`,
+`dismantle_refusal` and `dismantle`; the share given back is `Rarity.salvage`.
+
 ### Screens
 
 - **Gear screen** (from the pause menu): each party member's slots, the bag's pieces for the

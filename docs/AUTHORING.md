@@ -1457,6 +1457,16 @@ Cleanse, Rekindle and Bulwark. The wisps are weak to fire and to blades, one may
 to sleep, and two Embers break a wisp. `combat_content_test.gd` fails on a missing string or an
 unsound skill or status.
 
+### A recipe (C7.6)
+
+Add `data/recipes/<name>.tres` (a `Recipe`) with the id `recipe/<name>` and a `name_key` in the
+CSV. Set `kind`: CRAFT or TRANSMUTE (`inputs` become `outputs`), UPGRADE (`piece` goes up one
+level at its track's cost; list no items), AWAKEN (`piece` at its cap, plus `inputs`, becomes
+`outputs`) or DISMANTLE (`piece` becomes `outputs`). `station` limits where; `needs_flag` hides
+it until a flag is set. A piece with no DISMANTLE recipe gives back a share of the CRAFT recipe
+that makes it: its rarity's `salvage` (0 means never). Code calls `Crafting.make(recipe, bag,
+station)`; the screen is C7.8.
+
 ### A passive (C9.1)
 
 A passive is one file, `data/passives/<name>.tres`, a `PassiveSkill` with id `passive/<name>`.
