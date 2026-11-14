@@ -84,15 +84,15 @@ static func move(made: Dictionary, id: StringName) -> ActionMove:
 	return out
 
 
-# The hitbox: x is how thick, y how tall, z how far forward (forward is -z); y from mid-body.
+# The hitbox: x is how thick, y how tall, z how far forward (forward is -z); y up from the feet,
+# where a fighter's own origin is (C9.9b: it was from mid-body, which put every box too low).
 static func _box(out: Dictionary, box: Rect2, scale: Dictionary) -> void:
 	if not box.has_area():
 		return
 	var mpp: float = scale["metres_per_pixel"]
 	var middle: Vector2 = box.get_center()
 	out["hitbox_size"] = DictRead.put_vector3(Vector3(DictRead.get_float(scale, "depth"), box.size.y * mpp, box.size.x * mpp))
-	out["hitbox_offset"] = DictRead.put_vector3(Vector3(0.0,
-		(-middle.y - DictRead.get_float(scale, "body_height") * 0.5) * mpp, -middle.x * mpp))
+	out["hitbox_offset"] = DictRead.put_vector3(Vector3(0.0, -middle.y * mpp, -middle.x * mpp))
 
 
 # The first untouchable stretch: frames with no body box, joined with `NotHitBy` spans.

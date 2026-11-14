@@ -1,0 +1,124 @@
+[gd_resource type="Resource" script_class="ActionLoadout" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="def"]
+[ext_resource type="Script" path="res://src/content/combat/level_curve.gd" id="curve"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
+[ext_resource type="Script" path="res://src/content/combat/move_set.gd" id="set"]
+[ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="loadout"]
+[ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="atb"]
+[ext_resource type="Resource" path="res://data/powers/arima.tres" id="kit"]
+
+[sub_resource type="Resource" id="m200"]
+script = ExtResource("move")
+id = &"move/arima_200"
+startup = 0.083
+active = 0.033
+recovery = 0.35
+chain_after = 0.1
+iframes_from = 0
+iframes_to = 0.083
+power = 6
+hits = 1
+poise = 1
+knockback = 0.64
+hitbox_size = Vector3(1, 1.764, 2.758)
+hitbox_offset = Vector3(0, 0.882, -0.642)
+travel_speed = 3.85
+
+[sub_resource type="Resource" id="m201"]
+script = ExtResource("move")
+id = &"move/arima_201"
+startup = 0.05
+active = 0.033
+recovery = 0.35
+chain_after = 0.133
+iframes_from = 0
+iframes_to = 0
+power = 6
+hits = 1
+poise = 1
+knockback = 0.86
+hitbox_size = Vector3(1, 2.085, 2.534)
+hitbox_offset = Vector3(0, 1.01, -0.497)
+travel_speed = 3.27
+
+[sub_resource type="Resource" id="m202"]
+script = ExtResource("move")
+id = &"move/arima_202"
+startup = 0.217
+active = 0.05
+recovery = 0.417
+chain_after = 0.133
+iframes_from = 0
+iframes_to = 0
+power = 12
+hits = 1
+poise = 1
+knockback = 2.14
+hitbox_size = Vector3(1, 2.181, 3.24)
+hitbox_offset = Vector3(0, 1.091, -0.625)
+travel_speed = 9.62
+
+[sub_resource type="Resource" id="m203"]
+script = ExtResource("move")
+id = &"move/arima_203"
+startup = 0.1
+active = 0.25
+recovery = 0.6
+chain_after = 0.3
+iframes_from = 0
+iframes_to = 0
+power = 8.7
+hits = 3
+poise = 1
+knockback = 1.71
+hitbox_size = Vector3(1, 0.609, 1.989)
+hitbox_offset = Vector3(0, 0.305, -1.86)
+travel_speed = 7.51
+
+[sub_resource type="Resource" id="dodge"]
+script = ExtResource("move")
+startup = 0.0
+active = 0.3
+recovery = 0.15
+iframes_to = 0.3
+perfect_window = 0.1
+travel_speed = 6.0
+
+[sub_resource type="Resource" id="moves"]
+script = ExtResource("set")
+attack_chain = Array[ExtResource("move")]([SubResource("m200"), SubResource("m201"), SubResource("m202"), SubResource("m203")])
+dodge = SubResource("dodge")
+
+[sub_resource type="Resource" id="curve"]
+script = ExtResource("curve")
+growth = Dictionary[StringName, float]({
+&"attack": 2.0,
+&"max_hp": 6.0
+})
+
+[sub_resource type="Resource" id="fighter"]
+script = ExtResource("def")
+combatant_id = &"arima"
+name_key = "combat.member.arima.name"
+faction = &"player"
+base_stats = Dictionary[StringName, float]({
+&"attack": 12.0,
+&"defence": 10.0,
+&"max_hp": 60.0,
+&"max_mp": 12.0
+})
+attack_tags = Array[StringName]([&"blade"])
+power_kit = ExtResource("kit")
+level_curve = SubResource("curve")
+passive_budget = 4
+passive_budget_per_level = 1
+
+[sub_resource type="Resource" id="atb"]
+script = ExtResource("atb")
+
+[resource]
+script = ExtResource("loadout")
+fighter = SubResource("fighter")
+moves = SubResource("moves")
+atb = SubResource("atb")

@@ -122,13 +122,20 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 
 ## Uses the power in quick slot `slot` (0 is the first, C6.3a). It works mid-swing, as a menu
 ## command does, but not while knocked back or staggered, fallen, or held by something else (a
-## menu, dialogue). False when refused or the slot is empty.
+## menu, dialogue). False when refused or the slot is empty. A power that has a `move` then plays
+## it on the fighter's own clock, in place of whatever swing was running.
 func press_slot(slot: int) -> bool:
 	var me: Combatant = Combatant.of(get_parent())
 	var vitals: Vitals = Vitals.of(get_parent())
 	if me == null or stunned() or _held_by_others() or (vitals != null and vitals.is_defeated()):
 		return false
-	return PowerSlots.press(me, slot, _rng)
+	var slotted: Array[Power] = PowerSlots.powers(me)
+	if not PowerSlots.press(me, slot, _rng):
+		return false
+	# A power with a move of its own plays it (C9.9b): its wind-up, hitbox, travel and i-frames.
+	if slotted[slot].move != null:
+		timeline.start(slotted[slot].move)
+	return true
 
 
 ## The moves the fighter plays now: its own `moves`, with a worn weapon's chain in their place

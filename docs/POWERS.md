@@ -243,6 +243,30 @@ comes from `stat_bonuses`) and passives.
 | The Reaper (passive) | COUNTER reaction 25%, crit +25% against STAGGERED or broken foes (`TARGET_HAS_TAG staggered`) | — |
 | Reading (passive) | M7 `foresight`: the perfect-dodge window is ×1.5 (a `TimedWindow` widen) | — |
 
+**As built (C9.9b), from the converter.** The table above is the design; this is what
+`data/powers/arima.tres` holds now. Every move number comes from the Arima Kisho JUS
+M.U.G.E.N character by 刃下心 (used with the owner's approval), through
+`tools/mugen_convert.gd`. The generator script is not in the repo; re-run the converter and
+copy numbers by state when tuning.
+
+| Power | M.U.G.E.N state | What it is here |
+|---|---|---|
+| Change Quinque | — | M5 `form` cycle, group `arima_quinque`: stage 1 IXA and Narukami (chain 200, 201, 202, 203), stage 2 Owl (chain 2200, 2201, 2202, 2203, 2211; attack ×1.15) |
+| IXA Throw | 350 | stage 1; a fast lunge |
+| Narukami: Pincer | 550 | stage 1; 1.2 s wind-up, untouchable from 1.2 s to 2.7 s |
+| Narukami: Squad Zero | 560 | stage 1; a wide hit with a long push |
+| Owl: Space Slash | 3050 | stage 2 |
+| Owl: Flower | 3100 | stage 2; untouchable for 0.7 s; the full-screen box is capped at 8 m |
+| Owl: Kaneki | 3150 | stage 2; 42 small hits; its box is a default, the source hits from a helper |
+
+- Each special costs 17 `focus` (500 of M.U.G.E.N's 3000 meter), has a 4 s cooldown and gives
+  2 s of Resolve (defence ×1.2). `focus` starts empty: +4 per hit dealt, +2 per hit taken.
+- Passives: `passive/reaper` and `passive/counter`. Reading waits for M7 (C6.10).
+- Loadout: `data/action/arima_loadout.tres`, own chain 200 to 203. The dodge is the base's
+  standard roll; the source has no roll with i-frames.
+- Converted but not used (one attack button here): chains 210 to 213 and 220 to 223, the air
+  moves 230 to 243, the IXA wall 300 to 325.
+
 ### Satoru Gojo (Jujutsu Kaisen) · `kit/gojo`
 
 **Source.**
@@ -544,7 +568,7 @@ The formula (`tools/mugen/mugen_formula.gd`):
 | `poise` | `animtype`: light 1, medium 2, hard 3, anything else (a launcher) 4 |
 | `knockback` | `ground.velocity` / 0.15 (their slide keeps 85% a tick), in metres |
 | `iframes_from`, `iframes_to` | the first stretch with no `Clsn2` box or under `NotHitBy` |
-| `hitbox_size`, `hitbox_offset` | the box round the `Clsn1` boxes of the first hit's frame, `--depth` thick, y from mid-body |
+| `hitbox_size`, `hitbox_offset` | the box round the `Clsn1` boxes of the first hit's frame, `--depth` thick, y up from the feet (where a fighter's origin is) |
 | `travel_speed` | the fastest `VelSet` x before the hits end, x 60, in metres |
 | `chain_after` | when a `ChangeState` that waits for a button may fire |
 | button and meter (report only) | the `.cmd` file's `ChangeState` into the state |

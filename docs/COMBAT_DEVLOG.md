@@ -4277,3 +4277,21 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   has no armour field). A helper's place and a projectile's flight are not converted. A
   trigger on a button, a variable or the foe is treated as true and listed.
 - **Unblocks:** C9.9b (Arima's moves as data), C9.9c (his sprites and sounds).
+
+## 2026-11-14 — C9.9b · Arima's kit from the converter (combat 0.104.0)
+
+- **Did:** `ActionFighter.press_slot` plays a power's `move` after a successful press.
+  `data/powers/arima.tres` (`kit/arima`) and `data/action/arima_loadout.tres`, generated from
+  the converter's `moves.json`: a two-stage quinque cycle, six specials, a `focus` gauge, two
+  passives. Converter fix: a hitbox's height is measured from the feet, not mid-body.
+- **Why:** `Power.move` was declared but never read, so a special had no wind-up, hitbox or
+  i-frames in the field. Arima's specials need them (state 550 is untouchable for 1.5 s).
+- **Decided:** no armour field on a move. None of his 61 moves uses super armour.
+- **Verified:** suite 4350 passed, 0 failed (8 new checks in `power_move_test.gd`). Probe in
+  the engine on the real loadout: slot 1 enters stage 1 and the three specials take slots 2 to
+  4; the pincer is refused at 0 focus, then costs 17; untouchable is false at 0.5 s, true at
+  1.5 s and 2.6 s, false at 3.0 s; a second press changes to Owl (attack 12 to 13.8).
+- **Gaps:** one attack button, so the b and c chains and the air moves are unused. Helpers'
+  flight is not converted, so each special hits with its own box only. Followers and enemies
+  do not play a power's move. A special's skill needs a status to count as doing something.
+- **Unblocks:** C9.9c (his sprites and sounds).

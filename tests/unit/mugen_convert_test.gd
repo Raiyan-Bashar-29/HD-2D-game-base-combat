@@ -85,7 +85,7 @@ func _converting() -> void:
 		swing["button"], swing["meter"], _round(swing["hitbox_size"] as Array),
 		_round(swing["hitbox_offset"] as Array), swing["notes"]],
 		[0.1, 0.05, 0.15, 8.0, 2.0, 0.4, 0.05, 2.4, 201, "~D, F, a (a)", 500, [1.0, 0.4, 0.6],
-		[0.0, 0.1, -0.5], PackedStringArray(["not converted: bgpalfx x1"])])
+		[0.0, 0.6, -0.5], PackedStringArray(["not converted: bgpalfx x1"])])
 	var roll: Dictionary = moves.get(700, {})
 	equal("a dodge is its untouchable frames and its speed",
 		_round([roll["iframes_from"], roll["iframes_to"], roll["travel_speed"], roll["hits"]]),
