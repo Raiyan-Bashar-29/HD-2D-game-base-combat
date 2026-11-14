@@ -4340,3 +4340,12 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** C8.6 and C8.10 are not built, so Roma has no second health layer and Donato's
   copies are a barrage. The Furuta and Mutsuki rows are my reading of the source, marked so in
   `docs/PASSIVES.md`. The barrages were not fired in the probe. No windowed capture.
+
+## 2026-11-14 — C9.8 · Research: fighting-game character files (combat 0.108.0)
+
+- **Did:** documents only. Counted the controllers in the Arima upload's two `.cns` files and
+  mapped each kind to what this engine has; wrote it in `docs/POWERS.md` with three ideas worth
+  a row. New row C8.16 (move events, armour on a move); C8.8 now includes grabs and cancels.
+- **Why:** the owner's suggestion (2026-11-13).
+- **Verified:** boot, suite and checkers unchanged (no code).
+- **Gaps:** one character was read, not several; other authors may use parts this one does not.

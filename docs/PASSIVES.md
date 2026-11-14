@@ -554,6 +554,14 @@ answer.
 C7.10 (the armoury: armours) now also needs C9.5, and builds this page's armour table with
 `GEAR.md`'s.
 
+## From fighting-game character files (C9.8)
+
+The study is in `docs/POWERS.md` § What fighting-game character files teach us. For passives
+it found nothing new to build: their always-on states (-1, -2, -3) do what a passive's
+triggers do here, and their per-character variables are our statuses and pools. One idea
+touches passives: super armour as a stretch on a move (row C8.16) would sit beside the
+`kakuja_shell` no-flinch passive, which is armour all the time.
+
 ## Renaming
 
 As everywhere here: a game renames a passive, an armour or a kakuja by changing its CSV row and

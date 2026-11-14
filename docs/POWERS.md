@@ -611,6 +611,51 @@ PNG32 sprites. Not read: RLE5 and version 1 (PCX) files; it says so. Arima's out
 `assets/fan/arima_kisho/` (animations 0, 20, 100, 5000 and the kit's fifteen moves). Nothing
 draws it in play until C9.9d.
 
+## What fighting-game character files teach us (C9.8)
+
+Read from one real character, the owner-approved Arima upload (142 states in two `.cns`
+files), and from how M.U.G.E.N defines a character in general. Only ideas are taken; the
+logic is rewritten on this engine's parts.
+
+**How they write a character.** A character is a list of numbered STATES. Each state has an
+animation and a list of CONTROLLERS, and each controller has TRIGGERS (when it fires: a time,
+an animation frame, "my hit landed", a variable). Three always-on states (-1, -2, -3) read the
+buttons and watch for things every tick. A HELPER is a small second character the owner
+sends out (a thrown weapon, a lightning bolt) with states of its own.
+
+What Arima's files use most, and where that lands here:
+
+| Their part (uses in Arima) | What it does | Here today | Worth having |
+|---|---|---|---|
+| `HitDef` (67) | One hit: damage, weight, push, the state the victim goes to | `ActionMove` + `Hitbox` | - |
+| `ChangeState` (143) with button triggers | Chains and cancels | `MoveTimeline` chain, `chain_after` | Cancel a move into a special on hit (C8.8) |
+| `VelSet`, `VelAdd`, `PosSet` (148) | Movement inside a move, changing per frame | One `travel_speed` per move | A speed curve: several timed speeds on a move |
+| `PlaySnd` (302), `Explod` (305) | Timed sounds and effect pictures | `MoveArt.sounds` + `sound_at` (C9.9d) | Timed effect pictures on a move, the same way |
+| `EnvShake` (104), `SuperPause` (20), `Pause` (3), `Zoom` (8) | Screen shake, a freeze before a super, hit pause | None | **Hit pause and screen shake as fields on a move** |
+| `Helper` (49) + `DestroySelf` | Projectiles and thrown weapons with their own path and hits | `Projectile`, barrage shots | A move that sends out a shot at a time (now only a power's barrage can) |
+| `NotHitBy` (12) | Untouchable for a stretch | `iframes_from/to` (one stretch) | A second stretch (the converter notes later ones and drops them) |
+| `HitOverride` (9) | Super armour: take the hit, keep the move | `knockback_taken`, no flinch passive | **Armour as a stretch on a move** |
+| `ReversalDef` (3) | A counter: catch the foe's hit and answer | Counter stance (C6.6d) | - |
+| `TargetState`, `TargetBind`, `TargetDrop` (15) | A grab: hold the victim in place, then throw | None | **Grabs and throws** (C8.8 names launch and juggle; add grab) |
+| `LifeAdd`, `TargetLifeAdd` (10) | Heal or hurt outside a hit | Skill effects, passives | - |
+| `VarSet`, `VarAdd` (32) | The character's own counters (stance, ammo, a mark) | Statuses, pools, forms | - |
+| `AssertSpecial`, `ScreenBound`, `PlayerPush` (38) | Engine flags | Not needed | - |
+| States -1, -2, -3 | Always-on watchers | Passives' triggers | - |
+
+**Ideas worth a row**, in the order I would build them:
+
+1. **Move events.** One list on `ActionMove`: at time T do X, where X is a sound, an effect
+   picture, a shot sent out, a speed change, a screen shake or a hit pause. It would replace
+   `sound_at`, cover five rows of the table, and the converter could fill it from the
+   controllers it now only writes into `notes`.
+2. **Armour and a second untouchable stretch on a move.** Two more time ranges beside
+   `iframes_from/to`.
+3. **Grabs and throws.** A hit that holds its victim and plays a follow-up; belongs with C8.8.
+
+What is not worth copying: numbered states as the main shape (a move here is data with a
+timeline, which is easier to check and reuse), and per-character variables (statuses and
+pools already do this and are saved).
+
 ## From a M.U.G.E.N character to a playable fighter, step by step
 
 This is the whole path, done once for Arima. Follow it for any other character. Steps 1 and 2
