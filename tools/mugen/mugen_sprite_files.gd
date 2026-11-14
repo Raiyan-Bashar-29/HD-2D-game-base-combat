@@ -32,7 +32,7 @@ static func write(def_path: String, directory: String, options: Dictionary = {})
 	var sff: MugenSff = MugenSff.open(DictRead.get_string(files, "sprite"))
 	var anims: Dictionary = MugenAir.read(DictRead.get_string(files, "anim"))
 	if sff.problem != "" or anims.is_empty():
-		(out["problems"] as PackedStringArray).append("%s: %s" % [def_path, sff.problem if sff.problem != "" else "no animations"])
+		MugenIni.note(out, "problems", "%s: %s" % [def_path, sff.problem if sff.problem != "" else "no animations"])
 		return out
 	DirAccess.make_dir_recursive_absolute(directory.path_join("strips"))
 	DirAccess.make_dir_recursive_absolute(directory.path_join("sounds"))
@@ -72,7 +72,7 @@ static func _sheet(sff: MugenSff, anims: Dictionary, directory: String, settings
 			blocks.append(anims[part.to_int()])
 			actions.append(part.to_int())
 	if blocks.is_empty():
-		(out["problems"] as PackedStringArray).append("no standing animation for a sheet")
+		MugenIni.note(out, "problems", "no standing animation for a sheet")
 		return
 	var per: int = DictRead.get_int(settings, "frames")
 	var made: Dictionary = MugenSprites.sheet(sff, blocks, per)
@@ -95,7 +95,7 @@ static func _sheet(sff: MugenSff, anims: Dictionary, directory: String, settings
 
 static func _strip(sff: MugenSff, frames: Array, action: int, directory: String, out: Dictionary) -> void:
 	if frames.is_empty():
-		(out["problems"] as PackedStringArray).append("animation %d is not in the file" % action)
+		MugenIni.note(out, "problems", "animation %d is not in the file" % action)
 		return
 	var made: Dictionary = MugenSprites.strip(sff, frames)
 	var file: String = "strips/anim_%d.png" % action

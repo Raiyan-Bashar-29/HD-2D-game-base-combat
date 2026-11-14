@@ -108,7 +108,7 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary) -> void:
 			return
 	for need: String in when["needs"]:
 		if not (out["needs"] as PackedStringArray).has(need) and kind in ["hitdef", "nothitby", "hitoverride"]:
-			(out["needs"] as PackedStringArray).append(need)
+			MugenIni.note(out, "needs", need)
 
 
 # One or more hits of a HitDef or Projectile: a repeating trigger hits once each time it fires.

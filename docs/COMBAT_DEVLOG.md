@@ -4375,3 +4375,22 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Connects:** `PassiveLoadout`, `PassiveSet`, `GearSet`, `GearDb`, `FieldParty`, `UiRoot`.
 - **Verified:** `tests/unit/loadout_screen_test.gd`, 12 checks; the full ladder.
 - **Gaps:** no pad button; opens in the field only; not seen in a windowed capture.
+
+## 2026-11-14 — C9.9e · The tools write the kit and art files (combat 0.111.0)
+
+- **Did:** `tools/mugen_build.gd` and three classes in `tools/mugen/`: `MugenKit` (choices +
+  moves -> `PowerKit` and `ActionLoadout`), `MugenArt` (`sprites.json` + moves -> `MemberArt`
+  with sound times), `MugenStarter` (reads the choices file, saves the files so the loadout
+  points at the kit and art by path, lists the CSV keys). `MugenFormula.numbers` now gives
+  each move's `sounds`. `ActionEnemy` copies its definition's art and adds an `ArtSwap`.
+  The two scratch Python scripts in `tools/mugen/examples/` are replaced by
+  `arima_choices.json`.
+- **Fixed on the way:** `(dict["problems"] as PackedStringArray).append(...)` appends to a
+  copy, so the converter and the sprite tool never reported a problem. `MugenIni.note` writes
+  the list back; all uses changed.
+- **Why:** board row C9.9e: steps 3 to 6 of the how-to were hand work.
+- **Verified:** `tests/unit/mugen_build_test.gd`, 12 checks; the full ladder. Run on the Arima
+  upload: same chain, powers, costs, required stances and 15 art moves as the shipped files.
+- **Gaps:** a starter kit has no extra status on a special (Arima's hand-made "resolve");
+  the shipped Arima files were not rebuilt; sound times differ slightly from the hand-made
+  art where a helper state also plays a sound.

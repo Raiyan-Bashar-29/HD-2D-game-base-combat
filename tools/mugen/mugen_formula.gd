@@ -42,6 +42,10 @@ static func numbers(facts: Dictionary, scale: Dictionary) -> Dictionary:
 		damage += DictRead.get_float(hit, "damage")
 	var out: Dictionary = {"state": facts["state"], "anim": facts["anim"], "hits": hits.size(),
 		"length": length / TICKS, "notes": _notes(facts)}
+	var sounds: Array = []
+	for sound: Dictionary in facts["sounds"]:
+		sounds.append({"at": DictRead.get_int(sound, "tick") / TICKS, "file": "sounds/%d_%d.wav" % [sound["group"], sound["index"]]})
+	out["sounds"] = sounds
 	var dodge: Vector2i = _iframes(facts)
 	out["iframes_from"] = dodge.x / TICKS
 	out["iframes_to"] = dodge.y / TICKS

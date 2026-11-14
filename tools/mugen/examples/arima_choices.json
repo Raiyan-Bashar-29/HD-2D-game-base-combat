@@ -1,0 +1,30 @@
+{
+	"name": "arima",
+	"moves": "arima_out/moves.json",
+	"sprites": "res://assets/fan/arima_kisho",
+	"out": {
+		"kit": "arima_out/built/arima.tres",
+		"loadout": "arima_out/built/arima_loadout.tres",
+		"art": "arima_out/built/art.tres",
+		"strings": "arima_out/built/strings.txt"
+	},
+	"chain": [200, 201, 202, 203],
+	"dodge": {"active": 0.3, "recovery": 0.15, "iframes_to": 0.3, "perfect_window": 0.1, "travel_speed": 6.0},
+	"gauge": {"pool": "focus", "max": 100, "start": 0, "on_hit_dealt": 4, "on_hit_taken": 2},
+	"stances": [
+		{"id": "ixa", "chain": [200, 201, 202, 203], "tint": [0.8, 0.85, 1.0],
+			"specials": [{"state": 350, "id": "ixa_throw"}, {"state": 550, "id": "narukami_pincer"},
+				{"state": 560, "id": "narukami_squad"}]},
+		{"id": "owl", "chain": [2200, 2201, 2202, 2203, 2211], "tint": [0.55, 0.45, 0.7],
+			"stats": {"attack": 1.15},
+			"specials": [{"state": 3050, "id": "owl_slash"}, {"state": 3100, "id": "owl_flower"},
+				{"state": 3150, "id": "owl_call"}]}
+	],
+	"passives": ["res://data/passives/reaper.tres", "res://data/passives/counter.tres"],
+	"stats": {"attack": 12, "defence": 10, "max_hp": 60, "max_mp": 12},
+	"growth": {"attack": 2, "max_hp": 6},
+	"attack_tags": ["blade"],
+	"passive_budget": 4,
+	"anims": {"2211": 2206},
+	"max_box": 8
+}

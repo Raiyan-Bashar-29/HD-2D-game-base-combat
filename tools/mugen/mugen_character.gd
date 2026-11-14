@@ -45,7 +45,7 @@ static func convert(def_path: String, options: Dictionary = {}) -> Dictionary:
 	var states: Dictionary = MugenState.index(sections)
 	var anims: Dictionary = MugenAir.read(DictRead.get_string(files, "anim"))
 	if states.is_empty() or anims.is_empty():
-		(out["problems"] as PackedStringArray).append("%s has no states or no animations" % def_path)
+		MugenIni.note(out, "problems", "%s has no states or no animations" % def_path)
 		return out
 	out["scale"] = _scale(sections, anims, settings)
 	var inputs: Dictionary = _inputs(MugenIni.read(DictRead.get_string(files, "cmd")))
@@ -62,7 +62,8 @@ static func convert(def_path: String, options: Dictionary = {}) -> Dictionary:
 		made.merge(inputs.get(number, {}) as Dictionary)
 		var id := StringName("move/%s_%d" % [settings["prefix"], number])
 		made["id"] = id
-		(out["problems"] as PackedStringArray).append_array(MugenFormula.move(made, id).problems(id))
+		for problem: String in MugenFormula.move(made, id).problems(id):
+			MugenIni.note(out, "problems", problem)
 		(out["moves"] as Array).append(made)
 	return out
 

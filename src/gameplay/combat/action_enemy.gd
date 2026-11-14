@@ -234,6 +234,7 @@ func _build() -> void:
 	combatant.attack_tags = fighter.attack_tags
 	combatant.traits = fighter.traits
 	combatant.kind = fighter.combatant_id
+	combatant.art = fighter.art
 	combatant.real_time = true
 	add_child(combatant)
 	# Its starting gear, if it has any (C7.1b). Not saved: a field foe is rebuilt fresh.
@@ -257,6 +258,8 @@ func _build() -> void:
 	_hitbox = Hitbox.new()
 	_hitbox.timeline = timeline
 	add_child(_hitbox)
+	# Its sheet, move strips and move sounds, when its definition has art (C9.9e).
+	add_child(ArtSwap.new())
 
 
 func _on_knockback(who: StringName, push: Vector3) -> void:

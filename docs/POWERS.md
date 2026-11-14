@@ -659,8 +659,12 @@ pools already do this and are saved).
 ## From a M.U.G.E.N character to a playable fighter, step by step
 
 This is the whole path, done once for Arima. Follow it for any other character. Steps 1 and 2
-are tools; steps 3 to 6 are data you write (or generate: the two scripts in
-`tools/mugen/examples/` built Arima's files and are the pattern to copy).
+are tools. Steps 3 to 6 are one more tool (C9.9e): write a small choices file and run
+`godot --headless --script tools/mugen_build.gd -- <choices.json>`. It writes the kit, the
+loadout and the art file, and lists the CSV keys to add. Copy
+`tools/mugen/examples/arima_choices.json`; its fields are explained in
+`tools/mugen/mugen_kit.gd` and `mugen_starter.gd`. Run `--import` after step 2 and before the
+build. The steps below say what the tool does, for when you change its output by hand.
 
 1. **Convert the moves.** `godot --headless --script tools/mugen_convert.gd -- <character.def>
    <out folder>` writes `moves.json`: one entry per attack state, already in our units
@@ -718,7 +722,7 @@ flight). The `notes` on each move say what was left out.
   the ticks of the animation's first K - 1 pictures / 60 s.
 - Arima: `assets/fan/arima_kisho/art.tres`, 15 moves. To play as him, set
   `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
-- Not yet: strips on followers and enemies (they show the sheet only), the Owl coat's own
+- Followers and field enemies show strips too (C9.9e). Not yet: the Owl coat's own
   sheet, hurt and dodge strips.
 
 ## Build order (the board rows)

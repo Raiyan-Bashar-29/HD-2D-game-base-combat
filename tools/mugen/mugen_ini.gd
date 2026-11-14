@@ -78,6 +78,15 @@ static func starting(section: Dictionary, prefix: String) -> Array:
 	return out
 
 
+## Adds `text` to the list of strings under `key` in `out`. A packed array read out of a
+## dictionary with `as` is a copy, so appending to that loses the line; this puts it back.
+static func note(out: Dictionary, key: String, text: String) -> void:
+	var list: PackedStringArray = out.get(key, PackedStringArray())
+	if not list.has(text):
+		list.append(text)
+	out[key] = list
+
+
 static func _pairs(section: Dictionary) -> Array:
 	var held: Variant = section.get("pairs", [])
 	return held if held is Array else []
