@@ -1486,6 +1486,11 @@ saves its wearer once and is gone; with `SKILL_DONE` and a `tag`, the piece brea
 skill carrying that tag has landed. For adapting, give a `HIT_TAKEN` trigger a `GIVE_STATUS`
 effect and fill `per_element`: one resist status for each element it can learn.
 
+**Berserk (C9.5c).** Give a status a `takeover` brain. While the status is held the brain
+plays the holder: list the commands it may pick as `BrainEntry` rows, or leave the brain empty
+for plain attacks. Give the status a duration, or a way to cure it, so the player gets the
+fighter back.
+
 Examples: life steal is HIT_DEALT with POOL_FROM_DAMAGE `hp` 0.2. An opening buff is
 FIGHT_START with GIVE_STATUS. A wave-end heal is FIGHT_WON with POOL_SHARE `hp` 0.3. A drain
 that pays for a strong `held` status is TURN_START with POOL_SHARE `hp` -0.05.

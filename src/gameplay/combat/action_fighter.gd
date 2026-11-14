@@ -101,6 +101,10 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 		Weakness.recover(me)
 		HitGuard.pass_time(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
+	# Berserk (C9.5c): the fighter swings without stopping and cannot roll.
+	if _taken_over():
+		attack = true
+		dodge = false
 	# Locked on, the fighter always faces its target, so every swing and roll aims at it (C3.5).
 	if _lock_on != null and _lock_on.target != null and _lock_on.direction() != Vector3.ZERO:
 		facing = _lock_on.direction()
@@ -143,6 +147,12 @@ func stunned() -> bool:
 		return true
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	return statuses != null and statuses.halts()
+
+
+# True while a status plays this fighter in the player's place (berserk, C9.5c).
+func _taken_over() -> bool:
+	var statuses: StatusSet = StatusSet.of(get_parent())
+	return statuses != null and statuses.takeover() != null
 
 
 func _start_moves(attack: bool, dodge: bool) -> void:

@@ -243,7 +243,10 @@ func think() -> bool:
 	var context := FieldBrainContext.new(me, rng)
 	if not context.fighting():
 		return false
-	return BattleAi.decide(context, loadout.fighter.brain)
+	# A status that plays its holder (berserk, C9.5c) thinks in the member's place.
+	var statuses: StatusSet = StatusSet.of(self)
+	var taken: BattleBrain = statuses.takeover() if statuses != null else null
+	return BattleAi.decide(context, taken if taken != null else loadout.fighter.brain)
 
 
 ## Where it should stand: on the line from the leader towards itself, `spacing * slot` metres

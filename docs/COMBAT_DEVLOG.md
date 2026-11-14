@@ -4201,3 +4201,15 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** a power with no skill tells no `SKILL_DONE`. The gems in a broken piece are lost
   with it. Nothing on screen says a piece broke. No data file uses these yet.
 - **Unblocks:** C9.5c, then C9.6 and C7.10.
+
+## 2026-11-14 — C9.5c · The berserk status (combat 0.98.0)
+
+- **Did:** `StatusEffect.takeover` (a `BattleBrain`) and `StatusSet.takeover()`.
+  `Battle.brain_of` returns it first. `ActionFighter.drive` forces the attack and drops the
+  dodge, `FieldCommands.refusal` says BLOCKED, `PartyFollower.think` uses the brain. The row
+  was split again by the 8-file rule; C9.5d keeps upgrade levels won by fights.
+- **Verified:** suite 4305 passed, 0 failed (8 new checks). With `StatusSet.takeover` always
+  null, 5 checks fail.
+- **Gaps:** a field enemy is not taken over. Berserk does not turn the holder on its allies.
+  The player still walks in the field. No data file uses it yet.
+- **Unblocks:** C9.5d, C9.6.

@@ -151,6 +151,15 @@ func held() -> Array[StatusEffect]:
 	return out
 
 
+## The brain that plays this fighter now (C9.5c): the `takeover` of the first held status
+## that has one (berserk), or null while the fighter is its own.
+func takeover() -> BattleBrain:
+	for status_id: StringName in _held:
+		if _held[status_id].effect.takeover != null:
+			return _held[status_id].effect.takeover
+	return null
+
+
 ## The first held status carrying `reaction` (a counter stance, a reflect), or null (C2.15).
 func reactor(reaction: StatusEffect.Reaction) -> StatusEffect:
 	for status_id: StringName in _held:

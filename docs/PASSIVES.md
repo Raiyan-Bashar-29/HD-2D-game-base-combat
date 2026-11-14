@@ -310,6 +310,18 @@ other forever.
 - Not built yet: a power with no skill tells no `SKILL_DONE`; the gems in a broken piece are
   lost with it; nothing on screen says a piece broke.
 
+### As built (C9.5c, 0.98.0)
+
+- Berserk is a status with `takeover` set to a `BattleBrain`. While held, that brain plays
+  the holder. A brain with no entries attacks the first foe.
+- In a battle, `Battle.brain_of` returns it first, for a party member and a foe alike, so the
+  player gets no menu on that turn.
+- In the field, the player's fighter swings without stopping, cannot dodge and can use no
+  command; a party follower thinks with the brain.
+- "Takes the wearer over at the top" is a gauge level whose status is such a status.
+- Not built yet: a field enemy (`ActionEnemy`) is not taken over; the brain aims as its
+  entries say, so berserk does not turn the holder on its allies; the player still walks.
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs
@@ -467,7 +479,8 @@ answer.
 | C9.4 | The loadout: budget, learned passives, `GearDefinition.teaches`, progress from won fights, the refusals, saved as flags | C9.3 |
 | C9.5a | DONE (0.96.0): `HitGuard`, the invincible status, mercy time, the overshield, `healing_taken` | C9.2 |
 | C9.5b | DONE (0.97.0): `BREAK_PIECE` (`GearBreak`), `SKILL_DONE`, `per_element` on `GIVE_STATUS` | C9.5a |
-| C9.5c | The berserk status, and upgrade levels won by fights | C9.5b |
+| C9.5c | DONE (0.98.0): the berserk status (`StatusEffect.takeover`) | C9.5b |
+| C9.5d | Upgrade levels won by fights | C7.5 |
 | C9.6 | The kakujas: the shared kakuja passives, each form on its character's kit, and each quinque armour, as data, with a probe and captures | C9.5, C6.5d, C8.6 for the heavy ones |
 | C9.7 | The loadout screen, with the gear screen | C9.4, C7.7 |
 

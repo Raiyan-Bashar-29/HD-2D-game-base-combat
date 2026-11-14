@@ -71,6 +71,10 @@ static func candidates(user: Combatant, command: BattleCommand) -> Array[Combata
 
 ## Why `user` cannot use `command` now; `Reason.NONE` when it can.
 static func refusal(user: Combatant, command: BattleCommand) -> Reason:
+	# A status that plays its holder (berserk, C9.5c) takes every command away.
+	var held: StatusSet = StatusSet.of(user.get_parent()) if user != null else null
+	if held != null and held.takeover() != null:
+		return Reason.BLOCKED
 	if user != null and command != null and command.kind == BattleCommand.Kind.POWER:
 		return _power_refusal(user, command)
 	if user == null or command == null or command.skill == null:
