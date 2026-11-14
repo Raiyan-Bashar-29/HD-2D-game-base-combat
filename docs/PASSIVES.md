@@ -522,8 +522,8 @@ kills), `frenzy`, `quinque_feed` (the armour's HP drain).
 | Noro's | Noro | A huge mouthed tail and regrowth past any wound *(source)* | Regen only: the strongest `kakuja_regen`, no attack bonus |
 | Roma's | Roma Hoito | Giant body *(source)*; grabs and swallows | Heavy: HP and shell |
 | Donato's | Donato Porpora | Cross-shaped kagune and far-reaching copies of himself *(source)*: owned fighters (C8.10) | A relic: one clone power |
-| Furuta's | Kichimura Washuu-Furuta | Many-shaped, late *(to confirm)* | Balanced |
-| Mutsuki's | Tooru Mutsuki | Late in the story *(to confirm)*; knives stay the main weapon | Light: on-hit ailments |
+| Furuta's | Kichimura Washuu-Furuta | Many-shaped, late *(reading: shown in his last fight; built as a balanced form with a two-shape barrage)* | Balanced |
+| Mutsuki's | Tooru Mutsuki | Late in the story *(reading: a full kakuja is not clearly shown; built as a half form, at the owner's ask for one each)*; knives stay the main weapon | Light: on-hit ailments |
 | Dragon | Ken Kaneki (and Rize) | Not worn: a battlefield-sized body *(source)*. It is a boss arena (a battlefield, Part 3 of `GEAR.md`), not a form | None |
 
 The row that builds each one (C9.6) reads the source again for the *(to confirm)* lines, and

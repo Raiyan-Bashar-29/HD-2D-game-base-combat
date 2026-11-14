@@ -611,6 +611,55 @@ PNG32 sprites. Not read: RLE5 and version 1 (PCX) files; it says so. Arima's out
 `assets/fan/arima_kisho/` (animations 0, 20, 100, 5000 and the kit's fifteen moves). Nothing
 draws it in play until C9.9d.
 
+## From a M.U.G.E.N character to a playable fighter, step by step
+
+This is the whole path, done once for Arima. Follow it for any other character. Steps 1 and 2
+are tools; steps 3 to 6 are data you write (or generate: the two scripts in
+`tools/mugen/examples/` built Arima's files and are the pattern to copy).
+
+1. **Convert the moves.** `godot --headless --script tools/mugen_convert.gd -- <character.def>
+   <out folder>` writes `moves.json`: one entry per attack state, already in our units
+   (`startup`, `active`, `recovery`, `iframes_from/to`, `power`, `hits`, `poise`, `knockback`,
+   `hitbox_size`, `hitbox_offset`, `travel_speed`), plus `button`, `chains_to` and `notes`.
+2. **Unpack the art** (only if the owner approved that character's art).
+   `godot --headless --script tools/mugen_sprites.gd -- <character.def> assets/fan/<name>
+   --actions=<the animation numbers of the moves you will use>` writes the sheet, its layout,
+   one strip per animation, the sounds and `sprites.json`.
+3. **Pick the moves.** Read `moves.json` and choose:
+   - the basic chain: the light-attack states that chain into each other (follow `chains_to`);
+   - the specials: the states that cost meter (their `button` and `notes` say so);
+   - a dodge: write one by hand (Arima's: 0.3 s active, i-frames for all of it, travel 6).
+   Each chosen state becomes one `ActionMove` sub-resource. Copy the numbers from `moves.json`
+   as they are; give it the id `move/<name>_<state>`.
+4. **Write the kit**, `data/powers/<name>.tres` (a `PowerKit`; copy `data/powers/arima.tres`):
+   - a gauge, if the character has meter: two `stat_bonuses` (`max_<pool>`, `start_<pool>`)
+     and a `GaugeRule` (gain per hit dealt and taken). A M.U.G.E.N cost of N out of 3000
+     power is N / 3000 of the pool;
+   - one `Power` per special: `move` = the special's `ActionMove`, and a `skill` that only
+     pays the cost (`cost_pool`, `cost`, aimed at the user). The move does the hitting;
+   - stances or weapon sets: one `FormMechanism` with `cycle` = one form per stance. Each
+     stance has a `status`, an `attack_chain` (its own basic chain), a `look`, and its
+     specials name the stance's status in `requires_statuses`, so they take a slot only then;
+   - `passive_skills`: files from `data/passives/` that fit the character.
+5. **Write the fighter**, `data/action/<name>_loadout.tres` (an `ActionLoadout`; copy
+   `data/action/arima_loadout.tres`): a `CombatantDef` (`combatant_id`, `name_key`,
+   `base_stats`, `power_kit` = the kit, `level_curve`, `art`) and a `MoveSet` (`attack_chain`
+   = the basic chain, `dodge`).
+6. **Write the art file**, `assets/fan/<name>/art.tres` (a `MemberArt`; copy Arima's): the
+   sheet, its layout, `pixel_size` and `ground_offset` from `sprites.json`, and per move id a
+   `MoveArt` with the strip's `file`, `frames`, `feet` and `seconds` from `sprites.json`.
+   Sounds: each `PlaySnd` in the move's state, with its time (see the section below).
+7. **Add the strings** to `localization/strings.csv`: `combat.member.<name>.name`,
+   `combat.kit.<name>.name/.desc`, `combat.power.<name>_<x>.name/.desc`,
+   `combat.form.<name>_<x>.name`. Quote a value that has a comma.
+8. **Check and play.** `godot --headless --import`, then `godot --headless --script
+   tools/check_content.gd` (it lists every problem in the new files). To play as the
+   character, set `[combat] action/loadout` in `project.godot` to the loadout's path.
+
+What the converter cannot give you, so you decide by hand: which moves are specials, the
+gauge numbers, stances, passives, names, and anything a helper does (a thrown weapon's
+flight). The `notes` on each move say what was left out.
+
 ## Showing a member's art in play (C9.9d)
 
 - `MemberArt` (a resource): `sheet` + `layout` (the walking sheet), `pixel_size`,

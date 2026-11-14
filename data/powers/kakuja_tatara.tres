@@ -1,0 +1,107 @@
+[gd_resource type="Resource" script_class="PowerKit" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="kit"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="power"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/form_mechanism.gd" id="form"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/barrage_mechanism.gd" id="barrage"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/look_def.gd" id="look"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="pskill"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_shell.tres" id="kakuja_shell"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_regen.tres" id="kakuja_regen"]
+[ext_resource type="Resource" path="res://data/passives/flame_saber.tres" id="flame_saber"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_hunger.tres" id="kakuja_hunger"]
+
+[sub_resource type="Resource" id="m0"]
+script = ExtResource("mod")
+stat = &"attack"
+op = 1
+value = 1.25
+
+[sub_resource type="Resource" id="m1"]
+script = ExtResource("mod")
+stat = &"resist_fire"
+op = 0
+value = 0.5
+
+[sub_resource type="Resource" id="f_status"]
+script = ExtResource("status")
+id = &"status/form_tatara"
+name_key = "combat.form.tatara.name"
+duration = 0.0
+modifiers = Array[ExtResource("mod")]([SubResource("m0"), SubResource("m1")])
+tags = Array[StringName]([&"form"])
+
+[sub_resource type="Resource" id="f_look"]
+script = ExtResource("look")
+look_id = &"look/tatara"
+tint = Color(1, 0.55, 0.3, 1)
+scale = 1.3
+label_key = "combat.form.tatara.name"
+
+[sub_resource type="Resource" id="f_form"]
+script = ExtResource("form")
+status = SubResource("f_status")
+exclusive_group = &"kakuja"
+drain_pool = &"rc"
+drain_per_second = 2.0
+drain_per_turn = 10.0
+look = SubResource("f_look")
+name_key = "combat.form.tatara.name"
+passive_skills = Array[ExtResource("pskill")]([ExtResource("kakuja_shell"), ExtResource("kakuja_regen"), ExtResource("flame_saber"), ExtResource("kakuja_hunger")])
+
+[sub_resource type="Resource" id="p"]
+script = ExtResource("power")
+power_id = &"power/kakuja_tatara"
+name_key = "combat.power.kakuja_tatara.name"
+desc_key = "combat.power.kakuja_tatara.desc"
+mechanism = SubResource("f_form")
+requires_pool = &"rc"
+requires_fraction = 0.1
+
+[sub_resource type="Resource" id="shot0"]
+script = ExtResource("move")
+startup = 0.0
+active = 1.5
+recovery = 0.0
+power = 5.0
+element = &"fire"
+hitbox_size = Vector3(0.6, 0.6, 0.6)
+hitbox_offset = Vector3(0, 0, 0)
+
+[sub_resource type="Resource" id="b_mech"]
+script = ExtResource("barrage")
+pattern = 4
+count = 8
+interval = 0.08
+speed = 14.0
+turn_rate = 0.0
+radius = 3.0
+shots = Array[ExtResource("move")]([SubResource("shot0")])
+
+[sub_resource type="Resource" id="b"]
+script = ExtResource("power")
+power_id = &"power/tatara_blaze"
+name_key = "combat.power.tatara_blaze.name"
+desc_key = "combat.power.tatara_blaze.desc"
+mechanism = SubResource("b_mech")
+cooldown = 3.0
+requires_statuses = Array[StringName]([&"status/form_tatara"])
+
+[sub_resource type="Resource" id="rc"]
+script = ExtResource("mod")
+stat = &"max_rc"
+op = 0
+value = 100.0
+source = &"kit/kakuja_tatara"
+
+[resource]
+script = ExtResource("kit")
+kit_id = &"kit/kakuja_tatara"
+name_key = "combat.kit.kakuja_tatara.name"
+desc_key = "combat.kit.kakuja_tatara.desc"
+powers = Array[ExtResource("power")]([SubResource("p"), SubResource("b")])
+stat_bonuses = Array[ExtResource("mod")]([SubResource("rc")])

@@ -4326,3 +4326,17 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** followers and enemies have no move strips (a follower has no timeline; an enemy's
   `Combatant` gets no art). No Owl coat sheet. No hurt or dodge strip. The art file was built
   by a scratch script, not by the tool in `tools/`.
+
+## 2026-11-14 — C9.6d · The last kakujas as data (combat 0.107.0)
+
+- **Did:** five kits and five quinque armours as data (Tatara, Roma, Donato, Furuta, Mutsuki),
+  one armour kit (Donato's relic), strings. No code. At the owner's ask, a step-by-step guide
+  in `docs/POWERS.md` for turning a converted M.U.G.E.N character into a kit, a fighter and an
+  art file; the two Arima generators are in `tools/mugen/examples/` as the pattern. New row
+  C9.9e: the tools write those files.
+- **Verified:** suite and checkers; a probe in the engine entered each form: the status is
+  held, the look is on, the stats move as written (Roma max HP 100 to 150, speed 5 to 2;
+  Tatara `resist_fire` 0.5).
+- **Gaps:** C8.6 and C8.10 are not built, so Roma has no second health layer and Donato's
+  copies are a barrage. The Furuta and Mutsuki rows are my reading of the source, marked so in
+  `docs/PASSIVES.md`. The barrages were not fired in the probe. No windowed capture.

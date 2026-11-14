@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C9.6d, the last kakujas as data.** C9.9d is done: a fighter's art is a `MemberArt` on its `CombatantDef` (`art`), shown by `ArtSwap` on the body; Arima's is `assets/fan/arima_kisho/art.tres`. To play as Arima, set `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
+- **Next: C9.8, research on fighting-game character files** (documents only), then C7.6, C9.7, C9.9e. C9.6d is done: all thirteen kakujas are kits and armours. To add another converted character, follow `docs/POWERS.md` § From a M.U.G.E.N character to a playable fighter. To play as Arima, set `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
