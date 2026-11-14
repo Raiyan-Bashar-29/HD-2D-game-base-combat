@@ -1,0 +1,84 @@
+[gd_resource type="Resource" script_class="PowerKit" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="kit"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="power"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/form_mechanism.gd" id="form"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/barrage_mechanism.gd" id="barrage"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/look_def.gd" id="look"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="pskill"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_regen.tres" id="kakuja_regen"]
+[ext_resource type="Resource" path="res://data/passives/frenzy.tres" id="frenzy"]
+
+[sub_resource type="Resource" id="crush"]
+script = ExtResource("skill")
+id = &"skill/amon_crush"
+name_key = "combat.power.amon_crush.name"
+power = 16.0
+delay = 2.0
+
+[sub_resource type="Resource" id="m0"]
+script = ExtResource("mod")
+stat = &"attack"
+op = 1
+value = 1.35
+
+[sub_resource type="Resource" id="m1"]
+script = ExtResource("mod")
+stat = &"speed"
+op = 0
+value = -1.0
+
+[sub_resource type="Resource" id="f_status"]
+script = ExtResource("status")
+id = &"status/form_amon"
+name_key = "combat.form.amon.name"
+duration = 0.0
+modifiers = Array[ExtResource("mod")]([SubResource("m0"), SubResource("m1")])
+tags = Array[StringName]([&"form"])
+
+[sub_resource type="Resource" id="f_look"]
+script = ExtResource("look")
+look_id = &"look/amon"
+tint = Color(0.3, 0.3, 0.35, 1)
+scale = 1.2
+label_key = "combat.form.amon.name"
+
+[sub_resource type="Resource" id="f_form"]
+script = ExtResource("form")
+status = SubResource("f_status")
+exclusive_group = &"kakuja"
+drain_pool = &"rc"
+drain_per_second = 3.0
+drain_per_turn = 15.0
+look = SubResource("f_look")
+name_key = "combat.form.amon.name"
+replaces_attack = SubResource("crush")
+passive_skills = Array[ExtResource("pskill")]([ExtResource("kakuja_regen"), ExtResource("frenzy")])
+
+[sub_resource type="Resource" id="p"]
+script = ExtResource("power")
+power_id = &"power/kakuja_amon"
+name_key = "combat.power.kakuja_amon.name"
+desc_key = "combat.power.kakuja_amon.desc"
+mechanism = SubResource("f_form")
+requires_pool = &"rc"
+requires_fraction = 0.1
+
+[sub_resource type="Resource" id="rc"]
+script = ExtResource("mod")
+stat = &"max_rc"
+op = 0
+value = 100.0
+source = &"kit/kakuja_amon"
+
+[resource]
+script = ExtResource("kit")
+kit_id = &"kit/kakuja_amon"
+name_key = "combat.kit.kakuja_amon.name"
+desc_key = "combat.kit.kakuja_amon.desc"
+powers = Array[ExtResource("power")]([SubResource("p")])
+stat_bonuses = Array[ExtResource("mod")]([SubResource("rc")])

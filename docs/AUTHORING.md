@@ -1495,6 +1495,8 @@ fighter back.
 The fighter holds them for as long as it is in the form, and loses them when the form ends.
 In a cycle, a stage with its own list lends that; a stage with none lends the cycle's.
 
+**A power only in a form (C9.6c).** Give the power `requires_statuses` with the form's status id (`data/powers/kakuja_owl.tres`). A piece of gear lends a ranged power by pointing its `kit` at a kit file (`data/gear/quinque_owl.tres`).
+
 **A kit file is checked (C9.6b).** Put a kit at `data/powers/<name>.tres` with `kit_id`
 `kit/<name>`. `tools/check_content.gd` loads every one, and fails a form whose `drain_pool`
 the kit does not give with a `max_<pool>` stat bonus. Give a form's power `requires_pool` and

@@ -4251,3 +4251,13 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   (`requires_fraction` 0.1), not in code. No windowed capture. No demo fighter has the kits.
   The Jason gauntlet has no frenzy risk.
 - **Unblocks:** C9.6c.
+
+## 2026-11-14 — C9.6c · Four more kakujas as data (combat 0.102.0)
+
+- **Did:** Owl, One-Eyed Owl, T-Owl and Amon as kits (a form each; the Owls also a barrage
+  power that needs the form; Amon's Attack becomes a heavy skill) and as quinque armours,
+  three of which lend a kit with one ranged power. Passive `great_regen`. No code.
+- **Verified:** suite 4331 passed, 0 failed. A probe in the engine (deleted after) fought
+  with each kit: the barrage is refused outside the form, lands on both foes inside it, the
+  numbers, lent passives and RC drain are as written; each armour is worn and lends its power.
+- **Gaps:** T-Owl has no half stage. No field chains for the blade arms. No windowed capture.

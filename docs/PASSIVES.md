@@ -369,6 +369,23 @@ other forever.
 - Not built: no fighter in the demo has these kits; the Jason gauntlet has no frenzy risk;
   the other nine kakujas (C9.6c, C9.6d).
 
+### As built (C9.6c, 0.102.0)
+
+Data only. Each kit has `max_rc` 100 and a form in the group `kakuja`, as in C9.6b.
+
+- `kakuja_owl`: defence x1.25, attack x1.2; shell, regen, hunger. `owl_shards`: 6 shots from
+  behind the user, usable only in the form (`requires_statuses`), cooldown 2.
+- `kakuja_one_eyed_owl`: max HP x1.3, attack x1.3, speed -2, size 1.6, drain 12 a turn; shell,
+  regen, `great_regen` (new: 8 HP a turn), hunger. `one_eyed_owl_storm`: 10 shots as rain.
+- `kakuja_towl`: attack x1.3, speed +3; regen, hunger. `towl_blast`: 3 heavy homing bolts.
+- `kakuja_amon`: attack x1.35, speed -1, drain 15 a turn; regen, frenzy. Attack becomes the
+  skill `amon_crush` (power 16, a delay of 2) through `replaces_attack`.
+- Armours: `quinque_owl`, `quinque_one_eyed_owl` and `quinque_towl` each lend a kit of the
+  same name with one ranged power on a cooldown and no pool; `quinque_amon` gives attack x1.3
+  and speed -1. All carry `quinque_feed`.
+- Not built: T-Owl's half stage (a cycle's two statuses cannot both gate one power); the
+  Owls' blade arms as field chains; a larger feed for the Amon armour.
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs
@@ -530,7 +547,7 @@ answer.
 | C9.5d | DONE (0.99.0): upgrade levels won by fights (`UpgradeLevel.fights`) | C7.5 |
 | C9.6a | DONE (0.100.0): a form's own passives (`FormMechanism.passive_skills`), and the shared kakuja passives as data | C9.5, C6.5d |
 | C9.6b | DONE (0.101.0): `PowerKitDb`, and Centipede, Arata, Jason and Noro as kits and quinque armours | C9.6a |
-| C9.6c | Owl, One-Eyed Owl, T-Owl and Amon as kits and quinque armours | C9.6b |
+| C9.6c | DONE (0.102.0): Owl, One-Eyed Owl, T-Owl and Amon as kits and quinque armours | C9.6b |
 | C9.6d | Tatara, Roma, Donato, Furuta and Mutsuki as kits and quinque armours | C9.6c, C8.6, C8.10 |
 | C9.7 | The loadout screen, with the gear screen | C9.4, C7.7 |
 
