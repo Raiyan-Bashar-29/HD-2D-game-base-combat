@@ -82,6 +82,8 @@ static func _aim(context: BrainContext, entry: BrainEntry) -> Array[Combatant]:
 	if entry.command.skill != null and entry.command.skill.scope == Skill.Scope.ALL \
 			and entry.command.kind != BattleCommand.Kind.ATTACK:
 		return legal
+	# A taunting foe must be the one picked (C8.6).
+	legal = Aggro.narrow(context.actor, legal)
 	match entry.target_rule:
 		BrainEntry.TargetRule.SELF:
 			aimed.append(context.actor)

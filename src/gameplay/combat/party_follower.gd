@@ -157,7 +157,7 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 		timeline.cancel()
 	if decider == null:
 		return Vector3.INF
-	var target: Hurtbox = Hurtbox.nearest_hostile(self)
+	var target: Hurtbox = Aggro.pick(self)
 	var to_target: Vector3 = _flat(target.global_position - global_position) if target != null else Vector3.INF
 	var vitals: Vitals = Vitals.of(self)
 	var hp: float = float(vitals.current(&"hp")) / maxf(1.0, float(vitals.maximum(&"hp"))) if vitals != null else 1.0

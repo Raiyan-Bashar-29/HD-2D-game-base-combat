@@ -4429,3 +4429,16 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** a special's `SuperPause` stops the whole fight for 0.5 s, the user included;
   helper flight paths and `Explod` pictures are not converted; a sound not unpacked is left
   out silently; no windowed capture.
+
+## 2026-11-14 — C8.6 · Aggro and taunt (combat 0.114.0)
+
+- **Did:** new `src/gameplay/combat/aggro.gd` (`Aggro`). On an `ActionEnemy` it keeps a threat
+  table from `combatant_damaged`: damage times 1 plus the attacker's `threat` stat, fading by
+  `ActionBrain.threat_fade` a second. `Aggro.pick` (used by `ActionEnemy` and `PartyFollower`)
+  chooses a fighter holding a status tagged `taunt` within reach, then the most threat, then
+  the nearest. `Aggro.narrow` (used by `BattleAi`) cuts a battle brain's aim to the taunting
+  foes. The demo `guard_up` status now carries the tag, so Bulwark draws foes.
+- **Why:** board row C8.6. Its second half, the overshield, was already built in C9.5a.
+- **Verified:** `tests/unit/aggro_test.gd` (11 checks); the full ladder.
+- **Gaps:** no threat table in a turn battle (taunt only); a foe's taunt does not force the
+  player's own aim; nothing on the HUD shows who a foe is after; the table is not saved.

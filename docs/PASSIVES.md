@@ -292,7 +292,7 @@ other forever.
   battle). After a hit that took something, hits do nothing for that long.
 - Overshield: the stat `max_overshield` makes the pool `overshield`. A hit empties it first.
   It refills by `overshield_regen` a second (or turn) once `overshield_delay` has passed
-  with no hit. This is the "recharging second health layer" row; C8.6 keeps aggro and taunt.
+  with no hit. This is the "recharging second health layer" row; aggro and taunt are `Aggro` (C8.6, done).
 - `healing_taken`: `Vitals.change` multiplies a rise of the defeat pool by 1 plus the stat,
   so -1 is "cannot be healed". `set_to` and `revive` are not scaled.
 - Not built yet: no HUD bar for the overshield; an invincible fighter can still be given a
@@ -455,7 +455,7 @@ numbers. *(All reading, unless marked.)*
 | Cannot be taken off | `cursed` | Today |
 | Berserk: the wearer attacks on its own | A status that blocks commands and picks a target by a brain | C9.5 |
 | Rage: stronger each time it is hit | `HIT_TAKEN` → `GIVE_STATUS` stacks | C9.1 |
-| A recharging second health layer | An overshield pool that refills when not hit for a while | C8.6 |
+| A recharging second health layer | An overshield pool that refills when not hit for a while | C9.5a (done) |
 | Damage cut to a share | `damage_taken` MULTIPLY | Today |
 | Breaks to save the wearer once | `LETHAL_HIT` → `SURVIVE`, `BREAK_PIECE` | C9.2 |
 | A trump card that costs the armour | A power on the piece's kit whose use ends in `BREAK_PIECE` | C9.5 |

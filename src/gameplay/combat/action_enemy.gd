@@ -5,8 +5,8 @@ extends CharacterBody3D
 ## and give it a `fighter` and a `brain`.
 ##
 ## IN PLAIN WORDS, each physics frame (`act`):
-## 1. It senses: the nearest hostile fighter (any standing `Hurtbox` the faction table calls an
-##    enemy), how far it is from home, its own hp, whether a move is playing, whether it reels.
+## 1. It senses: its target (`Aggro.pick`: a taunting fighter, the most threat, else the nearest
+##    standing `Hurtbox` the faction table calls an enemy), how far it is from home, its own hp, whether a move is playing, whether it reels.
 ## 2. It asks its `ActionDecider` what to do, with those plain facts.
 ## 3. It acts on the answer: walk to the target and stand at `attack_range`; start the chosen
 ##    move facing the target; back away; walk home; wander near home; or stand.
@@ -101,6 +101,7 @@ func act(delta: float) -> ActionDecider.State:
 	if me != null:
 		Weakness.recover(me)
 		HitGuard.pass_time(me, dt)
+		Aggro.of(self).pass_time(dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Staggered, it stands still and drops the swing it was in, as under a knockback.
 	var halted: bool = statuses != null and statuses.halts()
@@ -126,9 +127,10 @@ func act(delta: float) -> ActionDecider.State:
 	return state
 
 
-## The nearest standing hurtbox this enemy may attack, or null.
+## The standing hurtbox this enemy picks, or null: a taunting fighter, then the most threat,
+## then the nearest (`Aggro`, C8.6).
 func nearest_hostile() -> Hurtbox:
-	return Hurtbox.nearest_hostile(self)
+	return Aggro.pick(self, decider.brain.give_up_radius)
 
 
 func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
@@ -261,6 +263,9 @@ func _build() -> void:
 	# Its sheet, move strips and move sounds, when its definition has art (C9.9e).
 	add_child(ArtSwap.new())
 	add_child(MoveEvents.new())
+	var aggro := Aggro.new()
+	aggro.fade = decider.brain.threat_fade
+	add_child(aggro)
 
 
 func _on_knockback(who: StringName, push: Vector3) -> void:

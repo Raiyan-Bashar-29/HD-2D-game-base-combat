@@ -1494,6 +1494,13 @@ nothing for that many seconds (field) or turns (battle). `max_overshield`: a sec
 layer; add `overshield_regen` (points a second or a turn) and `overshield_delay` (how long
 after a hit it waits). `healing_taken`: -1 means the holder cannot be healed.
 
+**Aggro and taunt (C8.6).** A field foe keeps a threat table: each hit it takes adds the damage
+times 1 plus the attacker's `threat` stat, and it fades by the foe's `ActionBrain.threat_fade`
+points a second. Give a tank `threat` 1 or more on gear, a passive or a status; give a sneak
+-1 to make none. To taunt, put the tag `taunt` on a status: while a fighter holds it, every
+foe within its `give_up_radius` (or, in a turn battle, every foe's brain) must pick that
+fighter. The pick order is taunt, most threat, nearest.
+
 **A piece that breaks, and an armour that adapts (C9.5b).** Put a passive on the piece whose
 trigger ends in the effect `BREAK_PIECE`: with `LETHAL_HIT` and `SURVIVE` before it, the piece
 saves its wearer once and is gone; with `SKILL_DONE` and a `tag`, the piece breaks after the
