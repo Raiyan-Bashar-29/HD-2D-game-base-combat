@@ -4261,3 +4261,19 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   with each kit: the barrage is refused outside the form, lands on both foes inside it, the
   numbers, lent passives and RC drain are as written; each armour is worn and lends its power.
 - **Gaps:** T-Owl has no half stage. No field chains for the blade arms. No windowed capture.
+
+## 2026-11-14 — C9.9a · A converter for any M.U.G.E.N character (combat 0.103.0)
+
+- **Did:** `tools/mugen_convert.gd` and six files in `tools/mugen/`: readers for `.def`,
+  `.cns`, `.cmd` and `.air`, a trigger reader, a state reader and the formula. A character's
+  `.def` in; `moves.json`, `report.md` and one `ActionMove` per attack and dodge out. The
+  formula is in `POWERS.md`. Nothing under `src/` changed.
+- **Why:** the owner approved the Arima Kisho upload (author 刃下心) and asked for a tool
+  that works on any character, not an Arima-only script.
+- **Verified:** suite 4341 passed, 0 failed (9 new checks on a made-up character). Seven
+  checkers exit 0. On the Arima folder (in the scratchpad, not the repo): exit 0, 61 moves;
+  state 200 checked by hand against the `.air` (5 ticks to the hit, a 2-tick hurting frame).
+- **Gaps:** one untouchable stretch per move. Super armour is noted, not converted (a move
+  has no armour field). A helper's place and a projectile's flight are not converted. A
+  trigger on a button, a variable or the foe is treated as true and listed.
+- **Unblocks:** C9.9b (Arima's moves as data), C9.9c (his sprites and sounds).

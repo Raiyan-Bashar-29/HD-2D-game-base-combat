@@ -517,6 +517,43 @@ scales with the MP spent, because `PowerScaling` already scales a duration; scal
 strength would be a new `Affects` value, which can come later if the tuning needs it. The damage
 cap has no meaning here, because this base caps no damage.
 
+## Converting a M.U.G.E.N character (C9.9a)
+
+`tools/mugen_convert.gd` turns any M.U.G.E.N character folder into our move data:
+
+```
+godot --headless --script tools/mugen_convert.gd -- <character.def> <output folder>
+    [--height=1.7] [--power-scale=0.4] [--depth=1.0] [--prefix=name]
+```
+
+It writes `moves.json`, `report.md` and `moves/<prefix>_<state>.tres` (one `ActionMove` per
+attack and per dodge). It never writes into `data/`. **Only use a character the owner has
+said is usable, and keep the author's name with the output.**
+
+The formula (`tools/mugen/mugen_formula.gd`):
+
+| Ours | From theirs |
+|---|---|
+| seconds | ticks / 60 |
+| metres | pixels x (`--height` / the standing body box of animation 0) |
+| `startup` | time to the first `HitDef` (its `time` or `animelem` trigger) |
+| `active` | from there to the end of the last hit's frames with a `Clsn1` box |
+| `recovery` | the rest of the state (it ends at `animtime = 0` or a timed `ChangeState`) |
+| `power` | mean `damage` of a hit x `--power-scale` |
+| `hits` | how many times a `HitDef` fires (a `timemod` trigger repeats) |
+| `poise` | `animtype`: light 1, medium 2, hard 3, anything else (a launcher) 4 |
+| `knockback` | `ground.velocity` / 0.15 (their slide keeps 85% a tick), in metres |
+| `iframes_from`, `iframes_to` | the first stretch with no `Clsn2` box or under `NotHitBy` |
+| `hitbox_size`, `hitbox_offset` | the box round the `Clsn1` boxes of the first hit's frame, `--depth` thick, y from mid-body |
+| `travel_speed` | the fastest `VelSet` x before the hits end, x 60, in metres |
+| `chain_after` | when a `ChangeState` that waits for a button may fire |
+| button and meter (report only) | the `.cmd` file's `ChangeState` into the state |
+
+A state that hurts only through a `Helper` takes that helper state's hits. What has no field
+on a move is written in the move's notes: super armour (`HitOverride`), what it sends out,
+screen pauses, later untouchable stretches, every controller not converted, and every trigger
+that depends on a button, a variable or the foe.
+
 ## Build order (the board rows)
 
 Each row is one package of about 8 files or fewer, red first, with the full ladder. The details

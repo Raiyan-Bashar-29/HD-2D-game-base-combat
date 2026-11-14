@@ -1497,6 +1497,8 @@ In a cycle, a stage with its own list lends that; a stage with none lends the cy
 
 **A power only in a form (C9.6c).** Give the power `requires_statuses` with the form's status id (`data/powers/kakuja_owl.tres`). A piece of gear lends a ranged power by pointing its `kit` at a kit file (`data/gear/quinque_owl.tres`).
 
+**Moves from a M.U.G.E.N character (C9.9a).** `godot --headless --script tools/mugen_convert.gd -- <character.def> <output folder> --prefix=<name>` writes one `ActionMove` file per attack and dodge, and a `report.md` listing each with its button, its meter cost and what was not converted. Copy the moves you keep into a `MoveSet`. Only use a character the owner has said is usable.
+
 **A kit file is checked (C9.6b).** Put a kit at `data/powers/<name>.tres` with `kit_id`
 `kit/<name>`. `tools/check_content.gd` loads every one, and fails a form whose `drain_pool`
 the kit does not give with a `max_<pool>` stat bonus. Give a form's power `requires_pool` and
