@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GearType" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/gear/gear_type.gd" id="type"]
+
+[resource]
+script = ExtResource("type")
+type_id = &"gear_type/quinque_armour"
+name_key = "combat.gear_type.quinque_armour.name"
+family = 1
+slots = Array[StringName]([&"body"])

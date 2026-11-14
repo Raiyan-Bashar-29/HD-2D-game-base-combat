@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PassiveSkill" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+
+[sub_resource type="Resource" id="status_1"]
+script = ExtResource("status")
+id = &"status/passive_noro_regrowth"
+duration = 0.0
+tick_pool = &"hp"
+tick_change = 15
+tags = Array[StringName]([&"passive"])
+
+[resource]
+script = ExtResource("skill")
+id = &"passive/noro_regrowth"
+name_key = "combat.passive.noro_regrowth.name"
+desc_key = "combat.passive.noro_regrowth.desc"
+cost = 6
+held = SubResource("status_1")
+tags = Array[StringName]([&"defence", &"kakuja"])

@@ -1495,6 +1495,13 @@ fighter back.
 The fighter holds them for as long as it is in the form, and loses them when the form ends.
 In a cycle, a stage with its own list lends that; a stage with none lends the cycle's.
 
+**A kit file is checked (C9.6b).** Put a kit at `data/powers/<name>.tres` with `kit_id`
+`kit/<name>`. `tools/check_content.gd` loads every one, and fails a form whose `drain_pool`
+the kit does not give with a `max_<pool>` stat bonus. Give a form's power `requires_pool` and
+a small `requires_fraction`, or it can be entered on an empty pool. `data/powers/kakuja_arata.tres`
+is a plain form to copy and `kakuja_centipede.tres` a two-stage cycle; the matching armours
+are in `data/gear/`.
+
 **A level won by fights (C9.5d).** On an `UpgradeLevel`, set `fights` and leave `items` empty.
 The piece reaches that level after that many won fights while it is worn (a battle or a field
 kill), and the player cannot buy it. One track can hold bought levels and won levels.

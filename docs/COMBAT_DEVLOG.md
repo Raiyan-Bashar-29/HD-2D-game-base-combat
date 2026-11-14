@@ -4236,3 +4236,18 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** no limb regrowth. `kakuja_hunger` names the pool `rc`, which no fighter has yet.
   No kit or armour uses the five passives yet.
 - **Unblocks:** C9.6b.
+
+## 2026-11-14 — C9.6b · The first four kakujas as data (combat 0.101.0)
+
+- **Did:** `PowerKitDb` (every kit under `data/powers/`, checked; `check_content` runs it).
+  Centipede, Arata, Jason and Noro as kits with a form, and as quinque armours with their
+  items and two gear types. Passives `centipede_bite` and `noro_regrowth`, status `venom`.
+  The row was split again: C9.6c and C9.6d keep the other nine.
+- **Verified:** suite 4331 passed, 0 failed. With a kit's `max_rc` removed, 1 check fails and
+  `check_content` names the file. A probe in the engine entered each real form and wore each
+  real armour: the numbers, the lent passives and the RC drain were as written, and a form
+  ends and cannot be re-entered on an empty pool.
+- **Gaps:** the probe found a form could be entered on an empty pool; fixed in the data
+  (`requires_fraction` 0.1), not in code. No windowed capture. No demo fighter has the kits.
+  The Jason gauntlet has no frenzy risk.
+- **Unblocks:** C9.6c.

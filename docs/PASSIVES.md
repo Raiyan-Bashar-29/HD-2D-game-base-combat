@@ -345,6 +345,30 @@ other forever.
   `quinque_feed` (lose 2 HP a turn).
 - Not built: limb regrowth; the kakuja forms and armours themselves (C9.6b).
 
+### As built (C9.6b, 0.101.0)
+
+- `PowerKitDb` loads every kit in `data/powers/` and checks it. The file `<name>.tres` must
+  declare `kit_id` `kit/<name>`, and a form's `drain_pool` must be given by the kit
+  (`max_<pool>` in `stat_bonuses`).
+- Four kakujas. Each kit gives `max_rc` 100 and one power, a form in the group `kakuja` that
+  needs a tenth of the pool to enter and drains 10 RC a turn (2 a second in the field):
+
+  | Kit | The form | Passives lent |
+  |---|---|---|
+  | `kakuja_centipede` | A cycle. Half: attack x1.15, speed +2. Complete: attack x1.5, speed +3 | Half: `kakuja_regen`, `centipede_bite`, `frenzy`. Complete: `kakuja_shell`, `kakuja_regen`, `kakuja_hunger`, `centipede_bite` |
+  | `kakuja_arata` | Defence x1.5 | `kakuja_shell`, `kakuja_regen`, `kakuja_hunger` |
+  | `kakuja_jason` | Attack x1.4 (x1.82 with the frenzy) | `kakuja_regen`, `frenzy` |
+  | `kakuja_noro` | Max HP x1.3 | `kakuja_regen`, `noro_regrowth` (15 HP a turn), `kakuja_hunger` |
+
+- Four armours (`data/gear/quinque_<name>.tres`, types `quinque_armour` on `body` and
+  `quinque_gauntlet` on `hands`), each with `quinque_feed`: Centipede (speed +2, attack x1.1,
+  `centipede_bite`), Arata (damage taken -15%, no flinch, defence x1.2), Jason (a gauntlet,
+  attack x1.25), Noro (`kakuja_regen` only).
+- New passives `centipede_bite` (a hit has a 30% chance of `status/venom`: 3 HP a turn for 3
+  turns) and `noro_regrowth`.
+- Not built: no fighter in the demo has these kits; the Jason gauntlet has no frenzy risk;
+  the other nine kakujas (C9.6c, C9.6d).
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs
@@ -505,7 +529,9 @@ answer.
 | C9.5c | DONE (0.98.0): the berserk status (`StatusEffect.takeover`) | C9.5b |
 | C9.5d | DONE (0.99.0): upgrade levels won by fights (`UpgradeLevel.fights`) | C7.5 |
 | C9.6a | DONE (0.100.0): a form's own passives (`FormMechanism.passive_skills`), and the shared kakuja passives as data | C9.5, C6.5d |
-| C9.6b | The kakujas: each form on its character's kit, and each quinque armour, as data, with a probe and captures | C9.6a, C8.6 for the heavy ones |
+| C9.6b | DONE (0.101.0): `PowerKitDb`, and Centipede, Arata, Jason and Noro as kits and quinque armours | C9.6a |
+| C9.6c | Owl, One-Eyed Owl, T-Owl and Amon as kits and quinque armours | C9.6b |
+| C9.6d | Tatara, Roma, Donato, Furuta and Mutsuki as kits and quinque armours | C9.6c, C8.6, C8.10 |
 | C9.7 | The loadout screen, with the gear screen | C9.4, C7.7 |
 
 C7.10 (the armoury: armours) now also needs C9.5, and builds this page's armour table with

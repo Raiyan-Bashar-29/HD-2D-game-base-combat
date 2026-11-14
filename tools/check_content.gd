@@ -45,6 +45,7 @@ func _initialize() -> void:
 	_check_schedules()
 	_check_quests()
 	_check_passives()
+	_check_kits()
 	_check_areas()
 	_check_path_actions()
 	_check_scenes()
@@ -191,6 +192,22 @@ func _check_passives() -> void:
 		_require_key(path, "desc_key", passive.desc_key)
 		if passive.desc_key == "":
 			_fail("%s has no desc_key" % path)
+
+
+## The kits (C9.6b): every file under `data/powers` is sound, a form's drained pool is given by
+## its kit, and the kit's name is in the CSV.
+func _check_kits() -> void:
+	PowerKitDb.rescan()
+	for problem: String in PowerKitDb.problems():
+		_fail(problem)
+	print("  kits: %d" % PowerKitDb.ids().size())
+	for kit_id: StringName in PowerKitDb.ids():
+		var found: PowerKit = PowerKitDb.kit(kit_id)
+		_require_key(kit_id, "name_key", found.name_key)
+		_require_key(kit_id, "desc_key", found.desc_key)
+		for entry: Power in found.powers:
+			_require_key(kit_id, "power name_key", entry.name_key)
+			_require_key(kit_id, "power desc_key", entry.desc_key)
 
 
 ## Schedules get the same treatment as items and conversations, plus the check no text scan can
