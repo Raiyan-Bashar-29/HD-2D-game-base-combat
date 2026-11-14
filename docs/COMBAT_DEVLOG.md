@@ -4295,3 +4295,19 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   flight is not converted, so each special hits with its own box only. Followers and enemies
   do not play a power's move. A special's skill needs a status to count as doing something.
 - **Unblocks:** C9.9c (his sprites and sounds).
+
+## 2026-11-14 — C9.9c · A sprite and sound unpacker; Arima's art (combat 0.105.0)
+
+- **Did:** `tools/mugen_sprites.gd` and five classes in `tools/mugen/`: `MugenSff` (version 2
+  sprite file), `MugenPacking` (RLE8, LZ5, a PNG given the file's palette), `MugenSnd`,
+  `MugenSprites` (cells, strips, the sheet, the time formula), `MugenSpriteFiles` (the folder).
+  `MugenAir` frames now keep `x`, `y` and `flip`; `MugenCharacter.about` gives the file paths.
+  Ran it on Arima: `assets/fan/arima_kisho/` (sheet, 19 strips, 23 sounds, 2.4 MB).
+- **Why:** the owner approved this upload's art (2026-11-14) and wants the tool reusable.
+- **Split:** drawing the art in play (a per-member sheet, a strip per move, sounds) is C9.9d.
+  It needs a new seam and would pass the package size limit here.
+- **Verified:** suite 4357 passed, 0 failed (7 new checks on a sprite file built byte by byte
+  in the test). Arima's sheet, five strips and two LZ5 sprites were looked at as pictures:
+  right colours, feet aligned, left columns mirrored.
+- **Gaps:** RLE5 and version 1 files are not read. The sheet is the white-coat form only; the
+  Owl coat's stand and walk are for C9.9d. Effects (wide pictures) were not unpacked.

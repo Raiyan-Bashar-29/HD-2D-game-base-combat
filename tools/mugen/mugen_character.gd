@@ -16,19 +16,28 @@ extends RefCounted
 const DEFAULTS: Dictionary = {"height": 1.7, "power_scale": 0.4, "depth": 1.0, "prefix": "move"}
 
 
-## Reads the character at `def_path`. `options` may override any of `DEFAULTS`. The result has
-## `name`, `author`, `scale`, `moves` (see `MugenFormula.numbers`) and `problems`.
-static func convert(def_path: String, options: Dictionary = {}) -> Dictionary:
-	var settings: Dictionary = DEFAULTS.merged(options, true)
-	var out: Dictionary = {"name": "", "author": "", "moves": [], "problems": PackedStringArray()}
-	var files: Dictionary = {}
+## What the `.def` at `def_path` says: `name`, `author`, and `files` (each key of its [Files]
+## section -> the real path of that file beside it).
+static func about(def_path: String) -> Dictionary:
+	var out: Dictionary = {"name": "", "author": "", "files": {}}
 	for section: Dictionary in MugenIni.read(def_path):
 		if section["name"] == "info":
 			out["name"] = MugenIni.value(section, "name").replace("\"", "")
 			out["author"] = MugenIni.value(section, "author").replace("\"", "")
 		elif section["name"] == "files":
 			for pair: Array in MugenIni.starting(section, ""):
-				files[pair[0]] = _find(def_path.get_base_dir(), str(pair[1]))
+				(out["files"] as Dictionary)[pair[0]] = _find(def_path.get_base_dir(), str(pair[1]))
+	return out
+
+
+## Reads the character at `def_path`. `options` may override any of `DEFAULTS`. The result has
+## `name`, `author`, `scale`, `moves` (see `MugenFormula.numbers`) and `problems`.
+static func convert(def_path: String, options: Dictionary = {}) -> Dictionary:
+	var settings: Dictionary = DEFAULTS.merged(options, true)
+	var out: Dictionary = about(def_path)
+	out.merge({"moves": [], "problems": PackedStringArray()})
+	var files: Dictionary = out["files"]
+	out.erase("files")
 	var sections: Array[Dictionary] = []
 	for key: String in files:
 		if key == "stcommon" or key == "cns" or key.begins_with("st"):

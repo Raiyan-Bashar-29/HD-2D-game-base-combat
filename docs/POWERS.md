@@ -264,6 +264,8 @@ copy numbers by state when tuning.
 - Passives: `passive/reaper` and `passive/counter`. Reading waits for M7 (C6.10).
 - Loadout: `data/action/arima_loadout.tres`, own chain 200 to 203. The dodge is the base's
   standard roll; the source has no roll with i-frames.
+- Art (C9.9c): `assets/fan/arima_kisho/`, unpacked by `tools/mugen_sprites.gd`; a move's
+  animation is `strips/anim_<state>.png` (state 2211 uses animation 2206).
 - Converted but not used (one attack button here): chains 210 to 213 and 220 to 223, the air
   moves 230 to 243, the IXA wall 300 to 325.
 
@@ -577,6 +579,37 @@ A state that hurts only through a `Helper` takes that helper state's hits. What 
 on a move is written in the move's notes: super armour (`HitOverride`), what it sends out,
 screen pauses, later untouchable stretches, every controller not converted, and every trigger
 that depends on a button, a variable or the foe.
+
+## Unpacking a M.U.G.E.N character's sprites and sounds (C9.9c)
+
+```
+godot --headless --script tools/mugen_sprites.gd -- <character.def> <output folder>
+    [--height=1.7] [--frames=8] [--max-cell=256] [--walk=0,20,100]
+    [--actions=200,201] [--sounds=all|none|0_1,5_0]
+```
+
+| It writes | What it is |
+|---|---|
+| `sheet.png`, `sheet_layout.tres` | the `--walk` animations (stand, walk, run) as a sheet any `CharacterVisual` draws: 4 columns (right, right, left, left for south, east, north, west), `--frames` rows each |
+| `strips/anim_<n>.png` | one animation as one row, a cell per frame. `--actions` names them; the default is every animation whose cell fits `--max-cell` pixels |
+| `sounds/<group>_<index>.wav` | the sounds named by `--sounds` (a state's `PlaySnd` value `S500,11` is `500_11`) |
+| `sprites.json` | the index: each strip's frames, cell, feet pixel and ticks; `pixel_size` and the sheet's `ground_offset` |
+| `CREDITS.md` | the character's name and author. Keep it with the files |
+
+The formula (`tools/mugen/mugen_sprites.gd`):
+
+| Ours | From theirs |
+|---|---|
+| `pixel_size` (metres a pixel) | the move converter's scale, so art and hitboxes agree |
+| a cell | the box round every frame, as wide left of the feet as right, so the feet are at the cell's middle |
+| a sheet slot | the frame on screen at the slot's middle tick: slot i of N shows tick (i + 0.5) x length / N |
+| a strip frame's time | its ticks / 60 |
+| facing left | the same cell mirrored about the feet |
+
+It reads version 2 `.sff` files: raw, RLE8, LZ5, PNG8 (with the file's palette), PNG24 and
+PNG32 sprites. Not read: RLE5 and version 1 (PCX) files; it says so. Arima's output is in
+`assets/fan/arima_kisho/` (animations 0, 20, 100, 5000 and the kit's fifteen moves). Nothing
+draws it in play until C9.9d.
 
 ## Build order (the board rows)
 

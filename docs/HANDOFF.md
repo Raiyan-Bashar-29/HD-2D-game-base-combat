@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C9.9c, Arima's sprites and sounds**: unpack the `.sff` and `.snd` from the owner's upload into their own folder with a credit line (author 刃下心) and use them for the playable model. His kit is `data/powers/arima.tres` with `data/action/arima_loadout.tres` (C9.9b). Then C9.6d, C9.8, C7.6, C9.7.
+- **Next: C9.9d, the fighter shows a member's sprites**: Arima's art is unpacked in `assets/fan/arima_kisho/` (C9.9c: `sheet.png` + `sheet_layout.tres`, `strips/`, `sounds/`, `sprites.json`; credit 刃下心) but nothing draws it yet. C9.9d adds the per-member art resource and the node that swaps the sheet and plays a move's strip and sound. Then C9.6d, C9.8, C7.6, C9.7.
   The build order is the table at the foot of `GEAR.md`, then the rest of C7.
   The fandom wikis were not reachable when C7.0 was written; if they are now, check the
   "(reading)" lines in `GEAR.md` § Part 2 against them.

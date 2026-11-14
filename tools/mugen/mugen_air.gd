@@ -8,7 +8,8 @@ extends RefCounted
 ## BE HIT. A frame with no `Clsn2` box cannot be hit at all. Boxes are in pixels, x forward and
 ## y DOWN (so up is negative), measured from the fighter's feet.
 ##
-## A frame is `{"group", "index", "time", "hit": Array[Rect2], "body": Array[Rect2]}`.
+## A frame is `{"group", "index", "time", "x", "y", "flip", "hit": Array[Rect2], "body":
+## Array[Rect2]}`: `x` and `y` shift the sprite in pixels, `flip` mirrors it left to right.
 ##
 ## OWNS: turning the file into frames, and the tick sums over them.
 ## MUST NOT: know about states or moves. `MugenMoves` does.
@@ -57,6 +58,7 @@ static func parse(text: String) -> Dictionary:
 			if f.size() < 5:
 				continue
 			frames.append({"group": int(f[0]), "index": int(f[1]), "time": int(f[4]),
+				"x": int(f[2]), "y": int(f[3]), "flip": line.get_slice(",", 5).contains("h"),
 				"hit": next[0] if not (next[0] as Array).is_empty() else kept[0],
 				"body": next[1] if not (next[1] as Array).is_empty() else kept[1]})
 			next = [[], []]
