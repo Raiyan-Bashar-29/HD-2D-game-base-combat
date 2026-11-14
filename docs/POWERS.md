@@ -611,6 +611,22 @@ PNG32 sprites. Not read: RLE5 and version 1 (PCX) files; it says so. Arima's out
 `assets/fan/arima_kisho/` (animations 0, 20, 100, 5000 and the kit's fifteen moves). Nothing
 draws it in play until C9.9d.
 
+## Showing a member's art in play (C9.9d)
+
+- `MemberArt` (a resource): `sheet` + `layout` (the walking sheet), `pixel_size`,
+  `ground_offset`, and `moves`: a move's id -> a `MoveArt`.
+- `MoveArt`: `strip`, `frames`, `feet`, `seconds` (all from `sprites.json`), `sounds` and
+  `sound_at` (seconds after the move starts).
+- Put it on the fighter: `CombatantDef.art`. A form's `LookDef.art` is a second costume: its
+  sheet and strips win while the form is held; a move it lacks falls back to the member's.
+- `ArtSwap` (on every field body) does the rest. No art means the body's own sheet.
+- Sound times from M.U.G.E.N: `PlaySnd` with `time = N` is N / 60 s; with `animelem = K` it is
+  the ticks of the animation's first K - 1 pictures / 60 s.
+- Arima: `assets/fan/arima_kisho/art.tres`, 15 moves. To play as him, set
+  `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
+- Not yet: strips on followers and enemies (they show the sheet only), the Owl coat's own
+  sheet, hurt and dodge strips.
+
 ## Build order (the board rows)
 
 Each row is one package of about 8 files or fewer, red first, with the full ladder. The details

@@ -74,54 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C9.9d, the fighter shows a member's sprites**: Arima's art is unpacked in `assets/fan/arima_kisho/` (C9.9c: `sheet.png` + `sheet_layout.tres`, `strips/`, `sounds/`, `sprites.json`; credit 刃下心) but nothing draws it yet. C9.9d adds the per-member art resource and the node that swaps the sheet and plays a move's strip and sound. Then C9.6d, C9.8, C7.6, C9.7.
-  The build order is the table at the foot of `GEAR.md`, then the rest of C7.
-  The fandom wikis were not reachable when C7.0 was written; if they are now, check the
-  "(reading)" lines in `GEAR.md` § Part 2 against them.
-  **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
-  `tests/test_runner.gd`, whose own list had reached its line budget.
-  Before it, C6.5b, a form plays its own moves: while held, its `attack_chain`
-  and `dodge` replace the fighter's own in the field (`PowerSet.moves_over`, read by
-  `ActionFighter.current_moves()` and the follower's swing), a cycle stage plays its own or the
-  cycle's, and `drain_per_action` drains for each move started.
-  Before it, C6.5a, forms, the first built-in mechanism (M5 `form`): a form's
-  power enters it (its status is held) and leaves it; one form per `exclusive_group`; a `cycle`
-  moves on with each use and after a power in `advance_after`; a drain by the second (field) or
-  turn (battle) ends it at an empty pool. `FormMechanism` and `FormRun` live in
-  `powers/mechanisms/` under content and gameplay.
-  Before it, C6.4b, the other gauge events: a `GaugeRule` also moves on a kill
-  of the holder's own, an ally falling, a move unlike the last (the field), points of another pool
-  spent as a cost (`spent_pool`, `on_spent`), and a running second on top of a moving one. The HUD
-  already shows a gauge and its level. **C6.4 is complete.**
-  Before it, C6.4a, kit gauges run: a kit's `GaugeRule`s (`PowerKit.gauges`)
-  move its gauge pools by the second, the battle turn, standing still or moving, and for each hit
-  landed or taken, dodge and miss, through a `KitGauges` that `PowerSet` feeds; a status tag can
-  pause a rule (`blocked_by_tags`), and each gauge's level status follows its pool.
-  Before it, C6.0b, documents only: two more characters for the main character,
-  Isliid (Grand Summoners; Emperor, Defier of Fate, Human Pinnacle forms and three swords) and
-  Roland (The Last Cloudia; base, Ascended and Heroic Lord forms), in `POWERS.md`, with a
-  fourteenth mechanism (`refresh`) and kit rows C6.24 and C6.25.
-  Before it, C6.3b, the HUD's slot line: `CombatHud` shows each quick slot's
-  key, power and cost, or "ready in 3s" counting down, from a new
-  `Events.power_cooldown_changed` that `PowerSet` emits when the whole seconds or turns left
-  change; the F menu redraws when a power is ready again.
-  Before it, C6.3a, quick slots: keys 1 to 4 (rebindable, no pad default) use
-  the kit's first four non-passive powers in the field through `PowerSlots` and
-  `ActionFighter.press_slot`, with no menu and no ATB.
-  Before it, C6.2c, hero powers in the menus: the battle menu and the F
-  overlay list a fighter's powers under one Powers row (`PowerMenu`), a refused power greyed out
-  with its reason in words, and every cost as the fighter really pays it.
-  Before it, C6.2b, hero powers in the field: the player and each follower
-  wear their fighter's `power_kit`, a party switch carries it with the member, a POWER
-  command goes through `FieldCommands` with no ATB cost, and a kit's passive survives a load.
-  Before it, C6.2a, hero powers in a turn-based battle: a fighter whose
-  `CombatantDef.power_kit` is set has the kit equipped when the battle builds it, and a POWER
-  `BattleCommand` uses a power through `PowerUse`, its cooldown counted in the holder's turns.
-  Before it, C6.1b built the gameplay side in `src/gameplay/combat/powers/`: `PowerSet` (equips a kit on a body, counts cooldowns, runs
-  mechanisms), `PowerUse` (why a power is refused, who it aims at, scaling, using it),
-  `PowerMechanisms` (which executor runs which mechanism) and `PowerExecutor` (the base every
-  mechanism's code extends). C6.1a's data shapes are in `src/content/combat/powers/`. The design
-  is [`POWERS.md`](POWERS.md).
+- **Next: C9.6d, the last kakujas as data.** C9.9d is done: a fighter's art is a `MemberArt` on its `CombatantDef` (`art`), shown by `ArtSwap` on the body; Arima's is `assets/fan/arima_kisho/art.tres`. To play as Arima, set `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**

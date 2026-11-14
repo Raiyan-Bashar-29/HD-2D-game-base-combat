@@ -43,6 +43,9 @@ extends Resource
 ## Loot this fighter drops when beaten, rolled each time (C7.2): in a battle on top of the
 ## encounter's, in the field on top of the enemy's own `loot`. Null means none.
 @export var loot_table: LootTable
+## What it looks and sounds like in the field (C9.9d): a sheet, and a strip and sounds per move.
+## Null keeps the body's own sheet.
+@export var art: MemberArt
 ## How a party member grows with experience. Null means it never levels: an enemy, or a guest.
 @export var level_curve: LevelCurve
 
@@ -77,4 +80,6 @@ func problems(context: String) -> PackedStringArray:
 			found.append("%s starts with '%s', which has no gear file" % [where, item_id])
 	if loot_table != null:
 		found.append_array(loot_table.problems(where))
+	if art != null:
+		found.append_array(art.problems(where))
 	return found

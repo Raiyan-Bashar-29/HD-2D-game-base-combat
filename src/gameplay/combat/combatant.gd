@@ -60,6 +60,8 @@ const GROUP: StringName = &"combatants"
 ## whoever builds a field fighter (`ActionHost.equip`, `ActionEnemy`); a battle builds fresh
 ## combatants, which stay false. `Weakness` reads it to choose a break in turns or in seconds.
 var real_time: bool = false
+## The member's art (C9.9d), copied from its definition; `ArtSwap` shows it. Null means none.
+var art: MemberArt
 ## The element worn gear gives this fighter's plain attack. Written by `GearSet`.
 var lent_element: StringName = &""
 ## The weakness tags worn gear adds to this fighter's plain attack. Written by `GearSet`.

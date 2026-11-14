@@ -1434,6 +1434,10 @@ section above:
 | `reactions`, `reaction_chance`, `reflect_tag` | COUNTER strikes back at a plain attack that landed; REFLECT bounces a skill with `reflect_tag` back to its user. |
 | `counter_move` | COUNTER only (C6.6d, a counter stance): the `ActionMove` that answers. In the field the holder swings it at once, on its own clock, and is not pushed by the hit it answers; in a battle the counter strikes with its numbers (its skill, or `hits` × `power`). Empty is one plain hit. Put the status on a form, or on a timed-block barrier for a parry. |
 
+**A fighter's art** (C9.9d): set `art` on its `CombatantDef` to a `MemberArt` (a walking sheet
+with its layout, and per move id a `MoveArt`: strip, frames, feet, seconds, sounds and their
+times). `ArtSwap` shows it in the field. See `docs/POWERS.md` § Showing a member's art in play.
+
 **A fighter** (`CombatantDef`) gets its depth from stats and three lists:
 - **Pools** are any `max_<pool>` stat: `max_mp`, `max_bp`, `max_limit`, `max_shield`. Each starts
   full, unless `start_<pool>` gives a fraction: a limit gauge has `start_limit` 0.

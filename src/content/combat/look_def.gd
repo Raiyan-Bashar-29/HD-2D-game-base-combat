@@ -20,6 +20,9 @@ extends Resource
 @export var scale: float = 1.0
 ## A localization key shown over the head while the look is on. Empty shows no tag.
 @export var label_key: String = ""
+## A second costume (C9.9d): while the look is on, this art's sheet and move strips are shown
+## in place of the member's. Null keeps the member's art.
+@export var art: MemberArt
 
 
 func problems(context: String) -> PackedStringArray:

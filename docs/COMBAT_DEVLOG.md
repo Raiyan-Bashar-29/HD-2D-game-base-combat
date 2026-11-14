@@ -4311,3 +4311,18 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   right colours, feet aligned, left columns mirrored.
 - **Gaps:** RLE5 and version 1 files are not read. The sheet is the white-coat form only; the
   Owl coat's stand and walk are for C9.9d. Effects (wide pictures) were not unpacked.
+
+## 2026-11-14 — C9.9d · The fighter shows a member's art (combat 0.106.0)
+
+- **Did:** `MemberArt` and `MoveArt` (content); `CombatantDef.art`, `LookDef.art`,
+  `Combatant.art`; `ArtSwap` (added by `ActionHost.fit_identity`) swaps the body's sheet through
+  the new `CharacterVisual.use_sheet` and, during a move with art, shows its strip on a second
+  sprite and plays its sounds at their times, once per swing. Arima's
+  `assets/fan/arima_kisho/art.tres` (15 moves) is on his loadout.
+- **Why:** C9.9c unpacked the art; nothing drew it.
+- **Verified:** suite, 13 new checks in `tests/unit/member_art_test.gd`. Two windowed captures
+  with Arima's loadout set: standing on the sheet, and mid-swing on the strip of move 202, feet
+  on the same spot.
+- **Gaps:** followers and enemies have no move strips (a follower has no timeline; an enemy's
+  `Combatant` gets no art). No Owl coat sheet. No hurt or dodge strip. The art file was built
+  by a scratch script, not by the tool in `tools/`.

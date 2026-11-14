@@ -70,7 +70,8 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 
 ## Adds who `loadout`'s fighter is under `body`: `Vitals`, `StatusSet`, `Combatant`, a `PowerSet`
 ## wearing the fighter's `power_kit` when it has one (C6.2b), a `GearSet` (C7.1b), an `AtbMeter` when the loadout has
-## ATB rules, a `Hurtbox` with a shape, and a `LookSwap` that shows a form's look (C6.5d). The
+## ATB rules, a `Hurtbox` with a shape, a `LookSwap` that shows a form's look (C6.5d) and an `ArtSwap` that
+## shows the member's art (C9.9d). The
 ## player's body gets this from `equip`, and a party follower's from itself (C4.7). Every node but
 ## the hurtbox and the look swap is the member and moves with them on a party switch
 ## (`FieldParty`). Returns the combatant.
@@ -86,6 +87,7 @@ static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 	combatant.attack_tags = def.attack_tags
 	combatant.traits = def.traits
 	combatant.kind = def.combatant_id
+	combatant.art = def.art
 	# The field counts in seconds, so a break here is a stagger (C4.6).
 	combatant.real_time = true
 	body.add_child(combatant)
@@ -114,6 +116,8 @@ static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 	body.add_child(hurtbox)
 	# A form's look on the body (C6.5d). Like the hurtbox it stays with the body on a switch.
 	body.add_child(LookSwap.new())
+	# The member's sheet, move strips and move sounds (C9.9d). It stays with the body too.
+	body.add_child(ArtSwap.new())
 	return combatant
 
 

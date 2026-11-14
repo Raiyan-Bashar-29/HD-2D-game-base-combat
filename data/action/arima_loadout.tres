@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="loadout"]
 [ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="atb"]
 [ext_resource type="Resource" path="res://data/powers/arima.tres" id="kit"]
+[ext_resource type="Resource" path="res://assets/fan/arima_kisho/art.tres" id="art"]
 
 [sub_resource type="Resource" id="m200"]
 script = ExtResource("move")
@@ -110,6 +111,7 @@ base_stats = Dictionary[StringName, float]({
 })
 attack_tags = Array[StringName]([&"blade"])
 power_kit = ExtResource("kit")
+art = ExtResource("art")
 level_curve = SubResource("curve")
 passive_budget = 4
 passive_budget_per_level = 1
