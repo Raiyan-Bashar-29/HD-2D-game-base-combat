@@ -57,7 +57,8 @@ static func build(choices: Dictionary, moves: Dictionary) -> Dictionary:
 	return out
 
 
-## The `ActionMove` of state `number`, with its hitbox kept inside `max_box`. A state the
+## The `ActionMove` of state `number`, with its hitbox kept inside `max_box` and its events
+## (sounds from the `sprites` folder, shakes, pauses) from `MugenEvents`. A state the
 ## converter did not give is a problem and comes back as an empty move.
 static func move(choices: Dictionary, moves: Dictionary, number: int, out: Dictionary) -> ActionMove:
 	var id := StringName("move/%s_%d" % [DictRead.get_string(choices, "name", "fighter"), number])
@@ -70,6 +71,7 @@ static func move(choices: Dictionary, moves: Dictionary, number: int, out: Dicti
 	made.hitbox_size = made.hitbox_size.min(Vector3.ONE * most)
 	made.hitbox_offset.y = minf(made.hitbox_offset.y, made.hitbox_size.y * 0.5)
 	made.hitbox_offset.z = maxf(made.hitbox_offset.z, -most * 0.5)
+	MugenEvents.fill(made, moves[number] as Dictionary, DictRead.get_string(choices, "sprites"))
 	return made
 
 

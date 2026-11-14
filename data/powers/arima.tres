@@ -1,31 +1,63 @@
 [gd_resource type="Resource" script_class="PowerKit" format=3]
 
-[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="kit"]
-[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="power"]
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="8_5tswl"]
+[ext_resource type="Script" path="res://src/content/combat/move_event.gd" id="10_etono"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_11.wav" id="11_0b6nr"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/1_0.wav" id="12_7kh58"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_1.wav" id="13_8s8il"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_10.wav" id="14_wgypv"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_22.wav" id="15_7b1qx"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_7.wav" id="16_ljv4d"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/1_1.wav" id="17_qpfpo"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_4.wav" id="20_v5lev"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power_scaling.gd" id="21_7ifmr"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/950_1.wav" id="22_wobgt"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_3.wav" id="23_3c2gr"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_21.wav" id="24_x0lrs"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/20_15.wav" id="25_tp06e"]
+[ext_resource type="Script" path="res://src/content/combat/skill_effect.gd" id="26_4f8ya"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_6.wav" id="28_ciyyq"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/190_1.wav" id="29_elcqd"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_1.wav" id="30_8pp3w"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_5.wav" id="31_tlxqn"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_0.wav" id="32_ltkxp"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_16.wav" id="33_xwyog"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/20_11.wav" id="34_di1cv"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/20_14.wav" id="35_c8k85"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_16.wav" id="36_nhxgo"]
+[ext_resource type="Resource" path="res://data/passives/counter.tres" id="counter"]
 [ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/form_mechanism.gd" id="form"]
 [ext_resource type="Script" path="res://src/content/combat/powers/gauge_rule.gd" id="gauge"]
-[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
-[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="skill"]
-[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
-[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="kit"]
 [ext_resource type="Script" path="res://src/content/combat/look_def.gd" id="look"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="power"]
 [ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="pskill"]
 [ext_resource type="Resource" path="res://data/passives/reaper.tres" id="reaper"]
-[ext_resource type="Resource" path="res://data/passives/counter.tres" id="counter"]
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
 
-[sub_resource type="Resource" id="resolve_mod"]
-script = ExtResource("mod")
-stat = &"defence"
-op = 1
-value = 1.2
+[sub_resource type="Resource" id="focus_rule"]
+script = ExtResource("gauge")
+pool = &"focus"
+on_hit_dealt = 4.0
+on_hit_taken = 2.0
 
-[sub_resource type="Resource" id="resolve"]
-script = ExtResource("status")
-id = &"status/arima_resolve"
-name_key = "combat.status.arima_resolve.name"
-unit = 1
-duration = 2.0
-modifiers = Array[ExtResource("mod")]([SubResource("resolve_mod")])
+[sub_resource type="Resource" id="Resource_uhiud"]
+script = ExtResource("10_etono")
+at = 0.05
+sound = ExtResource("11_0b6nr")
+
+[sub_resource type="Resource" id="Resource_bxd6b"]
+script = ExtResource("10_etono")
+at = 0.05
+sound = ExtResource("12_7kh58")
+
+[sub_resource type="Resource" id="Resource_k2pmp"]
+script = ExtResource("10_etono")
+at = 0.05
+sound = ExtResource("13_8s8il")
 
 [sub_resource type="Resource" id="m200"]
 script = ExtResource("move")
@@ -34,15 +66,24 @@ startup = 0.083
 active = 0.033
 recovery = 0.35
 chain_after = 0.1
-iframes_from = 0
 iframes_to = 0.083
-power = 6
-hits = 1
+events = Array[ExtResource("10_etono")]([SubResource("Resource_uhiud"), SubResource("Resource_bxd6b"), SubResource("Resource_k2pmp")])
+power = 6.0
 poise = 1
 knockback = 0.64
 hitbox_size = Vector3(1, 1.764, 2.758)
 hitbox_offset = Vector3(0, 0.882, -0.642)
 travel_speed = 3.85
+
+[sub_resource type="Resource" id="Resource_06xac"]
+script = ExtResource("10_etono")
+at = 0.05
+sound = ExtResource("14_wgypv")
+
+[sub_resource type="Resource" id="Resource_583iu"]
+script = ExtResource("10_etono")
+at = 0.05
+sound = ExtResource("15_7b1qx")
 
 [sub_resource type="Resource" id="m201"]
 script = ExtResource("move")
@@ -51,15 +92,27 @@ startup = 0.05
 active = 0.033
 recovery = 0.35
 chain_after = 0.133
-iframes_from = 0
-iframes_to = 0
-power = 6
-hits = 1
+events = Array[ExtResource("10_etono")]([SubResource("Resource_06xac"), SubResource("Resource_583iu")])
+power = 6.0
 poise = 1
 knockback = 0.86
 hitbox_size = Vector3(1, 2.085, 2.534)
 hitbox_offset = Vector3(0, 1.01, -0.497)
 travel_speed = 3.27
+
+[sub_resource type="Resource" id="Resource_t3y5b"]
+script = ExtResource("10_etono")
+sound = ExtResource("16_ljv4d")
+
+[sub_resource type="Resource" id="Resource_a5pye"]
+script = ExtResource("10_etono")
+at = 0.067
+sound = ExtResource("17_qpfpo")
+
+[sub_resource type="Resource" id="Resource_manm1"]
+script = ExtResource("10_etono")
+at = 0.217
+sound = ExtResource("15_7b1qx")
 
 [sub_resource type="Resource" id="m202"]
 script = ExtResource("move")
@@ -68,25 +121,27 @@ startup = 0.217
 active = 0.05
 recovery = 0.417
 chain_after = 0.133
-iframes_from = 0
-iframes_to = 0
-power = 12
-hits = 1
+events = Array[ExtResource("10_etono")]([SubResource("Resource_t3y5b"), SubResource("Resource_a5pye"), SubResource("Resource_manm1")])
+power = 12.0
 poise = 1
 knockback = 2.14
 hitbox_size = Vector3(1, 2.181, 3.24)
 hitbox_offset = Vector3(0, 1.091, -0.625)
 travel_speed = 9.62
 
+[sub_resource type="Resource" id="Resource_iwbti"]
+script = ExtResource("10_etono")
+kind = 4
+amount = 0.2
+seconds = 0.1
+
 [sub_resource type="Resource" id="m203"]
 script = ExtResource("move")
 id = &"move/arima_203"
-startup = 0.1
 active = 0.25
 recovery = 0.6
 chain_after = 0.3
-iframes_from = 0
-iframes_to = 0
+events = Array[ExtResource("10_etono")]([SubResource("Resource_iwbti")])
 power = 8.7
 hits = 3
 poise = 1
@@ -95,18 +150,18 @@ hitbox_size = Vector3(1, 0.609, 1.989)
 hitbox_offset = Vector3(0, 0.305, -1.86)
 travel_speed = 7.51
 
-[sub_resource type="Resource" id="ixa_status"]
-script = ExtResource("status")
-id = &"status/form_arima_ixa"
-name_key = "combat.form.arima_ixa.name"
-duration = 0.0
-tags = Array[StringName]([&"form"])
-
 [sub_resource type="Resource" id="ixa_look"]
 script = ExtResource("look")
 look_id = &"look/arima_ixa"
 tint = Color(0.8, 0.85, 1, 1)
 label_key = "combat.form.arima_ixa.name"
+
+[sub_resource type="Resource" id="ixa_status"]
+script = ExtResource("status")
+name_key = "combat.form.arima_ixa.name"
+duration = 0.0
+tags = Array[StringName]([&"form"])
+id = &"status/form_arima_ixa"
 
 [sub_resource type="Resource" id="ixa_form"]
 script = ExtResource("form")
@@ -115,113 +170,25 @@ attack_chain = Array[ExtResource("move")]([SubResource("m200"), SubResource("m20
 look = SubResource("ixa_look")
 name_key = "combat.form.arima_ixa.name"
 
-[sub_resource type="Resource" id="m350"]
-script = ExtResource("move")
-id = &"move/arima_350"
-startup = 0.367
-active = 0.2
-recovery = 0.2
-chain_after = 0.2
-iframes_from = 0
-iframes_to = 0
-power = 16
-hits = 1
-poise = 1
-knockback = 1.07
-hitbox_size = Vector3(1, 0.449, 1.7)
-hitbox_offset = Vector3(0, 0.225, -1.652)
-travel_speed = 30.79
+[sub_resource type="Resource" id="Resource_h8kp2"]
+script = ExtResource("10_etono")
+at = 0.083
+sound = ExtResource("12_7kh58")
 
-[sub_resource type="Resource" id="s_ixa_throw"]
-script = ExtResource("skill")
-id = &"skill/arima_ixa_throw"
-name_key = "combat.power.arima_ixa_throw.name"
-cost_pool = &"focus"
-cost = 17
-target = 0
-statuses = Array[ExtResource("status")]([SubResource("resolve")])
+[sub_resource type="Resource" id="Resource_dhqij"]
+script = ExtResource("10_etono")
+at = 0.083
+sound = ExtResource("13_8s8il")
 
-[sub_resource type="Resource" id="p_ixa_throw"]
-script = ExtResource("power")
-power_id = &"power/arima_ixa_throw"
-name_key = "combat.power.arima_ixa_throw.name"
-desc_key = "combat.power.arima_ixa_throw.desc"
-skill = SubResource("s_ixa_throw")
-move = SubResource("m350")
-cooldown = 4.0
-requires_statuses = Array[StringName]([&"status/form_arima_ixa"])
+[sub_resource type="Resource" id="Resource_rjarw"]
+script = ExtResource("10_etono")
+at = 0.133
+sound = ExtResource("11_0b6nr")
 
-[sub_resource type="Resource" id="m550"]
-script = ExtResource("move")
-id = &"move/arima_550"
-startup = 1.2
-active = 0.3
-recovery = 1.2
-chain_after = 1.2
-iframes_from = 1.2
-iframes_to = 2.7
-power = 40
-hits = 1
-poise = 1
-knockback = 0.64
-hitbox_size = Vector3(1, 1.572, 1.54)
-hitbox_offset = Vector3(0, 0.016, 0)
-travel_speed = 0
-
-[sub_resource type="Resource" id="s_narukami_pincer"]
-script = ExtResource("skill")
-id = &"skill/arima_narukami_pincer"
-name_key = "combat.power.arima_narukami_pincer.name"
-cost_pool = &"focus"
-cost = 17
-target = 0
-statuses = Array[ExtResource("status")]([SubResource("resolve")])
-
-[sub_resource type="Resource" id="p_narukami_pincer"]
-script = ExtResource("power")
-power_id = &"power/arima_narukami_pincer"
-name_key = "combat.power.arima_narukami_pincer.name"
-desc_key = "combat.power.arima_narukami_pincer.desc"
-skill = SubResource("s_narukami_pincer")
-move = SubResource("m550")
-cooldown = 4.0
-requires_statuses = Array[StringName]([&"status/form_arima_ixa"])
-
-[sub_resource type="Resource" id="m560"]
-script = ExtResource("move")
-id = &"move/arima_560"
-startup = 0.667
-active = 0.317
-recovery = 0
-chain_after = 0
-iframes_from = 0.417
-iframes_to = 0.633
-power = 40
-hits = 1
-poise = 1
-knockback = 3.42
-hitbox_size = Vector3(1, 3.881, 3.753)
-hitbox_offset = Vector3(0, 1.844, -1.267)
-travel_speed = 3.85
-
-[sub_resource type="Resource" id="s_narukami_squad"]
-script = ExtResource("skill")
-id = &"skill/arima_narukami_squad"
-name_key = "combat.power.arima_narukami_squad.name"
-cost_pool = &"focus"
-cost = 17
-target = 0
-statuses = Array[ExtResource("status")]([SubResource("resolve")])
-
-[sub_resource type="Resource" id="p_narukami_squad"]
-script = ExtResource("power")
-power_id = &"power/arima_narukami_squad"
-name_key = "combat.power.arima_narukami_squad.name"
-desc_key = "combat.power.arima_narukami_squad.desc"
-skill = SubResource("s_narukami_squad")
-move = SubResource("m560")
-cooldown = 4.0
-requires_statuses = Array[StringName]([&"status/form_arima_ixa"])
+[sub_resource type="Resource" id="Resource_78vfx"]
+script = ExtResource("10_etono")
+at = 0.133
+sound = ExtResource("12_7kh58")
 
 [sub_resource type="Resource" id="m2200"]
 script = ExtResource("move")
@@ -230,15 +197,23 @@ startup = 0.183
 active = 0.05
 recovery = 0.317
 chain_after = 0.1
-iframes_from = 0
-iframes_to = 0
-power = 20
-hits = 1
+events = Array[ExtResource("10_etono")]([SubResource("Resource_h8kp2"), SubResource("Resource_dhqij"), SubResource("Resource_rjarw"), SubResource("Resource_78vfx")])
+power = 20.0
 poise = 1
 knockback = 0.64
 hitbox_size = Vector3(1, 2.181, 2.245)
 hitbox_offset = Vector3(0, 1.091, -0.738)
 travel_speed = 3.85
+
+[sub_resource type="Resource" id="Resource_xbiol"]
+script = ExtResource("10_etono")
+at = 0.117
+sound = ExtResource("14_wgypv")
+
+[sub_resource type="Resource" id="Resource_nvkpo"]
+script = ExtResource("10_etono")
+at = 0.117
+sound = ExtResource("15_7b1qx")
 
 [sub_resource type="Resource" id="m2201"]
 script = ExtResource("move")
@@ -247,15 +222,23 @@ startup = 0.183
 active = 0.05
 recovery = 0.267
 chain_after = 0.067
-iframes_from = 0
-iframes_to = 0
-power = 20
-hits = 1
+events = Array[ExtResource("10_etono")]([SubResource("Resource_xbiol"), SubResource("Resource_nvkpo")])
+power = 20.0
 poise = 1
 knockback = 0.86
 hitbox_size = Vector3(1, 1.925, 2.245)
 hitbox_offset = Vector3(0, 0.962, -0.93)
 travel_speed = 3.66
+
+[sub_resource type="Resource" id="Resource_k3ips"]
+script = ExtResource("10_etono")
+at = 0.083
+sound = ExtResource("14_wgypv")
+
+[sub_resource type="Resource" id="Resource_bj3a7"]
+script = ExtResource("10_etono")
+at = 0.083
+sound = ExtResource("15_7b1qx")
 
 [sub_resource type="Resource" id="m2202"]
 script = ExtResource("move")
@@ -264,15 +247,31 @@ startup = 0.15
 active = 0.067
 recovery = 0.367
 chain_after = 0.117
-iframes_from = 0
-iframes_to = 0
-power = 28
-hits = 1
+events = Array[ExtResource("10_etono")]([SubResource("Resource_k3ips"), SubResource("Resource_bj3a7")])
+power = 28.0
 poise = 1
 knockback = 1.28
 hitbox_size = Vector3(1, 2.534, 2.823)
 hitbox_offset = Vector3(0, 1.267, -0.898)
 travel_speed = 3.27
+
+[sub_resource type="Resource" id="Resource_1vhnd"]
+script = ExtResource("10_etono")
+kind = 4
+amount = 0.2
+seconds = 0.133
+
+[sub_resource type="Resource" id="Resource_r784n"]
+script = ExtResource("10_etono")
+at = 0.167
+sound = ExtResource("20_v5lev")
+
+[sub_resource type="Resource" id="Resource_303y8"]
+script = ExtResource("10_etono")
+at = 0.217
+kind = 4
+amount = 0.2
+seconds = 0.133
 
 [sub_resource type="Resource" id="m2203"]
 script = ExtResource("move")
@@ -281,15 +280,31 @@ startup = 0.217
 active = 0.05
 recovery = 0.417
 chain_after = 0.15
-iframes_from = 0
-iframes_to = 0
-power = 28
-hits = 1
+events = Array[ExtResource("10_etono")]([SubResource("Resource_1vhnd"), SubResource("Resource_r784n"), SubResource("Resource_303y8")])
+power = 28.0
 poise = 3
 knockback = 2.14
 hitbox_size = Vector3(1, 1.892, 2.791)
 hitbox_offset = Vector3(0, 0.914, -1.908)
 travel_speed = 3.66
+
+[sub_resource type="Resource" id="Resource_knh5v"]
+script = ExtResource("10_etono")
+kind = 4
+amount = 0.2
+seconds = 0.133
+
+[sub_resource type="Resource" id="Resource_1v3vk"]
+script = ExtResource("10_etono")
+at = 0.183
+sound = ExtResource("20_v5lev")
+
+[sub_resource type="Resource" id="Resource_57is4"]
+script = ExtResource("10_etono")
+at = 0.233
+kind = 4
+amount = 0.2
+seconds = 0.133
 
 [sub_resource type="Resource" id="m2211"]
 script = ExtResource("move")
@@ -298,15 +313,19 @@ startup = 0.233
 active = 0.067
 recovery = 0.35
 chain_after = 0.35
-iframes_from = 0
-iframes_to = 0
-power = 28
-hits = 1
+events = Array[ExtResource("10_etono")]([SubResource("Resource_knh5v"), SubResource("Resource_1v3vk"), SubResource("Resource_57is4")])
+power = 28.0
 poise = 3
 knockback = 1.07
 hitbox_size = Vector3(1, 2.213, 2.374)
 hitbox_offset = Vector3(0, 1.042, -1.155)
 travel_speed = 3.85
+
+[sub_resource type="Resource" id="owl_look"]
+script = ExtResource("look")
+look_id = &"look/arima_owl"
+tint = Color(0.55, 0.45, 0.7, 1)
+label_key = "combat.form.arima_owl.name"
 
 [sub_resource type="Resource" id="owl_mod"]
 script = ExtResource("mod")
@@ -316,17 +335,11 @@ value = 1.15
 
 [sub_resource type="Resource" id="owl_status"]
 script = ExtResource("status")
-id = &"status/form_arima_owl"
 name_key = "combat.form.arima_owl.name"
 duration = 0.0
 modifiers = Array[ExtResource("mod")]([SubResource("owl_mod")])
 tags = Array[StringName]([&"form"])
-
-[sub_resource type="Resource" id="owl_look"]
-script = ExtResource("look")
-look_id = &"look/arima_owl"
-tint = Color(0.55, 0.45, 0.7, 1)
-label_key = "combat.form.arima_owl.name"
+id = &"status/form_arima_owl"
 
 [sub_resource type="Resource" id="owl_form"]
 script = ExtResource("form")
@@ -334,114 +347,6 @@ status = SubResource("owl_status")
 attack_chain = Array[ExtResource("move")]([SubResource("m2200"), SubResource("m2201"), SubResource("m2202"), SubResource("m2203"), SubResource("m2211")])
 look = SubResource("owl_look")
 name_key = "combat.form.arima_owl.name"
-
-[sub_resource type="Resource" id="m3050"]
-script = ExtResource("move")
-id = &"move/arima_3050"
-startup = 0.4
-active = 0.067
-recovery = 0.267
-chain_after = 0.267
-iframes_from = 0.667
-iframes_to = 0.733
-power = 16
-hits = 1
-poise = 1
-knockback = 1.07
-hitbox_size = Vector3(1, 2.342, 2.791)
-hitbox_offset = Vector3(0, 1.171, -0.69)
-travel_speed = 0
-
-[sub_resource type="Resource" id="s_owl_slash"]
-script = ExtResource("skill")
-id = &"skill/arima_owl_slash"
-name_key = "combat.power.arima_owl_slash.name"
-cost_pool = &"focus"
-cost = 17
-target = 0
-statuses = Array[ExtResource("status")]([SubResource("resolve")])
-
-[sub_resource type="Resource" id="p_owl_slash"]
-script = ExtResource("power")
-power_id = &"power/arima_owl_slash"
-name_key = "combat.power.arima_owl_slash.name"
-desc_key = "combat.power.arima_owl_slash.desc"
-skill = SubResource("s_owl_slash")
-move = SubResource("m3050")
-cooldown = 4.0
-requires_statuses = Array[StringName]([&"status/form_arima_owl"])
-
-[sub_resource type="Resource" id="m3100"]
-script = ExtResource("move")
-id = &"move/arima_3100"
-startup = 0.5
-active = 0.2
-recovery = 0
-chain_after = 0
-iframes_from = 0
-iframes_to = 0.7
-power = 16
-hits = 1
-poise = 1
-knockback = 1.07
-hitbox_size = Vector3(1, 8, 8)
-hitbox_offset = Vector3(0, 3.769, -4)
-travel_speed = 0
-
-[sub_resource type="Resource" id="s_owl_flower"]
-script = ExtResource("skill")
-id = &"skill/arima_owl_flower"
-name_key = "combat.power.arima_owl_flower.name"
-cost_pool = &"focus"
-cost = 17
-target = 0
-statuses = Array[ExtResource("status")]([SubResource("resolve")])
-
-[sub_resource type="Resource" id="p_owl_flower"]
-script = ExtResource("power")
-power_id = &"power/arima_owl_flower"
-name_key = "combat.power.arima_owl_flower.name"
-desc_key = "combat.power.arima_owl_flower.desc"
-skill = SubResource("s_owl_flower")
-move = SubResource("m3100")
-cooldown = 4.0
-requires_statuses = Array[StringName]([&"status/form_arima_owl"])
-
-[sub_resource type="Resource" id="m3150"]
-script = ExtResource("move")
-id = &"move/arima_3150"
-startup = 0.1
-active = 0.6
-recovery = 0
-chain_after = 0
-iframes_from = 0
-iframes_to = 0.7
-power = 1.6
-hits = 42
-poise = 1
-knockback = 0
-hitbox_size = Vector3(1, 1.7, 2)
-hitbox_offset = Vector3(0, 0.85, -1)
-travel_speed = 0
-
-[sub_resource type="Resource" id="s_owl_call"]
-script = ExtResource("skill")
-id = &"skill/arima_owl_call"
-name_key = "combat.power.arima_owl_call.name"
-cost_pool = &"focus"
-cost = 17
-target = 0
-statuses = Array[ExtResource("status")]([SubResource("resolve")])
-
-[sub_resource type="Resource" id="p_owl_call"]
-script = ExtResource("power")
-power_id = &"power/arima_owl_call"
-name_key = "combat.power.arima_owl_call.name"
-desc_key = "combat.power.arima_owl_call.desc"
-skill = SubResource("s_owl_call")
-move = SubResource("m3150")
-cooldown = 4.0
-requires_statuses = Array[StringName]([&"status/form_arima_owl"])
 
 [sub_resource type="Resource" id="cycle"]
 script = ExtResource("form")
@@ -456,25 +361,422 @@ desc_key = "combat.power.arima_quinque.desc"
 mechanism = SubResource("cycle")
 cooldown = 1.0
 
+[sub_resource type="Resource" id="Resource_gjpfg"]
+script = ExtResource("10_etono")
+sound = ExtResource("22_wobgt")
+
+[sub_resource type="Resource" id="Resource_6e6nk"]
+script = ExtResource("10_etono")
+sound = ExtResource("23_3c2gr")
+
+[sub_resource type="Resource" id="Resource_gc2k3"]
+script = ExtResource("10_etono")
+kind = 5
+seconds = 0.5
+
+[sub_resource type="Resource" id="Resource_0q0ir"]
+script = ExtResource("10_etono")
+at = 0.35000000000000003
+sound = ExtResource("24_x0lrs")
+
+[sub_resource type="Resource" id="Resource_460lu"]
+script = ExtResource("10_etono")
+at = 0.367
+kind = 4
+amount = 0.2
+seconds = 0.067
+
+[sub_resource type="Resource" id="Resource_ergtg"]
+script = ExtResource("10_etono")
+at = 0.383
+sound = ExtResource("25_tp06e")
+
+[sub_resource type="Resource" id="Resource_f3w22"]
+script = ExtResource("10_etono")
+at = 0.417
+sound = ExtResource("15_7b1qx")
+
+[sub_resource type="Resource" id="m350"]
+script = ExtResource("move")
+id = &"move/arima_350"
+startup = 0.367
+active = 0.2
+recovery = 0.2
+chain_after = 0.2
+events = Array[ExtResource("10_etono")]([SubResource("Resource_gjpfg"), SubResource("Resource_6e6nk"), SubResource("Resource_gc2k3"), SubResource("Resource_0q0ir"), SubResource("Resource_460lu"), SubResource("Resource_ergtg"), SubResource("Resource_f3w22")])
+power = 16.0
+poise = 1
+knockback = 1.07
+hitbox_size = Vector3(1, 0.449, 1.7)
+hitbox_offset = Vector3(0, 0.225, -1.652)
+travel_speed = 30.79
+
+[sub_resource type="Resource" id="resolve_mod"]
+script = ExtResource("mod")
+stat = &"defence"
+op = 1
+value = 1.2
+
+[sub_resource type="Resource" id="resolve"]
+script = ExtResource("status")
+name_key = "combat.status.arima_resolve.name"
+unit = 1
+duration = 2.0
+modifiers = Array[ExtResource("mod")]([SubResource("resolve_mod")])
+id = &"status/arima_resolve"
+
+[sub_resource type="Resource" id="s_ixa_throw"]
+script = ExtResource("skill")
+name_key = "combat.power.arima_ixa_throw.name"
+cost_pool = &"focus"
+cost = 17
+target = 0
+statuses = Array[ExtResource("status")]([SubResource("resolve")])
+id = &"skill/arima_ixa_throw"
+
+[sub_resource type="Resource" id="p_ixa_throw"]
+script = ExtResource("power")
+power_id = &"power/arima_ixa_throw"
+name_key = "combat.power.arima_ixa_throw.name"
+desc_key = "combat.power.arima_ixa_throw.desc"
+skill = SubResource("s_ixa_throw")
+move = SubResource("m350")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_arima_ixa"])
+
+[sub_resource type="Resource" id="Resource_uwlyb"]
+script = ExtResource("10_etono")
+sound = ExtResource("22_wobgt")
+
+[sub_resource type="Resource" id="Resource_74qwj"]
+script = ExtResource("10_etono")
+kind = 5
+seconds = 0.5
+
+[sub_resource type="Resource" id="Resource_5dslr"]
+script = ExtResource("10_etono")
+at = 0.467
+sound = ExtResource("28_ciyyq")
+
+[sub_resource type="Resource" id="Resource_fqkdl"]
+script = ExtResource("10_etono")
+at = 0.467
+sound = ExtResource("29_elcqd")
+
+[sub_resource type="Resource" id="Resource_n4nx1"]
+script = ExtResource("10_etono")
+at = 0.783
+sound = ExtResource("30_8pp3w")
+
+[sub_resource type="Resource" id="Resource_k22kx"]
+script = ExtResource("10_etono")
+at = 0.783
+sound = ExtResource("31_tlxqn")
+
+[sub_resource type="Resource" id="Resource_lrsyv"]
+script = ExtResource("10_etono")
+at = 1.0170000000000001
+sound = ExtResource("32_ltkxp")
+
+[sub_resource type="Resource" id="Resource_luean"]
+script = ExtResource("10_etono")
+at = 1.2
+sound = ExtResource("16_ljv4d")
+
+[sub_resource type="Resource" id="Resource_uf5hs"]
+script = ExtResource("10_etono")
+at = 1.2
+sound = ExtResource("33_xwyog")
+
+[sub_resource type="Resource" id="Resource_61q6s"]
+script = ExtResource("10_etono")
+at = 1.2
+kind = 4
+amount = 0.2
+seconds = 0.1
+
+[sub_resource type="Resource" id="m550"]
+script = ExtResource("move")
+id = &"move/arima_550"
+startup = 1.2
+active = 0.3
+recovery = 1.2
+chain_after = 1.2
+iframes_from = 1.2
+iframes_to = 2.7
+events = Array[ExtResource("10_etono")]([SubResource("Resource_uwlyb"), SubResource("Resource_74qwj"), SubResource("Resource_5dslr"), SubResource("Resource_fqkdl"), SubResource("Resource_n4nx1"), SubResource("Resource_k22kx"), SubResource("Resource_lrsyv"), SubResource("Resource_luean"), SubResource("Resource_uf5hs"), SubResource("Resource_61q6s")])
+power = 40.0
+poise = 1
+knockback = 0.64
+hitbox_size = Vector3(1, 1.572, 1.54)
+hitbox_offset = Vector3(0, 0.016, 0)
+
+[sub_resource type="Resource" id="s_narukami_pincer"]
+script = ExtResource("skill")
+name_key = "combat.power.arima_narukami_pincer.name"
+cost_pool = &"focus"
+cost = 17
+target = 0
+statuses = Array[ExtResource("status")]([SubResource("resolve")])
+id = &"skill/arima_narukami_pincer"
+
+[sub_resource type="Resource" id="p_narukami_pincer"]
+script = ExtResource("power")
+power_id = &"power/arima_narukami_pincer"
+name_key = "combat.power.arima_narukami_pincer.name"
+desc_key = "combat.power.arima_narukami_pincer.desc"
+skill = SubResource("s_narukami_pincer")
+move = SubResource("m550")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_arima_ixa"])
+
+[sub_resource type="Resource" id="Resource_1hjes"]
+script = ExtResource("10_etono")
+sound = ExtResource("22_wobgt")
+
+[sub_resource type="Resource" id="Resource_gftgk"]
+script = ExtResource("10_etono")
+kind = 5
+seconds = 0.5
+
+[sub_resource type="Resource" id="Resource_gahvp"]
+script = ExtResource("10_etono")
+at = 0.417
+sound = ExtResource("34_di1cv")
+
+[sub_resource type="Resource" id="Resource_tysif"]
+script = ExtResource("10_etono")
+at = 0.667
+sound = ExtResource("11_0b6nr")
+
+[sub_resource type="Resource" id="Resource_yppso"]
+script = ExtResource("10_etono")
+at = 0.667
+sound = ExtResource("35_c8k85")
+
+[sub_resource type="Resource" id="Resource_0b4je"]
+script = ExtResource("10_etono")
+at = 0.667
+kind = 4
+amount = 0.4
+seconds = 0.167
+
+[sub_resource type="Resource" id="m560"]
+script = ExtResource("move")
+id = &"move/arima_560"
+startup = 0.667
+active = 0.317
+recovery = 0.0
+iframes_from = 0.417
+iframes_to = 0.633
+events = Array[ExtResource("10_etono")]([SubResource("Resource_1hjes"), SubResource("Resource_gftgk"), SubResource("Resource_gahvp"), SubResource("Resource_tysif"), SubResource("Resource_yppso"), SubResource("Resource_0b4je")])
+power = 40.0
+poise = 1
+knockback = 3.42
+hitbox_size = Vector3(1, 3.881, 3.753)
+hitbox_offset = Vector3(0, 1.844, -1.267)
+travel_speed = 3.85
+
+[sub_resource type="Resource" id="s_narukami_squad"]
+script = ExtResource("skill")
+name_key = "combat.power.arima_narukami_squad.name"
+cost_pool = &"focus"
+cost = 17
+target = 0
+statuses = Array[ExtResource("status")]([SubResource("resolve")])
+id = &"skill/arima_narukami_squad"
+
+[sub_resource type="Resource" id="p_narukami_squad"]
+script = ExtResource("power")
+power_id = &"power/arima_narukami_squad"
+name_key = "combat.power.arima_narukami_squad.name"
+desc_key = "combat.power.arima_narukami_squad.desc"
+skill = SubResource("s_narukami_squad")
+move = SubResource("m560")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_arima_ixa"])
+
+[sub_resource type="Resource" id="Resource_n0do1"]
+script = ExtResource("10_etono")
+sound = ExtResource("22_wobgt")
+
+[sub_resource type="Resource" id="Resource_a3r3u"]
+script = ExtResource("10_etono")
+kind = 5
+seconds = 0.5
+
+[sub_resource type="Resource" id="Resource_jwa05"]
+script = ExtResource("10_etono")
+at = 0.4
+sound = ExtResource("11_0b6nr")
+
+[sub_resource type="Resource" id="Resource_nl1xh"]
+script = ExtResource("10_etono")
+at = 0.4
+sound = ExtResource("36_nhxgo")
+
+[sub_resource type="Resource" id="Resource_v6kd7"]
+script = ExtResource("10_etono")
+at = 0.4
+sound = ExtResource("12_7kh58")
+
+[sub_resource type="Resource" id="Resource_np3vo"]
+script = ExtResource("10_etono")
+at = 0.4
+kind = 4
+amount = 0.4
+seconds = 0.133
+
+[sub_resource type="Resource" id="m3050"]
+script = ExtResource("move")
+id = &"move/arima_3050"
+startup = 0.4
+active = 0.067
+recovery = 0.267
+chain_after = 0.267
+iframes_from = 0.667
+iframes_to = 0.733
+events = Array[ExtResource("10_etono")]([SubResource("Resource_n0do1"), SubResource("Resource_a3r3u"), SubResource("Resource_jwa05"), SubResource("Resource_nl1xh"), SubResource("Resource_v6kd7"), SubResource("Resource_np3vo")])
+power = 16.0
+poise = 1
+knockback = 1.07
+hitbox_size = Vector3(1, 2.342, 2.791)
+hitbox_offset = Vector3(0, 1.171, -0.69)
+
+[sub_resource type="Resource" id="s_owl_slash"]
+script = ExtResource("skill")
+name_key = "combat.power.arima_owl_slash.name"
+cost_pool = &"focus"
+cost = 17
+target = 0
+statuses = Array[ExtResource("status")]([SubResource("resolve")])
+id = &"skill/arima_owl_slash"
+
+[sub_resource type="Resource" id="p_owl_slash"]
+script = ExtResource("power")
+power_id = &"power/arima_owl_slash"
+name_key = "combat.power.arima_owl_slash.name"
+desc_key = "combat.power.arima_owl_slash.desc"
+skill = SubResource("s_owl_slash")
+move = SubResource("m3050")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_arima_owl"])
+
+[sub_resource type="Resource" id="Resource_r8rvy"]
+script = ExtResource("10_etono")
+sound = ExtResource("22_wobgt")
+
+[sub_resource type="Resource" id="Resource_ejroh"]
+script = ExtResource("10_etono")
+kind = 5
+seconds = 0.5
+
+[sub_resource type="Resource" id="Resource_oi502"]
+script = ExtResource("10_etono")
+at = 0.367
+sound = ExtResource("11_0b6nr")
+
+[sub_resource type="Resource" id="Resource_qel1v"]
+script = ExtResource("10_etono")
+at = 0.367
+sound = ExtResource("36_nhxgo")
+
+[sub_resource type="Resource" id="Resource_5f4mx"]
+script = ExtResource("10_etono")
+at = 0.367
+sound = ExtResource("12_7kh58")
+
+[sub_resource type="Resource" id="Resource_ae0am"]
+script = ExtResource("10_etono")
+at = 0.367
+kind = 4
+amount = 0.4
+seconds = 0.133
+
+[sub_resource type="Resource" id="m3100"]
+script = ExtResource("move")
+id = &"move/arima_3100"
+startup = 0.5
+active = 0.2
+recovery = 0.0
+iframes_to = 0.7
+events = Array[ExtResource("10_etono")]([SubResource("Resource_r8rvy"), SubResource("Resource_ejroh"), SubResource("Resource_oi502"), SubResource("Resource_qel1v"), SubResource("Resource_5f4mx"), SubResource("Resource_ae0am")])
+power = 16.0
+poise = 1
+knockback = 1.07
+hitbox_size = Vector3(1, 8, 8)
+hitbox_offset = Vector3(0, 3.769, -4)
+
+[sub_resource type="Resource" id="s_owl_flower"]
+script = ExtResource("skill")
+name_key = "combat.power.arima_owl_flower.name"
+cost_pool = &"focus"
+cost = 17
+target = 0
+statuses = Array[ExtResource("status")]([SubResource("resolve")])
+id = &"skill/arima_owl_flower"
+
+[sub_resource type="Resource" id="p_owl_flower"]
+script = ExtResource("power")
+power_id = &"power/arima_owl_flower"
+name_key = "combat.power.arima_owl_flower.name"
+desc_key = "combat.power.arima_owl_flower.desc"
+skill = SubResource("s_owl_flower")
+move = SubResource("m3100")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_arima_owl"])
+
+[sub_resource type="Resource" id="Resource_2cx7c"]
+script = ExtResource("10_etono")
+sound = ExtResource("22_wobgt")
+
+[sub_resource type="Resource" id="Resource_v7j7b"]
+script = ExtResource("10_etono")
+kind = 5
+seconds = 0.5
+
+[sub_resource type="Resource" id="m3150"]
+script = ExtResource("move")
+id = &"move/arima_3150"
+active = 0.6
+recovery = 0.0
+iframes_to = 0.7
+events = Array[ExtResource("10_etono")]([SubResource("Resource_2cx7c"), SubResource("Resource_v7j7b")])
+power = 1.6
+hits = 42
+poise = 1
+hitbox_size = Vector3(1, 1.7, 2)
+hitbox_offset = Vector3(0, 0.85, -1)
+
+[sub_resource type="Resource" id="s_owl_call"]
+script = ExtResource("skill")
+name_key = "combat.power.arima_owl_call.name"
+cost_pool = &"focus"
+cost = 17
+target = 0
+statuses = Array[ExtResource("status")]([SubResource("resolve")])
+id = &"skill/arima_owl_call"
+
+[sub_resource type="Resource" id="p_owl_call"]
+script = ExtResource("power")
+power_id = &"power/arima_owl_call"
+name_key = "combat.power.arima_owl_call.name"
+desc_key = "combat.power.arima_owl_call.desc"
+skill = SubResource("s_owl_call")
+move = SubResource("m3150")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_arima_owl"])
+
 [sub_resource type="Resource" id="focus_max"]
 script = ExtResource("mod")
 stat = &"max_focus"
-op = 0
 value = 100.0
 source = &"kit/arima"
 
 [sub_resource type="Resource" id="focus_start"]
 script = ExtResource("mod")
 stat = &"start_focus"
-op = 0
-value = 0.0
 source = &"kit/arima"
-
-[sub_resource type="Resource" id="focus_rule"]
-script = ExtResource("gauge")
-pool = &"focus"
-on_hit_dealt = 4.0
-on_hit_taken = 2.0
 
 [resource]
 script = ExtResource("kit")

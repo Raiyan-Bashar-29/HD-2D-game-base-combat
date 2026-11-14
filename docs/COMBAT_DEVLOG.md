@@ -4412,3 +4412,20 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   fight is already stopped is skipped; the effect picture is one still picture at a fixed
   pixel size; no windowed capture. The converter does not fill these yet: row C8.16b, which
   also retires `MoveArt.sound_at`.
+
+## 2026-11-14 — C8.16b · The converter fills move events (combat 0.113.0)
+
+- **Did:** `MugenState` now keeps each `EnvShake` and each `Pause`/`SuperPause` with its tick.
+  `MugenFormula.numbers` gives `armour_from/to` (first `HitOverride` stretch), `iframes2_from/to`
+  (second untouchable stretch) and `events` (sounds, shakes, pauses; time order, each once,
+  inside the move). New `tools/mugen/mugen_events.gd` (`MugenEvents.fill`) turns them into
+  `MoveEvent`s, loading sounds from the choices file's `sprites` folder; `MugenKit.move` calls
+  it. Removed `MoveArt.sounds`, `sound_at`, `time_of` and `ArtSwap`'s sound playing. Arima's
+  kit, loadout and art were refilled in place (19 moves, 69 events), keeping the hand-made
+  parts.
+- **Why:** board row C8.16b: C8.16 made the fields; the converter still wrote notes.
+- **Verified:** `mugen_build_test.gd` (15 checks, 3 new), `mugen_convert_test.gd` and
+  `member_art_test.gd` updated; the full ladder (numbers in the commit report).
+- **Gaps:** a special's `SuperPause` stops the whole fight for 0.5 s, the user included;
+  helper flight paths and `Explod` pictures are not converted; a sound not unpacked is left
+  out silently; no windowed capture.

@@ -12,11 +12,14 @@ extends RefCounted
 ## - POISE is the hit's weight: light 1, medium 2, hard 3, a launcher 4.
 ## - KNOCKBACK is the slide the push ends in: the push speed divided by 0.15 (their ground
 ##   friction keeps 85% of a slide each tick), in metres.
-## - I-FRAMES are the first stretch with no body box or under `NotHitBy`; later ones are noted.
+## - I-FRAMES are the first stretch with no body box or under `NotHitBy`; the second stretch
+##   becomes `iframes2`; a third or later one is noted.
+## - ARMOUR is the first stretch under `HitOverride` (hurt, but not pushed).
+## - EVENTS: each `PlaySnd` is a sound, each `EnvShake` a screen shake (strength: its pixels
+##   over 20, at most 1), each `Pause` or `SuperPause` a hit pause. `MugenEvents` builds them.
 ## - The HITBOX is the box round the hurting boxes of the first hit's frame, `depth` thick.
 ## - A button the state waits for before going on gives `chain_after`.
-## Super armour (`HitOverride`), sent-out helpers, sounds and screen pauses have no field on a
-## move; they are reported in `notes` for the author.
+## Sent-out helpers have no field on a move; they are reported in `notes` for the author.
 ##
 ## OWNS: the numbers of the conversion.
 ## MUST NOT: read a file. `MugenState` collects the facts.
@@ -24,6 +27,8 @@ extends RefCounted
 const TICKS: float = 60.0
 ## Their ground friction: a slide loses this much of its speed each tick.
 const FRICTION: float = 0.15
+## An `EnvShake` this many pixels strong is our strongest shake.
+const SHAKE_FULL: float = 20.0
 
 
 ## Our numbers for `facts`, as a dictionary a JSON file can hold. `scale` has
@@ -42,13 +47,14 @@ static func numbers(facts: Dictionary, scale: Dictionary) -> Dictionary:
 		damage += DictRead.get_float(hit, "damage")
 	var out: Dictionary = {"state": facts["state"], "anim": facts["anim"], "hits": hits.size(),
 		"length": length / TICKS, "notes": _notes(facts)}
-	var sounds: Array = []
-	for sound: Dictionary in facts["sounds"]:
-		sounds.append({"at": DictRead.get_int(sound, "tick") / TICKS, "file": "sounds/%d_%d.wav" % [sound["group"], sound["index"]]})
-	out["sounds"] = sounds
-	var dodge: Vector2i = _iframes(facts)
-	out["iframes_from"] = dodge.x / TICKS
-	out["iframes_to"] = dodge.y / TICKS
+	out["events"] = _events(facts, length)
+	var dodges: Array[Vector2i] = _untouchable(facts)
+	var armour: Array[Vector2i] = _armour(facts)
+	armour.resize(1)
+	dodges.resize(2)
+	for pair: Array in [["iframes", dodges[0]], ["iframes2", dodges[1]], ["armour", armour[0]]]:
+		out[str(pair[0]) + "_from"] = (pair[1] as Vector2i).x / TICKS
+		out[str(pair[0]) + "_to"] = (pair[1] as Vector2i).y / TICKS
 	out["travel_speed"] = _speed(facts, first, last) * TICKS * mpp
 	if hits.is_empty():
 		out.merge({"startup": 0.0, "active": length / TICKS, "recovery": 0.0, "power": 0.0})
@@ -77,6 +83,10 @@ static func move(made: Dictionary, id: StringName) -> ActionMove:
 	out.chain_after = made.get("chain_after", 0.0)
 	out.iframes_from = made["iframes_from"]
 	out.iframes_to = made["iframes_to"]
+	out.iframes2_from = DictRead.get_float(made, "iframes2_from")
+	out.iframes2_to = DictRead.get_float(made, "iframes2_to")
+	out.armour_from = DictRead.get_float(made, "armour_from")
+	out.armour_to = DictRead.get_float(made, "armour_to")
 	out.power = made["power"]
 	out.hits = maxi(DictRead.get_int(made, "hits"), 1)
 	out.poise = made.get("poise", 0)
@@ -99,20 +109,57 @@ static func _box(out: Dictionary, box: Rect2, scale: Dictionary) -> void:
 	out["hitbox_offset"] = DictRead.put_vector3(Vector3(0.0, -middle.y * mpp, -middle.x * mpp))
 
 
-# The first untouchable stretch: frames with no body box, joined with `NotHitBy` spans.
-static func _iframes(facts: Dictionary) -> Vector2i:
+# Every untouchable stretch: frames with no body box, joined with `NotHitBy` spans.
+static func _untouchable(facts: Dictionary) -> Array[Vector2i]:
 	var spans: Array[Vector2i] = MugenAir.spans(DictRead.get_array(facts, "frames"), "body", false)
 	for held: Vector2i in facts["invincible"]:
 		spans.append(held)
+	return _merged(spans, maxi(DictRead.get_int(facts, "length"), 1))
+
+
+# Every stretch under `HitOverride`.
+static func _armour(facts: Dictionary) -> Array[Vector2i]:
+	var spans: Array[Vector2i] = []
+	for held: Vector2i in DictRead.get_array(facts, "armour"):
+		spans.append(held)
+	return _merged(spans, maxi(DictRead.get_int(facts, "length"), 1))
+
+
+# `spans` in time order, kept inside `length` ticks, with the ones that touch joined.
+static func _merged(spans: Array[Vector2i], length: int) -> Array[Vector2i]:
 	spans.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.x < b.x)
-	if spans.is_empty():
-		return Vector2i.ZERO
-	var out: Vector2i = spans[0]
+	var out: Array[Vector2i] = []
 	for span: Vector2i in spans:
-		if span.x <= out.y:
-			out.y = maxi(out.y, span.y)
-	out.y = mini(out.y, maxi(DictRead.get_int(facts, "length"), out.x))
+		var held := Vector2i(mini(span.x, length), mini(span.y, length))
+		if held.y <= held.x:
+			continue
+		if not out.is_empty() and held.x <= out[-1].y:
+			out[-1] = Vector2i(out[-1].x, maxi(out[-1].y, held.y))
+		else:
+			out.append(held)
 	return out
+
+
+# The timed events, earliest first, each once: sounds, screen shakes and hit pauses.
+static func _events(facts: Dictionary, length: int) -> Array:
+	var out: Array = []
+	for sound: Dictionary in DictRead.get_array(facts, "sounds"):
+		out.append({"tick": sound["tick"], "kind": "sound", "file": "sounds/%d_%d.wav" % [sound["group"], sound["index"]]})
+	for shake: Dictionary in DictRead.get_array(facts, "shakes"):
+		out.append({"tick": shake["tick"], "kind": "shake", "seconds": maxi(DictRead.get_int(shake, "time"), 1) / TICKS,
+			"amount": snappedf(clampf(DictRead.get_float(shake, "ampl") / SHAKE_FULL, 0.05, 1.0), 0.01)})
+	for pause: Dictionary in DictRead.get_array(facts, "pauses"):
+		out.append({"tick": pause["tick"], "kind": "pause", "seconds": maxi(DictRead.get_int(pause, "time"), 1) / TICKS})
+	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return DictRead.get_int(a, "tick") < DictRead.get_int(b, "tick"))
+	var seen: Dictionary = {}
+	var kept: Array = []
+	for event: Dictionary in out:
+		event["at"] = clampi(DictRead.get_int(event, "tick"), 0, length) / TICKS
+		event.erase("tick")
+		if not seen.has(str(event)):
+			seen[str(event)] = true
+			kept.append(event)
+	return kept
 
 
 # The fastest forward speed set before the hits end (or at any time, for a move with no hit).
@@ -126,14 +173,12 @@ static func _speed(facts: Dictionary, first: int, last: int) -> float:
 
 static func _notes(facts: Dictionary) -> PackedStringArray:
 	var out: PackedStringArray = PackedStringArray()
-	for held: Vector2i in facts["armour"]:
-		out.append("super armour %.2fs to %.2fs" % [held.x / TICKS, held.y / TICKS])
 	for spawn: Dictionary in facts["spawns"]:
 		out.append("sends out state %d at %.2fs" % [spawn["state"], DictRead.get_int(spawn, "tick") / TICKS])
-	if DictRead.get_int(facts, "pause") > 0:
-		out.append("screen pause %.2fs" % (DictRead.get_int(facts, "pause") / TICKS))
-	if MugenAir.spans(DictRead.get_array(facts, "frames"), "body", false).size() + (facts["invincible"] as Array).size() > 1:
-		out.append("more than one untouchable stretch; only the first is kept")
+	if _untouchable(facts).size() > 2:
+		out.append("more than two untouchable stretches; only the first two are kept")
+	if _armour(facts).size() > 1:
+		out.append("more than one armour stretch; only the first is kept")
 	for kind: String in facts["skipped"]:
 		out.append("not converted: %s x%d" % [kind, facts["skipped"][kind]])
 	for need: String in facts["needs"]:

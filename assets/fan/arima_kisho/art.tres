@@ -1,45 +1,24 @@
 [gd_resource type="Resource" script_class="MemberArt" format=3]
 
 [ext_resource type="Script" path="res://src/content/combat/member_art.gd" id="art"]
-[ext_resource type="Script" path="res://src/content/combat/move_art.gd" id="move"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_200.png" id="e0"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/1_0.wav" id="e1"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_1.wav" id="e2"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_11.wav" id="e3"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_201.png" id="e4"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_10.wav" id="e5"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_22.wav" id="e6"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_202.png" id="e7"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_7.wav" id="e8"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/1_1.wav" id="e9"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_203.png" id="e10"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_350.png" id="e11"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_3.wav" id="e12"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/950_1.wav" id="e13"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_21.wav" id="e14"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/20_15.wav" id="e15"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_550.png" id="e16"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_0.wav" id="e17"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/190_1.wav" id="e18"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_6.wav" id="e19"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_1.wav" id="e20"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_5.wav" id="e21"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_16.wav" id="e22"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_560.png" id="e23"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/20_11.wav" id="e24"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/20_14.wav" id="e25"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2200.png" id="e26"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2201.png" id="e27"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2202.png" id="e28"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2203.png" id="e29"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_4.wav" id="e30"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2206.png" id="e31"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_3050.png" id="e32"]
-[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_16.wav" id="e33"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_3100.png" id="e34"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_3150.png" id="e35"]
 [ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/sheet.png" id="e36"]
 [ext_resource type="Resource" path="res://assets/fan/arima_kisho/sheet_layout.tres" id="e37"]
+[ext_resource type="Script" path="res://src/content/combat/move_art.gd" id="move"]
 
 [sub_resource type="Resource" id="m200"]
 script = ExtResource("move")
@@ -47,8 +26,6 @@ strip = ExtResource("e0")
 frames = 8
 feet = Vector2i(41, 53)
 seconds = 0.467
-sounds = Array[AudioStream]([ExtResource("e1"), ExtResource("e2"), ExtResource("e3")])
-sound_at = Array[float]([0.05, 0.05, 0.05])
 
 [sub_resource type="Resource" id="m201"]
 script = ExtResource("move")
@@ -56,8 +33,6 @@ strip = ExtResource("e4")
 frames = 6
 feet = Vector2i(59, 52)
 seconds = 0.433
-sounds = Array[AudioStream]([ExtResource("e5"), ExtResource("e6")])
-sound_at = Array[float]([0.05, 0.05])
 
 [sub_resource type="Resource" id="m202"]
 script = ExtResource("move")
@@ -65,8 +40,6 @@ strip = ExtResource("e7")
 frames = 8
 feet = Vector2i(54, 70)
 seconds = 0.683
-sounds = Array[AudioStream]([ExtResource("e8"), ExtResource("e9"), ExtResource("e6")])
-sound_at = Array[float]([0, 0.067, 0.217])
 
 [sub_resource type="Resource" id="m203"]
 script = ExtResource("move")
@@ -81,8 +54,6 @@ strip = ExtResource("e11")
 frames = 4
 feet = Vector2i(76, 52)
 seconds = 0.767
-sounds = Array[AudioStream]([ExtResource("e12"), ExtResource("e13"), ExtResource("e14"), ExtResource("e15"), ExtResource("e6")])
-sound_at = Array[float]([0, 0, 0.35, 0.383, 0.417])
 
 [sub_resource type="Resource" id="m550"]
 script = ExtResource("move")
@@ -90,17 +61,13 @@ strip = ExtResource("e16")
 frames = 21
 feet = Vector2i(52, 54)
 seconds = 2.7
-sounds = Array[AudioStream]([ExtResource("e17"), ExtResource("e13"), ExtResource("e18"), ExtResource("e19"), ExtResource("e20"), ExtResource("e21"), ExtResource("e22"), ExtResource("e8")])
-sound_at = Array[float]([0, 0, 0.467, 0.467, 0.783, 0.783, 1.2, 1.2])
 
 [sub_resource type="Resource" id="m560"]
 script = ExtResource("move")
 strip = ExtResource("e23")
 frames = 11
 feet = Vector2i(49, 54)
-seconds = 1
-sounds = Array[AudioStream]([ExtResource("e13"), ExtResource("e24"), ExtResource("e25"), ExtResource("e3")])
-sound_at = Array[float]([0, 0.417, 0.667, 0.667])
+seconds = 1.0
 
 [sub_resource type="Resource" id="m2200"]
 script = ExtResource("move")
@@ -108,17 +75,12 @@ strip = ExtResource("e26")
 frames = 8
 feet = Vector2i(60, 91)
 seconds = 0.55
-sounds = Array[AudioStream]([ExtResource("e1"), ExtResource("e2"), ExtResource("e1"), ExtResource("e3")])
-sound_at = Array[float]([0.083, 0.083, 0.133, 0.133])
 
 [sub_resource type="Resource" id="m2201"]
 script = ExtResource("move")
 strip = ExtResource("e27")
 frames = 7
 feet = Vector2i(60, 73)
-seconds = 0.5
-sounds = Array[AudioStream]([ExtResource("e5"), ExtResource("e6")])
-sound_at = Array[float]([0.117, 0.117])
 
 [sub_resource type="Resource" id="m2202"]
 script = ExtResource("move")
@@ -126,8 +88,6 @@ strip = ExtResource("e28")
 frames = 7
 feet = Vector2i(60, 56)
 seconds = 0.583
-sounds = Array[AudioStream]([ExtResource("e5"), ExtResource("e6")])
-sound_at = Array[float]([0.083, 0.083])
 
 [sub_resource type="Resource" id="m2203"]
 script = ExtResource("move")
@@ -135,8 +95,6 @@ strip = ExtResource("e29")
 frames = 8
 feet = Vector2i(60, 61)
 seconds = 0.683
-sounds = Array[AudioStream]([ExtResource("e30")])
-sound_at = Array[float]([0.167])
 
 [sub_resource type="Resource" id="m2211"]
 script = ExtResource("move")
@@ -144,8 +102,6 @@ strip = ExtResource("e31")
 frames = 8
 feet = Vector2i(58, 61)
 seconds = 0.65
-sounds = Array[AudioStream]([ExtResource("e30")])
-sound_at = Array[float]([0.183])
 
 [sub_resource type="Resource" id="m3050"]
 script = ExtResource("move")
@@ -153,8 +109,6 @@ strip = ExtResource("e32")
 frames = 7
 feet = Vector2i(74, 84)
 seconds = 0.733
-sounds = Array[AudioStream]([ExtResource("e13"), ExtResource("e1"), ExtResource("e33"), ExtResource("e3")])
-sound_at = Array[float]([0, 0.4, 0.4, 0.4])
 
 [sub_resource type="Resource" id="m3100"]
 script = ExtResource("move")
@@ -162,8 +116,6 @@ strip = ExtResource("e34")
 frames = 12
 feet = Vector2i(69, 94)
 seconds = 0.7
-sounds = Array[AudioStream]([ExtResource("e13"), ExtResource("e1"), ExtResource("e33"), ExtResource("e3")])
-sound_at = Array[float]([0, 0.367, 0.367, 0.367])
 
 [sub_resource type="Resource" id="m3150"]
 script = ExtResource("move")
@@ -171,8 +123,6 @@ strip = ExtResource("e35")
 frames = 5
 feet = Vector2i(38, 54)
 seconds = 0.7
-sounds = Array[AudioStream]([ExtResource("e13")])
-sound_at = Array[float]([0])
 
 [resource]
 script = ExtResource("art")
@@ -185,9 +135,6 @@ moves = Dictionary[StringName, ExtResource("move")]({
 &"move/arima_201": SubResource("m201"),
 &"move/arima_202": SubResource("m202"),
 &"move/arima_203": SubResource("m203"),
-&"move/arima_350": SubResource("m350"),
-&"move/arima_550": SubResource("m550"),
-&"move/arima_560": SubResource("m560"),
 &"move/arima_2200": SubResource("m2200"),
 &"move/arima_2201": SubResource("m2201"),
 &"move/arima_2202": SubResource("m2202"),
@@ -195,5 +142,8 @@ moves = Dictionary[StringName, ExtResource("move")]({
 &"move/arima_2211": SubResource("m2211"),
 &"move/arima_3050": SubResource("m3050"),
 &"move/arima_3100": SubResource("m3100"),
-&"move/arima_3150": SubResource("m3150")
+&"move/arima_3150": SubResource("m3150"),
+&"move/arima_350": SubResource("m350"),
+&"move/arima_550": SubResource("m550"),
+&"move/arima_560": SubResource("m560")
 })

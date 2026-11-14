@@ -4,9 +4,9 @@ extends RefCounted
 ##
 ## IN PLAIN WORDS: `MugenSpriteFiles` wrote a folder with a walking sheet, one strip per
 ## animation, the sounds and `sprites.json`. The converter's `moves.json` says which animation
-## each move plays and when it plays a sound. This file joins the two: the sheet and its
-## layout, and for each chosen move a `MoveArt` with the strip, its frames, feet and length,
-## and each sound whose file was unpacked, at its time.
+## each move plays. This file joins the two: the sheet and its layout, and for each chosen
+## move a `MoveArt` with the strip, its frames, feet and length. (A move's sounds are events
+## on the move itself since C8.16b: `MugenEvents`.)
 ## A choices file may say `anims: {"<state>": <animation>}` when a move's strip is under a
 ## different animation number than the one its state names.
 ## Run `godot --headless --import` after unpacking, so the pictures load as game textures; a
@@ -40,12 +40,12 @@ static func build(choices: Dictionary, moves: Dictionary, chosen: PackedInt32Arr
 		if strip.is_empty():
 			MugenIni.note(out, "problems", "state %d: no strip for animation %d" % [state, anim])
 			continue
-		art.moves[StringName("move/%s_%d" % [name, state])] = _move(made, strip, folder, out)
+		art.moves[StringName("move/%s_%d" % [name, state])] = _move(strip, folder, out)
 	out["art"] = art
 	return out
 
 
-static func _move(made: Dictionary, strip: Dictionary, folder: String, out: Dictionary) -> MoveArt:
+static func _move(strip: Dictionary, folder: String, out: Dictionary) -> MoveArt:
 	var art := MoveArt.new()
 	art.strip = _picture(folder.path_join(DictRead.get_string(strip, "file")), out)
 	art.frames = DictRead.get_int(strip, "frames", 1)
@@ -53,23 +53,6 @@ static func _move(made: Dictionary, strip: Dictionary, folder: String, out: Dict
 	if feet.size() >= 2:
 		art.feet = Vector2i(int(DictRead.to_float(feet[0])), int(DictRead.to_float(feet[1])))
 	art.seconds = DictRead.get_float(strip, "seconds", art.seconds)
-	var sounds: Array = DictRead.get_array(made, "sounds")
-	sounds.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return DictRead.get_float(a, "at") < DictRead.get_float(b, "at"))
-	var seen: Dictionary = {}
-	for sound: Dictionary in sounds:
-		var mark: String = "%s@%.3f" % [sound["file"], DictRead.get_float(sound, "at")]
-		if seen.has(mark):
-			continue
-		seen[mark] = true
-		var path: String = folder.path_join(DictRead.get_string(sound, "file"))
-		var stream: AudioStream = null
-		if ResourceLoader.exists(path):
-			stream = load(path) as AudioStream
-		elif FileAccess.file_exists(path):
-			stream = AudioStreamWAV.load_from_file(path)
-		if stream != null:
-			art.sounds.append(stream)
-			art.sound_at.append(snappedf(DictRead.get_float(sound, "at"), 0.001))
 	return art
 
 

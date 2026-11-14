@@ -91,10 +91,10 @@ func _converting() -> void:
 		_round([roll["iframes_from"], roll["iframes_to"], roll["travel_speed"], roll["hits"]]),
 		[0.0, 0.2, 6.0, 0.0])
 	var sender: Dictionary = moves.get(800, {})
-	equal("a state that hurts through what it sends out takes those hits, and notes its armour",
-		_round([sender["startup"], sender["hits"], sender["power"], sender["iframes_to"]]) + [sender["notes"]],
-		[0.05, 2.0, 4.0, 0.083, PackedStringArray(["super armour 0.03s to 0.10s",
-		"sends out state 900 at 0.05s"])])
+	equal("a state that hurts through what it sends out takes those hits, and keeps its armour stretch",
+		_round([sender["startup"], sender["hits"], sender["power"], sender["iframes_to"], sender["armour_from"],
+		sender["armour_to"]]) + [sender["notes"]],
+		[0.05, 2.0, 4.0, 0.083, 0.033, 0.1, PackedStringArray(["sends out state 900 at 0.05s"])])
 	var written: PackedStringArray = MugenCharacter.write(result, _dir.path_join("out"))
 	var saved: ActionMove = load(_dir.path_join("out/moves/fx_200.tres"))
 	equal("the output is a report, a JSON file and one move file each, which loads as written",

@@ -20,7 +20,7 @@ var _form: Power
 
 
 func run() -> void:
-	plan(13)
+	plan(11)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_rng.seed = 7
@@ -50,7 +50,6 @@ func _shapes() -> void:
 	equal("a strip is spread evenly over its seconds and holds its last picture",
 		[art.frame_at(0.0), art.frame_at(0.3), art.frame_at(0.99), art.frame_at(5.0), art.cell()],
 		[0, 1, 3, 3, Vector2i(6, 10)])
-	equal("a sound with no time plays at the start", [art.time_of(0), art.time_of(1), art.time_of(2)], [0.0, 0.5, 0.0])
 	equal("clean art has no problems", _art.problems("x").size(), 0)
 	var bad := MemberArt.new()
 	bad.sheet = _art.sheet
@@ -87,23 +86,17 @@ func _a_move() -> void:
 	_fighter.timeline.start(_move)
 	swap.watch()
 	var strip: Sprite3D = visual.get_node_or_null(^"MoveStrip") as Sprite3D
-	equal("a move with art shows its strip in place of the sheet, and plays its first sound",
-		[strip != null and strip.texture == _art.moves[MOVE].strip, visual.sprite.visible, swap.sounds_played],
-		[true, false, 1])
+	equal("a move with art shows its strip in place of the sheet",
+		[strip != null and strip.texture == _art.moves[MOVE].strip, visual.sprite.visible], [true, false])
 	_fighter.timeline.step(0.6)
 	swap.watch()
 	swap.watch()
-	equal("later it shows a later picture and plays the timed sound, each once",
-		[strip.frame, strip.hframes, swap.sounds_played, is_equal_approx(strip.position.y, -0.1)], [2, 4, 2, true])
+	equal("later it shows a later picture",
+		[strip.frame, strip.hframes, is_equal_approx(strip.position.y, -0.1)], [2, 4, true])
 	_fighter.timeline.step(1.0)
 	swap.watch()
 	equal("when the move ends the sheet is back",
 		[visual.get_node_or_null(^"MoveStrip") == null, visual.sprite.visible], [true, true])
-	_fighter.timeline.start(_move)
-	swap.watch()
-	_fighter.timeline.cancel()
-	swap.watch()
-	equal("a second swing plays the sound again", swap.sounds_played, 3)
 
 
 func _a_costume() -> void:
@@ -150,8 +143,6 @@ func _member_art(frames: int, with_move: bool) -> MemberArt:
 		swing.frames = frames
 		swing.feet = Vector2i(3, 7)
 		swing.seconds = 1.0
-		swing.sounds = [AudioStreamWAV.new(), AudioStreamWAV.new()]
-		swing.sound_at = [0.0, 0.5]
 		art.moves = {MOVE: swing}
 	return art
 

@@ -1,7 +1,7 @@
 class_name ArtSwap
 extends Node
-## Shows the art of the member on a body (C9.9d): its walking sheet, and a strip and sounds for
-## the move it is playing. See `MemberArt` and `MoveArt`.
+## Shows the art of the member on a body (C9.9d): its walking sheet, and a strip for the move
+## it is playing. See `MemberArt` and `MoveArt`.
 ##
 ## IN PLAIN WORDS: one of these sits on every field body (`ActionHost.fit_identity`), beside the
 ## `LookSwap`. Each physics frame it asks two questions and changes the body only when an
@@ -12,22 +12,18 @@ extends Node
 ##    member on a party switch, each body shows the member now on it.
 ## 2. "Is a move with art playing?" The body's `Hurtbox` holds the timeline. While a move whose
 ##    id is in the art's `moves` runs, a second sprite shows its strip (mirrored when the body
-##    faces away or left, like the sheet) and the walking sprite is hidden. Each of the move's
-##    sounds plays once per swing, at its time.
+##    faces away or left, like the sheet) and the walking sprite is hidden. A move's sounds are
+##    events on the move, played by `MoveEvents` (C8.16b).
 ##
-## OWNS: putting a member's sheet, move strips and move sounds on a body.
+## OWNS: putting a member's sheet and move strips on a body.
 ## MUST NOT: change stats, moves or statuses, start a move, or name a character.
 
 const STRIP_NAME: String = "MoveStrip"
 
 ## The art whose sheet is on the body now, or null.
 var current: MemberArt = null
-## How many sounds this node has started, for a test to count.
-var sounds_played: int = 0
 
 var _base: Array = []
-var _swing: int = -1
-var _next_sound: int = 0
 
 
 ## The art `body` shows now: the held form's, else the member's, else null.
@@ -83,15 +79,6 @@ func _show_move(visual: CharacterVisual) -> void:
 		art = move_art_of(get_parent(), timeline.move.id)
 	var strip: Sprite3D = _strip(visual, art != null and art.strip != null)
 	visual.sprite.visible = strip == null
-	if art == null:
-		_swing = -1
-		return
-	if timeline.swing != _swing:
-		_swing = timeline.swing
-		_next_sound = 0
-	while _next_sound < art.sounds.size() and art.time_of(_next_sound) <= timeline.elapsed:
-		_play(art.sounds[_next_sound])
-		_next_sound += 1
 	if strip == null:
 		return
 	var cell: Vector2i = art.cell()
@@ -124,18 +111,6 @@ func _strip(visual: CharacterVisual, wanted: bool) -> Sprite3D:
 		strip.cast_shadow = visual.sprite.cast_shadow
 		visual.add_child(strip)
 	return strip
-
-
-func _play(stream: AudioStream) -> void:
-	sounds_played += 1
-	if stream == null:
-		return
-	var player := AudioStreamPlayer3D.new()
-	player.stream = stream
-	player.bus = "SFX"
-	add_child(player)
-	player.finished.connect(player.queue_free)
-	player.play()
 
 
 func _timeline() -> MoveTimeline:

@@ -1,95 +1,26 @@
 [gd_resource type="Resource" script_class="ActionLoadout" format=3]
 
-[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="def"]
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="2_3mbfo"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="5_ogc36"]
+[ext_resource type="Script" path="res://src/content/combat/move_event.gd" id="9_1wat8"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_11.wav" id="10_0eqiq"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/1_0.wav" id="11_b2op4"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/300_1.wav" id="12_jdb7s"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_10.wav" id="13_1q30s"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_22.wav" id="14_hxb6a"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/500_7.wav" id="15_i7owp"]
+[ext_resource type="AudioStream" path="res://assets/fan/arima_kisho/sounds/1_1.wav" id="16_6oi3h"]
+[ext_resource type="Resource" path="res://assets/fan/arima_kisho/art.tres" id="art"]
+[ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="atb"]
 [ext_resource type="Script" path="res://src/content/combat/level_curve.gd" id="curve"]
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="def"]
+[ext_resource type="Resource" path="res://data/powers/arima.tres" id="kit"]
+[ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="loadout"]
 [ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
 [ext_resource type="Script" path="res://src/content/combat/move_set.gd" id="set"]
-[ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="loadout"]
-[ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="atb"]
-[ext_resource type="Resource" path="res://data/powers/arima.tres" id="kit"]
-[ext_resource type="Resource" path="res://assets/fan/arima_kisho/art.tres" id="art"]
 
-[sub_resource type="Resource" id="m200"]
-script = ExtResource("move")
-id = &"move/arima_200"
-startup = 0.083
-active = 0.033
-recovery = 0.35
-chain_after = 0.1
-iframes_from = 0
-iframes_to = 0.083
-power = 6
-hits = 1
-poise = 1
-knockback = 0.64
-hitbox_size = Vector3(1, 1.764, 2.758)
-hitbox_offset = Vector3(0, 0.882, -0.642)
-travel_speed = 3.85
-
-[sub_resource type="Resource" id="m201"]
-script = ExtResource("move")
-id = &"move/arima_201"
-startup = 0.05
-active = 0.033
-recovery = 0.35
-chain_after = 0.133
-iframes_from = 0
-iframes_to = 0
-power = 6
-hits = 1
-poise = 1
-knockback = 0.86
-hitbox_size = Vector3(1, 2.085, 2.534)
-hitbox_offset = Vector3(0, 1.01, -0.497)
-travel_speed = 3.27
-
-[sub_resource type="Resource" id="m202"]
-script = ExtResource("move")
-id = &"move/arima_202"
-startup = 0.217
-active = 0.05
-recovery = 0.417
-chain_after = 0.133
-iframes_from = 0
-iframes_to = 0
-power = 12
-hits = 1
-poise = 1
-knockback = 2.14
-hitbox_size = Vector3(1, 2.181, 3.24)
-hitbox_offset = Vector3(0, 1.091, -0.625)
-travel_speed = 9.62
-
-[sub_resource type="Resource" id="m203"]
-script = ExtResource("move")
-id = &"move/arima_203"
-startup = 0.1
-active = 0.25
-recovery = 0.6
-chain_after = 0.3
-iframes_from = 0
-iframes_to = 0
-power = 8.7
-hits = 3
-poise = 1
-knockback = 1.71
-hitbox_size = Vector3(1, 0.609, 1.989)
-hitbox_offset = Vector3(0, 0.305, -1.86)
-travel_speed = 7.51
-
-[sub_resource type="Resource" id="dodge"]
-script = ExtResource("move")
-startup = 0.0
-active = 0.3
-recovery = 0.15
-iframes_to = 0.3
-perfect_window = 0.1
-travel_speed = 6.0
-
-[sub_resource type="Resource" id="moves"]
-script = ExtResource("set")
-attack_chain = Array[ExtResource("move")]([SubResource("m200"), SubResource("m201"), SubResource("m202"), SubResource("m203")])
-dodge = SubResource("dodge")
+[sub_resource type="Resource" id="atb"]
+script = ExtResource("atb")
 
 [sub_resource type="Resource" id="curve"]
 script = ExtResource("curve")
@@ -111,13 +42,130 @@ base_stats = Dictionary[StringName, float]({
 })
 attack_tags = Array[StringName]([&"blade"])
 power_kit = ExtResource("kit")
-art = ExtResource("art")
-level_curve = SubResource("curve")
 passive_budget = 4
 passive_budget_per_level = 1
+art = ExtResource("art")
+level_curve = SubResource("curve")
 
-[sub_resource type="Resource" id="atb"]
-script = ExtResource("atb")
+[sub_resource type="Resource" id="Resource_ivbpl"]
+script = ExtResource("9_1wat8")
+at = 0.05
+sound = ExtResource("10_0eqiq")
+
+[sub_resource type="Resource" id="Resource_l8ugr"]
+script = ExtResource("9_1wat8")
+at = 0.05
+sound = ExtResource("11_b2op4")
+
+[sub_resource type="Resource" id="Resource_md8gw"]
+script = ExtResource("9_1wat8")
+at = 0.05
+sound = ExtResource("12_jdb7s")
+
+[sub_resource type="Resource" id="m200"]
+script = ExtResource("move")
+id = &"move/arima_200"
+startup = 0.083
+active = 0.033
+recovery = 0.35
+chain_after = 0.1
+iframes_to = 0.083
+events = Array[ExtResource("9_1wat8")]([SubResource("Resource_ivbpl"), SubResource("Resource_l8ugr"), SubResource("Resource_md8gw")])
+power = 6.0
+poise = 1
+knockback = 0.64
+hitbox_size = Vector3(1, 1.764, 2.758)
+hitbox_offset = Vector3(0, 0.882, -0.642)
+travel_speed = 3.85
+
+[sub_resource type="Resource" id="Resource_0cljm"]
+script = ExtResource("9_1wat8")
+at = 0.05
+sound = ExtResource("13_1q30s")
+
+[sub_resource type="Resource" id="Resource_s2pho"]
+script = ExtResource("9_1wat8")
+at = 0.05
+sound = ExtResource("14_hxb6a")
+
+[sub_resource type="Resource" id="m201"]
+script = ExtResource("move")
+id = &"move/arima_201"
+startup = 0.05
+active = 0.033
+recovery = 0.35
+chain_after = 0.133
+events = Array[ExtResource("9_1wat8")]([SubResource("Resource_0cljm"), SubResource("Resource_s2pho")])
+power = 6.0
+poise = 1
+knockback = 0.86
+hitbox_size = Vector3(1, 2.085, 2.534)
+hitbox_offset = Vector3(0, 1.01, -0.497)
+travel_speed = 3.27
+
+[sub_resource type="Resource" id="Resource_4jmx5"]
+script = ExtResource("9_1wat8")
+sound = ExtResource("15_i7owp")
+
+[sub_resource type="Resource" id="Resource_h0d4g"]
+script = ExtResource("9_1wat8")
+at = 0.067
+sound = ExtResource("16_6oi3h")
+
+[sub_resource type="Resource" id="Resource_bab7d"]
+script = ExtResource("9_1wat8")
+at = 0.217
+sound = ExtResource("14_hxb6a")
+
+[sub_resource type="Resource" id="m202"]
+script = ExtResource("move")
+id = &"move/arima_202"
+startup = 0.217
+active = 0.05
+recovery = 0.417
+chain_after = 0.133
+events = Array[ExtResource("9_1wat8")]([SubResource("Resource_4jmx5"), SubResource("Resource_h0d4g"), SubResource("Resource_bab7d")])
+power = 12.0
+poise = 1
+knockback = 2.14
+hitbox_size = Vector3(1, 2.181, 3.24)
+hitbox_offset = Vector3(0, 1.091, -0.625)
+travel_speed = 9.62
+
+[sub_resource type="Resource" id="Resource_41bby"]
+script = ExtResource("9_1wat8")
+kind = 4
+amount = 0.2
+seconds = 0.1
+
+[sub_resource type="Resource" id="m203"]
+script = ExtResource("move")
+id = &"move/arima_203"
+active = 0.25
+recovery = 0.6
+chain_after = 0.3
+events = Array[ExtResource("9_1wat8")]([SubResource("Resource_41bby")])
+power = 8.7
+hits = 3
+poise = 1
+knockback = 1.71
+hitbox_size = Vector3(1, 0.609, 1.989)
+hitbox_offset = Vector3(0, 0.305, -1.86)
+travel_speed = 7.51
+
+[sub_resource type="Resource" id="dodge"]
+script = ExtResource("move")
+startup = 0.0
+active = 0.3
+recovery = 0.15
+iframes_to = 0.3
+perfect_window = 0.1
+travel_speed = 6.0
+
+[sub_resource type="Resource" id="moves"]
+script = ExtResource("set")
+attack_chain = Array[ExtResource("move")]([SubResource("m200"), SubResource("m201"), SubResource("m202"), SubResource("m203")])
+dodge = SubResource("dodge")
 
 [resource]
 script = ExtResource("loadout")

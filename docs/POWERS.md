@@ -570,14 +570,17 @@ The formula (`tools/mugen/mugen_formula.gd`):
 | `poise` | `animtype`: light 1, medium 2, hard 3, anything else (a launcher) 4 |
 | `knockback` | `ground.velocity` / 0.15 (their slide keeps 85% a tick), in metres |
 | `iframes_from`, `iframes_to` | the first stretch with no `Clsn2` box or under `NotHitBy` |
+| `iframes2_from`, `iframes2_to` | the second such stretch (C8.16b) |
+| `armour_from`, `armour_to` | the first stretch under `HitOverride` (C8.16b) |
+| `events` | each `PlaySnd` a sound, each `EnvShake` a shake (strength: its pixels over 20), each `Pause` or `SuperPause` a hit pause (C8.16b) |
 | `hitbox_size`, `hitbox_offset` | the box round the `Clsn1` boxes of the first hit's frame, `--depth` thick, y up from the feet (where a fighter's origin is) |
 | `travel_speed` | the fastest `VelSet` x before the hits end, x 60, in metres |
 | `chain_after` | when a `ChangeState` that waits for a button may fire |
 | button and meter (report only) | the `.cmd` file's `ChangeState` into the state |
 
 A state that hurts only through a `Helper` takes that helper state's hits. What has no field
-on a move is written in the move's notes: super armour (`HitOverride`), what it sends out,
-screen pauses, later untouchable stretches, every controller not converted, and every trigger
+on a move is written in the move's notes: what it sends out, a third untouchable stretch or
+a second armour stretch, every controller not converted, and every trigger
 that depends on a button, a variable or the foe.
 
 ## Unpacking a M.U.G.E.N character's sprites and sounds (C9.9c)
@@ -630,7 +633,7 @@ What Arima's files use most, and where that lands here:
 | `HitDef` (67) | One hit: damage, weight, push, the state the victim goes to | `ActionMove` + `Hitbox` | - |
 | `ChangeState` (143) with button triggers | Chains and cancels | `MoveTimeline` chain, `chain_after` | Cancel a move into a special on hit (C8.8) |
 | `VelSet`, `VelAdd`, `PosSet` (148) | Movement inside a move, changing per frame | One `travel_speed` per move | A speed curve: several timed speeds on a move |
-| `PlaySnd` (302), `Explod` (305) | Timed sounds and effect pictures | `MoveArt.sounds` + `sound_at` (C9.9d) | Timed effect pictures on a move, the same way |
+| `PlaySnd` (302), `Explod` (305) | Timed sounds and effect pictures | SOUND and EFFECT events on the move (C8.16; the converter fills sounds, C8.16b) | Timed effect pictures on a move, the same way |
 | `EnvShake` (104), `SuperPause` (20), `Pause` (3), `Zoom` (8) | Screen shake, a freeze before a super, hit pause | None | **Hit pause and screen shake as fields on a move** |
 | `Helper` (49) + `DestroySelf` | Projectiles and thrown weapons with their own path and hits | `Projectile`, barrage shots | A move that sends out a shot at a time (now only a power's barrage can) |
 | `NotHitBy` (12) | Untouchable for a stretch | `iframes_from/to` (one stretch) | A second stretch (the converter notes later ones and drops them) |
@@ -713,8 +716,8 @@ flight). The `notes` on each move say what was left out.
 
 - `MemberArt` (a resource): `sheet` + `layout` (the walking sheet), `pixel_size`,
   `ground_offset`, and `moves`: a move's id -> a `MoveArt`.
-- `MoveArt`: `strip`, `frames`, `feet`, `seconds` (all from `sprites.json`), `sounds` and
-  `sound_at` (seconds after the move starts).
+- `MoveArt`: `strip`, `frames`, `feet`, `seconds` (all from `sprites.json`). Its sounds are
+  events on the move (`ActionMove.events`), not here.
 - Put it on the fighter: `CombatantDef.art`. A form's `LookDef.art` is a second costume: its
   sheet and strips win while the form is held; a move it lacks falls back to the member's.
 - `ArtSwap` (on every field body) does the rest. No art means the body's own sheet.

@@ -1,18 +1,20 @@
 extends TestCase
 ## The starter files for a converted character (C9.9e): from a choices file, the converter's
 ## moves and an unpacked sprite folder, `MugenStarter` writes a kit, a loadout and an art file
-## that load and point at each other. Also: a move's sounds come out of the converter with
-## their times, and a field enemy shows its definition's art.
+## that load and point at each other. Also (C8.16b): a move's sounds, shakes, pauses, armour
+## and second untouchable stretch come out of the converter and go onto the move as events and
+## fields; and a field enemy shows its definition's art.
 ##
-## OWNS: assertions about `MugenKit`, `MugenArt`, `MugenStarter`, `MugenIni.note`, the `sounds`
-## of `MugenFormula.numbers`, and `ActionEnemy`'s art.
+## OWNS: assertions about `MugenKit`, `MugenArt`, `MugenStarter`, `MugenIni.note`, `MugenEvents`, the
+## events and stretches of `MugenFormula.numbers`, and `ActionEnemy`'s art.
 ## MUST NOT: name a real character, or write outside this run's scratch folder.
 
 const SWING: Dictionary = {"state": 200, "anim": 200, "startup": 0.1, "active": 0.05, "recovery": 0.15,
 	"chain_after": 0.05, "iframes_from": 0.0, "iframes_to": 0.0, "power": 8.0, "hits": 1, "poise": 2,
 	"knockback": 0.4, "travel_speed": 2.4, "hitbox_size": [1.0, 0.4, 20.0], "hitbox_offset": [0.0, 0.6, -10.0],
-	"sounds": [{"at": 0.5, "file": "sounds/1_0.wav"}, {"at": 0.0, "file": "sounds/1_0.wav"},
-		{"at": 0.5, "file": "sounds/1_0.wav"}, {"at": 0.2, "file": "sounds/9_9.wav"}]}
+	"armour_from": 0.05, "armour_to": 0.2, "iframes2_from": 0.2, "iframes2_to": 0.25,
+	"events": [{"at": 0.0, "kind": "sound", "file": "sounds/1_0.wav"}, {"at": 0.1, "kind": "sound", "file": "sounds/9_9.wav"},
+		{"at": 0.2, "kind": "shake", "amount": 0.5, "seconds": 0.1}, {"at": 0.9, "kind": "pause", "seconds": 0.2}]}
 const BLAST: Dictionary = {"state": 300, "anim": 300, "startup": 0.2, "active": 0.1, "recovery": 0.3,
 	"iframes_from": 0.1, "iframes_to": 0.3, "power": 20.0, "hits": 3, "travel_speed": 0.0, "meter": 600}
 const CHOICES: Dictionary = {"name": "fx", "chain": [200], "max_box": 4.0,
@@ -28,7 +30,7 @@ var _dir: String
 
 
 func run() -> void:
-	plan(12)
+	plan(15)
 	_dir = RunScratch.path("mugen_build")
 	_folder()
 	var result: Dictionary = MugenStarter.write(_dir.path_join("choices.json"))
@@ -114,6 +116,12 @@ func _fighter(loadout: ActionLoadout) -> void:
 		loadout.moves.dodge.iframes_to, loadout.moves.dodge.travel_speed],
 		[&"fx", {&"attack": 12.0, &"max_hp": 60.0}, {&"attack": 2.0}, [&"blade"], &"move/fx_200",
 		Vector3(1.0, 0.4, 4.0), Vector3(0.0, 0.2, -2.0), 0.3, 6.0])
+	equal("a move has its armour, its second untouchable stretch and its events: a sound whose file is there, a shake, and a pause kept inside the move",
+		[snappedf(swing.armour_from, 0.01), snappedf(swing.armour_to, 0.01), snappedf(swing.iframes2_from, 0.01),
+		snappedf(swing.iframes2_to, 0.01), swing.problems("x").size(), swing.events.map(func(event: MoveEvent) -> Array:
+			return [event.kind, snappedf(event.at, 0.01), snappedf(event.amount, 0.01), snappedf(event.seconds, 0.01), event.sound != null])],
+		[0.05, 0.2, 0.2, 0.25, 0, [[MoveEvent.Kind.SOUND, 0.0, 0.0, 0.0, true], [MoveEvent.Kind.SHAKE, 0.2, 0.5, 0.1, false],
+		[MoveEvent.Kind.PAUSE, 0.3, 0.0, 0.2, false]]])
 	equal("the loadout points at the kit and the art by path, and holds no copy",
 		[loadout.fighter.power_kit.resource_path.get_file(), loadout.fighter.art.resource_path.get_file(),
 		FileAccess.get_file_as_string(_dir.path_join("out/loadout.tres")).contains("kit/fx")],
@@ -123,10 +131,10 @@ func _fighter(loadout: ActionLoadout) -> void:
 func _art(art: MemberArt) -> void:
 	var swing: MoveArt = art.moves[&"move/fx_200"]
 	var blast: MoveArt = art.moves[&"move/fx_300"]
-	equal("the art has the sheet and a strip per move; a sound plays once per time, in order, if its file is there",
+	equal("the art has the sheet and a strip per move",
 		[art.sheet != null, art.layout.cell_size, art.pixel_size, art.ground_offset, art.moves.size(),
-		swing.frames, swing.feet, swing.seconds, swing.sounds.size(), swing.sound_at, blast.frames, blast.seconds],
-		[true, Vector2i(2, 2), 0.03, -0.1, 2, 4, Vector2i(1, 3), 0.3, 2, [0.0, 0.5], 2, 0.6])
+		swing.frames, swing.feet, swing.seconds, blast.frames, blast.seconds],
+		[true, Vector2i(2, 2), 0.03, -0.1, 2, 4, Vector2i(1, 3), 0.3, 2, 0.6])
 
 
 func _small_things() -> void:
@@ -134,12 +142,26 @@ func _small_things() -> void:
 	MugenIni.note(out, "problems", "one")
 	MugenIni.note(out, "problems", "one")
 	MugenIni.note(out, "fresh", "two")
-	var made: Dictionary = MugenFormula.numbers({"state": 5, "anim": 5, "length": 30, "hits": [], "invincible": [],
-		"armour": [], "speeds": [], "spawns": [], "chains": [], "pause": 0, "skipped": {}, "needs": PackedStringArray(),
-		"sounds": [{"tick": 12, "group": 3, "index": 4}]}, {"metres_per_pixel": 0.02, "power_scale": 0.4, "depth": 1.0})
-	equal("a note is kept once, and a move's sounds come out with their seconds and file",
-		[out["problems"], out["fresh"], made["sounds"]],
-		[PackedStringArray(["one"]), PackedStringArray(["two"]), [{"at": 0.2, "file": "sounds/3_4.wav"}]])
+	var made: Dictionary = MugenFormula.numbers(_facts(), {"metres_per_pixel": 0.02, "power_scale": 0.4, "depth": 1.0})
+	equal("a note is kept once", [out["problems"], out["fresh"]], [PackedStringArray(["one"]), PackedStringArray(["two"])])
+	equal("the formula gives the events in time order, each once: a sound, a shake (pixels over 20), a pause",
+		made["events"], [{"kind": "sound", "file": "sounds/3_4.wav", "at": 0.2},
+		{"kind": "shake", "seconds": 0.1, "amount": 0.5, "at": 0.3}, {"kind": "pause", "seconds": 0.5, "at": 0.5}])
+	equal("and the first two untouchable stretches, the first armour stretch, and a note for each one dropped",
+		[made["iframes_from"], made["iframes_to"], made["iframes2_from"], made["iframes2_to"], made["armour_from"],
+		made["armour_to"], made["notes"]],
+		[0.0, 0.1, 0.2, 0.3, 0.1, 0.25, PackedStringArray(["more than two untouchable stretches; only the first two are kept",
+		"more than one armour stretch; only the first is kept"])])
+
+
+# One state's facts, in ticks: three untouchable stretches (two touch), two armour stretches.
+func _facts() -> Dictionary:
+	return {"state": 5, "anim": 5, "length": 30, "hits": [], "speeds": [], "spawns": [], "chains": [], "skipped": {},
+		"needs": PackedStringArray(), "frames": [],
+		"invincible": [Vector2i(12, 18), Vector2i(0, 4), Vector2i(4, 6), Vector2i(24, 40)],
+		"armour": [Vector2i(6, 15), Vector2i(20, 22)],
+		"sounds": [{"tick": 12, "group": 3, "index": 4}, {"tick": 12, "group": 3, "index": 4}],
+		"shakes": [{"tick": 18, "time": 6, "ampl": 10.0}], "pauses": [{"tick": 40, "time": 30}]}
 
 
 func _enemy() -> void:

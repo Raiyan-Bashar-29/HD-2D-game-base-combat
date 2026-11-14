@@ -12,7 +12,8 @@ extends RefCounted
 ## The facts: `state`, `anim`, `attack` (the state calls itself an attack), `length`, `frames`,
 ## `hits` [{tick, until, damage, weight, push, box, via}], `invincible` and `armour` (tick
 ## spans), `speeds` [{tick, x}], `spawns` [{tick, state}], `sounds` [{tick, group, index}],
-## `chains` [{tick, state}], `pause` (ticks the screen freezes), `skipped`, `needs`.
+## `chains` [{tick, state}], `pauses` [{tick, time}] (the screen freezes), `shakes` [{tick,
+## time, ampl}], `skipped`, `needs`.
 ##
 ## OWNS: reading states and their controllers.
 ## MUST NOT: convert a unit or build a resource. `MugenFormula` does.
@@ -47,7 +48,8 @@ static func facts(number: int, states: Dictionary, anims: Dictionary, follow: bo
 	var out: Dictionary = {"state": number, "anim": anim, "frames": frames,
 		"attack": MugenIni.value(def, "movetype").to_lower() == "a",
 		"length": _length(ctrls, frames), "hits": [], "invincible": [], "armour": [],
-		"speeds": [], "spawns": [], "sounds": [], "chains": [], "pause": 0, "skipped": {},
+		"speeds": [], "spawns": [], "sounds": [], "chains": [], "pauses": [], "shakes": [],
+		"skipped": {},
 		"needs": PackedStringArray()}
 	var start: PackedFloat64Array = MugenIni.numbers(MugenIni.value(def, "velset", "0"))
 	if start[0] != 0.0:
@@ -99,8 +101,11 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary) -> void:
 			if "command" in "".join(when["needs"] as PackedStringArray):
 				(out["chains"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "value"))})
 		"superpause", "pause":
-			out["pause"] = DictRead.get_int(out, "pause") + int(MugenIni.number(ctrl, "time", 30.0))
-		"null", "selfstate", "destroyself", "changeanim", "explod", "envshake", "turn":
+			(out["pauses"] as Array).append({"tick": tick, "time": int(MugenIni.number(ctrl, "time", 30.0))})
+		"envshake":
+			(out["shakes"] as Array).append({"tick": tick, "time": int(MugenIni.number(ctrl, "time", 1.0)),
+				"ampl": absf(MugenIni.number(ctrl, "ampl", -4.0))})
+		"null", "selfstate", "destroyself", "changeanim", "explod", "turn":
 			pass
 		_:
 			var skipped: Dictionary = out["skipped"]
