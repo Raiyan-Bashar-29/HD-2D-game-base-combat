@@ -4213,3 +4213,14 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** a field enemy is not taken over. Berserk does not turn the holder on its allies.
   The player still walks in the field. No data file uses it yet.
 - **Unblocks:** C9.5d, C9.6.
+
+## 2026-11-14 — C9.5d · Upgrade levels won by fights (combat 0.99.0)
+
+- **Did:** `UpgradeLevel.fights`. `GearUpgrades.practise` (called by `Rewards.give`) counts a
+  won fight for every worn piece whose next level is won, raises the piece at the number and
+  sends `inventory_changed`. `Refusal.EARNED` stops buying such a level. `Rewards.upgraded`.
+- **Verified:** suite 4314 passed, 0 failed (9 new checks). With `practise` doing nothing,
+  6 checks fail.
+- **Gaps:** no screen shows the count or that a piece went up. A fallen member's pieces do
+  not count. No data file uses it yet.
+- **Unblocks:** C9.6.

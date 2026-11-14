@@ -9,18 +9,21 @@ extends RefCounted
 ##     the piece's added amounts again, the level's own stat changes (both under `upgrades`),
 ##     and more sockets for gems.
 ##   - A power can wait for a level: `Power.requires_upgrade` is checked by `unlocks`.
+##   - A level with `UpgradeLevel.fights` is won, not bought (C9.5d): `practise` counts one won
+##     fight for every such piece a member wears, and raises the piece when the count is full.
 ##   - `awaken`, at the cap, turns the piece into the one its track names, paying the track's
 ##     awakening cost. The new piece starts at level 0.
 ##
 ## IT KEEPS NO LIST OF ITS OWN. A piece's level is one entry in `Flags`:
 ##     upgrade/<piece item id>  ->  the level
+##     upgrade_fights/<piece item id>  ->  won fights counted towards its next level
 ## So it is saved with no new save code, and a new game clears it. Like a socket, it is per
 ## piece, not per wearer.
 ##
 ## HOW A NEW LEVEL REACHES THE WEARER: the level is written first, then the cost is taken from
-## the bag. Every level costs something, so every `GearSet` hears `inventory_changed` and
-## re-lends, and `GearLending` calls `apply`, which puts every worn piece's gains on the sheet
-## from scratch.
+## the bag. So every `GearSet` hears `inventory_changed` and re-lends, and `GearLending` calls
+## `apply`, which puts every worn piece's gains on the sheet from scratch. A won level sends
+## `inventory_changed` itself, for the same reason.
 ##
 ## OWNS: a piece's level, its gains, and the awakening swap.
 ## MUST NOT: decide what is worn, draw anything, or name a game's gear.
@@ -40,9 +43,12 @@ enum Refusal {
 	COST,
 	## The bag cannot take the awakened piece.
 	BAG_FULL,
+	## The next level is won by fights, not bought (upgrading).
+	EARNED,
 }
 
 const PREFIX: String = "upgrade/"
+const FIGHTS_PREFIX: String = "upgrade_fights/"
 ## The source every worn piece's upgrade gains are held under on the wearer's sheet.
 const SOURCE: StringName = &"upgrades"
 
@@ -61,9 +67,44 @@ static func refusal(bag: Inventory, piece_id: StringName) -> Refusal:
 		return Refusal.NO_TRACK
 	if level(piece_id) >= piece.upgrade_cap():
 		return Refusal.CAPPED
-	if not _affords(bag, piece.upgrade.levels[level(piece_id)].items):
+	var next: UpgradeLevel = piece.upgrade.levels[level(piece_id)]
+	if next.fights > 0:
+		return Refusal.EARNED
+	if not _affords(bag, next.items):
 		return Refusal.COST
 	return Refusal.NONE
+
+
+## The won fights counted towards the next level of `piece_id`.
+static func fights_won(piece_id: StringName) -> int:
+	return Flags.get_int(_fights_key(piece_id))
+
+
+## One won fight for `who`: every worn piece whose next level is won by fights counts it, and
+## goes up a level when the count is full. Returns the pieces that went up. `Rewards` calls
+## this for each member it rewards.
+static func practise(who: StringName) -> Array[StringName]:
+	var raised: Array[StringName] = []
+	var scope: String = "%s%s/" % [GearSet.PREFIX, who]
+	for flag: StringName in Flags.with_prefix(scope):
+		var piece_id: StringName = StringName(String(flag).trim_prefix(scope))
+		var piece: GearDefinition = GearDb.for_item(piece_id)
+		if piece == null or piece.upgrade == null or Flags.get_string(flag) == "":
+			continue
+		var reached_now: int = level(piece_id)
+		if reached_now >= piece.upgrade_cap() or piece.upgrade.levels[reached_now].fights <= 0:
+			continue
+		var count: int = fights_won(piece_id) + 1
+		if count < piece.upgrade.levels[reached_now].fights:
+			Flags.set_flag(_fights_key(piece_id), count)
+			continue
+		Flags.erase_flag(_fights_key(piece_id))
+		Flags.set_flag(_key(piece_id), reached_now + 1)
+		raised.append(piece_id)
+	if not raised.is_empty():
+		# The worn sets re-lend on this, as they do when a level is paid for.
+		Events.inventory_changed.emit()
+	return raised
 
 
 ## Raises `piece_id` one level, paying from `bag`. Returns whether it did.
@@ -100,6 +141,7 @@ static func awaken(bag: Inventory, piece_id: StringName) -> bool:
 		return false
 	var track: UpgradeTrack = GearDb.for_item(piece_id).upgrade
 	Flags.erase_flag(_key(piece_id))
+	Flags.erase_flag(_fights_key(piece_id))
 	_pay(bag, track.awaken_items)
 	bag.remove(piece_id)
 	bag.add(track.awaken_into)
@@ -181,3 +223,7 @@ static func _pay(bag: Inventory, cost: Dictionary[StringName, int]) -> void:
 
 static func _key(piece_id: StringName) -> StringName:
 	return StringName(PREFIX + String(piece_id))
+
+
+static func _fights_key(piece_id: StringName) -> StringName:
+	return StringName(FIGHTS_PREFIX + String(piece_id))

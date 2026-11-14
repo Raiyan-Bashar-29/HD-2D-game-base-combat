@@ -11,14 +11,17 @@ extends Resource
 ##   - `sockets`: more sockets for gems.
 ## A power in the piece's kit can wait for a level (`Power.requires_upgrade`).
 ##
-## EVERY LEVEL COSTS SOMETHING. Paying changes the bag, and that is how the worn set hears that
-## the level went up. A level with no cost is a problem.
+## A LEVEL IS BOUGHT OR WON, NEVER BOTH. A bought level has `items`. A won level (C9.5d) has
+## `fights`: the piece goes up after that many won fights while it is worn, and cannot be
+## bought. A level with neither, or with both, is a problem.
 ##
 ## OWNS: the data of one step, and checking it.
 ## MUST NOT: know which piece it belongs to or its level, or touch an autoload.
 
 ## What reaching this level uses up: item id -> how many.
 @export var items: Dictionary[StringName, int] = {}
+## Won fights, with the piece worn, that reach this level (C9.5d). 0 means the level is bought.
+@export var fights: int = 0
 ## A share of the piece's added amounts given again from this level on (0.1 is +10%).
 @export var stat_bonus: float = 0.0
 ## Stat changes the piece gains from this level on. Leave `source` empty.
@@ -31,8 +34,10 @@ extends Resource
 
 func problems(where: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
-	if items.is_empty():
-		found.append("%s costs nothing, so the worn set would not hear it" % where)
+	if items.is_empty() and fights <= 0:
+		found.append("%s has no cost and no number of fights" % where)
+	if fights < 0 or (fights > 0 and not items.is_empty()):
+		found.append("%s must be bought or won by fights, not both" % where)
 	found.append_array(cost_problems(where, items))
 	if stat_bonus < -1.0:
 		found.append("%s takes away more than the whole piece" % where)

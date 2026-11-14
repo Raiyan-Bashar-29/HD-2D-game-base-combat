@@ -322,6 +322,16 @@ other forever.
 - Not built yet: a field enemy (`ActionEnemy`) is not taken over; the brain aims as its
   entries say, so berserk does not turn the holder on its allies; the player still walks.
 
+### As built (C9.5d, 0.99.0)
+
+- `UpgradeLevel.fights`: above 0, the level is won by that many won fights while the piece is
+  worn, and cannot be bought (`GearUpgrades.refusal` says `EARNED`). A level has `items` or
+  `fights`, never both.
+- `GearUpgrades.practise(who)` counts one won fight for every such piece `who` wears, in
+  `Flags` under `upgrade_fights/<piece item id>`. At the number the piece goes up and the
+  count starts again. `Rewards.give` calls it, and `Rewards.upgraded` lists what went up.
+- Not built: a screen line for the count or for a piece that went up.
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs
@@ -480,7 +490,7 @@ answer.
 | C9.5a | DONE (0.96.0): `HitGuard`, the invincible status, mercy time, the overshield, `healing_taken` | C9.2 |
 | C9.5b | DONE (0.97.0): `BREAK_PIECE` (`GearBreak`), `SKILL_DONE`, `per_element` on `GIVE_STATUS` | C9.5a |
 | C9.5c | DONE (0.98.0): the berserk status (`StatusEffect.takeover`) | C9.5b |
-| C9.5d | Upgrade levels won by fights | C7.5 |
+| C9.5d | DONE (0.99.0): upgrade levels won by fights (`UpgradeLevel.fights`) | C7.5 |
 | C9.6 | The kakujas: the shared kakuja passives, each form on its character's kit, and each quinque armour, as data, with a probe and captures | C9.5, C6.5d, C8.6 for the heavy ones |
 | C9.7 | The loadout screen, with the gear screen | C9.4, C7.7 |
 

@@ -236,6 +236,7 @@ A foe drops what it wears when its `loot_table` lists the piece (C7.2).
   `max_upgrade`, or when that is 0 by its rarity's `max_upgrade`.
 - **`GearUpgrades`** (gameplay). `upgrade(bag, piece)` pays the next level's items and raises
   the level. `refusal` says why not: NOT_GEAR, NO_TRACK, CAPPED, COST.
+  A level with `UpgradeLevel.fights` is won by fights and not bought (C9.5d, `practise`).
 - **Saved as a flag**, `upgrade/<piece item id>` → the level. It belongs to the piece, not the
   wearer.
 - **While worn**, the gains go on the sheet under the source `upgrades`, which `apply`

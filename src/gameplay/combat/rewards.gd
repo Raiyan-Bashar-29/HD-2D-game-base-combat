@@ -16,6 +16,9 @@ extends RefCounted
 ## LESSONS (C9.4): each rewarded member's worn gear moves one step towards the passives it
 ## teaches (`PassiveLoadout.practise`), and `learned` lists what was learned just now.
 ##
+## WON LEVELS (C9.5d): each rewarded member's worn gear counts the fight towards a level that
+## is won by fights (`GearUpgrades.practise`), and `upgraded` lists the pieces that went up.
+##
 ## OWNS: the template's reward rule, and the summary of one grant.
 ## MUST NOT: choose the encounter, draw anything, or decide what losing means.
 
@@ -29,6 +32,8 @@ var left_behind: Array[StringName] = []
 ## Passives learned from worn gear by this win: member id -> passive ids. Members who learned
 ## nothing are not listed.
 var learned: Dictionary[StringName, Array] = {}
+## Worn pieces that went up a level by this win: member id -> piece item ids.
+var upgraded: Dictionary[StringName, Array] = {}
 
 
 static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) -> Rewards:
@@ -58,6 +63,9 @@ static func give(experience: int, loot: Array[StringName], members: Array[Combat
 		var lessons: Array[StringName] = PassiveLoadout.practise(def.combatant_id)
 		if not lessons.is_empty():
 			given.learned[def.combatant_id] = lessons
+		var raised: Array[StringName] = GearUpgrades.practise(def.combatant_id)
+		if not raised.is_empty():
+			given.upgraded[def.combatant_id] = raised
 	for item_id: StringName in loot:
 		if inventory != null and inventory.add(item_id, 1):
 			given.items.append(item_id)
