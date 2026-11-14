@@ -4363,3 +4363,15 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Unblocks:** C7.8 (the craft screen and `CraftStation`).
 - **Gaps:** no screen, so only tests call `Crafting`; no money cost; a used-up piece's gems
   stay recorded; a lucky result is a second output list, not a rarity per copy.
+
+## 2026-11-14 — C9.7 · The passive loadout screen (combat 0.110.0)
+
+- **Did:** `LoadoutScreen` (a `MenuScreen`) and `LoadoutHost` (in `game_root.tscn`); the
+  rebindable action `combat_loadout` on L. The screen shows one member: budget line, chosen
+  rows (press to take out), learned rows (press to choose, greyed out with the refusal's
+  words), lessons in progress from worn gear, passives held from other sources, and the
+  description of the row under the cursor. With followers, a row steps to the next member.
+- **Why:** board row C9.7. Built without C7.7 (the gear screen), which is still to do.
+- **Connects:** `PassiveLoadout`, `PassiveSet`, `GearSet`, `GearDb`, `FieldParty`, `UiRoot`.
+- **Verified:** `tests/unit/loadout_screen_test.gd`, 12 checks; the full ladder.
+- **Gaps:** no pad button; opens in the field only; not seen in a windowed capture.

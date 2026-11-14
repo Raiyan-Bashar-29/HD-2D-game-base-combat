@@ -280,7 +280,8 @@ other forever.
   `Rewards.learned` says what was learned. A taught passive must be a file `PassiveDb` finds.
 - Refusals in order: no such passive, not learned, already chosen, same group (any source),
   over budget. A level never goes down, so a refit does not check the budget again.
-- Not built yet: the screen (C9.7); no demo gear teaches anything, because the demo has no gear.
+- The screen (C9.7, built): press L in the field. `LoadoutScreen` lists chosen and learned
+  passives, lessons in progress and what is held from gear and powers. No demo gear teaches anything, because the demo has no gear.
 
 ### As built (C9.5a, 0.96.0)
 

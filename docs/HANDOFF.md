@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C9.7, the loadout screen**, then C9.9e. C7.6 (crafting, the logic: `Recipe`, `RecipeDb`, `Crafting`) is done; its screen is C7.8. C9.8 (the study of fighting-game character files) is done and gave rows C8.16 and a wider C8.8. To add another converted character, follow `docs/POWERS.md` § From a M.U.G.E.N character to a playable fighter. To play as Arima, set `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
+- **Next: C9.9e** (the tools write the kit and art files). C9.7 (the passive loadout screen, key L: `LoadoutScreen`, `LoadoutHost`) is done. C7.6 (crafting, the logic: `Recipe`, `RecipeDb`, `Crafting`) is done; its screen is C7.8. C9.8 (the study of fighting-game character files) is done and gave rows C8.16 and a wider C8.8. To add another converted character, follow `docs/POWERS.md` § From a M.U.G.E.N character to a playable fighter. To play as Arima, set `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**

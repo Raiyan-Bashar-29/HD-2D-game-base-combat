@@ -44,13 +44,14 @@ const COMMAND: StringName = &"combat_command"
 ## Hands control to the next party member in the field (C4.7).
 const SWITCH: StringName = &"combat_switch"
 ## The four quick slots (C6.3a): each uses one of the fighter's powers (`PowerSlots`).
+const LOADOUT: StringName = &"combat_loadout"
 const POWER_1: StringName = &"combat_power_1"
 const POWER_2: StringName = &"combat_power_2"
 const POWER_3: StringName = &"combat_power_3"
 const POWER_4: StringName = &"combat_power_4"
 ## The slot keys in slot order: `SLOTS[0]` uses slot 1.
 const SLOTS: Array[StringName] = [POWER_1, POWER_2, POWER_3, POWER_4]
-const ALL: Array[StringName] = [ATTACK, DODGE, LOCK_ON, LOCK_CYCLE, COMMAND, SWITCH,
+const ALL: Array[StringName] = [ATTACK, DODGE, LOCK_ON, LOCK_CYCLE, COMMAND, SWITCH, LOADOUT,
 	POWER_1, POWER_2, POWER_3, POWER_4]
 ## A trigger is an axis from 0 to 1; half-way down counts as pressed.
 const TRIGGER_DEADZONE: float = 0.5
@@ -65,6 +66,7 @@ static func install() -> void:
 	_define(LOCK_CYCLE, [_key(KEY_R), _pad(JOY_BUTTON_RIGHT_STICK)])
 	_define(COMMAND, [_key(KEY_F), _pad(JOY_BUTTON_MISC1)])
 	_define(SWITCH, [_key(KEY_C), _pad(JOY_BUTTON_PADDLE1)])
+	_define(LOADOUT, [_key(KEY_L)])
 	_define(POWER_1, [_key(KEY_1)])
 	_define(POWER_2, [_key(KEY_2)])
 	_define(POWER_3, [_key(KEY_3)])
