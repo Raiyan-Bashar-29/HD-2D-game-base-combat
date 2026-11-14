@@ -24,6 +24,9 @@ extends PowerExecutor
 ##   off ends it with no aftermath.
 ## - the holder's passives hear the form go on and off (C9.2c, `PassiveMoments.form`); a form
 ##   taken off from outside is heard the next time the form is read.
+## - the form's own passives (C9.6a, `FormMechanism.passives_at`) are lent to the holder while
+##   the form is held, under the form's power (`PassiveLending.form`), before the holder's
+##   passives hear the form go on, and taken back after they hear it go off.
 ## - `end`: the kit came off, so the form ends (its status comes off with it).
 ##
 ## OWNS: entering, leaving and draining one form on one fighter.
@@ -37,6 +40,8 @@ var _owed: float = 0.0
 var _built: Dictionary[int, MoveSet] = {}
 # Whether the holder's passives were last told the form is on (C9.2c).
 var _told: bool = false
+# The stage whose passives are lent now (C9.6a): -1 when none are.
+var _lent: int = -1
 
 
 ## The forms held on `body` now, in kit order, each one's `stage` read fresh. Empty with no kit.
@@ -188,9 +193,23 @@ func _sync() -> void:
 # Tells the holder's passives when the form went on or off (FORM_ENTERED, FORM_LEFT). A change
 # of stage is neither.
 func _tell() -> void:
-	if _told != (stage >= 0) and holder != null:
+	if holder == null:
+		return
+	var body: Node = holder.get_parent()
+	if stage >= 0 and _lent != stage:
+		_lend(body, (mechanism as FormMechanism).passives_at(stage))
+	if _told != (stage >= 0):
 		_told = stage >= 0
-		PassiveMoments.form(holder.get_parent(), _told)
+		PassiveMoments.form(body, _told)
+	if stage < 0 and _lent >= 0:
+		_lend(body, [])
+
+
+# Lends the held stage's passives to the fighter, or takes them back with an empty list.
+func _lend(body: Node, given: Array[PassiveSkill]) -> void:
+	_lent = stage
+	if power != null:
+		PassiveLending.form(body, power.power_id, given)
 
 
 # The set played over `base` at this stage: the stage's chain and dodge where it has them. When

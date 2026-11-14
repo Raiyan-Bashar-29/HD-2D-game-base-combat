@@ -8,6 +8,7 @@ extends RefCounted
 ## gives each source's list to the fighter's `PassiveSet` under the source's own name:
 ##   - `own`: the character's own (`CombatantDef.passives`);
 ##   - `kit/<the kit's source>`: a kit on the fighter (`PowerKit.passive_skills`);
+##   - `form/<power id>`: a form the fighter is in (`FormMechanism.passive_skills`, C9.6a);
 ##   - `gear/<item id>`: a worn piece (`GearDefinition.passives`);
 ##   - `set/<set id>/<pieces>`: a reached set tier (`GearSetTier.passives`);
 ##   - `gems`: every gem in the worn pieces (`GemDefinition.passives`);
@@ -22,6 +23,7 @@ extends RefCounted
 ## MUST NOT: run a passive (`PassiveSet` does), or decide what is worn (`GearSet` does).
 
 const KIT_PREFIX: String = "kit/"
+const FORM_PREFIX: String = "form/"
 const GEAR_PREFIX: String = "gear/"
 const GEMS: StringName = &"gems"
 const UPGRADES: StringName = &"upgrades"
@@ -37,6 +39,11 @@ static func own(body: Node, def: CombatantDef) -> void:
 ## The kit put on under `source` gives `given`. An empty list takes them back.
 static func kit(body: Node, source: StringName, given: Array[PassiveSkill]) -> void:
 	give(body, StringName(KIT_PREFIX + String(source)), given)
+
+
+## The form of power `power_id`, held now, gives `given`. An empty list takes them back.
+static func form(body: Node, power_id: StringName, given: Array[PassiveSkill]) -> void:
+	give(body, StringName(FORM_PREFIX + String(power_id)), given)
 
 
 ## Brings the passives of what `gear`'s wearer has on in step with what `gear` has on.

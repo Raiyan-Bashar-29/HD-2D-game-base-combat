@@ -332,6 +332,19 @@ other forever.
   count starts again. `Rewards.give` calls it, and `Rewards.upgraded` lists what went up.
 - Not built: a screen line for the count or for a piece that went up.
 
+### As built (C9.6a, 0.100.0)
+
+- `FormMechanism.passive_skills`: the passives held while the form is held. A cycle stage
+  with none lends the cycle's (`passives_at`).
+- `FormRun` lends them under `form/<power id>` (`PassiveLending.form`) before the holder's
+  passives hear FORM_ENTERED, and takes them back after FORM_LEFT. Every way a form ends
+  gives them back: used again, drained dry, cured from outside, the kit coming off.
+- The shared kakuja passives are files in `data/passives/`: `kakuja_shell` (damage taken
+  -25%, no flinch), `kakuja_regen` (5 HP a turn), `kakuja_hunger` (a kill refills a quarter
+  of the `rc` pool), `frenzy` (attack x1.3, the fighter attacks on its own) and
+  `quinque_feed` (lose 2 HP a turn).
+- Not built: limb regrowth; the kakuja forms and armours themselves (C9.6b).
+
 ## The catalogue
 
 Each row is a FAMILY: one file shape, many files with other numbers. "Today" means it needs
@@ -491,7 +504,8 @@ answer.
 | C9.5b | DONE (0.97.0): `BREAK_PIECE` (`GearBreak`), `SKILL_DONE`, `per_element` on `GIVE_STATUS` | C9.5a |
 | C9.5c | DONE (0.98.0): the berserk status (`StatusEffect.takeover`) | C9.5b |
 | C9.5d | DONE (0.99.0): upgrade levels won by fights (`UpgradeLevel.fights`) | C7.5 |
-| C9.6 | The kakujas: the shared kakuja passives, each form on its character's kit, and each quinque armour, as data, with a probe and captures | C9.5, C6.5d, C8.6 for the heavy ones |
+| C9.6a | DONE (0.100.0): a form's own passives (`FormMechanism.passive_skills`), and the shared kakuja passives as data | C9.5, C6.5d |
+| C9.6b | The kakujas: each form on its character's kit, and each quinque armour, as data, with a probe and captures | C9.6a, C8.6 for the heavy ones |
 | C9.7 | The loadout screen, with the gear screen | C9.4, C7.7 |
 
 C7.10 (the armoury: armours) now also needs C9.5, and builds this page's armour table with

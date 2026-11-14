@@ -4224,3 +4224,15 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** no screen shows the count or that a piece went up. A fallen member's pieces do
   not count. No data file uses it yet.
 - **Unblocks:** C9.6.
+
+## 2026-11-14 — C9.6a · A form's own passives, and the shared kakuja passives (combat 0.100.0)
+
+- **Did:** `FormMechanism.passive_skills` and `passives_at`. `FormRun` lends them under
+  `form/<power id>` (`PassiveLending.form`) while the form is held. Five passives as data:
+  `kakuja_shell`, `kakuja_regen`, `kakuja_hunger`, `frenzy`, `quinque_feed`. C9.6 was split
+  by the 8-file rule; C9.6b keeps the kakuja forms and armours.
+- **Verified:** suite 4325 passed, 0 failed (10 new checks). With the lending turned off,
+  4 checks fail.
+- **Gaps:** no limb regrowth. `kakuja_hunger` names the pool `rc`, which no fighter has yet.
+  No kit or armour uses the five passives yet.
+- **Unblocks:** C9.6b.

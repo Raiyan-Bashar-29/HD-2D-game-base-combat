@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="PassiveSkill" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+
+[sub_resource type="Resource" id="mod_1"]
+script = ExtResource("mod")
+stat = &"damage_taken"
+op = 0
+value = -0.25
+
+[sub_resource type="Resource" id="mod_2"]
+script = ExtResource("mod")
+stat = &"knockback_taken"
+op = 0
+value = -1.0
+
+[sub_resource type="Resource" id="status_1"]
+script = ExtResource("status")
+id = &"status/passive_kakuja_shell"
+duration = 0.0
+modifiers = Array[ExtResource("mod")]([SubResource("mod_1"), SubResource("mod_2")])
+tags = Array[StringName]([&"passive"])
+
+[resource]
+script = ExtResource("skill")
+id = &"passive/kakuja_shell"
+name_key = "combat.passive.kakuja_shell.name"
+desc_key = "combat.passive.kakuja_shell.desc"
+cost = 4
+held = SubResource("status_1")
+tags = Array[StringName]([&"defence", &"kakuja"])

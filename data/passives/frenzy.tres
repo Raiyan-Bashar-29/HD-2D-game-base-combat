@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PassiveSkill" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/battle_brain.gd" id="brain"]
+[ext_resource type="Script" path="res://src/content/combat/brain_entry.gd" id="entry"]
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="cmd"]
+
+[sub_resource type="Resource" id="strike"]
+script = ExtResource("cmd")
+
+[sub_resource type="Resource" id="lash"]
+script = ExtResource("entry")
+command = SubResource("strike")
+weight = 1.0
+target_rule = 1
+
+[sub_resource type="Resource" id="wild"]
+script = ExtResource("brain")
+entries = Array[ExtResource("entry")]([SubResource("lash")])
+
+[sub_resource type="Resource" id="mod_1"]
+script = ExtResource("mod")
+stat = &"attack"
+op = 1
+value = 1.3
+
+[sub_resource type="Resource" id="status_1"]
+script = ExtResource("status")
+id = &"status/passive_frenzy"
+duration = 0.0
+modifiers = Array[ExtResource("mod")]([SubResource("mod_1")])
+takeover = SubResource("wild")
+tags = Array[StringName]([&"passive"])
+
+[resource]
+script = ExtResource("skill")
+id = &"passive/frenzy"
+name_key = "combat.passive.frenzy.name"
+desc_key = "combat.passive.frenzy.desc"
+cost = 0
+held = SubResource("status_1")
+tags = Array[StringName]([&"drawback", &"kakuja"])

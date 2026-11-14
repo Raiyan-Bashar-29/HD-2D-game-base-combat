@@ -1491,6 +1491,10 @@ plays the holder: list the commands it may pick as `BrainEntry` rows, or leave t
 for plain attacks. Give the status a duration, or a way to cure it, so the player gets the
 fighter back.
 
+**A form that lends passives (C9.6a).** On a power's `FormMechanism`, list `passive_skills`.
+The fighter holds them for as long as it is in the form, and loses them when the form ends.
+In a cycle, a stage with its own list lends that; a stage with none lends the cycle's.
+
 **A level won by fights (C9.5d).** On an `UpgradeLevel`, set `fights` and leave `items` empty.
 The piece reaches that level after that many won fights while it is worn (a battle or a field
 kill), and the player cannot buy it. One track can hold bought levels and won levels.
