@@ -12,11 +12,12 @@ const P := MoveTimeline.Phase
 
 
 func run() -> void:
-	plan(23)
+	plan(26)
 	_a_chain_plays_in_order()
 	_early_presses()
 	_dodge_and_iframes()
 	_problems()
+	_cancel_on_hit()
 
 
 ## A swing: 0.1 s wind-up, 0.1 s live, 0.3 s follow-through, chain window from 0.1 s into it.
@@ -107,3 +108,21 @@ func _problems() -> void:
 	moves.dodge = _swing(0.0)
 	equal("an empty chain and a dodge with no i-frames are two problems",
 		moves.problems("fixture").size(), 2)
+
+
+## Cancel on hit (C8.8a): a swing that has landed opens its chain window at once.
+func _cancel_on_hit() -> void:
+	var first := _swing()
+	first.cancel_on_hit = true
+	var chain: Array[ActionMove] = [first, _swing()]
+	var clock := MoveTimeline.new()
+	clock.press(chain)
+	clock.step(0.15)
+	equal("a press mid-swing waits while the swing has not landed", [clock.press(chain), clock.chain_index], [false, 0])
+	clock.connected()
+	equal("and plays on the next step once it lands", [clock.step(0.01), clock.chain_index], [[P.STARTUP], 1])
+	clock.cancel()
+	clock.press([_swing(), _swing()] as Array[ActionMove])
+	clock.step(0.15)
+	clock.connected()
+	equal("a swing without the flag is not cancelled by landing", clock.press(chain), false)

@@ -83,7 +83,12 @@ func strike(hurtbox: Hurtbox) -> bool:
 	if _struck.has(key):
 		return false
 	_struck[key] = true
-	return hurtbox.take(attacker, timeline.move, rng, global_position)
+	var clock: MoveTimeline = timeline
+	var counted: bool = hurtbox.take(attacker, timeline.move, rng, global_position)
+	# A landed hit lets a `cancel_on_hit` move go straight into the next swing (C8.8a).
+	if hurtbox.landed:
+		clock.connected()
+	return counted
 
 
 func _on_area_entered(area: Area3D) -> void:

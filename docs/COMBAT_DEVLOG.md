@@ -4442,3 +4442,20 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Verified:** `tests/unit/aggro_test.gd` (11 checks); the full ladder.
 - **Gaps:** no threat table in a turn battle (taunt only); a foe's taunt does not force the
   player's own aim; nothing on the HUD shows who a foe is after; the table is not saved.
+
+## 2026-11-14 — C8.8a · Launch, juggle and cancel on hit (combat 0.115.0)
+
+- **Did:** `ActionMove.launch` and `cancel_on_hit`. New `src/gameplay/combat/juggle.gd`
+  (`Juggle`): time left in the air and a juggle count, made under the victim by the `Hurtbox`
+  on a landed launching hit (or any landed hit while already in the air); each juggle is worth
+  0.7 of the one before. `ActionFighter` and `ActionEnemy` cannot act while in the air; a
+  `CharacterBody3D` is thrown up to fall back in that time. `Hurtbox.landed` and
+  `MoveTimeline.connected` let a `cancel_on_hit` swing go straight into the next chain move.
+  The demo Wanderer chain uses both.
+- **Why:** board row C8.8, split in three (C8.8b grabs, C8.8c prompts and interrupts). A power
+  already plays mid-swing, so only the chain cancel was missing.
+- **Verified:** `tests/unit/juggle_test.gd` (11 checks), 3 new in `move_timeline_test.gd`; the
+  full ladder.
+- **Gaps:** the player's body is stunned but not thrown up (upstream's controller zeroes
+  upward speed on the floor); no damage bonus or combo counter; the converter does not fill
+  the fields; turn battles have no launch; no windowed capture.

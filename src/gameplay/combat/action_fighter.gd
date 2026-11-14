@@ -147,10 +147,10 @@ func current_moves() -> MoveSet:
 	return powers.moves_over(base) if powers != null else base
 
 
-## True while the fighter cannot start moves: knocked back, or under a status counted in
+## True while the fighter cannot start moves: knocked back, in the air (C8.8a), or under a status counted in
 ## seconds that skips turns, such as a stagger (`StatusSet.halts`).
 func stunned() -> bool:
-	if _stun_left > 0.0:
+	if _stun_left > 0.0 or Juggle.airborne(get_parent()):
 		return true
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	return statuses != null and statuses.halts()
@@ -202,7 +202,7 @@ func _move_body() -> void:
 	if _body == null:
 		return
 	var player: PlayerController = _body as PlayerController
-	var holding: bool = timeline.busy() or _stun_left > 0.0
+	var holding: bool = timeline.busy() or _stun_left > 0.0 or Juggle.airborne(_body)
 	if player != null:
 		if holding:
 			player.lock_input(LOCK)

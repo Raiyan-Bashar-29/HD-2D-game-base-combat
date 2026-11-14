@@ -58,6 +58,11 @@ extends Resource
 @export var hits: int = 1
 @export var poise: int = 0
 @export var knockback: float = 0.0
+## Seconds a landed hit holds its victim in the air, unable to act (a launcher, C8.8a). Hits on
+## a victim already in the air keep it there a little longer each time (`Juggle`).
+@export var launch: float = 0.0
+## Once this move has landed a hit, the next move of the chain may start at once (C8.8a).
+@export var cancel_on_hit: bool = false
 ## A skill to resolve the hit through instead of `power` and `element`.
 @export var skill: Skill
 @export_group("Shape")
@@ -84,6 +89,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has a negative phase time" % context)
 	elif length() <= 0.0:
 		found.append("%s takes no time at all" % context)
+	if launch < 0.0:
+		found.append("%s has a negative launch time" % context)
 	if chain_after < 0.0 or chain_after > recovery:
 		found.append("%s has a chain_after outside its recovery" % context)
 	if iframes_to < iframes_from:

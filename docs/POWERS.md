@@ -631,7 +631,7 @@ What Arima's files use most, and where that lands here:
 | Their part (uses in Arima) | What it does | Here today | Worth having |
 |---|---|---|---|
 | `HitDef` (67) | One hit: damage, weight, push, the state the victim goes to | `ActionMove` + `Hitbox` | - |
-| `ChangeState` (143) with button triggers | Chains and cancels | `MoveTimeline` chain, `chain_after` | Cancel a move into a special on hit (C8.8) |
+| `ChangeState` (143) with button triggers | Chains and cancels | `MoveTimeline` chain, `chain_after` | Done: a power plays mid-swing (C9.9b), and `cancel_on_hit` chains a normal on hit (C8.8a) |
 | `VelSet`, `VelAdd`, `PosSet` (148) | Movement inside a move, changing per frame | One `travel_speed` per move | A speed curve: several timed speeds on a move |
 | `PlaySnd` (302), `Explod` (305) | Timed sounds and effect pictures | SOUND and EFFECT events on the move (C8.16; the converter fills sounds, C8.16b) | Timed effect pictures on a move, the same way |
 | `EnvShake` (104), `SuperPause` (20), `Pause` (3), `Zoom` (8) | Screen shake, a freeze before a super, hit pause | None | **Hit pause and screen shake as fields on a move** |
@@ -639,7 +639,7 @@ What Arima's files use most, and where that lands here:
 | `NotHitBy` (12) | Untouchable for a stretch | `iframes_from/to` (one stretch) | A second stretch (the converter notes later ones and drops them) |
 | `HitOverride` (9) | Super armour: take the hit, keep the move | `knockback_taken`, no flinch passive | **Armour as a stretch on a move** |
 | `ReversalDef` (3) | A counter: catch the foe's hit and answer | Counter stance (C6.6d) | - |
-| `TargetState`, `TargetBind`, `TargetDrop` (15) | A grab: hold the victim in place, then throw | None | **Grabs and throws** (C8.8 names launch and juggle; add grab) |
+| `TargetState`, `TargetBind`, `TargetDrop` (15) | A grab: hold the victim in place, then throw | None | **Grabs and throws** (C8.8b; launch and juggle are done, C8.8a) |
 | `LifeAdd`, `TargetLifeAdd` (10) | Heal or hurt outside a hit | Skill effects, passives | - |
 | `VarSet`, `VarAdd` (32) | The character's own counters (stance, ammo, a mark) | Statuses, pools, forms | - |
 | `AssertSpecial`, `ScreenBound`, `PlayerPush` (38) | Engine flags | Not needed | - |

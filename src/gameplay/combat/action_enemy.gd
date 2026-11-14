@@ -79,7 +79,8 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	act(delta)
-	velocity.y = velocity.y - _gravity * delta if not is_on_floor() else 0.0
+	# On the floor nothing falls, but a launch's upward speed is kept (C8.8a).
+	velocity.y = velocity.y - _gravity * delta if not is_on_floor() else maxf(velocity.y, 0.0)
 	move_and_slide()
 	var visual: CharacterVisual = get_node_or_null(^"Visual") as CharacterVisual
 	if visual != null:
@@ -113,7 +114,7 @@ func act(delta: float) -> ActionDecider.State:
 	var defeated: bool = vitals != null and vitals.is_defeated()
 	var hp: float = float(vitals.current(&"hp")) / maxf(1.0, float(vitals.maximum(&"hp"))) if vitals != null else 1.0
 	var state: ActionDecider.State = decider.think(dt, to_target.length() if _target != null else INF,
-		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0 or halted, defeated, rng)
+		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0 or halted or Juggle.airborne(self), defeated, rng)
 	_carry_out(state, to_target)
 	if _fallen:
 		_gone_in -= dt

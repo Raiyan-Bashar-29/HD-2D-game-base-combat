@@ -28,6 +28,10 @@ extends Area3D
 ## again. `Events.countered` is announced either way. A parry is a timed block whose status
 ## counters: the perfect press stops the hit, and the counter answers it.
 ##
+## LAUNCH (C8.8a): a landed hit whose move has a `launch` time, or any landed hit on a fighter
+## already in the air, lifts the fighter (`Juggle.lift`) and drops its swing, unless the hit was
+## countered, the fighter is in an armour stretch, or it does not flinch at all.
+##
 ## `timeline` is set by whoever runs this fighter's moves (C3.4's fighter, C3.7's enemy), so a
 ## dodge's i-frames are read from the same clock that plays the dodge.
 ##
@@ -44,6 +48,8 @@ enum Outcome { MISSED, BLOCKED, LANDED }
 
 ## The clock of this fighter's own moves; null means it never has i-frames.
 var timeline: MoveTimeline
+## True when the last hit `take` resolved landed (not missed, blocked, dodged or refused).
+var landed: bool = false
 
 
 func _ready() -> void:
@@ -85,6 +91,7 @@ static func nearest_hostile(body: Node3D) -> Hurtbox:
 ## resolved on this fighter, whether or not it then missed. False when refused or dodged.
 func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, from: Vector3) -> bool:
 	var target: Combatant = fighter()
+	landed = false
 	if attacker == null or move == null or target == null or target == attacker:
 		return false
 	var filter: FactionTable.Target = move.skill.target if move.skill != null else FactionTable.Target.ENEMY
@@ -98,11 +105,25 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 		return true
 	var outcome: Outcome = _resolve(attacker, move, target, rng)
 	var countered: bool = outcome != Outcome.MISSED and _counter(attacker, target, rng)
-	if outcome == Outcome.LANDED:
+	landed = outcome == Outcome.LANDED
+	if landed:
 		Weakness.wear(target, move.poise)
 		if not countered:
 			_push(target, move, from)
+			_launch(target, move)
 	return true
+
+
+# Lifts the fighter off its feet (C8.8a) when the move launches or it is already in the air.
+func _launch(target: Combatant, move: ActionMove) -> void:
+	var body: Node = get_parent()
+	if move.launch <= 0.0 and not Juggle.airborne(body):
+		return
+	if target.sheet.value(&"knockback_taken") <= -1.0 or (timeline != null and timeline.armoured()):
+		return
+	Juggle.lift(body, move)
+	if timeline != null:
+		timeline.cancel()
 
 
 ## `target` answers `attacker` when it holds a counter stance that fires (C6.6d). True when it did.

@@ -1494,6 +1494,12 @@ nothing for that many seconds (field) or turns (battle). `max_overshield`: a sec
 layer; add `overshield_regen` (points a second or a turn) and `overshield_delay` (how long
 after a hit it waits). `healing_taken`: -1 means the holder cannot be healed.
 
+**Launch and cancel on hit (C8.8a).** On an `ActionMove`, `launch` is the seconds a landed hit
+holds its victim in the air, unable to act. Hits on a victim already in the air keep it up
+longer, each worth 0.7 of the one before (a launcher adds its `launch` again, any other move
+0.25 s). `cancel_on_hit` lets the next move of the chain start the moment this one lands. A
+fighter with `knockback_taken` -1, or inside an armour stretch, is not launched.
+
 **Aggro and taunt (C8.6).** A field foe keeps a threat table: each hit it takes adds the damage
 times 1 plus the attacker's `threat` stat, and it fades by the foe's `ActionBrain.threat_fade`
 points a second. Give a tank `threat` 1 or more on gear, a passive or a status; give a sneak

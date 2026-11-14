@@ -20,6 +20,9 @@ extends RefCounted
 ## A move may have a second untouchable stretch, an armour stretch (`armoured`: hits land but
 ## do not push) and SPEED events that change its travel speed part-way (`speed`), all C8.16.
 ##
+## CANCEL ON HIT (C8.8a): a move with `cancel_on_hit` that has landed (`connected`) opens its
+## chain window at once, even mid-swing, so the next swing comes straight out of the hit.
+##
 ## `swing` counts every move started, so a hitbox can hit each target once per swing.
 ##
 ## OWNS: the current move, its elapsed time, the chain position and the buffered press.
@@ -41,6 +44,8 @@ var swing: int = 0
 
 var _chain: Array[ActionMove] = []
 var _buffered: bool = false
+# True once the current move has landed a hit.
+var _connected: bool = false
 
 
 ## Plays `next` from its first frame, ending whatever was playing. Leaves any chain.
@@ -65,10 +70,13 @@ func press(chain: Array[ActionMove]) -> bool:
 		_chain = chain
 	if chain_index + 1 >= _chain.size():
 		return false
+	if _cancels():
+		_next_in_chain(0.0)
+		return true
 	if phase == Phase.RECOVERY and elapsed >= _window_opens():
 		_next_in_chain(elapsed - _window_opens())
 		return true
-	if _window_opens() - elapsed <= buffer_window:
+	if move.cancel_on_hit or _window_opens() - elapsed <= buffer_window:
 		_buffered = true
 	return false
 
@@ -85,8 +93,15 @@ func step(dt: float) -> Array[int]:
 	return entered
 
 
+## The current move has landed a hit. A buffered press of a `cancel_on_hit` move plays on the
+## next `step`.
+func connected() -> void:
+	_connected = phase != Phase.IDLE
+
+
 ## Ends the current move at once: a stagger, a knockback, a defeat.
 func cancel() -> void:
+	_connected = false
 	phase = Phase.IDLE
 	move = null
 	chain_index = -1
@@ -141,7 +156,9 @@ func _first_iframes() -> bool:
 
 ## One transition if one is due; true when it happened, so `step` loops on.
 func _advance(entered: Array[int]) -> bool:
-	if phase == Phase.STARTUP and elapsed >= move.startup:
+	if _buffered and _cancels():
+		_next_in_chain(0.0)
+	elif phase == Phase.STARTUP and elapsed >= move.startup:
 		phase = Phase.ACTIVE
 	elif phase == Phase.ACTIVE and elapsed >= move.startup + move.active:
 		phase = Phase.RECOVERY
@@ -161,6 +178,12 @@ func _begin(next: ActionMove, carried: float) -> void:
 	elapsed = carried
 	swing += 1
 	_buffered = false
+	_connected = false
+
+
+# True when the current move has landed and may be cancelled into the chain's next move.
+func _cancels() -> bool:
+	return _connected and move != null and move.cancel_on_hit and chain_index + 1 < _chain.size()
 
 
 func _next_in_chain(carried: float) -> void:
