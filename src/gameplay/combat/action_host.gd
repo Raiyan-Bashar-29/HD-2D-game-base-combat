@@ -118,6 +118,8 @@ static func fit_identity(body: Node3D, loadout: ActionLoadout) -> Combatant:
 	body.add_child(LookSwap.new())
 	# The member's sheet, move strips and move sounds (C9.9d). It stays with the body too.
 	body.add_child(ArtSwap.new())
+	# The timed events of the move it is playing (C8.16).
+	body.add_child(MoveEvents.new())
 	return combatant
 
 

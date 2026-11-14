@@ -141,8 +141,8 @@ func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
 				timeline.start(decider.chosen)
 				if _hitbox != null:
 					_hitbox.fit(decider.chosen)
-			if timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.move.travel_speed > 0.0:
-				wish = facing * timeline.move.travel_speed
+			if timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.speed() > 0.0:
+				wish = facing * timeline.speed()
 		ActionDecider.State.CHASE:
 			_face(to_target)
 			# Walk in to just inside range, then stand and wait out the cooldown.
@@ -260,6 +260,7 @@ func _build() -> void:
 	add_child(_hitbox)
 	# Its sheet, move strips and move sounds, when its definition has art (C9.9e).
 	add_child(ArtSwap.new())
+	add_child(MoveEvents.new())
 
 
 func _on_knockback(who: StringName, push: Vector3) -> void:

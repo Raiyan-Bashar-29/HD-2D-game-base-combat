@@ -4394,3 +4394,21 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** a starter kit has no extra status on a special (Arima's hand-made "resolve");
   the shipped Arima files were not rebuilt; sound times differ slightly from the hand-made
   art where a helper state also plays a sound.
+
+## 2026-11-14 — C8.16 · Move events, armour on a move (combat 0.112.0)
+
+- **Did:** `MoveEvent` (content): one timed thing in a move, of kind SOUND, EFFECT, SHOT,
+  SPEED, SHAKE or PAUSE. `ActionMove` gained `events`, `armour_from/to` and `iframes2_from/to`,
+  with checks. `MoveTimeline`: `invulnerable()` covers both stretches (a perfect dodge only in
+  the first), `armoured()`, `speed()`. `Hurtbox._push` gives no push inside armour. The
+  `MoveEvents` node (added by `ActionHost` and `ActionEnemy` beside `ArtSwap`) does the events
+  once per swing; a hit pause sets `CombatClock` to 0 and puts it back after real seconds.
+  The three bodies read `timeline.speed()` in place of `move.travel_speed`.
+- **Why:** board row C8.16, from the C9.8 study: converted characters use armour, a second
+  untouchable stretch, shakes and pauses, and we had no field for them.
+- **Verified:** `tests/unit/move_events_test.gd`, 13 checks; suite 4426 passed, 0 failed;
+  boot 0 warnings, 0 errors; seven checkers exit 0; stripped run 4320 passed, 0 failed.
+- **Gaps:** a speed change only counts in the ACTIVE phase; a hit pause asked for while the
+  fight is already stopped is skipped; the effect picture is one still picture at a fixed
+  pixel size; no windowed capture. The converter does not fill these yet: row C8.16b, which
+  also retires `MoveArt.sound_at`.

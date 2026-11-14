@@ -156,7 +156,8 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 ## 1 plus the target's `knockback_taken`. Nothing at all when that comes to 0 or less.
 func _push(target: Combatant, move: ActionMove, from: Vector3) -> void:
 	var distance: float = move.knockback * (1.0 + target.sheet.value(&"knockback_taken"))
-	if distance <= 0.0:
+	# Inside its own move's armour stretch (C8.16) the fighter takes the hit and is not pushed.
+	if distance <= 0.0 or (timeline != null and timeline.armoured()):
 		return
 	var away: Vector3 = global_position - from
 	away.y = 0.0

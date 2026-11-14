@@ -171,8 +171,8 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 			_face(to_target)
 			_swing()
 			wish = Vector3.ZERO
-			if timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.move.travel_speed > 0.0:
-				wish = facing * timeline.move.travel_speed
+			if timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.speed() > 0.0:
+				wish = facing * timeline.speed()
 		ActionDecider.State.CHASE:
 			_face(to_target)
 			# Walk in to just inside reach, then stand and wait out the cooldown.

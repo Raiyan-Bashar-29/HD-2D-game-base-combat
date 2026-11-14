@@ -19,6 +19,11 @@ extends Resource
 ## A PERFECT DODGE (C6.6c) is a hit dodged in the first `perfect_window` seconds of those
 ## i-frames: the dodge was started just before the hit. 0 means this move has no perfect dodge.
 ##
+## A SECOND untouchable stretch (`iframes2_from/to`, C8.16) works the same way, for a move that
+## is untouchable twice; it has no perfect dodge. An ARMOUR stretch (`armour_from/to`) is
+## different: hits still land and hurt, but they do not push, so the move is not interrupted.
+## `events` are things that happen at set times inside the move (see `MoveEvent`).
+##
 ## It is authored inline inside a `MoveSet`'s `.tres`, or as a file of its own when several
 ## move sets share it.
 ##
@@ -40,6 +45,13 @@ extends Resource
 @export var iframes_to: float = 0.0
 ## Seconds from the start of the i-frames in which a dodged hit counts as a perfect dodge.
 @export var perfect_window: float = 0.0
+## A second untouchable stretch, and a stretch in which hits land but do not push (C8.16).
+@export var iframes2_from: float = 0.0
+@export var iframes2_to: float = 0.0
+@export var armour_from: float = 0.0
+@export var armour_to: float = 0.0
+## Timed events, in time order.
+@export var events: Array[MoveEvent] = []
 @export_group("Hit")
 @export var power: float = 0.0
 @export var element: StringName = &""
@@ -76,6 +88,18 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has a chain_after outside its recovery" % context)
 	if iframes_to < iframes_from:
 		found.append("%s has i-frames that end before they start" % context)
+	if iframes2_to < iframes2_from or armour_to < armour_from:
+		found.append("%s has a second i-frame or armour stretch that ends before it starts" % context)
+	var last: float = 0.0
+	for index: int in events.size():
+		var event: MoveEvent = events[index]
+		if event == null:
+			found.append("%s has an empty event" % context)
+			continue
+		found.append_array(event.problems("%s event %d" % [context, index]))
+		if event.at < last or event.at > length():
+			found.append("%s event %d is out of order or after the move ends" % [context, index])
+		last = maxf(last, event.at)
 	if perfect_window < 0.0 or perfect_window > iframes_to - iframes_from:
 		found.append("%s has a perfect window outside its i-frames" % context)
 	if strikes() and (active <= 0.0 or hits < 1 or hitbox_size.length() <= 0.0):

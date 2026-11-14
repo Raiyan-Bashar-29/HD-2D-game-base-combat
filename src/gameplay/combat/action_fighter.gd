@@ -219,9 +219,9 @@ func _move_body() -> void:
 	var wish: Vector3 = Vector3.ZERO
 	if _stun_left > 0.0:
 		wish = _push
-	elif timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.move.travel_speed > 0.0:
+	elif timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.speed() > 0.0:
 		var way: Vector3 = _roll if timeline.swing == _dodge_swing else facing
-		wish = way * timeline.move.travel_speed
+		wish = way * timeline.speed()
 	# A slowed fight slows the roll and the push with it, and a stopped one holds them still.
 	_body.velocity.x = wish.x * CombatClock.scale
 	_body.velocity.z = wish.z * CombatClock.scale

@@ -1595,6 +1595,9 @@ or `options_test` fails.
    | `chain_after` | Seconds into recovery after which the next attack press continues the chain. A press before that is buffered for `MoveTimeline.buffer_window`. Must not exceed `recovery`. |
    | `iframes_from`, `iframes_to` | Seconds from the start of the move during which the mover cannot be hit. A dodge needs some, or `MoveSet.problems()` complains. |
    | `perfect_window` | Seconds from the start of the i-frames in which a dodged hit is a **perfect dodge** (C6.6c): `Events.perfect_dodge` is sent and a gauge's `on_perfect_dodge` pays. 0 means none; it must fit inside the i-frames. |
+   | `iframes2_from`, `iframes2_to` | A second untouchable stretch (C8.16). No perfect dodge in it. |
+   | `armour_from`, `armour_to` | Seconds during which a hit still hurts the mover but does not push it, so the move is not interrupted (C8.16). |
+   | `events` | A list of `MoveEvent`, in time order (C8.16). Each has `at` (seconds) and a `kind`: SOUND (`sound`), EFFECT (`picture`, `seconds`, `offset`), SHOT (`shot` move, `amount` = metres a second, `offset`), SPEED (`amount` = new travel speed), SHAKE (`amount` 0 to 1, `seconds`), PAUSE (`seconds` the fight stops). |
    | `power`, `element`, `hits` | The hit, through the same damage formula as turn-based combat. |
    | `poise` | Shield points it takes from a fighter with `max_shield`, whether or not the hit matches a weakness. Breaking works as in turn-based combat. |
    | `knockback` | How far a hit pushes its target back, times 1 plus the target's `knockback_taken` stat (C6.6c). A fighter with `knockback_taken` −1 is not pushed and does not flinch (super armor). |

@@ -17,6 +17,9 @@ extends RefCounted
 ## A DODGE (`start` with the dodge move) is allowed when idle or during recovery
 ## (`can_dodge`): it cancels the follow-through, never a wind-up or a live swing.
 ##
+## A move may have a second untouchable stretch, an armour stretch (`armoured`: hits land but
+## do not push) and SPEED events that change its travel speed part-way (`speed`), all C8.16.
+##
 ## `swing` counts every move started, so a hitbox can hit each target once per swing.
 ##
 ## OWNS: the current move, its elapsed time, the chain position and the buffered press.
@@ -103,16 +106,37 @@ func can_dodge() -> bool:
 	return phase == Phase.IDLE or phase == Phase.RECOVERY
 
 
+## True inside either of the move's untouchable stretches.
 func invulnerable() -> bool:
-	if move == null or move.iframes_to <= move.iframes_from:
+	if move == null:
 		return false
-	return elapsed >= move.iframes_from and elapsed < move.iframes_to
+	return _first_iframes() or (elapsed >= move.iframes2_from and elapsed < move.iframes2_to)
+
+
+## True inside the move's armour stretch (C8.16): a hit lands but does not push.
+func armoured() -> bool:
+	return move != null and elapsed >= move.armour_from and elapsed < move.armour_to
+
+
+## The move's travel speed now: its own, or the latest SPEED event's that has come (C8.16).
+func speed() -> float:
+	if move == null:
+		return 0.0
+	var now: float = move.travel_speed
+	for event: MoveEvent in move.events:
+		if event != null and event.kind == MoveEvent.Kind.SPEED and event.at <= elapsed:
+			now = event.amount
+	return now
 
 
 ## True while untouchable AND inside the move's `perfect_window` (C6.6c): a hit now is dodged
 ## perfectly, because the dodge started only just before it.
 func perfectly() -> bool:
-	return invulnerable() and elapsed < move.iframes_from + move.perfect_window
+	return move != null and _first_iframes() and elapsed < move.iframes_from + move.perfect_window
+
+
+func _first_iframes() -> bool:
+	return elapsed >= move.iframes_from and elapsed < move.iframes_to
 
 
 ## One transition if one is due; true when it happened, so `step` loops on.
