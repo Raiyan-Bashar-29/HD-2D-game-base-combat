@@ -4558,3 +4558,16 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Verified:** `tests/unit/delayed_test.gd` (8 checks); the full ladder.
 - **Gaps:** ticks are not held by a ledger; a held hit shows no number; `by` is not saved;
   no demo status uses either; no windowed capture.
+
+## 2026-11-15 — C8.15b · Conditional outcomes (combat 0.123.0)
+
+- **Did:** new `src/gameplay/combat/contagion.gd` (`Contagion`). `StatusEffect.spread_reach`:
+  `Delayed.ended` tells `Contagion.passed` when a status runs out, and standing fighters on
+  the holder's side in reach catch it, once each. `StatusEffect.punish_status`:
+  `Combatant.hit` tells `Contagion.aimed`, and a hostile attacker gets that status.
+  `Skill.filter`, `filter_stat`, `filter_value` and `Skill.admits`, asked in `Unseen.open`,
+  so a battle's target list and a field command's candidates keep only the fitting targets.
+- **Why:** board row C8.15, second half.
+- **Verified:** `tests/unit/contagion_test.gd` (8 checks); the full ladder.
+- **Gaps:** scaling by the place and a slot cap on named rules are not built; the filter
+  reads a stat only; no demo content uses these; no windowed capture.

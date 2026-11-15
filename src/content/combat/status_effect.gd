@@ -96,6 +96,11 @@ enum Reaction { COUNTER, REFLECT }
 ## C8.15a: a ledger. While held, hits and heals on the holder's damage pool are only noted;
 ## the sum is applied once when the status ends, by time or by a cure.
 @export var ledger: bool = false
+## C8.15b: a spreading status. When it runs out, standing fighters on the holder's side
+## within this many metres catch a copy, once each (`Contagion`). 0 does not spread.
+@export var spread_reach: float = 0.0
+## C8.15b: while held, a foe that hits at the holder gets this status.
+@export var punish_status: StatusEffect
 
 
 ## True when this status carries `block`.
@@ -120,6 +125,10 @@ func problems() -> PackedStringArray:
 		found.append("%s (%s) ticks in seconds with no tick_interval" % [resource_path, id])
 	if late_power < 0.0 or (late_power > 0.0 and duration <= 0.0):
 		found.append("%s (%s) has a late_power that is negative or never comes due" % [resource_path, id])
+	if spread_reach < 0.0 or (spread_reach > 0.0 and duration <= 0.0):
+		found.append("%s (%s) has a spread_reach that is negative or never spreads" % [resource_path, id])
+	if punish_status == self:
+		found.append("%s (%s) punishes with itself" % [resource_path, id])
 	if fatal and duration <= 0.0:
 		found.append("%s (%s) is fatal but never runs out: give it a duration" % [resource_path, id])
 	if blocks.has(Block.SKIP_TURN) and duration <= 0.0 and not breaks_on_hit and not counts_as_fallen:

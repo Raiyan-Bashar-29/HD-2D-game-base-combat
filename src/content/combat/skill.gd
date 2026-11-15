@@ -24,6 +24,9 @@ extends ContentEntry
 ## MUST NOT: know who is using it, apply itself, or name a formula's internals.
 
 enum Scope { ONE, ALL }
+## C8.15b: which targets a stat filter keeps. MULTIPLE_OF keeps a whole-number stat that
+## `filter_value` divides (level 5, level 10).
+enum Filter { NONE, BELOW, ABOVE, MULTIPLE_OF }
 
 ## Localization key for the skill's name in the command menu.
 @export var name_key: String = ""
@@ -60,6 +63,23 @@ enum Scope { ONE, ALL }
 ## The ATB bars it costs as a field command in the hybrid formula (C4.3). A turn-based battle
 ## ignores it.
 @export var atb_cost: int = 1
+## C8.15b: a target filter by stat. Only fighters whose `filter_stat` passes `filter` against
+## `filter_value` can be aimed at, or are hit by an ALL skill.
+@export var filter: Filter = Filter.NONE
+@export var filter_stat: StringName = &""
+@export var filter_value: float = 0.0
+
+
+## True when a fighter whose `filter_stat` is `value` may be a target of this skill.
+func admits(value: float) -> bool:
+	match filter:
+		Filter.BELOW:
+			return value < filter_value
+		Filter.ABOVE:
+			return value > filter_value
+		Filter.MULTIPLE_OF:
+			return roundi(value) % maxi(1, roundi(filter_value)) == 0
+	return true
 
 
 ## True when the skill brings the fallen back: it is aimed at defeated combatants only.
@@ -82,6 +102,10 @@ func problems() -> PackedStringArray:
 		found.append("%s (%s) costs %d but names no cost_pool" % [resource_path, id, cost])
 	if boost_power < 0.0 or boost_hits < 0:
 		found.append("%s (%s) has a negative boost" % [resource_path, id])
+	if filter != Filter.NONE and filter_stat == &"":
+		found.append("%s (%s) filters targets but names no filter_stat" % [resource_path, id])
+	if filter == Filter.MULTIPLE_OF and filter_value < 1.0:
+		found.append("%s (%s) filters by a multiple below 1" % [resource_path, id])
 	if hits < 1:
 		found.append("%s (%s) has hits below 1" % [resource_path, id])
 	if atb_cost < 0:

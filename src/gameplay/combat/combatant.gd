@@ -176,6 +176,7 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 	if target == null:
 		return null
 	Unseen.struck(self, target)
+	Contagion.aimed(self, target)
 	# A battlefield this attacker stands in may make its hits sure, and tag them (C6.9c).
 	var flags := HitFlags.of(self)
 	var sure: bool = sure_hit or flags.sure_against(target)

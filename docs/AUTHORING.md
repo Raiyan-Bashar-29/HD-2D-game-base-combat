@@ -1524,6 +1524,11 @@ entry of the foe's `weak_to`. CAPTURE: `amount` times the share of hp the foe ha
 chance; give the foe a `capture_item` (an item id), or leave it empty so it can never be
 caught. The flag `captured/<combatant id>` counts the catches.
 
+**Spreading, punishing and filtering (C8.15b).** On a `StatusEffect`, `spread_reach` passes
+the status to the holder's side when it runs out, and `punish_status` lands on a foe that
+hits at the holder. On a `Skill`, `filter` with `filter_stat` and `filter_value` keeps only
+the targets whose stat fits (BELOW, ABOVE, MULTIPLE_OF).
+
 **A delayed hit and a ledger (C8.15a).** On a `StatusEffect`, `late_power` (with a duration)
 makes the caster's hit land when the status runs out; a cure stops it. `ledger` holds every
 hit and heal on the holder and applies the sum once when the status ends.
