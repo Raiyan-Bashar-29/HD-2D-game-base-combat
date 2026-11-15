@@ -1528,6 +1528,11 @@ caught. The flag `captured/<combatant id>` counts the catches.
 `height`, and optionally `cancels_recovery`, an `arrival` status (invincible, half a second, for
 i-frames), a `path_strike` move, and `sooner` CTB ticks for a battle.
 
+**Sacrifice and refresh (C6.12b).** A `SacrificeMechanism` takes a `fraction` of each
+near ally's HP (and their buffs with `take_buffs`) for the user, then puts `gain` on it. A
+`RefreshMechanism` cuts cooldowns by `fraction` (SELF or ALLIES), adds `pool_gain` to `pool`,
+and puts `speed` on each fighter refreshed: give that status a `cooldown_rate` ADD modifier.
+
 **A thing in the arena (C8.9).** Instance `scenes/objects/arena_thing.tscn` in an area, name
 it, and set `hp`. Give it a `burst` move to make it explode when broken, or a `thrown` move
 to make it fly at the striker's foes when hit.

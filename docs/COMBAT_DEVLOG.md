@@ -4603,3 +4603,15 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Why:** board row C6.12, first half (split into C6.12a and C6.12b).
 - **Verified:** `tests/unit/blink_test.gd` (8 checks); the full ladder.
 - **Gaps:** no wall or floor check; UP and the player's controller; no demo power.
+
+## 2026-11-15 — C6.12b · Sacrifice and refresh (combat 0.126.0)
+
+- **Did:** M11 `SacrificeMechanism` and `SacrificeRun` (kind `sacrifice`; `SacrificeRun.side`
+  finds the user's standing allies in reach). M14 `RefreshMechanism` and `RefreshRun` (kind
+  `refresh`). `PowerSet` counts cooldowns down at `RefreshRun.rate` (1 + `cooldown_rate`), and
+  `cut_cooldowns` can round down to whole turns; a shared `_cool` keeps it inside its budget.
+- **Why:** board row C6.12, second half; Yhwach's Auswählen and Isliid's Super Arts need them.
+- **Verified:** `tests/unit/sacrifice_refresh_test.gd` (10 checks); suite 4558 passed, the
+  seven checkers, stripped 4450 passed, 29 skipped.
+- **Gaps:** a taken buff restarts at full length; the rate also applies to turn cooldowns; no
+  demo power.
