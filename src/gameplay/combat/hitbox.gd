@@ -84,10 +84,16 @@ func strike(hurtbox: Hurtbox) -> bool:
 		return false
 	_struck[key] = true
 	var clock: MoveTimeline = timeline
+	var move: ActionMove = timeline.move
 	var counted: bool = hurtbox.take(attacker, timeline.move, rng, global_position)
 	# A landed hit lets a `cancel_on_hit` move go straight into the next swing (C8.8a).
 	if hurtbox.landed:
 		clock.connected()
+	# A grab (C8.8b): the victim is held and this fighter goes straight into the throw.
+	var victim: Node3D = hurtbox.get_parent() as Node3D
+	if hurtbox.flinched and move.throw_move != null and victim != null and not Grab.held(victim):
+		clock.start(move.throw_move)
+		Grab.hold(victim, self, move.throw_move)
 	return counted
 
 

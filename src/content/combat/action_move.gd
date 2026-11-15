@@ -63,6 +63,9 @@ extends Resource
 @export var launch: float = 0.0
 ## Once this move has landed a hit, the next move of the chain may start at once (C8.8a).
 @export var cancel_on_hit: bool = false
+## A GRAB (C8.8b): when this move lands and its victim flinches, the victim is held in place
+## and the user plays this follow-up at once, the throw. The throw always lands on the victim.
+@export var throw_move: ActionMove
 ## A skill to resolve the hit through instead of `power` and `element`.
 @export var skill: Skill
 @export_group("Shape")
@@ -89,6 +92,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has a negative phase time" % context)
 	elif length() <= 0.0:
 		found.append("%s takes no time at all" % context)
+	if throw_move != null and (not throw_move.strikes() or throw_move.throw_move != null):
+		found.append("%s has a throw that does not strike, or that grabs again" % context)
 	if launch < 0.0:
 		found.append("%s has a negative launch time" % context)
 	if chain_after < 0.0 or chain_after > recovery:

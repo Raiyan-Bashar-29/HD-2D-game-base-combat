@@ -114,7 +114,8 @@ func act(delta: float) -> ActionDecider.State:
 	var defeated: bool = vitals != null and vitals.is_defeated()
 	var hp: float = float(vitals.current(&"hp")) / maxf(1.0, float(vitals.maximum(&"hp"))) if vitals != null else 1.0
 	var state: ActionDecider.State = decider.think(dt, to_target.length() if _target != null else INF,
-		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0 or halted or Juggle.airborne(self), defeated, rng)
+		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0 or halted or Juggle.airborne(self) or Grab.held(self),
+		defeated, rng)
 	_carry_out(state, to_target)
 	if _fallen:
 		_gone_in -= dt

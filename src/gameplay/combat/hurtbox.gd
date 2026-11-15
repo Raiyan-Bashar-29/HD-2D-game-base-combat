@@ -32,6 +32,9 @@ extends Area3D
 ## already in the air, lifts the fighter (`Juggle.lift`) and drops its swing, unless the hit was
 ## countered, the fighter is in an armour stretch, or it does not flinch at all.
 ##
+## `flinched` says whether the last hit moved the fighter at all: it landed, was not countered,
+## and the fighter flinches. A grab (C8.8b) holds only a fighter that flinched.
+##
 ## `timeline` is set by whoever runs this fighter's moves (C3.4's fighter, C3.7's enemy), so a
 ## dodge's i-frames are read from the same clock that plays the dodge.
 ##
@@ -50,6 +53,8 @@ enum Outcome { MISSED, BLOCKED, LANDED }
 var timeline: MoveTimeline
 ## True when the last hit `take` resolved landed (not missed, blocked, dodged or refused).
 var landed: bool = false
+## True when that hit also made the fighter flinch: not countered, no armour, not unflinching.
+var flinched: bool = false
 
 
 func _ready() -> void:
@@ -92,6 +97,7 @@ static func nearest_hostile(body: Node3D) -> Hurtbox:
 func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, from: Vector3) -> bool:
 	var target: Combatant = fighter()
 	landed = false
+	flinched = false
 	if attacker == null or move == null or target == null or target == attacker:
 		return false
 	var filter: FactionTable.Target = move.skill.target if move.skill != null else FactionTable.Target.ENEMY
@@ -110,16 +116,16 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 		Weakness.wear(target, move.poise)
 		if not countered:
 			_push(target, move, from)
-			_launch(target, move)
+			flinched = target.sheet.value(&"knockback_taken") > -1.0 \
+				and not (timeline != null and timeline.armoured())
+			_launch(move)
 	return true
 
 
 # Lifts the fighter off its feet (C8.8a) when the move launches or it is already in the air.
-func _launch(target: Combatant, move: ActionMove) -> void:
+func _launch(move: ActionMove) -> void:
 	var body: Node = get_parent()
-	if move.launch <= 0.0 and not Juggle.airborne(body):
-		return
-	if target.sheet.value(&"knockback_taken") <= -1.0 or (timeline != null and timeline.armoured()):
+	if not flinched or (move.launch <= 0.0 and not Juggle.airborne(body)):
 		return
 	Juggle.lift(body, move)
 	if timeline != null:

@@ -639,7 +639,7 @@ What Arima's files use most, and where that lands here:
 | `NotHitBy` (12) | Untouchable for a stretch | `iframes_from/to` (one stretch) | A second stretch (the converter notes later ones and drops them) |
 | `HitOverride` (9) | Super armour: take the hit, keep the move | `knockback_taken`, no flinch passive | **Armour as a stretch on a move** |
 | `ReversalDef` (3) | A counter: catch the foe's hit and answer | Counter stance (C6.6d) | - |
-| `TargetState`, `TargetBind`, `TargetDrop` (15) | A grab: hold the victim in place, then throw | None | **Grabs and throws** (C8.8b; launch and juggle are done, C8.8a) |
+| `TargetState`, `TargetBind`, `TargetDrop` (15) | A grab: hold the victim in place, then throw | None | Done by hand: `throw_move` and `Grab` (C8.8b). The converter does not make one yet |
 | `LifeAdd`, `TargetLifeAdd` (10) | Heal or hurt outside a hit | Skill effects, passives | - |
 | `VarSet`, `VarAdd` (32) | The character's own counters (stance, ammo, a mark) | Statuses, pools, forms | - |
 | `AssertSpecial`, `ScreenBound`, `PlayerPush` (38) | Engine flags | Not needed | - |

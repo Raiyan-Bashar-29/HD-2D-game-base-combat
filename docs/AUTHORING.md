@@ -1500,6 +1500,12 @@ longer, each worth 0.7 of the one before (a launcher adds its `launch` again, an
 0.25 s). `cancel_on_hit` lets the next move of the chain start the moment this one lands. A
 fighter with `knockback_taken` -1, or inside an armour stretch, is not launched.
 
+**A grab (C8.8b).** Give an `ActionMove` a `throw_move` (another `ActionMove` that strikes).
+When the first move lands on a fighter that flinches, the victim is held where it is, unable to
+act, and the attacker plays the throw at once. The throw always lands the moment it is live;
+its `knockback` and `launch` then carry the victim away. If the attacker is hit before that,
+the victim is let go unharmed.
+
 **Aggro and taunt (C8.6).** A field foe keeps a threat table: each hit it takes adds the damage
 times 1 plus the attacker's `threat` stat, and it fades by the foe's `ActionBrain.threat_fade`
 points a second. Give a tank `threat` 1 or more on gear, a passive or a status; give a sneak

@@ -4459,3 +4459,17 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** the player's body is stunned but not thrown up (upstream's controller zeroes
   upward speed on the floor); no damage bonus or combo counter; the converter does not fill
   the fields; turn battles have no launch; no windowed capture.
+
+## 2026-11-15 — C8.8b · Grabs and throws (combat 0.116.0)
+
+- **Did:** `ActionMove.throw_move`. New `src/gameplay/combat/grab.gd` (`Grab`): made under the
+  victim by the `Hitbox` when a grab lands on a fighter that flinched (`Hurtbox.flinched`, now
+  also the test for a launch). The attacker's clock starts the throw; the victim cannot act
+  (`ActionFighter`, `ActionEnemy`), follows its holder, and is struck through the holder's
+  `Hitbox` the moment the throw is live, once. It is let go unharmed if the holder's clock
+  leaves the throw first.
+- **Why:** board row C8.8b, the grab idea from C9.8's reading of fighting-game files.
+- **Verified:** `tests/unit/grab_test.gd` (9 checks); the full ladder.
+- **Gaps:** no escape for the victim; a boss avoids a grab only by not flinching; no demo move
+  grabs and the converter makes none; field only; others can still hit a held victim; no
+  windowed capture.
