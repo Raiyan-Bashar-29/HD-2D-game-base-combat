@@ -11,7 +11,7 @@ extends RefCounted
 ## - `gauge`: `pool`, `max`, `start`, `on_hit_dealt`, `on_hit_taken`;
 ## - `specials`: each `{state, id, cooldown, cost}`. With no `cost`, the M.U.G.E.N meter cost
 ##   out of 3000 becomes that share of the gauge's `max`. The power's move does the hitting;
-##   its skill only pays;
+##   its skill pays and puts a short `<name>_resolve` status on the user (defence x1.2, 2 s);
 ## - `stances`: each `{id, chain, specials, tint: [r, g, b], stats: {attack: 1.15}}`. They
 ##   become one cycling `FormMechanism`; a stance's specials take a slot only while it is held;
 ## - `passives`: paths of `PassiveSkill` files; `stats`, `growth`, `attack_tags`,
@@ -104,6 +104,7 @@ static func _special(choices: Dictionary, moves: Dictionary, special: Dictionary
 	if not gauge.is_empty():
 		skill.cost_pool = StringName(DictRead.get_string(gauge, "pool", "focus"))
 		skill.cost = DictRead.get_int(special, "cost", roundi(share * DictRead.get_float(gauge, "max", 100.0)))
+	skill.statuses.append(_resolve(name, out))
 	var power := Power.new()
 	power.power_id = StringName("power/" + word)
 	power.name_key = skill.name_key
@@ -112,6 +113,21 @@ static func _special(choices: Dictionary, moves: Dictionary, special: Dictionary
 	power.move = move(choices, moves, state, out)
 	power.cooldown = DictRead.get_float(special, "cooldown", 4.0)
 	return power
+
+
+# The short self-status every special's skill puts on (as Arima's kit had by hand): a skill
+# must do something, and the move does the hitting. Defence x1.2 for 2 seconds, one per kit.
+static func _resolve(name: String, out: Dictionary) -> StatusEffect:
+	if out.has("resolve"):
+		return out["resolve"]
+	var resolve := StatusEffect.new()
+	resolve.id = StringName("status/%s_resolve" % name)
+	resolve.name_key = _key(out, "combat.status.%s_resolve.name" % name)
+	resolve.unit = StatusEffect.Unit.SECONDS
+	resolve.duration = 2.0
+	resolve.modifiers.append(StatModifier.of(&"defence", StatModifier.Op.MULTIPLY, 1.2, &""))
+	out["resolve"] = resolve
+	return resolve
 
 
 # The power that steps through the stances: one cycling form, one stage per stance.

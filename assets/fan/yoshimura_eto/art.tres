@@ -1,0 +1,141 @@
+[gd_resource type="Resource" script_class="MemberArt" format=3]
+
+[ext_resource type="Resource" path="res://assets/fan/yoshimura_eto/sheet_layout.tres" id="1_1urp8"]
+[ext_resource type="Script" path="res://src/content/combat/move_art.gd" id="2_yqonp"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_200.png" id="3_rdpv6"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_205.png" id="4_a8k4t"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_215.png" id="5_wmnig"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_219.png" id="6_2eupk"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_216.png" id="7_s12si"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_217.png" id="8_u7r66"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_500.png" id="9_l7ui1"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_510.png" id="10_h5i24"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_330.png" id="11_3brqx"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_331.png" id="12_pab3j"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_332.png" id="13_irm7r"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_334.png" id="14_b3grk"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_2502.png" id="15_fpxlh"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/strips/anim_2600.png" id="16_6rd8u"]
+[ext_resource type="Script" path="res://src/content/combat/member_art.gd" id="17_32ely"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/sheet.png" id="18_4xh4y"]
+
+[sub_resource type="Resource" id="Resource_x2bde"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("3_rdpv6")
+frames = 5
+feet = Vector2i(24, 52)
+seconds = 0.4
+
+[sub_resource type="Resource" id="Resource_ib553"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("4_a8k4t")
+frames = 8
+feet = Vector2i(26, 47)
+seconds = 0.416666666666667
+
+[sub_resource type="Resource" id="Resource_msa8g"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("5_wmnig")
+frames = 7
+feet = Vector2i(16, 51)
+seconds = 0.466666666666667
+
+[sub_resource type="Resource" id="Resource_25m3k"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("6_2eupk")
+frames = 9
+feet = Vector2i(38, 51)
+seconds = 0.55
+
+[sub_resource type="Resource" id="Resource_3jjp0"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("7_s12si")
+frames = 8
+feet = Vector2i(29, 51)
+seconds = 0.716666666666667
+
+[sub_resource type="Resource" id="Resource_5hhav"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("8_u7r66")
+frames = 2
+feet = Vector2i(24, 62)
+seconds = 0.55
+
+[sub_resource type="Resource" id="Resource_dhfyg"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("9_l7ui1")
+frames = 8
+feet = Vector2i(30, 48)
+seconds = 0.683333333333333
+
+[sub_resource type="Resource" id="Resource_qwvjk"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("10_h5i24")
+frames = 15
+feet = Vector2i(57, 75)
+seconds = 1.53333333333333
+
+[sub_resource type="Resource" id="Resource_q7e6e"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("11_3brqx")
+frames = 10
+feet = Vector2i(102, 103)
+seconds = 0.7
+
+[sub_resource type="Resource" id="Resource_qet6s"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("12_pab3j")
+frames = 15
+feet = Vector2i(183, 170)
+seconds = 1.18333333333333
+
+[sub_resource type="Resource" id="Resource_8fxj3"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("13_irm7r")
+frames = 17
+feet = Vector2i(183, 115)
+seconds = 1.91666666666667
+
+[sub_resource type="Resource" id="Resource_jmb2o"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("14_b3grk")
+frames = 15
+feet = Vector2i(107, 109)
+seconds = 1.53333333333333
+
+[sub_resource type="Resource" id="Resource_5rbal"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("15_fpxlh")
+frames = 7
+feet = Vector2i(101, 166)
+seconds = 0.7
+
+[sub_resource type="Resource" id="Resource_v1nnw"]
+script = ExtResource("2_yqonp")
+strip = ExtResource("16_6rd8u")
+frames = 14
+feet = Vector2i(146, 162)
+seconds = 1.75
+
+[resource]
+script = ExtResource("17_32ely")
+sheet = ExtResource("18_4xh4y")
+layout = ExtResource("1_1urp8")
+pixel_size = 0.0303571428571429
+ground_offset = -0.0607142857142857
+moves = Dictionary[StringName, ExtResource("2_yqonp")]({
+&"move/yoshimura_eto_200": SubResource("Resource_x2bde"),
+&"move/yoshimura_eto_205": SubResource("Resource_ib553"),
+&"move/yoshimura_eto_215": SubResource("Resource_msa8g"),
+&"move/yoshimura_eto_216": SubResource("Resource_3jjp0"),
+&"move/yoshimura_eto_217": SubResource("Resource_5hhav"),
+&"move/yoshimura_eto_219": SubResource("Resource_25m3k"),
+&"move/yoshimura_eto_2502": SubResource("Resource_5rbal"),
+&"move/yoshimura_eto_2600": SubResource("Resource_v1nnw"),
+&"move/yoshimura_eto_330": SubResource("Resource_q7e6e"),
+&"move/yoshimura_eto_331": SubResource("Resource_qet6s"),
+&"move/yoshimura_eto_332": SubResource("Resource_8fxj3"),
+&"move/yoshimura_eto_334": SubResource("Resource_jmb2o"),
+&"move/yoshimura_eto_500": SubResource("Resource_dhfyg"),
+&"move/yoshimura_eto_510": SubResource("Resource_qwvjk")
+})

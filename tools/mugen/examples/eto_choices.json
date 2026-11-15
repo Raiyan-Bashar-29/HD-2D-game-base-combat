@@ -1,0 +1,29 @@
+{
+	"name": "yoshimura_eto",
+	"moves": "eto_out/moves.json",
+	"sprites": "res://assets/fan/yoshimura_eto",
+	"out": {
+		"kit": "eto_out/built/yoshimura_eto.tres",
+		"loadout": "eto_out/built/yoshimura_eto_loadout.tres",
+		"art": "eto_out/built/art.tres",
+		"strings": "eto_out/built/strings.txt"
+	},
+	"chain": [200, 205, 215, 219, 216, 217],
+	"dodge": {"active": 0.3, "recovery": 0.15, "iframes_to": 0.3, "perfect_window": 0.1, "travel_speed": 6.5},
+	"gauge": {"pool": "kagune", "max": 100, "start": 0, "on_hit_dealt": 4, "on_hit_taken": 3},
+	"stances": [
+		{"id": "human", "chain": [200, 205, 215, 219, 216, 217],
+			"specials": [{"state": 500, "id": "air_strike"}, {"state": 510, "id": "bronze_tree"}]},
+		{"id": "kakuja", "chain": [330, 331, 332, 334], "tint": [0.75, 0.6, 0.55],
+			"stats": {"attack": 1.2},
+			"specials": [{"state": 2502, "id": "air_fall", "cost": 25, "cooldown": 8},
+				{"state": 2600, "id": "one_eyed_owl"}]}
+	],
+	"passives": ["res://data/passives/kakuja_regen.tres", "res://data/passives/kakuja_hunger.tres",
+		"res://data/passives/night_owl.tres"],
+	"stats": {"attack": 12, "defence": 9, "max_hp": 58, "max_mp": 12},
+	"growth": {"attack": 2, "max_hp": 6},
+	"attack_tags": ["kagune"],
+	"passive_budget": 4,
+	"max_box": 8
+}

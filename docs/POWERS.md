@@ -712,6 +712,27 @@ What the converter cannot give you, so you decide by hand: which moves are speci
 gauge numbers, stances, passives, names, and anything a helper does (a thrown weapon's
 flight). The `notes` on each move say what was left out.
 
+## Yoshimura Eto, as built (C9.10)
+
+From the owner's upload, by **刃下心** (the same author as Arima). The author's notice forbids
+any profit (selling, livestreaming); this project is not sold and is for community
+development. Credit: `assets/fan/yoshimura_eto/CREDITS.md`. To play as her, set
+`[combat] action/loadout` to `res://data/action/yoshimura_eto_loadout.tres`.
+
+| Part | M.U.G.E.N state | Cost (of 100 `kagune`) |
+|---|---|---|
+| Kagune chain | 200, 205, 215, 219, 216, 217 | — |
+| Kakuja chain | 330, 331, 332, 334 | — |
+| Kakuja Shift (slot 1) | a `FormMechanism` cycle: kagune, kakuja (attack x1.2, tint) | — |
+| Air Strike (kagune) | 500 | 17 |
+| Bronze Tree (kagune) | 510 | 17 |
+| Air Fall (kakuja) | 2502 (the hit of 2500) | 25, 8 s cooldown |
+| One-Eyed Owl (kakuja) | 2600 | 7 |
+| Passives | `kakuja_regen`, `kakuja_hunger`, `night_owl` | — |
+
+Not used yet: Noroi and Tatara (400, 4000: helpers that fight alone; C8.10), the 350 chain,
+the b and c chains and the air moves.
+
 ## Showing a member's art in play (C9.9d)
 
 - `MemberArt` (a resource): `sheet` + `layout` (the walking sheet), `pixel_size`,

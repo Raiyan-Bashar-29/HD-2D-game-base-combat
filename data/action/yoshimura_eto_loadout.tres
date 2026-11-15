@@ -1,0 +1,200 @@
+[gd_resource type="Resource" script_class="ActionLoadout" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="1_ud1lb"]
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="2_jblqb"]
+[ext_resource type="Resource" path="res://assets/fan/yoshimura_eto/art.tres" id="3_8k8wl"]
+[ext_resource type="Script" path="res://src/content/combat/level_curve.gd" id="4_uij7t"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="5_jxhra"]
+[ext_resource type="Resource" path="res://data/powers/yoshimura_eto.tres" id="6_jbo7m"]
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="7_ctgtd"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="8_jarc2"]
+[ext_resource type="Script" path="res://src/content/combat/move_event.gd" id="9_x1hv0"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/20_25.wav" id="10_jvpe6"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_22.wav" id="11_yhi63"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/20_20.wav" id="12_nkupw"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_23.wav" id="13_dnmj0"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_18.wav" id="14_rsykh"]
+[ext_resource type="Script" path="res://src/content/combat/move_set.gd" id="15_5yudj"]
+[ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="16_3gmim"]
+
+[sub_resource type="Resource" id="Resource_agvsh"]
+script = ExtResource("1_ud1lb")
+
+[sub_resource type="Resource" id="Resource_o47kl"]
+script = ExtResource("4_uij7t")
+growth = Dictionary[StringName, float]({
+&"attack": 2.0,
+&"max_hp": 6.0
+})
+
+[sub_resource type="Resource" id="Resource_ro2pi"]
+script = ExtResource("7_ctgtd")
+combatant_id = &"yoshimura_eto"
+name_key = "combat.member.yoshimura_eto.name"
+faction = &"player"
+base_stats = Dictionary[StringName, float]({
+&"attack": 12.0,
+&"defence": 9.0,
+&"max_hp": 58.0,
+&"max_mp": 12.0
+})
+attack_tags = Array[StringName]([&"kagune"])
+power_kit = ExtResource("6_jbo7m")
+passive_budget = 4
+passive_budget_per_level = 1
+art = ExtResource("3_8k8wl")
+level_curve = SubResource("Resource_o47kl")
+
+[sub_resource type="Resource" id="Resource_gf032"]
+script = ExtResource("9_x1hv0")
+at = 0.067
+sound = ExtResource("10_jvpe6")
+
+[sub_resource type="Resource" id="Resource_mlia4"]
+script = ExtResource("9_x1hv0")
+at = 0.067
+sound = ExtResource("11_yhi63")
+
+[sub_resource type="Resource" id="Resource_l6jhq"]
+script = ExtResource("8_jarc2")
+id = &"move/yoshimura_eto_200"
+startup = 0.133333333333333
+recovery = 0.166666666666667
+chain_after = 0.0166666666666667
+events = Array[ExtResource("9_x1hv0")]([SubResource("Resource_gf032"), SubResource("Resource_mlia4")])
+power = 12.0
+poise = 1
+hitbox_size = Vector3(1, 1.0321429, 1.5178572)
+hitbox_offset = Vector3(0, 0.51607144, -0.45535713)
+travel_speed = 1.82142857142857
+
+[sub_resource type="Resource" id="Resource_5733i"]
+script = ExtResource("9_x1hv0")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_iysm0"]
+script = ExtResource("9_x1hv0")
+at = 0.033
+sound = ExtResource("10_jvpe6")
+
+[sub_resource type="Resource" id="Resource_ppv8x"]
+script = ExtResource("8_jarc2")
+id = &"move/yoshimura_eto_205"
+startup = 0.0666666666666667
+recovery = 0.25
+events = Array[ExtResource("9_x1hv0")]([SubResource("Resource_5733i"), SubResource("Resource_iysm0")])
+power = 12.0
+poise = 1
+knockback = 0.4
+hitbox_size = Vector3(1, 0.3642857, 1.3660715)
+hitbox_offset = Vector3(0, 0.18214285, -0.6223214)
+travel_speed = 1.82142857142857
+
+[sub_resource type="Resource" id="Resource_2rsob"]
+script = ExtResource("9_x1hv0")
+at = 0.05
+sound = ExtResource("10_jvpe6")
+
+[sub_resource type="Resource" id="Resource_3uct7"]
+script = ExtResource("8_jarc2")
+id = &"move/yoshimura_eto_215"
+active = 0.05
+recovery = 0.316666666666667
+chain_after = 0.1
+iframes_from = 0.3
+iframes_to = 0.383333333333333
+events = Array[ExtResource("9_x1hv0")]([SubResource("Resource_2rsob")])
+power = 12.0
+poise = 1
+hitbox_size = Vector3(1, 0.39464286, 0.85)
+hitbox_offset = Vector3(0, 0.19732143, -0.33392859)
+travel_speed = 1.82142857142857
+
+[sub_resource type="Resource" id="Resource_eggj4"]
+script = ExtResource("9_x1hv0")
+at = 0.05
+sound = ExtResource("10_jvpe6")
+
+[sub_resource type="Resource" id="Resource_liwvi"]
+script = ExtResource("8_jarc2")
+id = &"move/yoshimura_eto_219"
+active = 0.05
+recovery = 0.4
+chain_after = 0.0666666666666667
+events = Array[ExtResource("9_x1hv0")]([SubResource("Resource_eggj4")])
+power = 10.0
+poise = 1
+knockback = 0.2
+hitbox_size = Vector3(1, 0.7285714, 1.0321429)
+hitbox_offset = Vector3(0, 0.3642857, -0.33392859)
+travel_speed = 2.73214285714286
+
+[sub_resource type="Resource" id="Resource_qxmtl"]
+script = ExtResource("9_x1hv0")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_bqard"]
+script = ExtResource("9_x1hv0")
+at = 0.083
+sound = ExtResource("12_nkupw")
+
+[sub_resource type="Resource" id="Resource_f2d6y"]
+script = ExtResource("9_x1hv0")
+at = 0.15
+sound = ExtResource("13_dnmj0")
+
+[sub_resource type="Resource" id="Resource_blb7k"]
+script = ExtResource("8_jarc2")
+id = &"move/yoshimura_eto_216"
+startup = 0.15
+active = 0.233333333333333
+recovery = 0.333333333333333
+chain_after = 0.0833333333333333
+events = Array[ExtResource("9_x1hv0")]([SubResource("Resource_qxmtl"), SubResource("Resource_bqard"), SubResource("Resource_f2d6y")])
+power = 12.0
+poise = 1
+knockback = 0.61
+hitbox_size = Vector3(1, 1.3357143, 1.0017858)
+hitbox_offset = Vector3(0, 0.66785717, -0.74375)
+travel_speed = 6.375
+
+[sub_resource type="Resource" id="Resource_usca3"]
+script = ExtResource("9_x1hv0")
+at = 0.05
+sound = ExtResource("14_rsykh")
+
+[sub_resource type="Resource" id="Resource_acc6h"]
+script = ExtResource("8_jarc2")
+id = &"move/yoshimura_eto_217"
+startup = 0.05
+active = 0.05
+recovery = 0.0
+events = Array[ExtResource("9_x1hv0")]([SubResource("Resource_usca3")])
+power = 18.0
+poise = 1
+hitbox_size = Vector3(1, 2.580357, 2.9142857)
+hitbox_offset = Vector3(0, 1.0169643, -0.4857143)
+travel_speed = 20.0357142857143
+
+[sub_resource type="Resource" id="Resource_b0mly"]
+script = ExtResource("8_jarc2")
+active = 0.3
+recovery = 0.15
+iframes_to = 0.3
+perfect_window = 0.1
+travel_speed = 6.5
+
+[sub_resource type="Resource" id="Resource_dfux4"]
+script = ExtResource("15_5yudj")
+attack_chain = Array[ExtResource("8_jarc2")]([SubResource("Resource_l6jhq"), SubResource("Resource_ppv8x"), SubResource("Resource_3uct7"), SubResource("Resource_liwvi"), SubResource("Resource_blb7k"), SubResource("Resource_acc6h")])
+dodge = SubResource("Resource_b0mly")
+
+[resource]
+script = ExtResource("16_3gmim")
+fighter = SubResource("Resource_ro2pi")
+moves = SubResource("Resource_dfux4")
+atb = SubResource("Resource_agvsh")

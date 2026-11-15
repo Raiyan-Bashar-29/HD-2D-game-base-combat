@@ -4639,3 +4639,17 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   checkers, stripped 4475 passed, 29 skipped.
 - **Gaps:** a refused order still costs; a forgotten battle foe's reward share is still given;
   the obeyed id is not saved; no demo power.
+
+## 2026-11-15 — C9.10 · Yoshimura Eto (combat 0.129.0)
+
+- **Did:** the owner's second M.U.G.E.N upload (Yoshimura Eto, 刃下心) through the existing
+  tools: converted (62 moves), art unpacked (14 strips, 20 of 125 sounds kept: the ones the
+  moves play), kit and fighter built from `tools/mugen/examples/eto_choices.json`.
+  `MugenKit` now gives each special's pay-only skill a shared `<name>_resolve` status (Arima
+  had it by hand), so a built kit passes `check_content` untouched.
+- **Why:** the owner's request; Arima and Eto first, as they use many mechanics.
+- **Verified:** `check_content` clean; a probe (stance cycle, specials gated by stance, costs
+  17/17/25/7 paid); a windowed capture shows her sprite and the `kagune` gauge; suite 4586
+  passed, the seven checkers, stripped 4476 passed, 30 skipped.
+- **Gaps:** Noroi and Tatara wait for C8.10; the kakuja walks on the human sheet; one attack
+  button; the build tool writes absolute paths into the loadout (fixed by hand to `res://`).

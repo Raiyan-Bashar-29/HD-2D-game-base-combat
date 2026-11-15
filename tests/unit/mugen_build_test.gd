@@ -76,7 +76,7 @@ func _files(result: Dictionary) -> void:
 		[keys.size(), keys.has("combat.kit.fx.name"), keys.has("combat.form.fx_calm.name"),
 		keys.has("combat.power.fx_blast.desc"), keys.has("combat.member.fx.name"),
 		FileAccess.get_file_as_string(_dir.path_join("out/strings.txt")).count("\n")],
-		[12, true, true, true, true, 12])
+		[13, true, true, true, true, 13])
 	equal("a missing choices file writes nothing and says so",
 		[(MugenStarter.write(_dir.path_join("none.json"))["written"] as PackedStringArray).size(),
 		(MugenStarter.write(_dir.path_join("none.json"))["problems"] as PackedStringArray).size()], [0, 1])
@@ -90,10 +90,12 @@ func _kit(kit: PowerKit) -> void:
 		[kit.kit_id, ids], [&"kit/fx", [&"power/fx_stance", &"power/fx_calm_blast", &"power/fx_none", &"power/fx_blast"]])
 	var blast: Power = kit.powers[3]
 	var held: Power = kit.powers[1]
-	equal("a special's move hits and its skill pays: the meter's share of the gauge, or the cost written",
+	equal("a special's move hits and its skill pays (the meter's share of the gauge, or the cost written) and puts one shared resolve on",
 		[blast.move.id, blast.move.hits, blast.skill.cost_pool, blast.skill.cost, blast.skill.target, blast.cooldown,
-		held.skill.cost, held.requires_statuses, blast.requires_statuses.size()],
-		[&"move/fx_300", 3, &"zeal", 10, FactionTable.Target.SELF, 2.0, 7, [&"status/form_fx_calm"], 0])
+		held.skill.cost, held.requires_statuses, blast.requires_statuses.size(), blast.skill.statuses[0].id,
+		held.skill.statuses[0] == blast.skill.statuses[0], blast.skill.problems().size()],
+		[&"move/fx_300", 3, &"zeal", 10, FactionTable.Target.SELF, 2.0, 7, [&"status/form_fx_calm"], 0,
+		&"status/fx_resolve", true, 0])
 	var gauge: Array = []
 	for bonus: StatModifier in kit.stat_bonuses:
 		gauge.append([bonus.stat, bonus.value])
