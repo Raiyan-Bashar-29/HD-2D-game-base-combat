@@ -258,7 +258,7 @@ header before the code.
 
 One row per turn, as always. A row over 8 files or 500 lines is split before it starts.
 
-1. **Hit and field mechanics:** done (C8.7 to C8.15, C5.8).
+1. **Hit and field mechanics:** done (C8.7 to C8.15, C5.8). Its recorded gaps are rows C8.17 to C8.19, to do before the playtest (stage 6).
 2. **Power mechanisms the kits need:** C6.12, C6.10, C6.11, C6.13, C8.10, C8.11, C8.13, C8.14.
 3. **Turn-battle rules:** C8.1, C8.2, C8.3, C8.4, C8.5.
 4. **Hero kits as data:** C6.14 to C6.25 (C6.17 is mostly done by C9.9b), then C6.23.

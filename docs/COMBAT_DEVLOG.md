@@ -4584,3 +4584,11 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Verified:** `tests/unit/arena_thing_test.gd` (7 checks); the full ladder.
 - **Gaps:** struck, not carried; no burst on landing; not saved; a plain box; none in the
   demo; no windowed capture.
+
+## 2026-11-15 — Stage 1 close
+
+- **Did:** a windowed capture of the demo (`xvfb-run`, 960x540, frame 70): the area, the
+  party, the HUD and the prompt line draw. `template/main` has nothing new to merge. The gaps
+  recorded in stage 1 became board rows C8.17, C8.18 and C8.19.
+- **Gaps:** the capture shows the demo standing still; none of the stage 1 mechanics is in
+  the demo, so none of them was seen in a window.
