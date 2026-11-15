@@ -1524,6 +1524,10 @@ entry of the foe's `weak_to`. CAPTURE: `amount` times the share of hp the foe ha
 chance; give the foe a `capture_item` (an item id), or leave it empty so it can never be
 caught. The flag `captured/<combatant id>` counts the catches.
 
+**A delayed hit and a ledger (C8.15a).** On a `StatusEffect`, `late_power` (with a duration)
+makes the caster's hit land when the status runs out; a cure stops it. `ledger` holds every
+hit and heal on the holder and applies the sum once when the status ends.
+
 **An unseen status (C8.12).** Turn on `unseen` on a `StatusEffect` and give it a duration and
 a tag. Foes cannot aim at or lock on to its holder; a skill with scope ALL still reaches it.
 It ends when the holder hits a foe or is hit. A DISPEL effect naming its tag is the reveal.

@@ -4545,3 +4545,16 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** any hit ends it, not only an area hit; a field swing that hits nobody does not;
   no fade on the holder's sprite; no reveal effect of its own (DISPEL by tag); no windowed
   capture.
+
+## 2026-11-15 — C8.15a · Late outcomes (combat 0.122.0)
+
+- **Did:** new `src/gameplay/combat/delayed.gd` (`Delayed`). `StatusEffect.late_power` and
+  `late_element`: when the status runs out, whoever applied it hits the holder (a sure hit,
+  through the formula); a cure stops it. `StatusEffect.ledger`: `Combatant` and the heals in
+  `SkillUse` note a change on the ledger and leave the pool alone; `StatusSet` tells
+  `Delayed.ended` when a status is gone, and the sum is applied once. `StatusSet.apply` takes
+  `by`, and `SkillUse.apply` passes the user.
+- **Why:** board row C8.15, first half (split into C8.15a and C8.15b).
+- **Verified:** `tests/unit/delayed_test.gd` (8 checks); the full ladder.
+- **Gaps:** ticks are not held by a ledger; a held hit shows no number; `by` is not saved;
+  no demo status uses either; no windowed capture.

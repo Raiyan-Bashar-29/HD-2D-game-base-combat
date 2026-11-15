@@ -227,6 +227,9 @@ func _land(result: DamageResult, from: StringName, vitals: Vitals) -> int:
 	var soaked: int = HitGuard.soak(vitals, result)
 	# A hit that would fell this fighter may be survived (C9.2b).
 	PassiveHits.lethal(self, result, from)
+	# A ledger status holds the hit until it ends (C8.15a).
+	if Delayed.bank(self, -result.total()):
+		return 0
 	var before: int = vitals.current(damage_pool)
 	var after: int = vitals.change(damage_pool, -result.total())
 	# A hit that really hurt wakes a sleeper (a status with breaks_on_hit) (C2.14).

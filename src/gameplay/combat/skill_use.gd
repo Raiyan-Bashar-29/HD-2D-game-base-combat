@@ -91,7 +91,7 @@ static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
 			continue
 		for status: StatusEffect in skill.statuses:
 			if rng.randf() < skill.status_chance:
-				statuses.apply(status, rng)
+				statuses.apply(status, rng, user.combatant_id)
 	PassiveMoments.skill(user, skill.tags, true)
 
 
@@ -178,7 +178,7 @@ static func _strike(user: Combatant, skill: Skill, target: Combatant,
 		_hit(user, skill, target, skill.power * scale, rng)
 	elif skill.power < 0.0:
 		# Negative power is the original way to write a heal: straight to the pool, no defence.
-		_vitals(target).change(target.damage_pool, roundi(-skill.power * scale))
+		Delayed.heal(target, roundi(-skill.power * scale))
 	for effect: SkillEffect in skill.effects:
 		if effect != null:
 			_effect(user, skill, target, effect, rng, scale)
@@ -192,7 +192,7 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 		SkillEffect.Kind.DAMAGE:
 			_hit(user, skill, target, effect.amount * scale, rng)
 		SkillEffect.Kind.HEAL:
-			vitals.change(target.damage_pool, roundi(effect.amount * scale))
+			Delayed.heal(target, roundi(effect.amount * scale))
 		SkillEffect.Kind.RESTORE:
 			vitals.change(effect.pool, roundi(effect.amount * scale))
 		SkillEffect.Kind.DRAIN:

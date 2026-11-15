@@ -89,6 +89,13 @@ enum Reaction { COUNTER, REFLECT }
 ## C8.12: unseen. While held, no foe can choose the holder as a target or lock on to it
 ## (`Unseen`). It ends when the holder hits a foe or is hit by one.
 @export var unseen: bool = false
+## C8.15a: a delayed hit. When this status runs out, whoever applied it hits the holder with
+## this power and element (`Delayed`). A cure before then stops the hit.
+@export var late_power: float = 0.0
+@export var late_element: StringName = &""
+## C8.15a: a ledger. While held, hits and heals on the holder's damage pool are only noted;
+## the sum is applied once when the status ends, by time or by a cure.
+@export var ledger: bool = false
 
 
 ## True when this status carries `block`.
@@ -111,6 +118,8 @@ func problems() -> PackedStringArray:
 		found.append("%s (%s) ticks but names no tick_pool" % [resource_path, id])
 	if unit == Unit.SECONDS and tick_change != 0 and tick_interval <= 0.0:
 		found.append("%s (%s) ticks in seconds with no tick_interval" % [resource_path, id])
+	if late_power < 0.0 or (late_power > 0.0 and duration <= 0.0):
+		found.append("%s (%s) has a late_power that is negative or never comes due" % [resource_path, id])
 	if fatal and duration <= 0.0:
 		found.append("%s (%s) is fatal but never runs out: give it a duration" % [resource_path, id])
 	if blocks.has(Block.SKIP_TURN) and duration <= 0.0 and not breaks_on_hit and not counts_as_fallen:

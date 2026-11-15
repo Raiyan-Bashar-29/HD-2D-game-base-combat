@@ -39,6 +39,8 @@ class Held:
 	var stacks: int = 1
 	## Seconds gathered toward the next tick of a SECONDS status.
 	var carry: float = 0.0
+	## Who applied it, for a delayed hit (C8.15a).
+	var by: StringName = &""
 
 
 ## True only while a status is being taken off because its time ran out, so a listener to
@@ -92,7 +94,7 @@ static func of(who: Node) -> StatusSet:
 
 ## Applies a status, by its stacking rule. False when refused: a broken status, IGNORE held, or
 ## shrugged off by resistance. `rng` decides a partial resistance; null uses the global one.
-func apply(effect: StatusEffect, rng: RandomNumberGenerator = null) -> bool:
+func apply(effect: StatusEffect, rng: RandomNumberGenerator = null, by: StringName = &"") -> bool:
 	if effect == null or not effect.problems().is_empty():
 		return false
 	if _resists(effect, rng):
@@ -103,6 +105,7 @@ func apply(effect: StatusEffect, rng: RandomNumberGenerator = null) -> bool:
 		var held := Held.new()
 		held.effect = effect
 		held.remaining = effect.duration
+		held.by = by
 		_held[effect.id] = held
 		_add_modifiers(effect)
 	else:
@@ -316,8 +319,10 @@ func _expire(status_id: StringName) -> void:
 	var target: StatSheet = _sheet()
 	if target != null:
 		target.remove_from(status_id)
+	var gone: Held = _held[status_id]
 	_held.erase(status_id)
 	Events.status_expired.emit(owner_id, status_id)
+	Delayed.ended(self, gone.effect, gone.by, running_out)
 
 
 ## Quietly: a new game or a load is not every status wearing off.

@@ -48,6 +48,7 @@ func _steal_and_scan() -> void:
 	var mark: Combatant = battle.enemies[0]
 	battle.next_turn()
 	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
 	SkillUse.apply(thief, _skill(_effect(SkillEffect.Kind.STEAL, 0.0001)), [mark], rng)
 	equal("a failed steal takes nothing", thief.spoils, [])
 	SkillUse.apply(thief, _skill(_effect(SkillEffect.Kind.STEAL, 1.0)), [mark], rng)
@@ -74,6 +75,7 @@ func _capture() -> void:
 	var hunter: Combatant = battle.party[0]
 	var prey: Combatant = battle.enemies[0]
 	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
 	var net: Skill = _skill(_effect(SkillEffect.Kind.CAPTURE, 1.0))
 	SkillUse.apply(hunter, net, [prey], rng)
 	var fresh: Array = [hunter.spoils.size(), Vitals.of(prey.get_parent()).is_defeated()]
