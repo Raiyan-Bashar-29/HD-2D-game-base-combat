@@ -1533,6 +1533,10 @@ near ally's HP (and their buffs with `take_buffs`) for the user, then puts `gain
 `RefreshMechanism` cuts cooldowns by `fraction` (SELF or ALLIES), adds `pool_gain` to `pool`,
 and puts `speed` on each fighter refreshed: give that status a `cooldown_rate` ADD modifier.
 
+**Foresight (C6.10).** Give a `Power` a `ForesightMechanism`; it works while the kit is worn,
+inside the power's `active_hours`. Set `rewrites` with `dodge` and/or `force`, a field
+`rewrite_gap`, and switch on `observe` or `reveal` as wanted.
+
 **A thing in the arena (C8.9).** Instance `scenes/objects/arena_thing.tscn` in an area, name
 it, and set `hp`. Give it a `burst` move to make it explode when broken, or a `thrown` move
 to make it fly at the striker's foes when hit.

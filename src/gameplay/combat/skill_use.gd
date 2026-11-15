@@ -240,7 +240,9 @@ static func _slay(target: Combatant, chance: float, rng: RandomNumberGenerator) 
 ## against the target's weaknesses (C2.17).
 static func _hit(user: Combatant, skill: Skill, target: Combatant, power: float,
 		rng: RandomNumberGenerator) -> void:
+	Foresight.striking = skill.id
 	var result: DamageResult = user.hit(target, power, skill.element, rng, skill.sure_hit, skill.tags)
+	Foresight.striking = &""
 	# A hit a barrier stopped whole touched nothing, so it finds no weakness either (C6.6a).
 	if result != null and not result.missed and not result.blocked:
 		Weakness.strike(target, Weakness.keys_of(skill))

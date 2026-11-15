@@ -190,7 +190,10 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 	keys.append_array(attacker.strike_tags())
 	var outcome: Outcome = Outcome.MISSED
 	for i: int in maxi(1, move.hits):
+		# Foresight's observe knows a move by its key (C6.10).
+		Foresight.striking = StringName("move_%d" % move.get_instance_id())
 		var result: DamageResult = attacker.hit(target, move.power * boost, element, rng)
+		Foresight.striking = &""
 		if result == null or result.missed:
 			continue
 		# A hit a barrier stopped whole did not land: no shield chip, no poise, no push (C6.6a).

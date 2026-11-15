@@ -183,6 +183,8 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 	var request := DamageRequest.of(sheet, target.sheet, power, element)
 	request.sure_hit = sure
 	var result: DamageResult = resolving_formula().resolve(request, rng)
+	# Foresight may rewrite the hit: a miss struck again, a landing hit missed (C6.10).
+	result = Foresight.rewrite(self, target, request, result, rng)
 	result.tags.assign(tags)
 	for flag: StringName in flags.tags:
 		if not result.tags.has(flag):

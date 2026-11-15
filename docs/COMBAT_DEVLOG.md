@@ -4615,3 +4615,14 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   seven checkers, stripped 4450 passed, 29 skipped.
 - **Gaps:** a taken buff restarts at full length; the rate also applies to turn cooldowns; no
   demo power.
+
+## 2026-11-15 — C6.10 · Foresight (combat 0.127.0)
+
+- **Did:** M7 `ForesightMechanism` and `ForesightRun` (kind `foresight`), and the static
+  helper `Foresight`: `Combatant.hit` hands each resolved hit to `Foresight.rewrite` (FORCE on
+  the attacker, then observe and DODGE on the target). `SkillUse._hit` and `Hurtbox` set
+  `Foresight.striking`. Reveal uses `Weakness.reveal_all` on the holder's tick.
+- **Why:** board row C6.10; The Almighty, Six Eyes and Sha Naqba Imuru need it.
+- **Verified:** `tests/unit/foresight_test.gd` (10 checks); suite 4568 passed, the seven
+  checkers, stripped 4460 passed, 29 skipped.
+- **Gaps:** field refill on entering an area; rewrites spent automatically; "Reading" not built.
