@@ -4571,3 +4571,16 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Verified:** `tests/unit/contagion_test.gd` (8 checks); the full ladder.
 - **Gaps:** scaling by the place and a slot cap on named rules are not built; the filter
   reads a stat only; no demo content uses these; no windowed capture.
+
+## 2026-11-15 — C8.9 · Things in the arena (combat 0.124.0)
+
+- **Did:** new `src/gameplay/combat/arena_thing.gd` (`ArenaThing`) and
+  `scenes/objects/arena_thing.tscn`. It makes its own `Vitals`, `Combatant` (its faction is
+  its own id, so everyone may hit it) and `Hurtbox`, and joins `Unseen.INERT`, so no target
+  search picks it. Its hp gone, a `burst` move plays where it stands as a `Planted` owned by
+  the thing, so friend and foe are hit and the next thing breaks too. A `thrown` move makes
+  a hit send it off as a `Projectile` owned by the striker.
+- **Why:** board row C8.9; C8.14 (constructs) builds on it.
+- **Verified:** `tests/unit/arena_thing_test.gd` (7 checks); the full ladder.
+- **Gaps:** struck, not carried; no burst on landing; not saved; a plain box; none in the
+  demo; no windowed capture.

@@ -12,10 +12,15 @@ extends RefCounted
 ## MUST NOT: search for targets itself. `Battle`, `LockOn`, `Hurtbox`, `Aggro` and
 ## `FieldCommands` each ask `open` in place of `Combatant.can_target`.
 
+## A combatant in this group is never chosen as a target: a thing in the arena (C8.9).
+const INERT: StringName = &"combat_inert"
 
-## True while `fighter` holds a status marked `unseen`.
+
+## True while `fighter` holds a status marked `unseen`, or is a thing and not a fighter.
 static func hides(fighter: Combatant) -> bool:
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent()) if fighter != null else null
+	if fighter != null and fighter.is_in_group(INERT):
+		return true
 	if statuses == null:
 		return false
 	for effect: StatusEffect in statuses.held():

@@ -1524,6 +1524,10 @@ entry of the foe's `weak_to`. CAPTURE: `amount` times the share of hp the foe ha
 chance; give the foe a `capture_item` (an item id), or leave it empty so it can never be
 caught. The flag `captured/<combatant id>` counts the catches.
 
+**A thing in the arena (C8.9).** Instance `scenes/objects/arena_thing.tscn` in an area, name
+it, and set `hp`. Give it a `burst` move to make it explode when broken, or a `thrown` move
+to make it fly at the striker's foes when hit.
+
 **Spreading, punishing and filtering (C8.15b).** On a `StatusEffect`, `spread_reach` passes
 the status to the holder's side when it runs out, and `punish_status` lands on a foe that
 hits at the holder. On a `Skill`, `filter` with `filter_stat` and `filter_value` keeps only
