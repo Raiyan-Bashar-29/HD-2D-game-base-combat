@@ -1524,6 +1524,10 @@ entry of the foe's `weak_to`. CAPTURE: `amount` times the share of hp the foe ha
 chance; give the foe a `capture_item` (an item id), or leave it empty so it can never be
 caught. The flag `captured/<combatant id>` counts the catches.
 
+**The fall safety net (C5.8).** Set `combat/field/kill_height` in the project settings to a
+height below every floor. A foe that falls past it is defeated; turn on `returns_home` on an
+`ActionEnemy` that must stay alive. The player is put back on the last floor and defeated.
+
 **Aggro and taunt (C8.6).** A field foe keeps a threat table: each hit it takes adds the damage
 times 1 plus the attacker's `threat` stat, and it fades by the foe's `ActionBrain.threat_fade`
 points a second. Give a tank `threat` 1 or more on gear, a passive or a status; give a sneak

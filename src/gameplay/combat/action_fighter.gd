@@ -58,6 +58,8 @@ var _dodge_swing: int = -1
 var _roll: Vector3 = Vector3.ZERO
 var _fitted: int = -1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+# The last place the body stood on a floor, where the fall safety net puts it back (C5.8).
+var _safe: Vector3 = Vector3.INF
 
 
 func _ready() -> void:
@@ -121,6 +123,10 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	_report_move()
 	_aim_hitbox()
 	_move_body()
+	# Off the world: back to the last floor, and felled, so the defeat rule runs (C5.8).
+	if _body != null and (_body.is_on_floor() or not _safe.is_finite()):
+		_safe = _body.global_position
+	FallNet.catch(_body, _safe, true)
 
 
 ## Uses the power in quick slot `slot` (0 is the first, C6.3a). It works mid-swing, as a menu

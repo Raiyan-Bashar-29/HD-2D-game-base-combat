@@ -42,6 +42,9 @@ extends CharacterBody3D
 ## True for a one-off foe (a boss): once beaten it never comes back, even on re-entry. False, the
 ## default, means it is back whenever the area is entered again.
 @export var remember_defeat: bool = false
+## What the fall safety net does with this foe below the kill height (C5.8): false fells it
+## where it is, true puts it back at its home unhurt (a foe a quest needs alive).
+@export var returns_home: bool = false
 
 var decider: ActionDecider
 var timeline: MoveTimeline = MoveTimeline.new()
@@ -78,6 +81,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	FallNet.catch(self, home if returns_home else Vector3.INF, not returns_home)
 	act(delta)
 	# On the floor nothing falls, but a launch's upward speed is kept (C8.8a).
 	velocity.y = velocity.y - _gravity * delta if not is_on_floor() else maxf(velocity.y, 0.0)

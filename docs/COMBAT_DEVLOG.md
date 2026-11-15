@@ -4519,3 +4519,15 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   over; nothing on screen says what was taken; a captured creature is only an item and a
   count; no demo skill uses the kinds; no windowed capture.
 
+## 2026-11-15 — C5.8 · The fall safety net (combat 0.120.0)
+
+- **Did:** new `src/gameplay/combat/fall_net.gd` (`FallNet`): below the project setting
+  `combat/field/kill_height` (-50) a body is dealt with. `ActionEnemy` asks each physics
+  frame: the foe is felled where it is, or with `returns_home` put back at its home unhurt.
+  `ActionFighter` remembers the last floor the body stood on, puts the player back there and
+  fells them, so `FieldDefeat` carries out their `DefeatRule`.
+- **Why:** board row C5.8, found in C4.11: a body knocked off an open edge fell for ever.
+- **Verified:** `tests/unit/fall_net_test.gd` (6 checks); the full ladder.
+- **Gaps:** a party follower is not caught; one height for the whole game; no windowed
+  capture.
+
