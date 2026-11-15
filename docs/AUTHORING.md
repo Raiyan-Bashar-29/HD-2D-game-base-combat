@@ -1524,6 +1524,10 @@ entry of the foe's `weak_to`. CAPTURE: `amount` times the share of hp the foe ha
 chance; give the foe a `capture_item` (an item id), or leave it empty so it can never be
 caught. The flag `captured/<combatant id>` counts the catches.
 
+**An unseen status (C8.12).** Turn on `unseen` on a `StatusEffect` and give it a duration and
+a tag. Foes cannot aim at or lock on to its holder; a skill with scope ALL still reaches it.
+It ends when the holder hits a foe or is hit. A DISPEL effect naming its tag is the reveal.
+
 **The fall safety net (C5.8).** Set `combat/field/kill_height` in the project settings to a
 height below every floor. A foe that falls past it is defeated; turn on `returns_home` on an
 `ActionEnemy` that must stay alive. The player is put back on the last floor and defeated.

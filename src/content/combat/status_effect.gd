@@ -86,6 +86,9 @@ enum Reaction { COUNTER, REFLECT }
 ## C8.7a: petrify. While held, the holder counts as fallen when a battle decides who has
 ## won, stands still in the field, and may skip its turns with no end.
 @export var counts_as_fallen: bool = false
+## C8.12: unseen. While held, no foe can choose the holder as a target or lock on to it
+## (`Unseen`). It ends when the holder hits a foe or is hit by one.
+@export var unseen: bool = false
 
 
 ## True when this status carries `block`.

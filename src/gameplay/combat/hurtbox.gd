@@ -89,7 +89,7 @@ static func nearest_hostile(body: Node3D) -> Hurtbox:
 	var best_distance: float = INF
 	for node: Node in body.get_tree().get_nodes_in_group(GROUP):
 		var hurtbox: Hurtbox = node as Hurtbox
-		if hurtbox == null or not me.can_target(hurtbox.fighter(), FactionTable.Target.ENEMY):
+		if hurtbox == null or not Unseen.open(me, hurtbox.fighter(), FactionTable.Target.ENEMY):
 			continue
 		var vitals: Vitals = Vitals.of(hurtbox.get_parent())
 		var distance: float = body.global_position.distance_to(hurtbox.global_position)

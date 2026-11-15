@@ -192,8 +192,10 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 	# A reviving skill aims only at the fallen; everything else only at those still standing.
 	var reviving: bool = command.skill != null and command.skill.revives() \
 			and command.kind != BattleCommand.Kind.ATTACK
+	# A foe that is unseen is left out, unless the skill hits everyone (C8.12).
+	var wide: Skill = null if command.kind == BattleCommand.Kind.ATTACK else command.skill
 	for fighter: Combatant in party + enemies:
-		if _vitals(fighter).is_defeated() == reviving and _current.can_target(fighter, filter):
+		if _vitals(fighter).is_defeated() == reviving and Unseen.open(_current, fighter, filter, wide):
 			out.append(fighter)
 	return out
 

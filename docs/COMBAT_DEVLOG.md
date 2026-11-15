@@ -4531,3 +4531,17 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** a party follower is not caught; one height for the whole game; no windowed
   capture.
 
+
+## 2026-11-15 — C8.12 · Unseen (combat 0.121.0)
+
+- **Did:** `StatusEffect.unseen` and new `src/gameplay/combat/unseen.gd` (`Unseen`): `open`
+  stands in for `Combatant.can_target` in `Battle.targets_for`, `Hurtbox.nearest_hostile`,
+  `Aggro.pick` and `FieldCommands.candidates`, and refuses an unseen foe unless the skill
+  hits everyone; `LockOn` drops and skips an unseen fighter; `Combatant.hit` calls
+  `Unseen.struck`, which ends the status on both the attacker and the one hit. Demo status
+  `data/statuses/smoke_cloak.tres`.
+- **Why:** board row C8.12 (stealth, from `POWER_ATLAS.md`).
+- **Verified:** `tests/unit/unseen_test.gd` (9 checks); the full ladder.
+- **Gaps:** any hit ends it, not only an area hit; a field swing that hits nobody does not;
+  no fade on the holder's sprite; no reveal effect of its own (DISPEL by tag); no windowed
+  capture.

@@ -55,7 +55,7 @@ static func candidates(user: Combatant, command: BattleCommand) -> Array[Combata
 	var here: Vector3 = (user.get_parent() as Node3D).global_position
 	for node: Node in user.get_tree().get_nodes_in_group(Hurtbox.GROUP):
 		var fighter: Combatant = (node as Hurtbox).fighter() if node is Hurtbox else null
-		if fighter == null or found.has(fighter) or not user.can_target(fighter, skill.target):
+		if fighter == null or found.has(fighter) or not Unseen.open(user, fighter, skill.target, skill):
 			continue
 		var body: Node3D = fighter.get_parent() as Node3D
 		var vitals: Vitals = Vitals.of(body)
