@@ -164,17 +164,19 @@ func _helpers() -> void:
 	var choices: Dictionary = {"name": "fx", "chain": [200],
 		"helpers": [{"id": "imp", "moves": [{"state": 200, "weight": 3}, {"state": 300}],
 			"stats": {"max_hp": 9}, "brain": {"attack_range": 2.5}}],
-		"specials": [{"state": 777, "id": "call", "summons": ["imp", "imp"], "lifetime": 15, "cap": 4},
+		"specials": [{"state": 777, "id": "call", "summons": ["imp", "imp"], "lifetime": 15, "cap": 4,
+			"untouchable": true, "moves_each": 1},
 			{"state": 300, "id": "solo", "alone": true}]}
 	var built: Dictionary = MugenKit.build(choices, {200: SWING, 300: BLAST})
 	var kit: PowerKit = built["kit"]
 	var call: SummonMechanism = kit.powers[0].mechanism as SummonMechanism
 	var brain: ActionBrain = call.brains[0]
-	equal("a summon power: two imps with their stats and brain (moves and weights), lifetime, cap, the shared status; no move and no problem; the other forbids that status",
+	equal("a summon power: two imps with their stats and brain (moves and weights), lifetime, cap, untouchable, moves each, the shared status; no move and no problem; the other forbids that status",
 		[call.fighters.size(), call.fighters[0].combatant_id, call.fighters[0].base_stats[&"max_hp"], brain.attack_range,
-			brain.moves.size(), brain.moves[0].weight, brain.moves[1].move.id, call.lifetime, call.cap, call.owner_status.id,
+			brain.moves.size(), brain.moves[0].weight, brain.moves[1].move.id, call.lifetime, call.cap, call.untouchable, call.moves_each,
+			call.owner_status.id,
 			kit.powers[0].move, built["problems"], kit.powers[1].forbids_statuses],
-		[2, &"fx_imp", 9.0, 2.5, 2, 3.0, &"move/fx_300", 15.0, 4, &"status/fx_helpers_out", null,
+		[2, &"fx_imp", 9.0, 2.5, 2, 3.0, &"move/fx_300", 15.0, 4, true, 1, &"status/fx_helpers_out", null,
 			PackedStringArray(), [&"status/fx_helpers_out"]])
 
 

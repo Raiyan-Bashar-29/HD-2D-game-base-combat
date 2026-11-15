@@ -544,6 +544,10 @@ combat.power.yoshimura_eto_noroi_tatara.desc,,Calls Noroi and Tatara to fight be
 combat.status.yoshimura_eto_helpers_out.name,,Helpers Out,[~~Helpers Out~~]
 combat.member.yoshimura_eto_noroi.name,,Noroi,[~~Noroi~~]
 combat.member.yoshimura_eto_tatara.name,,Tatara,[~~Tatara~~]
+combat.power.yoshimura_eto_kakuja_noroi_tatara.name,,Kakuja Noroi & Tatara,[~~Kakuja Noroi & Tatara~~]
+combat.power.yoshimura_eto_kakuja_noroi_tatara.desc,,"In kakuja form, calls the kakuja Noroi and Tatara. Nothing can touch them, and they leave after a while.","[~~In kakuja form, calls the kakuja Noroi and Tatara. Nothing can touch them, and they leave after a while.~~]"
+combat.member.yoshimura_eto_noroi_kakuja.name,,Kakuja Noroi,[~~Kakuja Noroi~~]
+combat.member.yoshimura_eto_tatara_kakuja.name,,Kakuja Tatara,[~~Kakuja Tatara~~]
 combat.power.kakuja_tatara.name,,Tatara,[~~Tatara~~]
 combat.power.kakuja_tatara.desc,,A burning body that shrugs off fire. It burns RC cells while held.,[~~A burning body that shrugs off fire. It burns RC cells while held.~~]
 combat.kit.kakuja_tatara.name,,Tatara's Kakuja,[~~Tatara's Kakuja~~]

@@ -13,6 +13,9 @@ extends PowerMechanism
 ## - `owner_status`: put on the user while any is out and taken off when the last is gone, so
 ##   another power can say "only while none is out" (`Power.forbids_statuses`) or "only while
 ##   one is out" (`requires_statuses`). Give it a long SECONDS duration; the run takes it off.
+## - `untouchable`: nothing can hit them and no foe picks them as a target.
+## - `moves_each`: each leaves once it has finished this many moves, so a summon can appear, do
+##   one thing and go. 0 means no limit.
 ## They all leave when the user falls, when the kit comes off, or when the area is left.
 ##
 ## IN A BATTLE: nothing yet (C8.10c). Its skill, if any, still lands.
@@ -31,6 +34,10 @@ extends PowerMechanism
 @export var spread: float = 1.5
 ## Held by the user while any is out. Null for none.
 @export var owner_status: StatusEffect
+## Nothing can hit them, and no foe picks them as a target.
+@export var untouchable: bool = false
+## Each leaves once it has finished this many moves. 0 means no limit.
+@export var moves_each: int = 0
 
 
 func kind() -> StringName:
@@ -52,8 +59,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has %d fighters but %d brains" % [context, fighters.size(), brains.size()])
 	if fighters.has(null) or brains.has(null):
 		found.append("%s has an empty fighter or brain" % context)
-	if lifetime < 0.0 or cap < 0 or spread < 0.0:
-		found.append("%s has a negative lifetime, cap or spread" % context)
+	if lifetime < 0.0 or cap < 0 or spread < 0.0 or moves_each < 0:
+		found.append("%s has a negative lifetime, cap, spread or moves_each" % context)
 	if owner_status != null:
 		found.append_array(owner_status.problems())
 	return found

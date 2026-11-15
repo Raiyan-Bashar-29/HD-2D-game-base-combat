@@ -3,7 +3,8 @@ extends TestCase
 ## beside the user, on the user's side, and puts `owner_status` on the user; a power that
 ## forbids that status is refused while any is out; `cap` keeps the newest; a lifetime runs out;
 ## the user falling, the area unloading or the kit coming off sends all away; a summon fights the user's foe, and
-## gives no reward when it falls.
+## gives no reward when it falls; an untouchable one is never picked; a `moves_each` of 1 sends
+## one away once its first move ends (C8.10c).
 ##
 ## OWNS: assertions about `SummonMechanism`, `SummonRun`, `OwnedFighter` and
 ## `Power.forbids_statuses`.
@@ -22,7 +23,7 @@ var _rewards: int = 0
 
 
 func run() -> void:
-	plan(8)
+	plan(10)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_rng.seed = 3
@@ -34,6 +35,7 @@ func run() -> void:
 	_coming(me, foe)
 	_leaving(me)
 	_fighting(me, foe)
+	_rules(me, foe)
 	_world.free()
 	Flags.clear_all()
 
@@ -109,6 +111,34 @@ func _fighting(me: Combatant, foe: Combatant) -> void:
 	Events.field_enemy_defeated.disconnect(_on_reward)
 	equal("a summon starts its move at the user's foe and the hit lands; fallen, it gives no reward",
 		[state, hp < 100, _rewards], [ActionDecider.State.ATTACK, true, 0])
+
+
+func _rules(me: Combatant, foe: Combatant) -> void:
+	PowerSet.of(me.get_parent()).equip(_kit())
+	_summon.untouchable = true
+	_summon.moves_each = 1
+	_use(me, _call)
+	var one: OwnedFighter = _out()[0]
+	var foe_body: Node3D = foe.get_parent() as Node3D
+	foe_body.global_position = one.global_position + Vector3(0, 0, -1)
+	var picked: Hurtbox = Aggro.pick(foe_body)
+	equal("an untouchable summon is out of the hurtbox group, so its user's foe picks the user",
+		[_hurtbox(one).is_in_group(Hurtbox.GROUP), _hurtbox(one).monitorable, picked == _hurtbox(me.get_parent())],
+		[false, false, true])
+	var run: SummonRun = PowerSet.of(me.get_parent()).executor(_call.power_id) as SummonRun
+	var steps: int = 0
+	one.act(DT)
+	var started: int = one.moves_done
+	run.tick(DT)
+	var during: bool = _out().has(one)
+	while not one.idle() and steps < 100:
+		one.act(DT)
+		steps += 1
+	run.tick(DT)
+	equal("a summon of one move stays through it and leaves once it ends",
+		[started, during, _out().has(one)], [1, true, false])
+	_summon.untouchable = false
+	_summon.moves_each = 0
 
 
 func _on_reward(_who: StringName, _experience: int, _loot: Array[StringName]) -> void:

@@ -341,7 +341,8 @@ turn forward.
 `SummonMechanism`: `fighters` (one `CombatantDef` each) and `brains` (one `ActionBrain` each,
 same order: its moves are what the helper swings), `spread` metres from the user, `lifetime`
 seconds (0 = until sent away), `cap` (the most out at once; the oldest goes), and
-`owner_status`, held while any is out. They leave when the user falls, the kit comes off or
+`owner_status`, held while any is out. `untouchable` keeps every hit off them and every foe's
+eye; `moves_each = 1` makes a summon that appears, does one move and goes. They leave when the user falls, the kit comes off or
 the area is left. "Only while no helper is out" is `forbids_statuses = [<owner_status id>]` on
 the other power. Field only for now; a battle ignores it (C8.10d). From a converted character,
 list its helpers under `helpers` in the choices file and give the special `summons` (see

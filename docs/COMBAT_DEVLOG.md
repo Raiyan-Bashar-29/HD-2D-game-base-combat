@@ -4744,3 +4744,21 @@ Tree is REFUSED (FORBIDDEN); with `--wall` all 0. Windowed capture in the courty
 Eto, HUD "Helpers Out" and Bronze Tree "not while that lasts". `mugen_build_test` +1,
 `summon_test` covers the area leaving. Ladder green.
 **Gaps.** The kakuja helpers (4000); no battle side, linked hp or saving (C8.10d).
+
+## 2026-11-15 — C8.10c · Untouchable and one-move summons; Eto's kakuja helpers (combat 0.134.0)
+
+**Did.** `SummonMechanism.untouchable` (the `OwnedFighter` takes its hurtbox out of the group
+and turns `monitorable` off, so no hit lands and no foe picks it) and `moves_each` (it counts
+the moves it starts; `SummonRun.tick` sends it away once that many are done and it is idle).
+The converter reads both from a special. Eto's kakuja special 4000 (cost 17 = 500/3000, the
+command's need) calls the kakuja Noroi (stand 2401; 2405 near, 2402 and 2406 far, weighted as
+her stand state's odds) and Tatara (2450, 2451; 2460/2461/2471), untouchable as their
+`HitOverride` is, for 15 s; unpacked into `noroi_kakuja/` and `tatara_kakuja/` with credits.
+**Why.** The owner: summons are separate units, some come for a while, some do one thing and go.
+**Verified.** `summon_test` 10/10 (untouchable: out of the group, the foe picks the user; one
+move: there during it, gone after). `mugen_build_test` reads both fields. `kit_probe`: 4000 used,
+4 helpers out (the human pair too), foe took 257. Windowed capture: the kakuja Noroi in its own
+sprite, HUD "Helpers Out". Ladder green.
+**Gaps.** The entry (2400) and leaving moves (2404, 2453) and the 4000 cutscene are not played.
+By design a helper's hit on a symbol foe opens its turn-based battle, which the helpers do not
+join yet (C8.10d, with linked hp and a saved roster).

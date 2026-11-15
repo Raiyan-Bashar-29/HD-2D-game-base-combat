@@ -1,0 +1,137 @@
+{
+	"author": "刃下心",
+	"name": "Yoshimura Eto",
+	"pixel_size": 0.0303571428571429,
+	"problems": [],
+	"sheet": {
+		"actions": [
+			2450,
+			2451,
+			2451
+		],
+		"cell": [
+			86,
+			69
+		],
+		"feet": [
+			43,
+			68
+		],
+		"file": "sheet.png",
+		"frames": 8,
+		"ground_offset": -0.0303571428571429,
+		"layout": "sheet_layout.tres"
+	},
+	"sounds": [
+		"sounds/200_2.wav",
+		"sounds/300_1.wav",
+		"sounds/300_2.wav",
+		"sounds/400_15.wav",
+		"sounds/400_16.wav",
+		"sounds/400_30.wav",
+		"sounds/400_40.wav",
+		"sounds/400_43.wav",
+		"sounds/400_45.wav",
+		"sounds/400_46.wav"
+	],
+	"strips": {
+		"2460": {
+			"cell": [
+				96,
+				96
+			],
+			"feet": [
+				48,
+				95
+			],
+			"file": "strips/anim_2460.png",
+			"frames": 16,
+			"seconds": 1.91666666666667,
+			"ticks": [
+				6,
+				9,
+				6,
+				6,
+				6,
+				8,
+				7,
+				7,
+				6,
+				6,
+				9,
+				6,
+				12,
+				7,
+				7,
+				7
+			]
+		},
+		"2461": {
+			"cell": [
+				80,
+				72
+			],
+			"feet": [
+				40,
+				71
+			],
+			"file": "strips/anim_2461.png",
+			"frames": 11,
+			"seconds": 1.71666666666667,
+			"ticks": [
+				4,
+				4,
+				7,
+				5,
+				35,
+				8,
+				8,
+				20,
+				4,
+				4,
+				4
+			]
+		},
+		"2471": {
+			"cell": [
+				118,
+				71
+			],
+			"feet": [
+				59,
+				69
+			],
+			"file": "strips/anim_2471.png",
+			"frames": 26,
+			"seconds": 2.01666666666667,
+			"ticks": [
+				4,
+				4,
+				4,
+				4,
+				4,
+				5,
+				4,
+				4,
+				5,
+				4,
+				4,
+				5,
+				4,
+				4,
+				6,
+				4,
+				4,
+				4,
+				5,
+				4,
+				4,
+				4,
+				15,
+				4,
+				4,
+				4
+			]
+		}
+	}
+}

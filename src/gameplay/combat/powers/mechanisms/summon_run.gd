@@ -8,6 +8,7 @@ extends PowerExecutor
 ## out the user holds `owner_status`, and this listens for the user falling and the area
 ## unloading (the player's body lives above the area, so its siblings outlive it). One leaves when:
 ## - its seconds run out (`tick`);
+## - it has finished `moves_each` moves (`tick`);
 ## - a use goes over `cap` (the oldest goes);
 ## - the user falls (all go);
 ## - the kit comes off (`end`, all go);
@@ -41,9 +42,12 @@ func use(user: Combatant, _targets: Array[Combatant], rng: RandomNumberGenerator
 
 ## Time passed: in the field, seconds. Each fighter with a lifetime loses `amount`.
 func tick(amount: float) -> void:
+	var limit: int = (mechanism as SummonMechanism).moves_each
 	for index: int in range(_out.size() - 1, -1, -1):
 		_left[index] -= amount
-		if _left[index] <= 0.0:
+		var one: OwnedFighter = _out[index]
+		var spent: bool = limit > 0 and is_instance_valid(one) and one.moves_done >= limit and one.idle()
+		if _left[index] <= 0.0 or spent:
 			_send(index)
 
 
@@ -58,6 +62,7 @@ func _bring(body: Node3D, summon: SummonMechanism, index: int, count: int) -> vo
 	one.brain = summon.brains[index]
 	one.owner_body = body
 	one.power_id = power.power_id if power != null else &""
+	one.untouchable = summon.untouchable
 	_made += 1
 	one.name = "Owned%d" % _made
 	var spot: Vector3 = _spot(body, summon.spread, index, count)
