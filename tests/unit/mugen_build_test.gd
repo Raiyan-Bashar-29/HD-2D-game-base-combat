@@ -3,10 +3,11 @@ extends TestCase
 ## moves and an unpacked sprite folder, `MugenStarter` writes a kit, a loadout and an art file
 ## that load and point at each other. Also (C8.16b): a move's sounds, shakes, pauses, armour
 ## and second untouchable stretch come out of the converter and go onto the move as events and
-## fields; and a field enemy shows its definition's art.
+## fields; and a field enemy shows its definition's art. Also (C8.10b): `helpers` and a special's
+## `summons` become a summon power, and `alone` forbids its status.
 ##
 ## OWNS: assertions about `MugenKit`, `MugenArt`, `MugenStarter`, `MugenIni.note`, `MugenEvents`, the
-## events and stretches of `MugenFormula.numbers`, and `ActionEnemy`'s art.
+## events and stretches of `MugenFormula.numbers`, `MugenHelpers`, and `ActionEnemy`'s art.
 ## MUST NOT: name a real character, or write outside this run's scratch folder.
 
 const SWING: Dictionary = {"state": 200, "anim": 200, "startup": 0.1, "active": 0.05, "recovery": 0.15,
@@ -30,7 +31,7 @@ var _dir: String
 
 
 func run() -> void:
-	plan(15)
+	plan(16)
 	_dir = RunScratch.path("mugen_build")
 	_folder()
 	var result: Dictionary = MugenStarter.write(_dir.path_join("choices.json"))
@@ -39,6 +40,7 @@ func run() -> void:
 	_fighter(load(_dir.path_join("out/loadout.tres")) as ActionLoadout)
 	_art(load(_dir.path_join("out/art.tres")) as MemberArt)
 	_small_things()
+	_helpers()
 	_enemy()
 
 
@@ -154,6 +156,26 @@ func _small_things() -> void:
 		made["armour_to"], made["notes"]],
 		[0.0, 0.1, 0.2, 0.3, 0.1, 0.25, PackedStringArray(["more than two untouchable stretches; only the first two are kept",
 		"more than one armour stretch; only the first is kept"])])
+
+
+# A special that only calls helpers (its state is not among the moves) and one that may be
+# used only while none is out.
+func _helpers() -> void:
+	var choices: Dictionary = {"name": "fx", "chain": [200],
+		"helpers": [{"id": "imp", "moves": [{"state": 200, "weight": 3}, {"state": 300}],
+			"stats": {"max_hp": 9}, "brain": {"attack_range": 2.5}}],
+		"specials": [{"state": 777, "id": "call", "summons": ["imp", "imp"], "lifetime": 15, "cap": 4},
+			{"state": 300, "id": "solo", "alone": true}]}
+	var built: Dictionary = MugenKit.build(choices, {200: SWING, 300: BLAST})
+	var kit: PowerKit = built["kit"]
+	var call: SummonMechanism = kit.powers[0].mechanism as SummonMechanism
+	var brain: ActionBrain = call.brains[0]
+	equal("a summon power: two imps with their stats and brain (moves and weights), lifetime, cap, the shared status; no move and no problem; the other forbids that status",
+		[call.fighters.size(), call.fighters[0].combatant_id, call.fighters[0].base_stats[&"max_hp"], brain.attack_range,
+			brain.moves.size(), brain.moves[0].weight, brain.moves[1].move.id, call.lifetime, call.cap, call.owner_status.id,
+			kit.powers[0].move, built["problems"], kit.powers[1].forbids_statuses],
+		[2, &"fx_imp", 9.0, 2.5, 2, 3.0, &"move/fx_300", 15.0, 4, &"status/fx_helpers_out", null,
+			PackedStringArray(), [&"status/fx_helpers_out"]])
 
 
 # One state's facts, in ticks: three untouchable stretches (two touch), two armour stretches.

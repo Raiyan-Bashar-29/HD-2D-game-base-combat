@@ -64,7 +64,9 @@ static func chosen(choices: Dictionary) -> PackedInt32Array:
 		for number: Variant in DictRead.get_array(group, "chain"):
 			out.append(int(DictRead.to_float(number)))
 		for special: Dictionary in DictRead.get_array(group, "specials"):
-			out.append(DictRead.get_int(special, "state"))
+			# A summon is drawn by its helpers' own strips (`MugenHelpers`).
+			if DictRead.get_array(special, "summons").is_empty():
+				out.append(DictRead.get_int(special, "state"))
 	return out
 
 

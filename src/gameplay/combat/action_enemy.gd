@@ -222,8 +222,11 @@ func _fall() -> void:
 		Flags.set_flag(defeat_flag(), true)
 
 
+# A map can exist and sync with no navmesh in it (an arena of bare floor): then it has no path
+# to give, so the body walks straight (C8.10b).
 func _has_navmesh() -> bool:
-	return NavigationServer3D.map_get_iteration_id(_agent.get_navigation_map()) > 0
+	var map: RID = _agent.get_navigation_map()
+	return NavigationServer3D.map_get_iteration_id(map) > 0 and not NavigationServer3D.map_get_regions(map).is_empty()
 
 
 func _face(direction: Vector3) -> void:

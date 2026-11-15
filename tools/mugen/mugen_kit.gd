@@ -14,6 +14,7 @@ extends RefCounted
 ##   its skill pays and puts a short `<name>_resolve` status on the user (defence x1.2, 2 s);
 ## - `stances`: each `{id, chain, specials, tint: [r, g, b], stats: {attack: 1.15}}`. They
 ##   become one cycling `FormMechanism`; a stance's specials take a slot only while it is held;
+## - `helpers`, and a special's `summons`, `lifetime`, `cap` and `alone`: see `MugenHelpers`;
 ## - `passives`: paths of `PassiveSkill` files; `stats`, `growth`, `attack_tags`,
 ##   `passive_budget`: the fighter's own numbers; `max_box`: the largest hitbox side, metres.
 ## Names are string keys only; `strings` lists every key the author must add to the CSV.
@@ -31,8 +32,8 @@ static func build(choices: Dictionary, moves: Dictionary) -> Dictionary:
 	var out: Dictionary = {"strings": PackedStringArray(), "problems": PackedStringArray()}
 	var kit := PowerKit.new()
 	kit.kit_id = StringName("kit/" + name)
-	kit.name_key = _key(out, "combat.kit.%s.name" % name)
-	kit.desc_key = _key(out, "combat.kit.%s.desc" % name)
+	kit.name_key = key(out, "combat.kit.%s.name" % name)
+	kit.desc_key = key(out, "combat.kit.%s.desc" % name)
 	var gauge: Dictionary = DictRead.get_dict(choices, "gauge")
 	if not gauge.is_empty():
 		_gauge(kit, gauge)
@@ -99,7 +100,7 @@ static func _special(choices: Dictionary, moves: Dictionary, special: Dictionary
 	var share: float = DictRead.get_float(moves.get(state, {}) as Dictionary, "meter") / METER_FULL
 	var skill := Skill.new()
 	skill.id = StringName("skill/" + word)
-	skill.name_key = _key(out, "combat.power.%s.name" % word)
+	skill.name_key = key(out, "combat.power.%s.name" % word)
 	skill.target = FactionTable.Target.SELF
 	if not gauge.is_empty():
 		skill.cost_pool = StringName(DictRead.get_string(gauge, "pool", "focus"))
@@ -108,9 +109,14 @@ static func _special(choices: Dictionary, moves: Dictionary, special: Dictionary
 	var power := Power.new()
 	power.power_id = StringName("power/" + word)
 	power.name_key = skill.name_key
-	power.desc_key = _key(out, "combat.power.%s.desc" % word)
+	power.desc_key = key(out, "combat.power.%s.desc" % word)
 	power.skill = skill
-	power.move = move(choices, moves, state, out)
+	power.mechanism = MugenHelpers.summon(choices, moves, special, out)
+	# A summon whose state the converter did not give (it only calls helpers) has no move.
+	if power.mechanism == null or moves.has(state):
+		power.move = move(choices, moves, state, out)
+	if DictRead.get_bool(special, "alone"):
+		power.forbids_statuses.append(MugenHelpers.out_status(choices, out).id)
 	power.cooldown = DictRead.get_float(special, "cooldown", 4.0)
 	return power
 
@@ -122,7 +128,7 @@ static func _resolve(name: String, out: Dictionary) -> StatusEffect:
 		return out["resolve"]
 	var resolve := StatusEffect.new()
 	resolve.id = StringName("status/%s_resolve" % name)
-	resolve.name_key = _key(out, "combat.status.%s_resolve.name" % name)
+	resolve.name_key = key(out, "combat.status.%s_resolve.name" % name)
 	resolve.unit = StatusEffect.Unit.SECONDS
 	resolve.duration = 2.0
 	resolve.modifiers.append(StatModifier.of(&"defence", StatModifier.Op.MULTIPLY, 1.2, &""))
@@ -138,7 +144,7 @@ static func _stances(choices: Dictionary, moves: Dictionary, stances: Array, out
 	for stance: Dictionary in stances:
 		var word: String = "%s_%s" % [name, stance["id"]]
 		var form := FormMechanism.new()
-		form.name_key = _key(out, "combat.form.%s.name" % word)
+		form.name_key = key(out, "combat.form.%s.name" % word)
 		form.status = StatusEffect.new()
 		form.status.id = StringName("status/form_" + word)
 		form.status.name_key = form.name_key
@@ -162,8 +168,8 @@ static func _stances(choices: Dictionary, moves: Dictionary, stances: Array, out
 		cycle.cycle.append(form)
 	var power := Power.new()
 	power.power_id = StringName("power/%s_stance" % name)
-	power.name_key = _key(out, "combat.power.%s_stance.name" % name)
-	power.desc_key = _key(out, "combat.power.%s_stance.desc" % name)
+	power.name_key = key(out, "combat.power.%s_stance.name" % name)
+	power.desc_key = key(out, "combat.power.%s_stance.desc" % name)
 	power.mechanism = cycle
 	power.cooldown = 1.0
 	return power
@@ -173,7 +179,7 @@ static func _loadout(choices: Dictionary, moves: Dictionary, kit: PowerKit, out:
 	var name: String = DictRead.get_string(choices, "name", "fighter")
 	var fighter := CombatantDef.new()
 	fighter.combatant_id = StringName(name)
-	fighter.name_key = _key(out, "combat.member.%s.name" % name)
+	fighter.name_key = key(out, "combat.member.%s.name" % name)
 	fighter.faction = &"player"
 	fighter.power_kit = kit
 	fighter.passive_budget = DictRead.get_int(choices, "passive_budget", 4)
@@ -201,6 +207,7 @@ static func _loadout(choices: Dictionary, moves: Dictionary, kit: PowerKit, out:
 	return loadout
 
 
-static func _key(out: Dictionary, key: String) -> String:
-	MugenIni.note(out, "strings", key)
-	return key
+## Notes `key` as a CSV key the author must add, and returns it.
+static func key(out: Dictionary, text: String) -> String:
+	MugenIni.note(out, "strings", text)
+	return text

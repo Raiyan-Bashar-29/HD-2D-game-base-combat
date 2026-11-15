@@ -48,6 +48,9 @@ extends Node
 ##   --interact=<n>       press the interact key n times, so a capture shows the OUTCOME of an
 ##                        action rather than only its prompt. A refusal, a failure and a
 ##                        success look identical until the button is pressed.
+##   --press=<slots>      press power quick-slot keys after the area lands, one every 40 physics
+##                        frames: --press=1,2 enters a style then uses its first power, so a
+##                        capture shows the power working (C8.10b: summons beside the hero).
 ##   --new-game           start a game. Since WP-12 the boot goes to the main menu, not to an
 ##                        area, so without this there is no world to photograph.
 ##   --npc-settle=<n>     let NPCs walk for n physics frames, so a screenshot shows them AT
@@ -104,6 +107,8 @@ func _parse_arguments() -> void:
 			_cycle_target(maxi(1, argument.trim_prefix("--cycle=").to_int()))
 		elif argument.begins_with("--interact="):
 			_press_interact(maxi(1, argument.trim_prefix("--interact=").to_int()))
+		elif argument.begins_with("--press="):
+			_press_slots(argument.trim_prefix("--press="))
 		elif argument == "--new-game":
 			_fresh_game = true
 			_new_game()
@@ -361,3 +366,19 @@ func _new_game() -> void:
 	await get_tree().process_frame
 	Director.start_new_game()
 	Log.info("test", "--new-game requested '%s'" % GameConfig.first_area())
+
+
+## The quick-slot keys, through the input map like a player's hand, after the area lands.
+func _press_slots(list: String) -> void:
+	await _wait_for_area()
+	for slot: String in list.split(",", false):
+		for _i: int in 40:
+			await get_tree().physics_frame
+		var key: int = clampi(slot.to_int(), 1, CombatActions.SLOTS.size()) - 1
+		Log.info("test", "--press slot %d" % (key + 1))
+		for down: bool in [true, false]:
+			var press := InputEventAction.new()
+			press.action = CombatActions.SLOTS[key]
+			press.pressed = down
+			Input.parse_input_event(press)
+			await get_tree().physics_frame

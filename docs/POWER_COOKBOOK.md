@@ -343,7 +343,10 @@ same order: its moves are what the helper swings), `spread` metres from the user
 seconds (0 = until sent away), `cap` (the most out at once; the oldest goes), and
 `owner_status`, held while any is out. They leave when the user falls, the kit comes off or
 the area is left. "Only while no helper is out" is `forbids_statuses = [<owner_status id>]` on
-the other power. Field only for now; a battle ignores it (C8.10c).
+the other power. Field only for now; a battle ignores it (C8.10d). From a converted character,
+list its helpers under `helpers` in the choices file and give the special `summons` (see
+`tools/mugen/mugen_helpers.gd`; Eto's `eto_choices.json` is the example). To see them in a
+capture, `--press=1,2` presses slots after the area lands.
 
 ### R18 · A domain
 

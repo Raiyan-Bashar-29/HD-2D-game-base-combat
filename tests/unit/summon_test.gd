@@ -2,7 +2,7 @@ extends TestCase
 ## Owned fighters (C8.10a). A summon's shape and problems; a use brings one fighter per entry
 ## beside the user, on the user's side, and puts `owner_status` on the user; a power that
 ## forbids that status is refused while any is out; `cap` keeps the newest; a lifetime runs out;
-## the user falling or the kit coming off sends all away; a summon fights the user's foe, and
+## the user falling, the area unloading or the kit coming off sends all away; a summon fights the user's foe, and
 ## gives no reward when it falls.
 ##
 ## OWNS: assertions about `SummonMechanism`, `SummonRun`, `OwnedFighter` and
@@ -84,8 +84,12 @@ func _leaving(me: Combatant) -> void:
 	Events.combatant_defeated.emit(me.combatant_id)
 	var after_fall: int = _out().size()
 	_use(me, _call)
+	Events.area_unloading.emit(&"fixture_area")
+	var after_area: int = _out().size()
+	_use(me, _call)
 	PowerSet.of(me.get_parent()).unequip()
-	equal("the user falling sends all away, and so does the kit coming off", [after_fall, _out().size()], [0, 0])
+	equal("the user falling sends all away, and so do leaving the area and the kit coming off",
+		[after_fall, after_area, _out().size()], [0, 0, 0])
 
 
 func _fighting(me: Combatant, foe: Combatant) -> void:

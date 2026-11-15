@@ -161,6 +161,8 @@ func _press(slot: int, power: Power) -> void:
 		await get_tree().physics_frame
 		_reach = Vector2(minf(_reach.x, _hero.global_position.z), minf(_reach.y, _hero.global_position.y))
 	var place: String = ", hero reached z %.2f y %.2f" % [_reach.x, _reach.y] if _wall or _ledge else ""
+	var helpers: int = get_tree().get_nodes_in_group(OwnedFighter.GROUP).size()
+	place += ", %d helpers out" % helpers if helpers > 0 else ""
 	print("slot %d %s: %s, foe took %d%s, %s" % [slot + 1, power.power_id,
 		"used" if taken else "REFUSED (%s)" % PowerUse.Reason.keys()[why], before - _hp(), place, _gauges()])
 

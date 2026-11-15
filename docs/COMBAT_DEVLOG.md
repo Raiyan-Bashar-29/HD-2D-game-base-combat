@@ -4726,3 +4726,21 @@ Ladder below.
 **Gaps.** No battle side; no linked hp; not saved; a summon picks targets as an enemy does
 (walls ignored, C9.12's gap).
 **Unblocks.** C8.10b.
+
+## 2026-11-15 — C8.10b · Eto's Noroi and Tatara (combat 0.133.0)
+
+**Did.** The converter reads `helpers` (each: sprite folder, moves with weights, stats, brain
+fields) and a special's `summons`, `lifetime`, `cap` and `alone` (`tools/mugen/mugen_helpers.gd`).
+Eto's choices gained Noroi (stand 401, walk 402; 406/407/419 weighted 5/2/5, the `random` odds
+of her stand state) and Tatara (450, 451; 460/462/465), unpacked into `assets/fan/yoshimura_eto/
+noroi/` and `tatara/` (approved with her art). Special 400 summons both for 20 s (cost 8 = 250/3000);
+Bronze Tree is `alone`. Dev flag `--press=<slots>`.
+**Found on the way.** (1) An `ActionEnemy` in an area with no navmesh stood still: the default
+map syncs with no region, so `_has_navmesh` said yes and the path was empty. It now needs a
+region. (2) The player's body lives under `WorldRoot`, so its summoned siblings outlived the
+area; a summon now leaves on `area_unloading`.
+**Verified.** `kit_probe`: the summon brings 2 helpers, the foe takes 29 from them alone, Bronze
+Tree is REFUSED (FORBIDDEN); with `--wall` all 0. Windowed capture in the courtyard: Noroi beside
+Eto, HUD "Helpers Out" and Bronze Tree "not while that lasts". `mugen_build_test` +1,
+`summon_test` covers the area leaving. Ladder green.
+**Gaps.** The kakuja helpers (4000); no battle side, linked hp or saving (C8.10d).

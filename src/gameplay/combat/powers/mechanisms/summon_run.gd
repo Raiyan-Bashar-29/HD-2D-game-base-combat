@@ -4,14 +4,15 @@ extends PowerExecutor
 ## for what the fields mean.
 ##
 ## IN PLAIN WORDS: in the field, using the power makes one `OwnedFighter` per entry, beside the
-## user and never past a wall, as a sibling of the user's body (so leaving the area takes them
-## with it). It keeps the list of those still out and, for each, the seconds left. While any is
-## out the user holds `owner_status`, and this listens for the user falling. One leaves when:
+## user and never past a wall, as a sibling of the user's body. It keeps the list of those still out and, for each, the seconds left. While any is
+## out the user holds `owner_status`, and this listens for the user falling and the area
+## unloading (the player's body lives above the area, so its siblings outlive it). One leaves when:
 ## - its seconds run out (`tick`);
 ## - a use goes over `cap` (the oldest goes);
 ## - the user falls (all go);
 ## - the kit comes off (`end`, all go);
-## - it is freed by anything else: it fell and lingered, or the area was left.
+## - the area is left (all go);
+## - it is freed by anything else: it fell and lingered.
 ## In a battle a use makes nobody yet (C8.10c).
 ##
 ## OWNS: the list of fighters this power has out, and their clocks.
@@ -28,7 +29,7 @@ var _left: Array[float] = []
 func use(user: Combatant, _targets: Array[Combatant], rng: RandomNumberGenerator) -> void:
 	var summon: SummonMechanism = mechanism as SummonMechanism
 	var body: Node3D = user.get_parent() as Node3D
-	if not user.real_time or body == null or not body.is_inside_tree() or not body.get_parent() is Node3D:
+	if not user.real_time or body == null or not body.is_inside_tree():
 		return
 	var count: int = mini(summon.fighters.size(), summon.brains.size())
 	for index: int in count:
@@ -59,9 +60,9 @@ func _bring(body: Node3D, summon: SummonMechanism, index: int, count: int) -> vo
 	one.power_id = power.power_id if power != null else &""
 	_made += 1
 	one.name = "Owned%d" % _made
-	var area: Node3D = body.get_parent() as Node3D
-	one.position = area.to_local(_spot(body, summon.spread, index, count))
-	area.add_child(one)
+	var spot: Vector3 = _spot(body, summon.spread, index, count)
+	body.get_parent().add_child(one)
+	one.global_position = spot
 	one.tree_exiting.connect(_gone.bind(one))
 	_out.append(one)
 	_left.append(summon.lifetime if summon.lifetime > 0.0 else INF)
@@ -108,8 +109,10 @@ func _settle(rng: RandomNumberGenerator) -> void:
 	var listening: bool = Events.combatant_defeated.is_connected(_on_defeated)
 	if _out.is_empty() and listening:
 		Events.combatant_defeated.disconnect(_on_defeated)
+		Events.area_unloading.disconnect(_on_area_left)
 	elif not _out.is_empty() and not listening:
 		Events.combatant_defeated.connect(_on_defeated)
+		Events.area_unloading.connect(_on_area_left)
 	var status: StatusEffect = (mechanism as SummonMechanism).owner_status
 	var body: Node = holder.get_parent() if is_instance_valid(holder) else null
 	var statuses: StatusSet = StatusSet.of(body) if body != null else null
@@ -120,6 +123,10 @@ func _settle(rng: RandomNumberGenerator) -> void:
 		statuses.cure(status.id)
 	elif not _out.is_empty() and not held:
 		statuses.apply(status, rng)
+
+
+func _on_area_left(_area_id: StringName) -> void:
+	_send_all()
 
 
 func _on_defeated(who: StringName) -> void:
