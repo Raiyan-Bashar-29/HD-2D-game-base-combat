@@ -1512,6 +1512,12 @@ against it and multiplies the move's `power` by the window's bonus. Only the fir
 counts. Set `interrupts` on a move to make its landed hit stop the victim's move while that
 move is winding up or in its armour stretch; the victim is stunned as by a push.
 
+**Rarer ailments (C8.7a).** Doom: a status with `fatal` on and a duration; its holder falls
+when it runs out unless it is cured first. Petrify: a status with `counts_as_fallen` on and
+the SKIP_TURN block; it may have no duration, and a side whose standing members are all
+petrified has lost. Instant death: a `SkillEffect` of kind SLAY whose `amount` is the chance.
+Give a boss the stat `resist_death` 1 (it also refuses any status tagged `death`).
+
 **Aggro and taunt (C8.6).** A field foe keeps a threat table: each hit it takes adds the damage
 times 1 plus the attacker's `threat` stat, and it fades by the foe's `ActionBrain.threat_fade`
 points a second. Give a tank `threat` 1 or more on gear, a passive or a status; give a sneak

@@ -80,6 +80,12 @@ enum Reaction { COUNTER, REFLECT }
 ## stopping and cannot dodge or use a command, and a party follower thinks with this brain.
 ## A brain with no entries attacks the first foe.
 @export var takeover: BattleBrain
+## C8.7a: doom. When this status runs out its holder falls at once, whatever its hp. Curing
+## it first (a CURE or a DISPEL) saves the holder. `resist_<tag>` refuses it as any status.
+@export var fatal: bool = false
+## C8.7a: petrify. While held, the holder counts as fallen when a battle decides who has
+## won, stands still in the field, and may skip its turns with no end.
+@export var counts_as_fallen: bool = false
 
 
 ## True when this status carries `block`.
@@ -102,7 +108,9 @@ func problems() -> PackedStringArray:
 		found.append("%s (%s) ticks but names no tick_pool" % [resource_path, id])
 	if unit == Unit.SECONDS and tick_change != 0 and tick_interval <= 0.0:
 		found.append("%s (%s) ticks in seconds with no tick_interval" % [resource_path, id])
-	if blocks.has(Block.SKIP_TURN) and duration <= 0.0 and not breaks_on_hit:
+	if fatal and duration <= 0.0:
+		found.append("%s (%s) is fatal but never runs out: give it a duration" % [resource_path, id])
+	if blocks.has(Block.SKIP_TURN) and duration <= 0.0 and not breaks_on_hit and not counts_as_fallen:
 		# Nothing would ever end it short of a cure, and a whole side asleep forever would stall.
 		found.append("%s (%s) skips turns forever: give it a duration or breaks_on_hit" % [resource_path, id])
 	if reactions.has(Reaction.REFLECT) and reflect_tag == &"":

@@ -140,6 +140,15 @@ func halts() -> bool:
 		var effect: StatusEffect = _held[status_id].effect
 		if effect.unit == StatusEffect.Unit.SECONDS and effect.has_block(StatusEffect.Block.SKIP_TURN):
 			return true
+	return fallen()
+
+
+## True while a held status counts its holder as fallen (petrify, C8.7a). A battle reads it
+## when it decides who has won.
+func fallen() -> bool:
+	for status_id: StringName in _held:
+		if _held[status_id].effect.counts_as_fallen:
+			return true
 	return false
 
 
@@ -291,11 +300,16 @@ func _add_modifiers(effect: StatusEffect) -> void:
 		target.add(StatModifier.of(modifier.stat, modifier.op, modifier.value, effect.id))
 
 
-# Takes a status off because its time ran out, saying so while it does.
+# Takes a status off because its time ran out, saying so while it does. A fatal one (doom,
+# C8.7a) then fells its holder.
 func _run_out(status_id: StringName) -> void:
+	var fatal: bool = _held[status_id].effect.fatal
 	running_out = true
 	_expire(status_id)
 	running_out = false
+	var vitals: Vitals = Vitals.of(get_parent())
+	if fatal and vitals != null:
+		vitals.set_to(vitals.defeat_pool, 0)
 
 
 func _expire(status_id: StringName) -> void:

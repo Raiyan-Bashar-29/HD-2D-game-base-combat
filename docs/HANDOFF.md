@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C8.7** (steal, scan, capture and the rarer ailments). C8.8c (prompts and interrupts: `ActionMove.prompt`, `interrupts`) is done, so row C8.8 is complete. C8.8b (grabs and throws: `ActionMove.throw_move`, `Grab`) is done. C8.8a (launch, juggle and cancel on hit: `ActionMove.launch`, `cancel_on_hit`, `Juggle`) is done. C8.6 (aggro and taunt: `Aggro`, the `threat` stat, a status tagged `taunt`; the overshield is C9.5a's) is done. C8.16b (the converter fills a move's armour, second untouchable stretch and events; a move's sounds are now SOUND events on the move, `MoveArt.sounds` is gone) is done. C8.16 (timed events on a move: `MoveEvent`, the `MoveEvents` node; an armour stretch; a second untouchable stretch) is done. C9.9e (`tools/mugen_build.gd` writes a converted character's kit, loadout and art from a choices file) is done. C9.7 (the passive loadout screen, key L: `LoadoutScreen`, `LoadoutHost`) is done. C7.6 (crafting, the logic: `Recipe`, `RecipeDb`, `Crafting`) is done; its screen is C7.8. C9.8 (the study of fighting-game character files) is done and gave rows C8.16 and a wider C8.8. To add another converted character, follow `docs/POWERS.md` § From a M.U.G.E.N character to a playable fighter. To play as Arima, set `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
+- **Next: C8.7b** (steal, scan, capture). C8.7a (doom, petrify, instant death: `StatusEffect.fatal`, `counts_as_fallen`, `SkillEffect.Kind.SLAY`) is done. C8.8c (prompts and interrupts: `ActionMove.prompt`, `interrupts`) is done, so row C8.8 is complete. C8.8b (grabs and throws: `ActionMove.throw_move`, `Grab`) is done. C8.8a (launch, juggle and cancel on hit: `ActionMove.launch`, `cancel_on_hit`, `Juggle`) is done. C8.6 (aggro and taunt: `Aggro`, the `threat` stat, a status tagged `taunt`; the overshield is C9.5a's) is done. C8.16b (the converter fills a move's armour, second untouchable stretch and events; a move's sounds are now SOUND events on the move, `MoveArt.sounds` is gone) is done. C8.16 (timed events on a move: `MoveEvent`, the `MoveEvents` node; an armour stretch; a second untouchable stretch) is done. C9.9e (`tools/mugen_build.gd` writes a converted character's kit, loadout and art from a choices file) is done. C9.7 (the passive loadout screen, key L: `LoadoutScreen`, `LoadoutHost`) is done. C7.6 (crafting, the logic: `Recipe`, `RecipeDb`, `Crafting`) is done; its screen is C7.8. C9.8 (the study of fighting-game character files) is done and gave rows C8.16 and a wider C8.8. To add another converted character, follow `docs/POWERS.md` § From a M.U.G.E.N character to a playable fighter. To play as Arima, set `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -253,3 +253,20 @@ header before the code.
 6. New code has plain comments wherever the reason is not obvious from the line itself.
 7. Commit and push (a working branch runs no CI). Open a pull request when the batch is
    complete (§ Working rhythm), wait for green CI, then merge.
+
+## What is left, in order (roadmap of 2026-11-15, approved by the owner)
+
+One row per turn, as always. A row over 8 files or 500 lines is split before it starts.
+
+1. **Hit and field mechanics:** C8.7b, C5.8, C8.12, C8.15, C8.9.
+2. **Power mechanisms the kits need:** C6.12, C6.10, C6.11, C6.13, C8.10, C8.11, C8.13, C8.14.
+3. **Turn-battle rules:** C8.1, C8.2, C8.3, C8.4, C8.5.
+4. **Hero kits as data:** C6.14 to C6.25 (C6.17 is mostly done by C9.9b), then C6.23.
+5. **Gear:** C7.2b, C7.9, C7.10, C7.7, C7.8.
+6. **Finish:** C5.4, C5.3b and C5.3c (each needs an upstream row first), C5.5, C5.6, C5.7.
+
+At the end of each stage: one windowed capture pass (`xvfb-run`), merge `template/main`,
+and add the devlog's recorded gaps to the board as rows. New hit rules go in small helper
+files (`Juggle`, `Grab`, `HitGuard`), because `hurtbox.gd`, `hitbox.gd` and
+`action_fighter.gd` are near the 250-line budget. Needed from outside: the Actions quota,
+a person to playtest (C5.6), art, and the two upstream rows.

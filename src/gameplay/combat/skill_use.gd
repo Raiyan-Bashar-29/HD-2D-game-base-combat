@@ -23,6 +23,9 @@ extends RefCounted
 ## COUNTER and REFLECT reactions.
 ## MUST NOT: choose targets, check timing or turns, or draw anything.
 
+## The stat that cuts a SLAY effect's chance: 0 none, 1 immune (C8.7a).
+const DEATH_RESIST: StringName = &"resist_death"
+
 
 ## What `skill` really costs `user`: its `cost`, changed by the user's `cost_mult_<pool>` stat
 ## (C6.1a). The stat is added to 1, the way `poise_taken` is, so -0.5 halves the cost, -1 makes
@@ -210,6 +213,21 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 			# Only the fallen are revived; a standing target is left alone (revive refuses).
 			var back: int = roundi(vitals.maximum(target.damage_pool) * effect.amount)
 			vitals.revive(maxi(1, back))
+		SkillEffect.Kind.SLAY:
+			_slay(target, effect.amount, rng)
+
+
+## Instant death (C8.7a): `target` falls at once on a roll under `chance`, cut by its
+## `resist_death` stat. A fighter holding an invincible status is never taken.
+static func _slay(target: Combatant, chance: float, rng: RandomNumberGenerator) -> void:
+	var vitals: Vitals = _vitals(target)
+	var statuses: StatusSet = StatusSet.of(target.get_parent())
+	if statuses != null:
+		for held: StatusEffect in statuses.held():
+			if held.invincible:
+				return
+	if rng.randf() < chance * (1.0 - target.sheet.value(DEATH_RESIST)):
+		vitals.set_to(vitals.defeat_pool, 0)
 
 
 ## One damaging hit of `skill`: resolved through the user's formula, then, if it landed, checked

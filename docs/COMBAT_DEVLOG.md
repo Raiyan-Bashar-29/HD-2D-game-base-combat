@@ -4487,3 +4487,19 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** nothing on screen shows the window or the result; a move wrapping a `skill`
   ignores the boost; followers and foes never press a prompt; a fighter with
   `knockback_taken` -1 cannot be interrupted; no windowed capture.
+
+## 2026-11-15 — C8.7a · The rarer ailments (combat 0.118.0)
+
+- **Did:** `StatusEffect.fatal` (doom): `StatusSet._run_out` fells the holder when the status
+  runs out, in turns or seconds; a cure does not. `StatusEffect.counts_as_fallen` (petrify):
+  `StatusSet.fallen`, which `Battle._all_down` reads and `halts` returns, so a petrified side
+  has lost and a field fighter stands still. `SkillEffect.Kind.SLAY` (instant death):
+  `SkillUse._slay` rolls `amount` cut by the stat `resist_death`; an invincible status stops
+  it. Demo statuses `status/death_count` and `status/stone_gaze`. C8.7 is split; C8.7b is steal, scan
+  and capture. `HANDOFF.md` gained the owner-approved order of every remaining row.
+- **Why:** board row C8.7, first half.
+- **Verified:** `tests/unit/rare_ailment_test.gd` (10 checks); the full ladder.
+- **Gaps:** no doom count on the HUD; in the field a petrified fighter only stands still
+  (`FieldDefeat` does not count it); SLAY does not wake a `LETHAL_HIT` passive; no demo
+  skill uses SLAY; no windowed capture.
+
