@@ -53,6 +53,8 @@ enum Outcome { ONGOING, WON, LOST, FLED }
 var party: Array[Combatant] = []
 var enemies: Array[Combatant] = []
 var scheduler: TurnScheduler
+## The battle started last and not yet over, for a power that moves the turn order (C6.12a).
+static var running: Battle
 var rng: RandomNumberGenerator
 ## Where ITEM commands spend from. Null refuses every ITEM.
 var inventory: Inventory
@@ -99,6 +101,7 @@ func start() -> void:
 			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
 	for fighter: Combatant in enemies:
 		enemy_ids.append(fighter.combatant_id)
+	running = self
 	Events.battle_started.emit(enemy_ids)
 	# A side that starts with nobody standing ends the fight at once.
 	_check_outcome()
@@ -385,6 +388,8 @@ func _end(how: Outcome) -> void:
 		return
 	_outcome = how
 	_current = null
+	if running == self:
+		running = null
 	Events.battle_ended.emit(how)
 
 

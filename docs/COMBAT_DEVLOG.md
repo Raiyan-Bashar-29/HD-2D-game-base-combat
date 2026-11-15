@@ -4592,3 +4592,14 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   recorded in stage 1 became board rows C8.17, C8.18 and C8.19.
 - **Gaps:** the capture shows the demo standing still; none of the stage 1 mechanics is in
   the demo, so none of them was seen in a window.
+
+## 2026-11-15 — C6.12a · Blink and swap (combat 0.125.0)
+
+- **Did:** M9: `src/content/combat/powers/mechanisms/blink_mechanism.gd` (`BlinkMechanism`,
+  kind `blink`) and `src/gameplay/combat/powers/mechanisms/blink_run.gd` (`BlinkRun`),
+  registered in `PowerMechanisms`. Field: `to` TARGET, BEHIND_TARGET, FORWARD, UP or SWAP,
+  `cancels_recovery`, `arrival`, `path_strike` along the line. Battle: `sooner` through a CTB
+  `delay_by`, SWAP trades waits. `Battle.running` names the battle in progress.
+- **Why:** board row C6.12, first half (split into C6.12a and C6.12b).
+- **Verified:** `tests/unit/blink_test.gd` (8 checks); the full ladder.
+- **Gaps:** no wall or floor check; UP and the player's controller; no demo power.

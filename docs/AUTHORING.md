@@ -1524,6 +1524,10 @@ entry of the foe's `weak_to`. CAPTURE: `amount` times the share of hp the foe ha
 chance; give the foe a `capture_item` (an item id), or leave it empty so it can never be
 caught. The flag `captured/<combatant id>` counts the catches.
 
+**A blink (C6.12a).** Give a `Power` a `BlinkMechanism`: pick `to`, a `distance` or a
+`height`, and optionally `cancels_recovery`, an `arrival` status (invincible, half a second, for
+i-frames), a `path_strike` move, and `sooner` CTB ticks for a battle.
+
 **A thing in the arena (C8.9).** Instance `scenes/objects/arena_thing.tscn` in an area, name
 it, and set `hp`. Give it a `burst` move to make it explode when broken, or a `thrown` move
 to make it fly at the striker's foes when hit.
