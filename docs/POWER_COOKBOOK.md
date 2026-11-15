@@ -748,6 +748,11 @@ godot --headless res://tools/kit_probe/kit_probe.tscn -- --kit=res://data/powers
 godot --headless res://tools/kit_probe/kit_probe.tscn -- --cookbook
 ```
 
+Add `--wall` to stand a wall between the hero and the foe: every press must then show
+"foe took 0", and the hero's furthest z must stay above the wall's (-0.75). Add `--ledge` to end
+the floor 1 m in front of the hero, with the foe over the drop: a lunge must stop at the edge
+(z no lower than about -0.6, y 0). Arima, Eto and the example hero pass both (C9.12).
+
 `--cookbook` tries the example kit in section 3, read straight from this page. Its output on
 2026-11-15:
 

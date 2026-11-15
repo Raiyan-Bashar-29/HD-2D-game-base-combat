@@ -4671,3 +4671,40 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   damage is in the move, which a battle never plays); a kit's passives hold in every stance
   (Eto's regen should be the kakuja's); Narukami Pincer's lightning is a helper (the helper
   row). Next: C9.12, Eto in a real area, at the owner's request.
+
+## 2026-11-15 — C9.12 · Walls and ledges (combat 0.131.0)
+
+**Did.** The owner asked that Eto "handle walls, maps, objects and everything". Reading the
+code showed no combat file cast a single ray. Bodies were already fine: `move_and_slide` stops a
+lunge at a wall. But every hit is an `Area3D`, and areas pass through walls.
+- New `CombatSight` (`src/gameplay/combat/combat_sight.gd`): a ray masked `WORLD |
+  SIGHT_BLOCKER`, aimed 0.8 m above each end (`wall_between`, `short_of`, `aim`), plus
+  `drop_ahead` for ledges.
+- `Hitbox.strike` refuses a target behind a wall, and does not mark it struck. `Projectile` and
+  `Planted` hit from where they are.
+- A shot stops at a wall and reports `landed` there.
+- A blink stops short of a wall; a swap across one does nothing.
+- A move-event shot starts this side of a wall.
+- `FieldCommands.candidates` and `BarrageRun.aim_of` skip foes behind a wall.
+- `ActionFighter`: a lunge or roll stops at a ledge.
+- `kit_probe`: `--wall` and `--ledge`.
+
+**Why.** Before this, Eto's specials hit a foe through a wall, and Air Strike carried her off a
+ledge into the void (the probe saw her fall to y −49).
+
+**Verified.**
+- `tests/unit/combat_walls_test.gd`: 8 checks. With the hitbox check removed, the swing and
+  the breakable-thing checks fail.
+- `kit_probe --wall`: Eto, Arima and the example hero all deal 0, and the hero stays on its side
+  (z −0.32 at most against the wall at −0.75). Before the aiming fix, Final Verdict and Storm of
+  Blades still hit through it.
+- `--ledge`: every lunge stops at about z −0.6 (the edge is at −1), y 0, and still hits the foe
+  over the drop.
+- With Eto as the loadout, the game loads the courtyard and the lantern hall with 0 warnings and
+  0 errors. A windowed capture shows her sprite in the courtyard.
+- The ladder: see the commit.
+
+**Gaps.**
+- A barrage pattern that spawns around the target can spawn past a wall.
+- Enemies still choose a target behind a wall; they walk round on the navmesh.
+- A wall lower than 0.8 m does not block, which is intended.

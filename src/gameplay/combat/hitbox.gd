@@ -13,6 +13,8 @@ extends Area3D
 ## (`MoveTimeline.swing` counts them), or a new clock, forgets them all, so it may strike each
 ## again.
 ##
+## WALLS (C9.12): a hurtbox behind a wall is never struck; `CombatSight` says what a wall is.
+##
 ## OWNS: the hitbox's shape and who it has already struck this swing.
 ## MUST NOT: decide what a hit does (the `Hurtbox` resolves it) or play the move (`MoveTimeline`).
 
@@ -80,7 +82,7 @@ func strike(hurtbox: Hurtbox) -> bool:
 		_clock = timeline
 		_struck.clear()
 	var key: int = hurtbox.get_instance_id()
-	if _struck.has(key):
+	if _struck.has(key) or _walled(hurtbox):
 		return false
 	_struck[key] = true
 	var clock: MoveTimeline = timeline
@@ -95,6 +97,21 @@ func strike(hurtbox: Hurtbox) -> bool:
 		clock.start(move.throw_move)
 		Grab.hold(victim, self, move.throw_move)
 	return counted
+
+
+## Where this hit comes from, for the wall check (C9.12): the attacker's middle. A shot or a
+## blast comes from where it is.
+func _eye() -> Vector3:
+	var body: Node3D = attacker.get_parent() as Node3D if attacker != null else null
+	return CombatSight.aim(body if body != null else self)
+
+
+# True when a wall stands between this hit and `hurtbox` (C9.12). It is not remembered as
+# struck, so a foe who steps out from behind the wall can still be hit this swing.
+func _walled(hurtbox: Hurtbox) -> bool:
+	var target: Node3D = hurtbox.get_parent() as Node3D
+	var at: Vector3 = CombatSight.aim(target if target != null else hurtbox)
+	return CombatSight.wall_between(self, _eye(), at).is_finite()
 
 
 func _on_area_entered(area: Area3D) -> void:

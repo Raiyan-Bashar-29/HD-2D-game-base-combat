@@ -7,6 +7,8 @@ extends PowerExecutor
 ## foes on the way when there is a `path_strike`, moves the body there with its speed cleared,
 ## ends its move when `cancels_recovery`, and puts `arrival` on it. In a battle it moves the
 ## user's turn sooner (or swaps two places in the turn order) and puts `arrival` on it.
+## In the field a blink never passes a wall (C9.12): it stops short of it, and a swap across one
+## moves nobody.
 ##
 ## OWNS: carrying out one blink.
 ## MUST NOT: resolve a hit itself (`Hurtbox.take` and `BarrageRun.strike_with` do), or name a
@@ -53,7 +55,7 @@ func _field(user: Combatant, aim: Combatant, rng: RandomNumberGenerator) -> void
 	if body == null or not body.is_inside_tree():
 		return
 	var from: Vector3 = body.global_position
-	var to: Vector3 = landing(blink, body, aimed)
+	var to: Vector3 = _past_walls(blink, body, landing(blink, body, aimed))
 	if not to.is_finite():
 		return
 	if blink.path_strike != null:
@@ -69,6 +71,18 @@ func _field(user: Combatant, aim: Combatant, rng: RandomNumberGenerator) -> void
 		for child: Node in body.get_children():
 			if child is Hurtbox and (child as Hurtbox).timeline != null:
 				(child as Hurtbox).timeline.cancel()
+
+
+# Walls (C9.12): a blink stops short of the first wall on its way, and a swap across a wall
+# does not happen (`Vector3.INF`).
+static func _past_walls(blink: BlinkMechanism, body: Node3D, to: Vector3) -> Vector3:
+	if not to.is_finite():
+		return to
+	var lift: Vector3 = Vector3.UP * CombatSight.EYE
+	var from: Vector3 = body.global_position + lift
+	if blink.to == BlinkMechanism.To.SWAP:
+		return Vector3.INF if CombatSight.wall_between(body, from, to + lift).is_finite() else to
+	return CombatSight.short_of(body, from, to + lift) - lift
 
 
 func _battle(user: Combatant, aim: Combatant, rng: RandomNumberGenerator) -> void:

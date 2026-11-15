@@ -11,6 +11,10 @@ extends Node
 ## RUN: godot --headless res://tools/kit_probe/kit_probe.tscn -- --kit=res://data/powers/<kit>.tres
 ##      godot --headless res://tools/kit_probe/kit_probe.tscn -- --cookbook
 ## `--cookbook` tries the example kit written in `docs/POWER_COOKBOOK.md` itself.
+## Add `--wall` to stand a wall between the hero and the foe: every press must then show
+## "foe took 0" and the hero's furthest z must stay above the wall's (-0.75).
+## Add `--ledge` to end the floor 1 m in front of the hero, with the foe over the drop: the
+## line then shows how low the hero went and whether the fall net caught it.
 ##
 ## OWNS: a throwaway arena and a report. It saves nothing and changes no file but its own
 ## scratch copy of the cookbook kit, which it deletes.
@@ -25,6 +29,10 @@ var _hero: PlayerController
 var _fighter: ActionFighter
 var _me: Combatant
 var _foe: Combatant
+var _wall: bool = false
+var _ledge: bool = false
+## The furthest forward (lowest z) and lowest y the hero reached during the last press.
+var _reach: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
@@ -43,6 +51,8 @@ func _ready() -> void:
 
 
 func _kit() -> PowerKit:
+	_wall = OS.get_cmdline_user_args().has("--wall")
+	_ledge = OS.get_cmdline_user_args().has("--ledge")
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--kit="):
 			return load(arg.trim_prefix("--kit=")) as PowerKit
@@ -67,14 +77,12 @@ func _cookbook() -> PowerKit:
 
 # A floor, the hero wearing `kit`, and a foe with plenty of hp 1.5 m in front of it.
 func _arena(kit: PowerKit) -> void:
-	var ground := StaticBody3D.new()
-	var shape := CollisionShape3D.new()
-	var box := BoxShape3D.new()
-	box.size = Vector3(60, 1, 60)
-	shape.shape = box
-	shape.position = Vector3(0, -0.5, 0)
-	ground.add_child(shape)
-	add_child(ground)
+	if _ledge:
+		_block(Vector3(60, 1, 30), Vector3(0, -0.5, 14))
+	else:
+		_block(Vector3(60, 1, 60), Vector3(0, -0.5, 0))
+	if _wall:
+		_block(Vector3(6, 3, 0.3), Vector3(0, 1.5, -0.75))
 	var def := CombatantDef.new()
 	def.combatant_id = &"probe_hero"
 	def.faction = &"player"
@@ -89,6 +97,19 @@ func _arena(kit: PowerKit) -> void:
 	_fighter = ActionHost.equip(_hero, loadout)
 	_me = Combatant.of(_hero)
 	_foe = _dummy(_hero.global_position + Vector3(0, 0, -1.5))
+
+
+# A box of world on `Layers.WORLD`: a floor or a wall.
+func _block(size: Vector3, at: Vector3) -> void:
+	var body := StaticBody3D.new()
+	body.collision_layer = Layers.WORLD
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	body.add_child(shape)
+	body.position = at
+	add_child(body)
 
 
 func _dummy(at: Vector3) -> Combatant:
@@ -135,9 +156,13 @@ func _press(slot: int, power: Power) -> void:
 	var before: int = _hp()
 	var why: PowerUse.Reason = PowerUse.refusal(_me, power)
 	var taken: bool = _fighter.press_slot(slot)
-	await _frames(WAIT)
-	print("slot %d %s: %s, foe took %d, %s" % [slot + 1, power.power_id,
-		"used" if taken else "REFUSED (%s)" % PowerUse.Reason.keys()[why], before - _hp(), _gauges()])
+	_reach = Vector2.ZERO
+	for i: int in WAIT:
+		await get_tree().physics_frame
+		_reach = Vector2(minf(_reach.x, _hero.global_position.z), minf(_reach.y, _hero.global_position.y))
+	var place: String = ", hero reached z %.2f y %.2f" % [_reach.x, _reach.y] if _wall or _ledge else ""
+	print("slot %d %s: %s, foe took %d%s, %s" % [slot + 1, power.power_id,
+		"used" if taken else "REFUSED (%s)" % PowerUse.Reason.keys()[why], before - _hp(), place, _gauges()])
 
 
 # Back to the start, facing the foe, idle: a lunge may have carried the hero past it.

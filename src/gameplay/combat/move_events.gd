@@ -119,7 +119,9 @@ func _shoot(body: Node3D, event: MoveEvent) -> void:
 	shot.speed = event.amount
 	shot.launch(event.shot)
 	body.get_parent().add_child(shot)
-	shot.global_position = _spot(body, event.offset)
+	# A shot never starts inside or behind a wall (C9.12).
+	var lift: Vector3 = Vector3.UP * CombatSight.EYE
+	shot.global_position = CombatSight.short_of(body, body.global_position + lift, _spot(body, event.offset))
 	shot.direction = way
 
 

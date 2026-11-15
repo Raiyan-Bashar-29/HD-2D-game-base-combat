@@ -18,6 +18,9 @@ extends Hitbox
 ## WHERE IT LANDS (C6.26): a shot whose flight ends without it striking anyone says where it
 ## ended (`landed`), so a plant can leave something in the ground there (the shards that missed).
 ##
+## WALLS (C9.12): a shot that meets a wall stops there, strikes what it touches at the wall, and is
+## gone; one that struck no one says it `landed` at the wall.
+##
 ## It belongs in the world, not under the fighter, so it does not follow its shooter about.
 ##
 ## OWNS: one shot's flight, its clock and when it is gone.
@@ -74,7 +77,17 @@ func fly(dt: float) -> void:
 		return
 	if timeline.phase == MoveTimeline.Phase.ACTIVE:
 		_steer(dt)
-		global_position += direction * speed * dt
+		var next: Vector3 = global_position + direction * speed * dt
+		var wall: Vector3 = CombatSight.wall_between(self, global_position, next)
+		if wall.is_finite():
+			global_position = wall
+			sweep()
+			if not _gone:
+				if not _struck_any:
+					landed.emit(wall)
+				_end()
+			return
+		global_position = next
 	_face()
 	sweep()
 
@@ -92,6 +105,11 @@ func strike(hurtbox: Hurtbox) -> bool:
 	if counted and not pierce:
 		_end()
 	return counted
+
+
+# A shot hits from where it is, not from its shooter.
+func _eye() -> Vector3:
+	return global_position
 
 
 # Turns toward `homing_at`, no faster than `turn_rate` allows.

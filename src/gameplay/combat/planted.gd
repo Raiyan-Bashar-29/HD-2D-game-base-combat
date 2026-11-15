@@ -103,6 +103,11 @@ func watch(dt: float) -> void:
 		_erupt()
 
 
+# A blast hits from where it stands, not from its planter (C9.12: not through walls).
+func _eye() -> Vector3:
+	return CombatSight.aim(self)
+
+
 # Starts the eruption at once.
 func _erupt() -> void:
 	_fuse = 0.0

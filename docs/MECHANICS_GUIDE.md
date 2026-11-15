@@ -384,6 +384,22 @@ What each piece teaches, so you can reuse it:
    ×1 silently does nothing otherwise.
 7. **A status that skips turns (SKIP_TURN) with no duration** is refused by `problems()`,
    because it would stall a battle forever.
+8. **Walls stop hits, but only walls on `WORLD` or `SIGHT_BLOCKER`** (C9.12, `CombatSight`).
+   Before a hit lands, a ray runs from 0.8 m above the attacker's feet (or from the shot or the
+   blast itself) to 0.8 m above the target's feet. Anything on those two layers in between
+   blocks the hit: a wall, a closed gate, a thin fence. Anything lower than 0.8 m (a step, a low
+   crate) does not. To let hits through something you can see through (bars, glass), put it on
+   another layer. The same check:
+   - stops a shot at the wall, where it reports `landed`;
+   - stops a blink short of the wall, and cancels a swap across one;
+   - makes a move-event shot start on the near side of the wall;
+   - keeps a field command, or a power that finds its own foe, from aiming at anyone behind
+     one.
+   A barrage that spawns its shots around the target (in a ring, or from the sky) can still
+   spawn them past a wall; they hit if nothing stands between the spawn point and the foe.
+9. **A fighter's own lunge or roll stops at a ledge** (no floor within 1.2 m below, 0.6 m
+   ahead). A knockback does not stop there: being knocked off an edge is allowed, and
+   `FallNet` deals with the fall.
 
 ## 14. Where to look when something does not work
 
@@ -391,7 +407,7 @@ What each piece teaches, so you can reuse it:
 |---|---|
 | The key does nothing | `PowerUse.refusal` returns a `Reason`; the HUD shows it. In a probe, print `PowerUse.refusal(me, power)` |
 | The power is not on any key | `PowerSlots.powers` — is it the 5th or later power, or does it need a form you are not in? |
-| The move plays but never hits | `hitbox_size` and `hitbox_offset` (forward is −z), `active` > 0, and the foe within the box |
+| The move plays but never hits | `hitbox_size` and `hitbox_offset` (forward is −z), `active` > 0, the foe within the box, and no wall between (trap 8) |
 | It hits but for little | the formula in section 5: the target's `defence`, weaknesses, the attacker's `attack` |
 | A form does not change the combo | the stage's `attack_chain`; `ActionFighter.current_moves` → `PowerSet.moves_over` |
 | A gauge never fills | the kit's `max_<pool>` bonus exists, and the `GaugeRule.pool` name matches exactly |

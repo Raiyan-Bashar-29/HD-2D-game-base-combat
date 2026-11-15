@@ -71,7 +71,8 @@ func end() -> void:
 
 
 ## Who a field barrage aims at: the first standing one of `targets`, else the fighter the user's
-## lock-on holds, else the nearest foe. Null when there is nobody to aim at.
+## lock-on holds, else the nearest foe; a held or nearest foe behind a wall is not aimed at
+## (C9.12). Null when there is nobody to aim at.
 static func aim_of(user: Combatant, targets: Array[Combatant]) -> Combatant:
 	for target: Combatant in targets:
 		if standing(target):
@@ -81,10 +82,18 @@ static func aim_of(user: Combatant, targets: Array[Combatant]) -> Combatant:
 		return null
 	for child: Node in body.get_children():
 		var lock: LockOn = child as LockOn
-		if lock != null and lock.target != null and standing(lock.target.fighter()):
+		if lock != null and lock.target != null and standing(lock.target.fighter()) \
+				and _seen(body, lock.target.fighter()):
 			return lock.target.fighter()
 	var nearest: Hurtbox = Hurtbox.nearest_hostile(body)
-	return nearest.fighter() if nearest != null else null
+	return nearest.fighter() if nearest != null and _seen(body, nearest.fighter()) else null
+
+
+# True when no wall stands between `body` and `foe` (C9.12): a power that finds its own foe
+# never picks one behind a wall.
+static func _seen(body: Node3D, foe: Combatant) -> bool:
+	var there: Node3D = foe.get_parent() as Node3D
+	return there == null or not CombatSight.wall_between(body, CombatSight.aim(body), CombatSight.aim(there)).is_finite()
 
 
 ## Where shot `i` of `n` starts, and which way it faces (its -z), for a barrage fired from the

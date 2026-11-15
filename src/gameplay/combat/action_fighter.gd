@@ -231,6 +231,9 @@ func _move_body() -> void:
 	elif timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.speed() > 0.0:
 		var way: Vector3 = _roll if timeline.swing == _dodge_swing else facing
 		wish = way * timeline.speed()
+		# A lunge or a roll stops at a ledge rather than carry the fighter off it (C9.12).
+		if _body.is_on_floor() and CombatSight.drop_ahead(_body, way):
+			wish = Vector3.ZERO
 	# A slowed fight slows the roll and the push with it, and a stopped one holds them still.
 	_body.velocity.x = wish.x * CombatClock.scale
 	_body.velocity.z = wish.z * CombatClock.scale
