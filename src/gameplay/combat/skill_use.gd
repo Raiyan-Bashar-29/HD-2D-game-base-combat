@@ -215,6 +215,12 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 			vitals.revive(maxi(1, back))
 		SkillEffect.Kind.SLAY:
 			_slay(target, effect.amount, rng)
+		SkillEffect.Kind.STEAL:
+			Pilfer.steal(user, target, effect.amount, rng)
+		SkillEffect.Kind.SCAN:
+			Weakness.reveal_all(target)
+		SkillEffect.Kind.CAPTURE:
+			Pilfer.capture(user, target, effect.amount, rng)
 
 
 ## Instant death (C8.7a): `target` falls at once on a roll under `chance`, cut by its

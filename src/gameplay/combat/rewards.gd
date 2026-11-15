@@ -40,7 +40,11 @@ static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) ->
 	if battle.outcome() != Battle.Outcome.WON or encounter == null:
 		return Rewards.new()
 	var standing: Array[CombatantDef] = []
+	# What the party stole or captured in the fight comes home with the loot (C8.7b).
+	var spoils: Array[StringName] = []
 	for fighter: Combatant in battle.party:
+		spoils.append_array(fighter.spoils)
+		fighter.spoils.clear()
 		var def: CombatantDef = battle.defs.get(fighter.combatant_id, null)
 		if def != null and not Vitals.of(fighter.get_parent()).is_defeated():
 			standing.append(def)
@@ -48,7 +52,8 @@ static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) ->
 	for enemy: CombatantDef in encounter.enemies:
 		if enemy != null:
 			tables.append(enemy.loot_table)
-	return give(encounter.experience, encounter.loot + LootRoll.all(tables, battle.rng), standing, inventory)
+	return give(encounter.experience, encounter.loot + spoils + LootRoll.all(tables, battle.rng),
+		standing, inventory)
 
 
 ## The reward itself, with no battle (C3.8): `experience` to each of `members` (the caller

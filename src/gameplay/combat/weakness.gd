@@ -181,6 +181,16 @@ static func keys_of(skill: Skill) -> Array[StringName]:
 	return keys
 
 
+## Reveals every weakness of `fighter`'s kind at once: a scan (C8.7b). Returns how many were new.
+static func reveal_all(fighter: Combatant) -> int:
+	var fresh: int = 0
+	for key: StringName in fighter.weak_to:
+		if not revealed(fighter, key):
+			_reveal(fighter, key)
+			fresh += 1
+	return fresh
+
+
 static func _reveal(fighter: Combatant, key: StringName) -> void:
 	if revealed(fighter, key):
 		return

@@ -1518,6 +1518,12 @@ the SKIP_TURN block; it may have no duration, and a side whose standing members 
 petrified has lost. Instant death: a `SkillEffect` of kind SLAY whose `amount` is the chance.
 Give a boss the stat `resist_death` 1 (it also refuses any status tagged `death`).
 
+**Steal, scan and capture (C8.7b).** Three more `SkillEffect` kinds. STEAL: `amount` is the
+chance; give the foe's `CombatantDef` a `steal_table` (a `LootTable`). SCAN: reveals every
+entry of the foe's `weak_to`. CAPTURE: `amount` times the share of hp the foe has lost is the
+chance; give the foe a `capture_item` (an item id), or leave it empty so it can never be
+caught. The flag `captured/<combatant id>` counts the catches.
+
 **Aggro and taunt (C8.6).** A field foe keeps a threat table: each hit it takes adds the damage
 times 1 plus the attacker's `threat` stat, and it fades by the foe's `ActionBrain.threat_fade`
 points a second. Give a tank `threat` 1 or more on gear, a passive or a status; give a sneak

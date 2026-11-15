@@ -43,6 +43,11 @@ extends Resource
 ## Loot this fighter drops when beaten, rolled each time (C7.2): in a battle on top of the
 ## encounter's, in the field on top of the enemy's own `loot`. Null means none.
 @export var loot_table: LootTable
+## What a STEAL effect takes from this fighter, one roll, once (C8.7b). Null: nothing to take.
+@export var steal_table: LootTable
+## The item a CAPTURE effect puts in the bag for this fighter (C8.7b). Empty: it cannot be
+## captured, which is what a boss wants.
+@export var capture_item: StringName = &""
 ## What it looks and sounds like in the field (C9.9d): a sheet, and a strip and sounds per move.
 ## Null keeps the body's own sheet.
 @export var art: MemberArt
@@ -80,6 +85,8 @@ func problems(context: String) -> PackedStringArray:
 			found.append("%s starts with '%s', which has no gear file" % [where, item_id])
 	if loot_table != null:
 		found.append_array(loot_table.problems(where))
+	if steal_table != null:
+		found.append_array(steal_table.problems(where))
 	if art != null:
 		found.append_array(art.problems(where))
 	return found

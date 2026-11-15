@@ -4503,3 +4503,19 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   (`FieldDefeat` does not count it); SLAY does not wake a `LETHAL_HIT` passive; no demo
   skill uses SLAY; no windowed capture.
 
+## 2026-11-15 — C8.7b · Steal, scan and capture (combat 0.119.0)
+
+- **Did:** three `SkillEffect` kinds. STEAL and CAPTURE go through the new
+  `src/gameplay/combat/pilfer.gd` (`Pilfer`): a steal takes one roll of the target's
+  `steal_table`, once per target; a capture's chance is `amount` times the share of hp lost,
+  and a caught target falls, gives its `capture_item` and adds 1 to the flag
+  `captured/<kind>`. SCAN calls `Weakness.reveal_all`. `CombatantDef` and `Combatant` gained
+  `steal_table` and `capture_item` (copied by `BattleSetup` and `ActionEnemy`). Goods go to the
+  bag on the user's body; with none they wait in `Combatant.spoils`, which `Rewards.grant`
+  adds to a won battle's loot.
+- **Why:** board row C8.7, second half.
+- **Verified:** `tests/unit/pilfer_test.gd` (10 checks); the full ladder.
+- **Gaps:** spoils are lost on a flight or a loss; a field follower's spoils are never handed
+  over; nothing on screen says what was taken; a captured creature is only an item and a
+  count; no demo skill uses the kinds; no windowed capture.
+

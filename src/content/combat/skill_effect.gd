@@ -12,6 +12,11 @@ extends Resource
 ## - DISPEL: end every status the target holds that carries `tag`: strip buffs, purge debuffs.
 ## - REVIVE: stand a fallen target back up with `amount` (0 to 1) of their maximum hp. A skill
 ##   with a REVIVE aims only at the fallen (`Skill.revives`).
+## - STEAL (C8.7b): at chance `amount`, take one roll of the target's `steal_table`. Once per
+##   target; a target with no table has nothing to take.
+## - SCAN (C8.7b): reveal every weakness of the target's kind.
+## - CAPTURE (C8.7b): take a target that has a `capture_item` out of the fight and into the bag.
+##   The chance is `amount` times the share of hp the target has lost, so a fresh foe never goes.
 ## - SLAY: instant death (C8.7a). `amount` is the chance (0 to 1) the target falls at once. The
 ##   target's `resist_death` stat cuts the chance (1 is immune), and an invincible status stops it.
 ##
@@ -21,11 +26,11 @@ extends Resource
 ## OWNS: the shape of one effect and what is wrong with it.
 ## MUST NOT: apply itself, or know who uses it. `SkillUse` (gameplay) does that.
 
-enum Kind { DAMAGE, HEAL, RESTORE, DRAIN, CURE, DISPEL, REVIVE, SLAY }
+enum Kind { DAMAGE, HEAL, RESTORE, DRAIN, CURE, DISPEL, REVIVE, SLAY, STEAL, SCAN, CAPTURE }
 
 @export var kind: Kind = Kind.DAMAGE
 ## Power for DAMAGE and DRAIN, points for HEAL and RESTORE, a fraction of max hp for REVIVE,
-## a chance for SLAY.
+## a chance for SLAY, STEAL and CAPTURE.
 @export var amount: float = 0.0
 ## The pool RESTORE fills.
 @export var pool: StringName = &"mp"
@@ -52,7 +57,7 @@ func problems(context: String) -> PackedStringArray:
 		Kind.DISPEL:
 			if tag == &"":
 				found.append("%s has a DISPEL effect naming no tag" % context)
-		Kind.REVIVE, Kind.SLAY:
+		Kind.REVIVE, Kind.SLAY, Kind.STEAL, Kind.CAPTURE:
 			if amount <= 0.0 or amount > 1.0:
 				found.append("%s has a %s effect whose amount is not a fraction above 0 up to 1"
 					% [context, Kind.keys()[kind]])

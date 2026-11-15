@@ -55,6 +55,12 @@ const GROUP: StringName = &"combatants"
 @export var kind: StringName = &""
 ## What kind of creature this is (dragon, undead), copied from its definition (C9.2a).
 @export var traits: Array[StringName] = []
+## What a STEAL takes and what a CAPTURE gives, copied from its definition (C8.7b, `Pilfer`).
+@export var steal_table: LootTable
+@export var capture_item: StringName = &""
+## Items this fighter took with no bag to put them in (a party member in a battle). The
+## battle's rewards hand them over.
+var spoils: Array[StringName] = []
 
 ## True when this fighter lives in real time, so its statuses count in seconds (C4.6). Set by
 ## whoever builds a field fighter (`ActionHost.equip`, `ActionEnemy`); a battle builds fresh
