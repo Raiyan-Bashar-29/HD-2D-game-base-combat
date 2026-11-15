@@ -4473,3 +4473,17 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Gaps:** no escape for the victim; a boss avoids a grab only by not flinching; no demo move
   grabs and the converter makes none; field only; others can still hit a held victim; no
   windowed capture.
+
+## 2026-11-15 — C8.8c · Prompts and interrupts (combat 0.117.0)
+
+- **Did:** `ActionMove.prompt` (a `TimedWindow`) and `interrupts`. `MoveTimeline.time_press`
+  times the first attack press of a move and keeps the multiplier in `boost`; `ActionFighter`
+  calls it, the `Hitbox` passes `boost` to `Hurtbox.take`, which multiplies a plain move's
+  power. `Hurtbox._interrupt` cancels the victim's move in its wind-up or armour stretch and
+  asks for a push (of no length when the move has none), which is the stun. The demo
+  Wanderer's third swing has a prompt and interrupts.
+- **Why:** board row C8.8c, the last part of C8.8.
+- **Verified:** `tests/unit/prompt_test.gd` (10 checks); the full ladder.
+- **Gaps:** nothing on screen shows the window or the result; a move wrapping a `skill`
+  ignores the boost; followers and foes never press a prompt; a fighter with
+  `knockback_taken` -1 cannot be interrupted; no windowed capture.

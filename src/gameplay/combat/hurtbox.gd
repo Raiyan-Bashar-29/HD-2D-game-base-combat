@@ -32,6 +32,11 @@ extends Area3D
 ## already in the air, lifts the fighter (`Juggle.lift`) and drops its swing, unless the hit was
 ## countered, the fighter is in an armour stretch, or it does not flinch at all.
 ##
+## INTERRUPT (C8.8c): a landed hit of a move that `interrupts` stops this fighter's own move
+## while it is winding up or in its armour stretch, and stuns it as a push does.
+## PROMPT (C8.8c): `boost` multiplies a plain move's power; the `Hitbox` passes what the
+## attacker's timed press earned.
+##
 ## `flinched` says whether the last hit moved the fighter at all: it landed, was not countered,
 ## and the fighter flinches. A grab (C8.8b) holds only a fighter that flinched.
 ##
@@ -55,6 +60,8 @@ var timeline: MoveTimeline
 var landed: bool = false
 ## True when that hit also made the fighter flinch: not countered, no armour, not unflinching.
 var flinched: bool = false
+## True when that hit stopped this fighter's move as an interrupt (C8.8c).
+var interrupted: bool = false
 
 
 func _ready() -> void:
@@ -94,10 +101,12 @@ static func nearest_hostile(body: Node3D) -> Hurtbox:
 
 ## `attacker` struck this with `move`, from the point `from`. True when the hit counted:
 ## resolved on this fighter, whether or not it then missed. False when refused or dodged.
-func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, from: Vector3) -> bool:
+func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, from: Vector3,
+		boost: float = 1.0) -> bool:
 	var target: Combatant = fighter()
 	landed = false
 	flinched = false
+	interrupted = false
 	if attacker == null or move == null or target == null or target == attacker:
 		return false
 	var filter: FactionTable.Target = move.skill.target if move.skill != null else FactionTable.Target.ENEMY
@@ -109,17 +118,33 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 		if timeline.perfectly():
 			Events.perfect_dodge.emit(target.combatant_id, attacker.combatant_id)
 		return true
-	var outcome: Outcome = _resolve(attacker, move, target, rng)
+	var outcome: Outcome = _resolve(attacker, move, target, rng, boost)
 	var countered: bool = outcome != Outcome.MISSED and _counter(attacker, target, rng)
 	landed = outcome == Outcome.LANDED
 	if landed:
 		Weakness.wear(target, move.poise)
 		if not countered:
+			_interrupt(target, move)
 			_push(target, move, from)
 			flinched = target.sheet.value(&"knockback_taken") > -1.0 \
 				and not (timeline != null and timeline.armoured())
 			_launch(move)
 	return true
+
+
+# A move that interrupts stops this fighter's wind-up or armoured move, and stuns it (C8.8c).
+func _interrupt(target: Combatant, move: ActionMove) -> void:
+	if not move.interrupts or timeline == null or not timeline.busy():
+		return
+	if timeline.phase != MoveTimeline.Phase.STARTUP and not timeline.armoured():
+		return
+	if target.sheet.value(&"knockback_taken") <= -1.0:
+		return
+	timeline.cancel()
+	interrupted = true
+	# A move with no push of its own still stuns: a push of no length.
+	if move.knockback <= 0.0:
+		Events.knockback_requested.emit(target.combatant_id, Vector3.ZERO)
 
 
 # Lifts the fighter off its feet (C8.8a) when the move launches or it is already in the air.
@@ -152,7 +177,7 @@ func _counter(attacker: Combatant, target: Combatant, rng: RandomNumberGenerator
 
 ## Resolves the hit itself, and says what became of it.
 func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
-		rng: RandomNumberGenerator) -> Outcome:
+		rng: RandomNumberGenerator, boost: float) -> Outcome:
 	if move.skill != null:
 		# A skill lands the way it does in a battle: power, effects, statuses, reflect and all.
 		# It does not report misses one by one, so poise and knockback treat it as landed.
@@ -165,7 +190,7 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 	keys.append_array(attacker.strike_tags())
 	var outcome: Outcome = Outcome.MISSED
 	for i: int in maxi(1, move.hits):
-		var result: DamageResult = attacker.hit(target, move.power, element, rng)
+		var result: DamageResult = attacker.hit(target, move.power * boost, element, rng)
 		if result == null or result.missed:
 			continue
 		# A hit a barrier stopped whole did not land: no shield chip, no poise, no push (C6.6a).

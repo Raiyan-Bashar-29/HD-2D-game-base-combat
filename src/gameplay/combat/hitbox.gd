@@ -85,7 +85,7 @@ func strike(hurtbox: Hurtbox) -> bool:
 	_struck[key] = true
 	var clock: MoveTimeline = timeline
 	var move: ActionMove = timeline.move
-	var counted: bool = hurtbox.take(attacker, timeline.move, rng, global_position)
+	var counted: bool = hurtbox.take(attacker, timeline.move, rng, global_position, timeline.boost)
 	# A landed hit lets a `cancel_on_hit` move go straight into the next swing (C8.8a).
 	if hurtbox.landed:
 		clock.connected()

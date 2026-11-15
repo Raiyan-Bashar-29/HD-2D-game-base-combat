@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://src/content/combat/move_set.gd" id="5_ua7tc"]
 [ext_resource type="Script" path="res://src/content/combat/action_loadout.gd" id="6_o56hc"]
 [ext_resource type="Script" path="res://src/content/combat/atb_rules.gd" id="7_atbru"]
+[ext_resource type="Script" path="res://src/content/combat/timed_window.gd" id="11_timed"]
 [ext_resource type="Resource" path="res://data/skills/ember.tres" id="8_ember"]
 [ext_resource type="Resource" path="res://data/skills/salve.tres" id="9_salve"]
 [ext_resource type="Resource" path="res://data/action/keeper_loadout.tres" id="10_keeper"]
@@ -55,6 +56,14 @@ power = 5.0
 hitbox_size = Vector3(1.6, 1.2, 1.4)
 hitbox_offset = Vector3(0, 0.8, -0.9)
 
+[sub_resource type="Resource" id="Resource_prompt"]
+script = ExtResource("11_timed")
+opens = 0.06
+closes = 0.2
+bonus = 1.5
+perfect = 0.04
+perfect_bonus = 2.0
+
 [sub_resource type="Resource" id="Resource_557cg"]
 script = ExtResource("4_vtpru")
 startup = 0.16
@@ -62,6 +71,8 @@ active = 0.14
 recovery = 0.35
 power = 7.0
 launch = 0.8
+prompt = SubResource("Resource_prompt")
+interrupts = true
 poise = 1
 knockback = 2.0
 hitbox_size = Vector3(2, 1.2, 1.8)

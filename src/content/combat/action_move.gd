@@ -66,6 +66,13 @@ extends Resource
 ## A GRAB (C8.8b): when this move lands and its victim flinches, the victim is held in place
 ## and the user plays this follow-up at once, the throw. The throw always lands on the victim.
 @export var throw_move: ActionMove
+## A PROMPT (C8.8c): a timed press. The first attack press while this move plays is measured
+## against this window, in seconds since the move started, and multiplies the move's `power`.
+## Only the first press counts, so mashing misses it. Null means the move has no prompt.
+@export var prompt: TimedWindow
+## An INTERRUPT (C8.8c): a landed hit of this move stops its victim's move while that move is
+## still winding up, or inside its armour stretch, and stuns the victim as a push does.
+@export var interrupts: bool = false
 ## A skill to resolve the hit through instead of `power` and `element`.
 @export var skill: Skill
 @export_group("Shape")
@@ -94,6 +101,10 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s takes no time at all" % context)
 	if throw_move != null and (not throw_move.strikes() or throw_move.throw_move != null):
 		found.append("%s has a throw that does not strike, or that grabs again" % context)
+	if prompt != null:
+		found.append_array(prompt.problems("%s prompt" % context))
+		if prompt.opens > length():
+			found.append("%s has a prompt that opens after the move ends" % context)
 	if launch < 0.0:
 		found.append("%s has a negative launch time" % context)
 	if chain_after < 0.0 or chain_after > recovery:

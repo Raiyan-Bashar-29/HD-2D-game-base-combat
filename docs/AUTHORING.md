@@ -1506,6 +1506,12 @@ act, and the attacker plays the throw at once. The throw always lands the moment
 its `knockback` and `launch` then carry the victim away. If the attacker is hit before that,
 the victim is let go unharmed.
 
+**A prompt and an interrupt (C8.8c).** Give an `ActionMove` a `prompt` (a `TimedWindow`, in
+seconds since the move started): the player's first attack press while the move plays is timed
+against it and multiplies the move's `power` by the window's bonus. Only the first press
+counts. Set `interrupts` on a move to make its landed hit stop the victim's move while that
+move is winding up or in its armour stretch; the victim is stunned as by a push.
+
 **Aggro and taunt (C8.6).** A field foe keeps a threat table: each hit it takes adds the damage
 times 1 plus the attacker's `threat` stat, and it fades by the foe's `ActionBrain.threat_fade`
 points a second. Give a tank `threat` 1 or more on gear, a passive or a status; give a sneak

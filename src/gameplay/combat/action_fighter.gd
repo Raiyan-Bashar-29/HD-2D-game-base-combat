@@ -113,6 +113,9 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	if (vitals != null and vitals.is_defeated()) or (statuses != null and statuses.halts()):
 		timeline.cancel()
 	elif not stunned() and not _held_by_others() and moves != null:
+		# A press while a move plays is first its timed press, if it has a prompt (C8.8c).
+		if attack and timeline.busy():
+			timeline.time_press()
 		_start_moves(attack, dodge)
 	timeline.step(dt)
 	_report_move()

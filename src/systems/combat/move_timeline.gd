@@ -23,6 +23,9 @@ extends RefCounted
 ## CANCEL ON HIT (C8.8a): a move with `cancel_on_hit` that has landed (`connected`) opens its
 ## chain window at once, even mid-swing, so the next swing comes straight out of the hit.
 ##
+## A PROMPT (C8.8c): `time_press` measures the first attack press of a move against the move's
+## `prompt` window and keeps the result in `boost`, which multiplies the move's power.
+##
 ## `swing` counts every move started, so a hitbox can hit each target once per swing.
 ##
 ## OWNS: the current move, its elapsed time, the chain position and the buffered press.
@@ -41,11 +44,15 @@ var elapsed: float = 0.0
 ## Which move of the chain is playing; -1 when no chain is.
 var chain_index: int = -1
 var swing: int = 0
+## What the current move's power is multiplied by: 1, or what a timed press earned (C8.8c).
+var boost: float = 1.0
 
 var _chain: Array[ActionMove] = []
 var _buffered: bool = false
 # True once the current move has landed a hit.
 var _connected: bool = false
+# True once the current move's one timed press has been used.
+var _pressed: bool = false
 
 
 ## Plays `next` from its first frame, ending whatever was playing. Leaves any chain.
@@ -91,6 +98,16 @@ func step(dt: float) -> Array[int]:
 	while moved and phase != Phase.IDLE:
 		moved = _advance(entered)
 	return entered
+
+
+## The attack button, pressed while a move plays: the first press of a move with a `prompt` is
+## timed against it. Returns the multiplier it earned; 1.0 when it missed or there is no prompt.
+func time_press() -> float:
+	if move == null or move.prompt == null or _pressed:
+		return 1.0
+	_pressed = true
+	boost = move.prompt.multiplier(elapsed)
+	return boost
 
 
 ## The current move has landed a hit. A buffered press of a `cancel_on_hit` move plays on the
@@ -179,6 +196,8 @@ func _begin(next: ActionMove, carried: float) -> void:
 	swing += 1
 	_buffered = false
 	_connected = false
+	_pressed = false
+	boost = 1.0
 
 
 # True when the current move has landed and may be cancelled into the chain's next move.
