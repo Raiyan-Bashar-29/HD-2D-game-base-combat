@@ -101,6 +101,9 @@ enum Reaction { COUNTER, REFLECT }
 @export var spread_reach: float = 0.0
 ## C8.15b: while held, a foe that hits at the holder gets this status.
 @export var punish_status: StatusEffect
+## C6.11: obey. While held, the holder fights for whoever applied it: it takes that fighter's
+## side for every target choice (`Combatant.side`), and a battle counts it out of its own side.
+@export var obeys: bool = false
 
 
 ## True when this status carries `block`.

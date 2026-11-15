@@ -1537,6 +1537,13 @@ and puts `speed` on each fighter refreshed: give that status a `cooldown_rate` A
 inside the power's `active_hours`. Set `rewrites` with `dodge` and/or `force`, a field
 `rewrite_gap`, and switch on `observe` or `reveal` as wanted.
 
+**Command and grant (C6.11).** A `CommandMechanism` gives one foe an `order`: OBEY needs a
+`status` with `obeys` on, STOP one that skips turns; FORGET and FALL need none. Give the power
+a cost-only skill aimed at one foe so a battle lets the player choose. Set `once_flag` for
+"once per foe" (saved), `immune_tag` (such as `boss`), `canceller_tag`, and the field's
+`reach` and `sight`. A `GrantMechanism` gives `gifts` (or one with `pick_one`) and lends a
+`kit` for `lasts` to the aimed ally, or to the whole side with `to_all`.
+
 **A thing in the arena (C8.9).** Instance `scenes/objects/arena_thing.tscn` in an area, name
 it, and set `hp`. Give it a `burst` move to make it explode when broken, or a `thrown` move
 to make it fly at the striker's foes when hit.

@@ -4626,3 +4626,16 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
 - **Verified:** `tests/unit/foresight_test.gd` (10 checks); suite 4568 passed, the seven
   checkers, stripped 4460 passed, 29 skipped.
 - **Gaps:** field refill on entering an area; rewrites spent automatically; "Reading" not built.
+
+## 2026-11-15 — C6.11 · Command and grant (combat 0.128.0)
+
+- **Did:** M8 `CommandMechanism` and `CommandRun` (kind `command`: OBEY, STOP, FORGET, FALL,
+  with the once flag, a canceller, an immune trait, reach and sight); M12 `GrantMechanism` and
+  `GrantRun` (kind `grant`: gifts and a lent kit, held through `PowerSet.hold_kit`).
+  `StatusEffect.obeys`, `StatusSet.obeyed` and `Combatant.side`: `can_target` reads the side,
+  so every target choice follows an obeying foe; `Battle._all_down` counts it out.
+- **Why:** board row C6.11; Lelouch's orders, the Almighty's Schrift, Isliid's arts.
+- **Verified:** `tests/unit/command_grant_test.gd` (13 checks); suite 4583 passed, the seven
+  checkers, stripped 4475 passed, 29 skipped.
+- **Gaps:** a refused order still costs; a forgotten battle foe's reward share is still given;
+  the obeyed id is not saved; no demo power.

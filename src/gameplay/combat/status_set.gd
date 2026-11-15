@@ -155,6 +155,15 @@ func fallen() -> bool:
 	return false
 
 
+## The id of whoever the holder obeys now (C6.11): who applied the first held status that
+## `obeys`, or an empty id while it is its own.
+func obeyed() -> StringName:
+	for status_id: StringName in _held:
+		if _held[status_id].effect.obeys:
+			return _held[status_id].by
+	return &""
+
+
 ## Every status held now, in the order they were applied. The battle readout lists them (C2.19).
 func held() -> Array[StatusEffect]:
 	var out: Array[StatusEffect] = []

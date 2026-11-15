@@ -130,7 +130,18 @@ func can_target(other: Combatant, filter: FactionTable.Target) -> bool:
 	if other == null:
 		return false
 	var table: FactionTable = factions if factions != null else FactionTable.new()
-	return table.allows(filter, combatant_id, faction, other.combatant_id, other.faction)
+	return table.allows(filter, combatant_id, side(), other.combatant_id, other.side())
+
+
+## The faction this fighter fights for now: its own, or, while it obeys someone (C6.11, a
+## status that `obeys`), the faction of whoever it obeys.
+func side() -> StringName:
+	var statuses: StatusSet = StatusSet.of(get_parent()) if get_parent() != null else null
+	var lord_id: StringName = statuses.obeyed() if statuses != null else &""
+	if lord_id == &"" or lord_id == combatant_id or not is_inside_tree():
+		return faction
+	var lord: Combatant = Combatant.find(get_tree(), lord_id)
+	return lord.faction if lord != null else faction
 
 
 ## The formula this combatant's hits resolve through: its own, or the standard one.

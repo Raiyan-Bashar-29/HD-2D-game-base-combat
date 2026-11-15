@@ -378,7 +378,9 @@ func _all_down(side: Array[Combatant]) -> bool:
 	for fighter: Combatant in side:
 		# A petrified fighter counts as fallen here, though it still stands (C8.7a).
 		var statuses: StatusSet = StatusSet.of(fighter.get_parent())
-		if not _vitals(fighter).is_defeated() and not (statuses != null and statuses.fallen()):
+		# One that obeys the other side (C6.11) is out of its own side too.
+		if not _vitals(fighter).is_defeated() and not (statuses != null \
+				and (statuses.fallen() or statuses.obeyed() != &"")):
 			return false
 	return true
 
