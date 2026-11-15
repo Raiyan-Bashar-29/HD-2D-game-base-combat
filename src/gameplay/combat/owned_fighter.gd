@@ -1,6 +1,6 @@
 class_name OwnedFighter
 extends ActionEnemy
-## A fighter a power brought onto its user's side (C8.10a): Noroi beside her maker, a
+## A fighter a power brought onto its user's side (C8.10a): a helper beside its maker, a
 ## raised soldier beside his. `scenes/objects/owned_fighter.tscn` is its prefab, and
 ## `SummonRun` is the only thing that makes one.
 ##
