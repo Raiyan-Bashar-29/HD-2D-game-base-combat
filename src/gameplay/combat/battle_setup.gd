@@ -26,12 +26,20 @@ extends RefCounted
 ## (`Unseen.INERT`). Its gear is not saved and it is not stood back up: one that falls here
 ## falls in the field too, and leaves.
 ##
+## CALLED MID-BATTLE (C8.10e): `summon` puts a fighter a power brought on its user's side: a
+## guest when the user is in the party, one more foe otherwise. It starts full, keeps no gear
+## and leaves no pool flags (group `SUMMONED`); `dismiss` takes it out of the battle again.
+##
 ## IN PLAIN WORDS: the factory. Give it an encounter file and the party, and it makes one
 ## fighter node per combatant, picks the turn order the encounter asked for, and starts the
 ## `Battle`. `release` cleans everything up afterwards.
 ##
 ## OWNS: turning definitions into fighters, and freeing them.
 ## MUST NOT: open a screen, play music, or decide rewards.
+
+
+## Fighters brought into a running battle by a power: their pools are forgotten on `release`.
+const SUMMONED: StringName = &"battle_summoned"
 
 
 ## A battle between `party` and `encounter`'s enemies, built under `holder` and started.
@@ -86,8 +94,9 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 ## left at zero stands back up at 1 hp: the template default until C5's defeat flow, so a lost
 ## or a costly fight never leaves the next one starting already lost.
 static func release(battle: Battle) -> void:
-	for fighter: Combatant in battle.enemies:
-		_forget_pools(fighter)
+	for fighter: Combatant in battle.enemies + battle.party:
+		if battle.enemies.has(fighter) or fighter.is_in_group(SUMMONED):
+			_forget_pools(fighter)
 	for fighter: Combatant in battle.party:
 		if not battle.guests.has(fighter.combatant_id):
 			Vitals.of(fighter.get_parent()).revive(1)
@@ -95,6 +104,40 @@ static func release(battle: Battle) -> void:
 		var actor: Node = fighter.get_parent()
 		if is_instance_valid(actor):
 			actor.queue_free()
+
+
+## A fighter made from `def` joins `battle` on `user`'s side as `id`, played by `brain` (a plain
+## attack when null), and takes turns from the next ordering. Untouchable: no foe picks it.
+static func summon(battle: Battle, def: CombatantDef, brain: BattleBrain, id: StringName,
+		user: Combatant, untouchable: bool) -> Combatant:
+	var holder: Node = user.get_parent().get_parent()
+	var called: Combatant = _fighter(def, id, holder, true, false)
+	called.faction = user.faction
+	called.add_to_group(SUMMONED)
+	if untouchable:
+		called.add_to_group(Unseen.INERT)
+	if battle.party.has(user):
+		battle.party.append(called)
+		battle.guests.append(id)
+	else:
+		battle.enemies.append(called)
+	battle.defs[id] = def
+	battle.brains[id] = brain if brain != null else BattleBrain.new()
+	battle.admit(called)
+	return called
+
+
+## Takes a called fighter out of `battle` and frees it, leaving no pool flags behind.
+static func dismiss(battle: Battle, fighter: Combatant) -> void:
+	if battle != null:
+		battle.scheduler.leave(fighter.combatant_id)
+		battle.party.erase(fighter)
+		battle.enemies.erase(fighter)
+		battle.guests.erase(fighter.combatant_id)
+	_forget_pools(fighter)
+	var actor: Node = fighter.get_parent()
+	if is_instance_valid(actor):
+		actor.queue_free()
 
 
 # A field helper's battle copy: its field id and pools, the party's side, gear not kept.

@@ -344,7 +344,7 @@ seconds (0 = until sent away), `cap` (the most out at once; the oldest goes), an
 `owner_status`, held while any is out. `untouchable` keeps every hit off them and every foe's
 eye; `moves_each = 1` makes a summon that appears, does one move and goes. They leave when the user falls, the kit comes off or
 the area is left. "Only while no helper is out" is `forbids_statuses = [<owner_status id>]` on
-the other power. Helpers out in the field join a turn-based battle as guests on the party's side (C8.10d); using a summon during a battle is C8.10e. From a converted character,
+the other power. Helpers out in the field join a turn-based battle as guests on the party's side (C8.10d); a use during a battle brings them into it for `turns` of the user's turns (0 = the whole battle, C8.10e). From a converted character,
 list its helpers under `helpers` in the choices file and give the special `summons` (see
 `tools/mugen/mugen_helpers.gd`; Eto's `eto_choices.json` is the example). To see them in a
 capture, `--press=1,2` presses slots after the area lands.

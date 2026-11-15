@@ -14,7 +14,11 @@ extends PowerExecutor
 ## - the kit comes off (`end`, all go);
 ## - the area is left (all go);
 ## - it is freed by anything else: it fell and lingered.
-## In a battle a use makes nobody yet (C8.10e); those out already join it (`BattleSetup`).
+## Those out already join a battle as guests (`BattleSetup`). A use DURING a battle (C8.10e)
+## calls one fighter per entry onto the user's side of it (`BattleSetup.summon`); each counts
+## down `turns` of the user's own turns (`tick` comes once a turn there), is sent away at 0 or
+## once it has fallen, and goes with the battle. `cap`, the owner status, the user falling and
+## the kit coming off treat them as they treat the field's.
 ##
 ## OWNS: the list of fighters this power has out, and their clocks.
 ## MUST NOT: steer a fighter (its brain does), or name a character.
@@ -25,14 +29,20 @@ static var _made: int = 0
 
 var _out: Array[OwnedFighter] = []
 var _left: Array[float] = []
+var _called: Array[Combatant] = []
+var _turns: Array[float] = []
 
 
 func use(user: Combatant, _targets: Array[Combatant], rng: RandomNumberGenerator) -> void:
 	var summon: SummonMechanism = mechanism as SummonMechanism
-	var body: Node3D = user.get_parent() as Node3D
-	if not user.real_time or body == null or not body.is_inside_tree():
-		return
 	var count: int = mini(summon.fighters.size(), summon.brains.size())
+	if not user.real_time:
+		_call(user, summon, count)
+		_settle(rng)
+		return
+	var body: Node3D = user.get_parent() as Node3D
+	if body == null or not body.is_inside_tree():
+		return
 	for index: int in count:
 		_bring(body, summon, index, count)
 	while summon.cap > 0 and _out.size() > summon.cap:
@@ -40,8 +50,14 @@ func use(user: Combatant, _targets: Array[Combatant], rng: RandomNumberGenerator
 	_settle(rng)
 
 
-## Time passed: in the field, seconds. Each fighter with a lifetime loses `amount`.
+## Time passed: in the field, seconds; in a battle, one of the user's turns. Each fighter with a
+## lifetime (in a battle, `turns`) loses `amount`.
 func tick(amount: float) -> void:
+	for index: int in range(_called.size() - 1, -1, -1):
+		_turns[index] -= amount
+		var one: Combatant = _called[index]
+		if _turns[index] <= 0.0 or not is_instance_valid(one) or Vitals.of(one.get_parent()).is_defeated():
+			_dismiss(index)
 	var limit: int = (mechanism as SummonMechanism).moves_each
 	for index: int in range(_out.size() - 1, -1, -1):
 		_left[index] -= amount
@@ -54,6 +70,23 @@ func tick(amount: float) -> void:
 ## The kit came off: everyone it has out leaves.
 func end() -> void:
 	_send_all()
+
+
+# A use in a running battle the user is in: one called fighter per entry on its side.
+func _call(user: Combatant, summon: SummonMechanism, count: int) -> void:
+	var battle: Battle = Battle.running
+	if battle == null or not (battle.party.has(user) or battle.enemies.has(user)):
+		return
+	for index: int in count:
+		var def: CombatantDef = summon.fighters[index]
+		_made += 1
+		var id: StringName = StringName("%s/called%d" % [def.combatant_id, _made])
+		var one: Combatant = BattleSetup.summon(battle, def, def.brain, id, user, summon.untouchable)
+		one.get_parent().tree_exiting.connect(_forget.bind(one))
+		_called.append(one)
+		_turns.append(float(summon.turns) if summon.turns > 0 else INF)
+	while summon.cap > 0 and _called.size() > summon.cap:
+		_dismiss(0)
 
 
 func _bring(body: Node3D, summon: SummonMechanism, index: int, count: int) -> void:
@@ -98,6 +131,27 @@ func _send(index: int) -> void:
 func _send_all() -> void:
 	for index: int in range(_out.size() - 1, -1, -1):
 		_send(index)
+	for index: int in range(_called.size() - 1, -1, -1):
+		_dismiss(index)
+
+
+# Sends the `index`th called fighter out of its battle now.
+func _dismiss(index: int) -> void:
+	var one: Combatant = _called[index]
+	_called.remove_at(index)
+	_turns.remove_at(index)
+	if is_instance_valid(one):
+		BattleSetup.dismiss(Battle.running, one)
+	_settle(null)
+
+
+# A called fighter freed with its battle: forget it.
+func _forget(one: Combatant) -> void:
+	var index: int = _called.find(one)
+	if index >= 0:
+		_called.remove_at(index)
+		_turns.remove_at(index)
+		_settle(null)
 
 
 # Freed by anything else (fell and lingered, the area was left): forget it.
@@ -111,11 +165,12 @@ func _gone(one: OwnedFighter) -> void:
 
 # The user holds `owner_status` exactly while any is out, and is watched for falling meanwhile.
 func _settle(rng: RandomNumberGenerator) -> void:
+	var none: bool = _out.is_empty() and _called.is_empty()
 	var listening: bool = Events.combatant_defeated.is_connected(_on_defeated)
-	if _out.is_empty() and listening:
+	if none and listening:
 		Events.combatant_defeated.disconnect(_on_defeated)
 		Events.area_unloading.disconnect(_on_area_left)
-	elif not _out.is_empty() and not listening:
+	elif not none and not listening:
 		Events.combatant_defeated.connect(_on_defeated)
 		Events.area_unloading.connect(_on_area_left)
 	var status: StatusEffect = (mechanism as SummonMechanism).owner_status
@@ -124,9 +179,9 @@ func _settle(rng: RandomNumberGenerator) -> void:
 	if status == null or statuses == null:
 		return
 	var held: bool = statuses.stacks(status.id) > 0
-	if _out.is_empty() and held:
+	if none and held:
 		statuses.cure(status.id)
-	elif not _out.is_empty() and not held:
+	elif not none and not held:
 		statuses.apply(status, rng)
 
 

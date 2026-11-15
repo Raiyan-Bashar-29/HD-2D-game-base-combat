@@ -725,9 +725,9 @@ development. Credit: `assets/fan/yoshimura_eto/CREDITS.md`. To play as her, set
 | Kakuja chain | 330, 331, 332, 334 | — |
 | Kakuja Shift (slot 1) | a `FormMechanism` cycle: kagune, kakuja (attack x1.2, tint) | — |
 | Air Strike (kagune) | 500 | 17 |
-| Noroi & Tatara (kagune) | 400: summons Noroi (stand 401, walk 402, swings 406/407/419) and Tatara (450, 451; 460/462/465) for 20 s, cap 2; sprites in `noroi/`, `tatara/` | 8, 12 s cooldown |
+| Noroi & Tatara (kagune) | 400: summons Noroi (stand 401, walk 402, swings 406/407/419) and Tatara (450, 451; 460/462/465) for 20 s (3 turns in a battle), cap 2; sprites in `noroi/`, `tatara/` | 8, 12 s cooldown |
 | Bronze Tree (kagune) | 510; refused while the helpers are out (`alone`) | 17 |
-| Kakuja Noroi & Tatara (kakuja) | 4000: summons the kakuja Noroi (stand 2401; 2405 near, 2402 and 2406 far) and Tatara (2450, 2451; 2460/2461/2471), untouchable (their `HitOverride`), for 15 s, cap 2; sprites in `noroi_kakuja/`, `tatara_kakuja/` | 17, 20 s cooldown |
+| Kakuja Noroi & Tatara (kakuja) | 4000: summons the kakuja Noroi (stand 2401; 2405 near, 2402 and 2406 far) and Tatara (2450, 2451; 2460/2461/2471), untouchable (their `HitOverride`), for 15 s (2 turns in a battle), cap 2; sprites in `noroi_kakuja/`, `tatara_kakuja/` | 17, 20 s cooldown |
 | Air Fall (kakuja) | 2502 (the hit of 2500) | 25, 8 s cooldown |
 | One-Eyed Owl (kakuja) | 2600 | 7 |
 | Passives | `kakuja_regen`, `kakuja_hunger`, `night_owl` | — |

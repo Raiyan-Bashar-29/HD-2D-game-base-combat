@@ -4779,3 +4779,21 @@ Windowed capture: Eto's Noroi and Tatara listed with their hp in the thorn wisps
 the turn order. Ladder green.
 **Gaps.** A hit-everyone skill still reaches an untouchable guest. A summon used during a battle,
 linked hp and a saved roster are C8.10e.
+
+## 2026-11-15 — C8.10e · A summon used during a battle (combat 0.136.0)
+
+**Did.** `SummonRun.use` in a turn-based battle calls one fighter per entry through
+`BattleSetup.summon`: built fresh under the battle's holder, the user's faction, added to the
+party (and `guests`) or to the enemies by the user's side, its def's `brain` or a plain attack,
+then `Battle.admit` (new; `start` uses it too) gives it a place in the order. `tick` counts
+`SummonMechanism.turns` (new) of the user's turns; at 0, on falling, over `cap`, when the user
+falls or the kit comes off, `BattleSetup.dismiss` takes it out. `release` forgets the pools of
+group `SUMMONED`. The converter reads `turns`; Eto's 400 has 3, 4000 has 2.
+**Why.** Eto's specials paid their cost in a battle and brought nobody. The row's linked hp and
+saved roster are not needed by Arima or Eto and `battle.gd` is at 250/250: split to C8.10f.
+**Verified.** `summon_called_test` 5/5; `mugen_build_test` reads `turns`. Headless probe with
+Eto's kit in the thorn wisps' battle: 400 used, Noroi 40/40 and Tatara 30/30 join the party and
+the order, hit the wisp (60 to 42), and are gone on her third turn after. Ladder green.
+**Gaps.** No windowed capture (the battle menu cannot be pressed from the command line).
+`lifetime` and `moves_each` do not count in a battle. An untouchable called foe could never be
+beaten, so the fight would need its owner down first (the owner falling sends them away).

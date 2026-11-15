@@ -97,18 +97,23 @@ func _init(our_side: Array[Combatant], their_side: Array[Combatant], turns: Turn
 func start() -> void:
 	var enemy_ids: Array[StringName] = []
 	for fighter: Combatant in party + enemies:
-		# Remember every fighter by id, so the scheduler's ids can be turned back into nodes.
-		_by_id[fighter.combatant_id] = fighter
-		PassiveSet.join(fighter.get_parent(), rng)
-		# Only fighters still standing get a place in the turn order.
-		if not _vitals(fighter).is_defeated():
-			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
+		admit(fighter)
 	for fighter: Combatant in enemies:
 		enemy_ids.append(fighter.combatant_id)
 	running = self
 	Events.battle_started.emit(enemy_ids)
 	# A side that starts with nobody standing ends the fight at once.
 	_check_outcome()
+
+
+## Takes `fighter` into the battle: known by id, its passives on, and a place in the turn order
+## if it stands. `start` admits both sides; a summon used mid-battle is admitted after it is put
+## on a side (`BattleSetup.summon`, C8.10e).
+func admit(fighter: Combatant) -> void:
+	_by_id[fighter.combatant_id] = fighter
+	PassiveSet.join(fighter.get_parent(), rng)
+	if not _vitals(fighter).is_defeated():
+		scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
 
 
 ## Begins the next turn and returns whose it is: null once the battle is over. The actor's

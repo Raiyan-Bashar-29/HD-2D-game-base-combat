@@ -302,7 +302,7 @@ The built-in mechanisms (the table that maps them is `PowerMechanisms.BUILT_IN`)
 | `foresight` | `ForesightMechanism` | rewrite hits (`dodge`, `force`), `observe`, `reveal` | use, and `Foresight.rewrite` in `Combatant.hit` |
 | `command` | `CommandMechanism` | OBEY, STOP, FORGET or FALL a foe in sight | use |
 | `grant` | `GrantMechanism` | give allies statuses or lend them a whole kit for `lasts` | use, tick |
-| `summon` | `SummonMechanism` | `fighters` (each with its `brains` entry) appear beside the user, on its side, as `OwnedFighter`s; `lifetime`, `cap`, `owner_status`, `untouchable`, `moves_each` | use, tick, end |
+| `summon` | `SummonMechanism` | `fighters` (each with its `brains` entry) appear beside the user, on its side, as `OwnedFighter`s; `lifetime`, `cap`, `owner_status`, `untouchable`, `moves_each`; in a battle they join its sides for `turns` of the user's turns | use, tick, end |
 
 A summon is an `ActionEnemy` whose side is its owner's and whose home is its owner, so it
 follows and fights with no new brain. Pair `owner_status` with another power's

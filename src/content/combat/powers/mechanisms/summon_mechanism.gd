@@ -19,7 +19,10 @@ extends PowerMechanism
 ## They all leave when the user falls, when the kit comes off, or when the area is left.
 ##
 ## IN A BATTLE: those already out in the field join the party as guests (C8.10d,
-## `BattleSetup`). A use during a battle makes nobody yet (C8.10e); its skill, if any, still lands.
+## `BattleSetup`). A use during a battle (C8.10e) brings one fighter per entry onto the user's
+## side of it, played by its definition's `brain`, for `turns` of the user's own turns (0: to
+## the end of the battle). `cap`, `untouchable` and `owner_status` hold there too; `lifetime`
+## and `moves_each` do not.
 ##
 ## OWNS: the shape of a summon.
 ## MUST NOT: hold running state. `SummonRun` (gameplay) runs it.
@@ -39,6 +42,8 @@ extends PowerMechanism
 @export var untouchable: bool = false
 ## Each leaves once it has finished this many moves. 0 means no limit.
 @export var moves_each: int = 0
+## In a battle, how many of the user's turns each stays. 0 means to the end of the battle.
+@export var turns: int = 0
 
 
 func kind() -> StringName:
@@ -60,8 +65,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has %d fighters but %d brains" % [context, fighters.size(), brains.size()])
 	if fighters.has(null) or brains.has(null):
 		found.append("%s has an empty fighter or brain" % context)
-	if lifetime < 0.0 or cap < 0 or spread < 0.0 or moves_each < 0:
-		found.append("%s has a negative lifetime, cap, spread or moves_each" % context)
+	if lifetime < 0.0 or cap < 0 or spread < 0.0 or moves_each < 0 or turns < 0:
+		found.append("%s has a negative lifetime, cap, spread, moves_each or turns" % context)
 	if owner_status != null:
 		found.append_array(owner_status.problems())
 	return found

@@ -777,6 +777,7 @@ brains = Array[ExtResource("27_euy1k")]([SubResource("Resource_wk7g7"), SubResou
 lifetime = 20.0
 cap = 2
 owner_status = SubResource("Resource_ws6c4")
+turns = 3
 
 [sub_resource type="Resource" id="Resource_xnvb3"]
 script = ExtResource("18_3b3to")
@@ -1459,6 +1460,7 @@ lifetime = 15.0
 cap = 2
 owner_status = SubResource("Resource_ws6c4")
 untouchable = true
+turns = 2
 
 [sub_resource type="Resource" id="Resource_xyuto"]
 script = ExtResource("51_sqfbq")

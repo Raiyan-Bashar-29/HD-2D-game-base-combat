@@ -14,14 +14,14 @@
 	"stances": [
 		{"id": "human", "chain": [200, 205, 215, 219, 216, 217],
 			"specials": [{"state": 400, "id": "noroi_tatara", "summons": ["noroi", "tatara"], "cost": 8,
-					"lifetime": 20, "cap": 2, "cooldown": 12},
+					"lifetime": 20, "cap": 2, "cooldown": 12, "turns": 3},
 				{"state": 500, "id": "air_strike"}, {"state": 510, "id": "bronze_tree", "alone": true}]},
 		{"id": "kakuja", "chain": [330, 331, 332, 334], "tint": [0.75, 0.6, 0.55],
 			"stats": {"attack": 1.2},
 			"specials": [{"state": 2502, "id": "air_fall", "cost": 25, "cooldown": 8},
 				{"state": 2600, "id": "one_eyed_owl"},
 				{"state": 4000, "id": "kakuja_noroi_tatara", "summons": ["noroi_kakuja", "tatara_kakuja"],
-					"cost": 17, "lifetime": 15, "cap": 2, "cooldown": 20, "untouchable": true}]}
+					"cost": 17, "lifetime": 15, "cap": 2, "cooldown": 20, "untouchable": true, "turns": 2}]}
 	],
 	"helpers": [
 		{"id": "noroi", "sprites": "res://assets/fan/yoshimura_eto/noroi",
