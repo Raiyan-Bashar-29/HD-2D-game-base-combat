@@ -174,7 +174,8 @@ func name_of(fighter: Combatant) -> String:
 	var def: CombatantDef = battle.defs.get(fighter.combatant_id, null)
 	if def == null or def.name_key == "":
 		return id
-	var suffix: String = id.trim_prefix(String(def.combatant_id))
+	# A field body's "/<node>" tail (a helper that joined, C8.10d) is not part of its name.
+	var suffix: String = id.trim_prefix(String(def.combatant_id)).get_slice("/", 0)
 	var shown: String = tr(def.name_key) + suffix.replace("_", " ")
 	var form: String = LookSwap.form_name_key(fighter.get_parent())
 	return shown if form == "" else tr(FORM_TITLE_KEY).format({"name": shown, "form": tr(form)})

@@ -51,6 +51,8 @@ extends Node
 ##   --press=<slots>      press power quick-slot keys after the area lands, one every 40 physics
 ##                        frames: --press=1,2 enters a style then uses its first power, so a
 ##                        capture shows the power working (C8.10b: summons beside the hero).
+##                        A token `battle:<encounter id>` in the list opens that turn-based
+##                        battle at its turn: --press=1,2,battle:encounter/<id> (C8.10d).
 ##   --new-game           start a game. Since WP-12 the boot goes to the main menu, not to an
 ##                        area, so without this there is no world to photograph.
 ##   --npc-settle=<n>     let NPCs walk for n physics frames, so a screenshot shows them AT
@@ -374,6 +376,9 @@ func _press_slots(list: String) -> void:
 	for slot: String in list.split(",", false):
 		for _i: int in 40:
 			await get_tree().physics_frame
+		if slot.begins_with("battle:"):
+			Events.encounter_requested.emit(StringName(slot.trim_prefix("battle:")))
+			continue
 		var key: int = clampi(slot.to_int(), 1, CombatActions.SLOTS.size()) - 1
 		Log.info("test", "--press slot %d" % (key + 1))
 		for down: bool in [true, false]:

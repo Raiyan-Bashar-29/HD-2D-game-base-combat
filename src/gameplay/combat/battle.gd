@@ -75,6 +75,10 @@ var brains: Dictionary[StringName, BattleBrain] = {}
 var defs: Dictionary[StringName, CombatantDef] = {}
 ## The encounter this battle was built from, for its rewards. Null for one built by hand.
 var encounter: Encounter
+## Party-side fighters who only joined this fight, by combatant id: helpers a power brought out
+## in the field (C8.10d). They play themselves, earn nothing, are not stood back up afterwards,
+## and the party loses when everyone else is down, however many of them still stand.
+var guests: Array[StringName] = []
 
 var _by_id: Dictionary[StringName, Combatant] = {}
 var _current: Combatant
@@ -370,12 +374,15 @@ func _check_outcome() -> void:
 		return
 	if _all_down(enemies):
 		_end(Outcome.WON)
-	elif _all_down(party):
+	elif _all_down(party, guests):
 		_end(Outcome.LOST)
 
 
-func _all_down(side: Array[Combatant]) -> bool:
+# True when everyone on `side` is out of it, those named in `skip` aside.
+func _all_down(side: Array[Combatant], skip: Array[StringName] = []) -> bool:
 	for fighter: Combatant in side:
+		if skip.has(fighter.combatant_id):
+			continue
 		# A petrified fighter counts as fallen here, though it still stands (C8.7a).
 		var statuses: StatusSet = StatusSet.of(fighter.get_parent())
 		# One that obeys the other side (C6.11) is out of its own side too.

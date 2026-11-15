@@ -14,7 +14,7 @@ extends PowerExecutor
 ## - the kit comes off (`end`, all go);
 ## - the area is left (all go);
 ## - it is freed by anything else: it fell and lingered.
-## In a battle a use makes nobody yet (C8.10c).
+## In a battle a use makes nobody yet (C8.10e); those out already join it (`BattleSetup`).
 ##
 ## OWNS: the list of fighters this power has out, and their clocks.
 ## MUST NOT: steer a fighter (its brain does), or name a character.

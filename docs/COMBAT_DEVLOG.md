@@ -4762,3 +4762,20 @@ sprite, HUD "Helpers Out". Ladder green.
 **Gaps.** The entry (2400) and leaving moves (2404, 2453) and the 4000 cutscene are not played.
 By design a helper's hit on a symbol foe opens its turn-based battle, which the helpers do not
 join yet (C8.10d, with linked hp and a saved roster).
+
+## 2026-11-15 — C8.10d · Helpers join turn-based battles (combat 0.135.0)
+
+**Did.** `BattleHost` passes `OwnedFighter.standing(tree)` to `BattleSetup.build`, which adds
+each as a guest on the party's side (`Battle.guests`): its field id (so the same hp flags), the
+party's faction, its def's `brain` or an empty one (the fallback attacks the first foe). An
+untouchable one joins `Unseen.INERT`. The party loses when all but the guests are down;
+`Rewards` skips guests; `release` does not stand them back up, so a guest that fell here is at 0
+hp in the field and falls there. `BattleScreen.name_of` drops the `/<node>` tail. Dev token
+`battle:<encounter id>` in `--press`.
+**Why.** C8.10c's capture: a helper's hit opened a battle the helpers sat out. The owner: turn-
+based stays simple; Arima and Eto are for real time and the hybrid (new row C8.20, defence prompts).
+**Verified.** `summon_battle_test` 6/6 (the rewards assertion fails with the guest skip removed).
+Windowed capture: Eto's Noroi and Tatara listed with their hp in the thorn wisps' battle and in
+the turn order. Ladder green.
+**Gaps.** A hit-everyone skill still reaches an untouchable guest. A summon used during a battle,
+linked hp and a saved roster are C8.10e.

@@ -46,7 +46,8 @@ static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) ->
 		spoils.append_array(fighter.spoils)
 		fighter.spoils.clear()
 		var def: CombatantDef = battle.defs.get(fighter.combatant_id, null)
-		if def != null and not Vitals.of(fighter.get_parent()).is_defeated():
+		var guest: bool = battle.guests.has(fighter.combatant_id)
+		if def != null and not guest and not Vitals.of(fighter.get_parent()).is_defeated():
 			standing.append(def)
 	var tables: Array[LootTable] = [encounter.loot_table]
 	for enemy: CombatantDef in encounter.enemies:

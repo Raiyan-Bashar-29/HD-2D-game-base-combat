@@ -15,7 +15,7 @@ extends ActionEnemy
 ## moves it has started (`moves_done`) for a run that sends it away after so many (C8.10c).
 ##
 ## OWNS: being on someone's side and following them.
-## MUST NOT: decide when it leaves (`SummonRun` does), or be saved (C8.10c).
+## MUST NOT: decide when it leaves (`SummonRun` does), or be saved (C8.10e).
 
 const GROUP: StringName = &"owned_fighters"
 
@@ -59,6 +59,18 @@ func act(delta: float) -> ActionDecider.State:
 ## True while no move is playing.
 func idle() -> bool:
 	return not timeline.busy()
+
+
+## Every owned fighter in `tree` still standing and not leaving: the ones a battle that opens
+## now takes along (C8.10d).
+static func standing(tree: SceneTree) -> Array[OwnedFighter]:
+	var out: Array[OwnedFighter] = []
+	for node: Node in tree.get_nodes_in_group(GROUP):
+		var one: OwnedFighter = node as OwnedFighter
+		var vitals: Vitals = Vitals.of(one) if one != null else null
+		if one != null and not one.is_queued_for_deletion() and vitals != null and not vitals.is_defeated():
+			out.append(one)
+	return out
 
 
 ## Sent away at once: its time ran out, its owner fell, or a newer one took its place.

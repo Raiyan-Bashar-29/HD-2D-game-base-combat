@@ -12,6 +12,8 @@ extends Node
 ## MUSIC: an encounter with its own `music` plays it when the screen opens, and the area's music
 ## comes back when the screen closes. An encounter without music leaves the field's playing.
 ##
+## HELPERS OUT IN THE FIELD (owned fighters, C8.10d) join the party's side as guests.
+##
 ## IN PLAIN WORDS: when something in the field says "start fight X", this node builds the fight
 ## and opens the battle menu on top of the frozen world.
 ##
@@ -66,7 +68,7 @@ func open_encounter(encounter_id: StringName) -> bool:
 	rng.seed = _seed.randi()
 	# The fighters live under this node, which is in the tree: a fighter's sheet and pools are
 	# set up in its `_ready`, and a screen not yet opened has not had one.
-	var battle: Battle = BattleSetup.build(encounter, party, self, rng)
+	var battle: Battle = BattleSetup.build(encounter, party, self, rng, OwnedFighter.standing(get_tree()))
 	battle.inventory = Inventory.of(Director.player)
 	var screen: BattleScreen = BattleScreen.for_battle(battle)
 	if encounter.music != null:

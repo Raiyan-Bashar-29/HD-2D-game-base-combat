@@ -18,7 +18,8 @@ extends PowerMechanism
 ##   one thing and go. 0 means no limit.
 ## They all leave when the user falls, when the kit comes off, or when the area is left.
 ##
-## IN A BATTLE: nothing yet (C8.10c). Its skill, if any, still lands.
+## IN A BATTLE: those already out in the field join the party as guests (C8.10d,
+## `BattleSetup`). A use during a battle makes nobody yet (C8.10e); its skill, if any, still lands.
 ##
 ## OWNS: the shape of a summon.
 ## MUST NOT: hold running state. `SummonRun` (gameplay) runs it.

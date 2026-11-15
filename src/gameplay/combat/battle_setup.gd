@@ -20,6 +20,12 @@ extends RefCounted
 ## GEAR (C7.1b): every party member gets a `GearSet`, and wears what the field body with the same
 ## id wears. An enemy gets one only when its definition lists starting gear, and it is not saved.
 ##
+## HELPERS (C8.10d): each owned fighter out in the field joins the party's side as a guest
+## (`Battle.guests`): same id as its field body, so the same hp, the party's faction, its own
+## `brain` or, with none, a plain attack at the first foe. An untouchable one is never picked
+## (`Unseen.INERT`). Its gear is not saved and it is not stood back up: one that falls here
+## falls in the field too, and leaves.
+##
 ## IN PLAIN WORDS: the factory. Give it an encounter file and the party, and it makes one
 ## fighter node per combatant, picks the turn order the encounter asked for, and starts the
 ## `Battle`. `release` cleans everything up afterwards.
@@ -32,12 +38,15 @@ extends RefCounted
 ## `holder` MUST be in the tree: each fighter's sheet, id and pools are wired in its `_ready`,
 ## and before that its `Vitals` would answer for the default owner.
 static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node,
-		rng: RandomNumberGenerator = null) -> Battle:
+		rng: RandomNumberGenerator = null, helpers: Array[OwnedFighter] = []) -> Battle:
 	if not holder.is_inside_tree():
 		push_error("BattleSetup.build: the holder must be in the tree")
 	var ours: Array[Combatant] = []
 	for def: CombatantDef in party:
 		ours.append(_fighter(def, def.combatant_id, holder, false))
+	var guests: Array[Combatant] = []
+	for one: OwnedFighter in helpers:
+		guests.append(_guest(one, ours, holder))
 	var theirs: Array[Combatant] = []
 	# Count each enemy type first, so only duplicates get a number ("Wisp 1", "Wisp 2").
 	var seen: Dictionary[StringName, int] = {}
@@ -53,13 +62,18 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	# The encounter file chooses the turn order: plain rounds, or CTB where speed buys extra turns.
 	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
 			else RoundScheduler.new()
-	var battle := Battle.new(ours, theirs, turns, rng)
+	var battle := Battle.new(ours + guests, theirs, turns, rng)
 	battle.encounter = encounter
 	battle.can_flee = encounter.can_flee
 	battle.flee_chance = encounter.flee_chance
 	# Remember each fighter's definition (for names and menus) and each enemy's AI brain.
 	for i: int in party.size():
 		battle.defs[ours[i].combatant_id] = party[i]
+	for i: int in guests.size():
+		var id: StringName = guests[i].combatant_id
+		battle.guests.append(id)
+		battle.defs[id] = helpers[i].fighter
+		battle.brains[id] = helpers[i].fighter.brain if helpers[i].fighter.brain != null else BattleBrain.new()
 	for i: int in encounter.enemies.size():
 		battle.defs[theirs[i].combatant_id] = encounter.enemies[i]
 		if encounter.enemies[i].brain != null:
@@ -75,16 +89,28 @@ static func release(battle: Battle) -> void:
 	for fighter: Combatant in battle.enemies:
 		_forget_pools(fighter)
 	for fighter: Combatant in battle.party:
-		Vitals.of(fighter.get_parent()).revive(1)
+		if not battle.guests.has(fighter.combatant_id):
+			Vitals.of(fighter.get_parent()).revive(1)
 	for fighter: Combatant in battle.party + battle.enemies:
 		var actor: Node = fighter.get_parent()
 		if is_instance_valid(actor):
 			actor.queue_free()
 
 
+# A field helper's battle copy: its field id and pools, the party's side, gear not kept.
+static func _guest(one: OwnedFighter, ours: Array[Combatant], holder: Node) -> Combatant:
+	var field: Combatant = Combatant.of(one)
+	var guest: Combatant = _fighter(one.fighter, field.combatant_id, holder, false, false)
+	guest.faction = ours[0].faction if not ours.is_empty() else field.faction
+	if one.untouchable:
+		guest.add_to_group(Unseen.INERT)
+	return guest
+
+
 # One fighter = a plain Node with three children: Vitals (HP/MP), StatusSet, Combatant, and a
 # fourth, a PowerSet, when it has hero powers, and a GearSet for what it wears.
-static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: bool) -> Combatant:
+static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: bool,
+		keep_gear: bool = true) -> Combatant:
 	var actor := Node.new()
 	actor.name = String(id)
 	actor.add_child(Vitals.new())
@@ -112,7 +138,7 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 		powers.equip(def.power_kit)
 	PassiveLending.own(actor, def)
 	# Gear after the Combatant too: a party member's is saved, an enemy's is not.
-	GearSet.fit(actor, def, not fresh)
+	GearSet.fit(actor, def, keep_gear and not fresh)
 	# Enemies always start at full HP, even if an old flag says otherwise.
 	if fresh:
 		_forget_pools(combatant)
