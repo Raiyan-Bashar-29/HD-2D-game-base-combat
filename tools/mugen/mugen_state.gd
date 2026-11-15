@@ -10,13 +10,22 @@ extends RefCounted
 ## controller it has no use for in `skipped`, so nothing is dropped unseen.
 ##
 ## The facts: `state`, `anim`, `attack` (the state calls itself an attack), `length`, `frames`,
-## `hits` [{tick, until, damage, weight, push, box, via}], `invincible` and `armour` (tick
-## spans), `speeds` [{tick, x}], `spawns` [{tick, state}], `sounds` [{tick, group, index}],
-## `chains` [{tick, state}], `pauses` [{tick, time}] (the screen freezes), `shakes` [{tick,
-## time, ampl}], `skipped`, `needs`.
+## `hits` [{tick, until, damage, weight, push, box}], `invincible` and `armour` (tick
+## spans), `speeds` [{tick, x}], `spawns` [{tick, state, x, y, foe}], `sounds` [{tick, group,
+## index}], `chains` [{tick, state}], `pauses` [{tick, time}] (the screen freezes), `shakes`
+## [{tick, time, ampl}], `shots` [{tick, state, x, y, foe, speed, facts}], `skipped`, `needs`.
+##
+## SHOTS (C8.16c): what a state sends out that hurts flies on its own. A `Helper` whose state
+## hits, and every `Projectile`, is a shot: where it starts (`x`, `y` pixels from the sender,
+## or from the foe when `foe`, M.U.G.E.N's `postype = p2`), its speed (pixels a tick, forward)
+## and the facts of its own state. Its hits are not the sender's: the sender's body box does
+## not strike for them. A `Projectile` lives `removetime` ticks, else `PROJECTILE_TICKS`.
 ##
 ## OWNS: reading states and their controllers.
 ## MUST NOT: convert a unit or build a resource. `MugenFormula` does.
+
+## How long a `Projectile` with no `removetime` flies, in ticks.
+const PROJECTILE_TICKS: int = 60
 
 const _WEIGHTS: Dictionary = {"": 1, "light": 1, "medium": 2, "med": 2, "hard": 3, "heavy": 3}
 
@@ -49,13 +58,13 @@ static func facts(number: int, states: Dictionary, anims: Dictionary, follow: bo
 		"attack": MugenIni.value(def, "movetype").to_lower() == "a",
 		"length": _length(ctrls, frames), "hits": [], "invincible": [], "armour": [],
 		"speeds": [], "spawns": [], "sounds": [], "chains": [], "pauses": [], "shakes": [],
-		"skipped": {},
+		"shots": [], "skipped": {},
 		"needs": PackedStringArray()}
 	var start: PackedFloat64Array = MugenIni.numbers(MugenIni.value(def, "velset", "0"))
 	if start[0] != 0.0:
 		(out["speeds"] as Array).append({"tick": 0, "x": start[0]})
 	for ctrl: Dictionary in ctrls:
-		_read(ctrl, out, MugenTriggers.span(ctrl, frames, DictRead.get_int(out, "length")))
+		_read(ctrl, out, MugenTriggers.span(ctrl, frames, DictRead.get_int(out, "length")), anims)
 	if follow:
 		_follow(out, states, anims)
 	return out
@@ -77,12 +86,15 @@ static func _length(ctrls: Array, frames: Array) -> int:
 	return best if best > 0 else whole
 
 
-static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary) -> void:
+static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary, anims: Dictionary) -> void:
 	var tick: int = when["from"]
 	var kind: String = _type(ctrl)
+	var pos: PackedFloat64Array = MugenIni.numbers(MugenIni.value(ctrl, "pos", MugenIni.value(ctrl, "offset", "0,0")) + ",0")
 	match kind:
-		"hitdef", "projectile":
-			_hit(ctrl, out, when, kind == "projectile")
+		"hitdef":
+			_hit(ctrl, out, when)
+		"projectile":
+			_projectile(ctrl, out, tick, pos, anims)
 		"nothitby":
 			if MugenIni.value(ctrl, "value").to_lower().begins_with("s"):
 				(out["invincible"] as Array).append(_held(ctrl, when))
@@ -92,7 +104,8 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary) -> void:
 			if MugenIni.value(ctrl, "x") != "":
 				(out["speeds"] as Array).append({"tick": tick, "x": MugenIni.number(ctrl, "x")})
 		"helper":
-			(out["spawns"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "stateno"))})
+			(out["spawns"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "stateno")),
+				"x": pos[0], "y": pos[1], "foe": MugenIni.value(ctrl, "postype").to_lower().begins_with("p2")})
 		"playsnd":
 			var sound: PackedFloat64Array = MugenIni.numbers(MugenIni.value(ctrl, "value").trim_prefix("S").trim_prefix("s"))
 			(out["sounds"] as Array).append({"tick": tick, "group": int(sound[0]),
@@ -116,10 +129,9 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary) -> void:
 			MugenIni.note(out, "needs", need)
 
 
-# One or more hits of a HitDef or Projectile: a repeating trigger hits once each time it fires.
-static func _hit(ctrl: Dictionary, out: Dictionary, when: Dictionary, shot: bool) -> void:
+# One or more hits of a HitDef: a repeating trigger hits once each time it fires.
+static func _hit(ctrl: Dictionary, out: Dictionary, when: Dictionary) -> void:
 	var frames: Array = out["frames"]
-	var prefix: String = "proj" if shot and MugenIni.value(ctrl, "damage") == "" else ""
 	var every: int = when["every"]
 	var last: int = DictRead.get_int(when, "to") if every > 0 else DictRead.get_int(when, "from")
 	var tick: int = when["from"]
@@ -128,12 +140,27 @@ static func _hit(ctrl: Dictionary, out: Dictionary, when: Dictionary, shot: bool
 		for run: Vector2i in MugenAir.spans(frames, "hit", true):
 			if tick >= run.x and tick < run.y:
 				until = run.y
-		(out["hits"] as Array).append({"tick": tick, "until": until, "via": -1 if not shot else 0,
-			"damage": MugenIni.number(ctrl, prefix + "damage"),
-			"weight": _WEIGHTS.get(MugenIni.value(ctrl, "animtype").to_lower(), 4),
-			"push": absf(MugenIni.number(ctrl, "ground.velocity")),
-			"box": MugenAir.bounds(frames, MugenAir.frame_at(frames, tick), "hit")})
+		(out["hits"] as Array).append(_one(ctrl, tick, until, MugenAir.bounds(frames, MugenAir.frame_at(frames, tick), "hit")))
 		tick += maxi(every, 1)
+
+
+static func _one(ctrl: Dictionary, tick: int, until: int, box: Rect2) -> Dictionary:
+	return {"tick": tick, "until": until, "damage": MugenIni.number(ctrl, "damage"),
+		"weight": _WEIGHTS.get(MugenIni.value(ctrl, "animtype").to_lower(), 4),
+		"push": absf(MugenIni.number(ctrl, "ground.velocity")), "box": box}
+
+
+# A `Projectile`: a shot of one hit, its box from the first frame of its `projanim`.
+static func _projectile(ctrl: Dictionary, out: Dictionary, tick: int, pos: PackedFloat64Array, anims: Dictionary) -> void:
+	var life: int = int(MugenIni.number(ctrl, "removetime", -1.0))
+	life = life if life > 0 else PROJECTILE_TICKS
+	var frames: Array = anims.get(int(MugenIni.number(ctrl, "projanim", -1.0)), [])
+	var sent: Dictionary = {"state": out["state"], "anim": int(MugenIni.number(ctrl, "projanim", -1.0)),
+		"frames": frames, "length": life, "hits": [_one(ctrl, 0, life, MugenAir.bounds(frames, 0, "hit"))],
+		"invincible": [], "armour": [], "speeds": [], "spawns": [], "sounds": [], "chains": [],
+		"pauses": [], "shakes": [], "shots": [], "skipped": {}, "needs": PackedStringArray()}
+	(out["shots"] as Array).append({"tick": tick, "state": out["state"], "x": pos[0], "y": pos[1], "foe": false,
+		"speed": MugenIni.number(ctrl, "velocity"), "facts": sent})
 
 
 # The span a NotHitBy or HitOverride holds: from its first firing to its last, plus its `time`.
@@ -141,18 +168,21 @@ static func _held(ctrl: Dictionary, when: Dictionary) -> Vector2i:
 	return Vector2i(DictRead.get_int(when, "from"), DictRead.get_int(when, "to") + int(MugenIni.number(ctrl, "time", 1.0)))
 
 
-# A state that hurts only through what it sends out takes its hits from those states.
+# Each sent-out helper whose state hurts is a shot, flying at its state's first forward speed.
 static func _follow(out: Dictionary, states: Dictionary, anims: Dictionary) -> void:
 	for spawn: Dictionary in out["spawns"]:
 		if not states.has(spawn["state"]):
 			continue
 		var sent: Dictionary = facts(DictRead.get_int(spawn, "state"), states, anims, false)
-		for hit: Dictionary in sent["hits"]:
-			var moved: Dictionary = hit.duplicate()
-			moved["tick"] = DictRead.get_int(hit, "tick") + DictRead.get_int(spawn, "tick")
-			moved["until"] = DictRead.get_int(hit, "until") + DictRead.get_int(spawn, "tick")
-			moved["via"] = spawn["state"]
-			(out["hits"] as Array).append(moved)
+		if (sent["hits"] as Array).is_empty():
+			continue
+		var speed: float = 0.0
+		for entry: Dictionary in sent["speeds"]:
+			if speed == 0.0:
+				speed = DictRead.get_float(entry, "x")
+		var shot: Dictionary = spawn.duplicate()
+		shot.merge({"speed": speed, "facts": sent})
+		(out["shots"] as Array).append(shot)
 
 
 static func _type(ctrl: Dictionary) -> String:

@@ -8,7 +8,8 @@ extends Resource
 ## - SOUND: `sound` plays at the body.
 ## - EFFECT: `picture` shows at `offset` from the body for `seconds`.
 ## - SHOT: `shot` (a move of its own) flies from `offset` the way the body faces, at `amount`
-##   metres a second.
+##   metres a second. With `at_foe` it starts at `offset` from the foe it aims at instead (a
+##   spike under the foe, a blade falling on it); with no foe to aim at, from the body.
 ## - SPEED: from now on the move's travel speed is `amount` metres a second.
 ## - SHAKE: the screen shakes with strength `amount` (0 to 1) for `seconds`.
 ## - PAUSE: the whole fight stops for `seconds` (a hit pause).
@@ -28,6 +29,8 @@ enum Kind { SOUND, EFFECT, SHOT, SPEED, SHAKE, PAUSE }
 @export var amount: float = 0.0
 @export var seconds: float = 0.0
 @export var offset: Vector3 = Vector3.ZERO
+## A SHOT starts at the foe the body aims at, not at the body.
+@export var at_foe: bool = false
 
 
 func problems(context: String) -> PackedStringArray:

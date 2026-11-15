@@ -72,7 +72,7 @@ static func move(choices: Dictionary, moves: Dictionary, number: int, out: Dicti
 	made.hitbox_size = made.hitbox_size.min(Vector3.ONE * most)
 	made.hitbox_offset.y = minf(made.hitbox_offset.y, made.hitbox_size.y * 0.5)
 	made.hitbox_offset.z = maxf(made.hitbox_offset.z, -most * 0.5)
-	MugenEvents.fill(made, moves[number] as Dictionary, DictRead.get_string(choices, "sprites"))
+	MugenEvents.fill(made, moves[number] as Dictionary, DictRead.get_string(choices, "sprites"), most)
 	return made
 
 

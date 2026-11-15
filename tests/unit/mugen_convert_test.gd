@@ -1,5 +1,5 @@
 extends TestCase
-## The M.U.G.E.N converter (C9.9a): a made-up character, written to this run's scratch folder,
+## The M.U.G.E.N converter (C9.9a, shots C8.16c): a made-up character, written to this run's scratch folder,
 ## is read and turned into moves by the formula in `MugenFormula`.
 ##
 ## OWNS: assertions about `MugenIni`, `MugenAir`, `MugenTriggers`, `MugenState`, `MugenFormula`
@@ -25,11 +25,16 @@ const CNS: String = "[Statedef 0]\ntype = S\nanim = 0\n" \
 	+ "[Statedef 700]\nmovetype = I\nanim = 700\nvelset = 5, 0\n" \
 	+ "[State 700, end]\ntype = ChangeState\ntrigger1 = AnimTime = 0\nvalue = 0\n" \
 	+ "[Statedef 800]\nmovetype = A\nanim = 0\n" \
-	+ "[State 800, send]\ntype = Helper\ntrigger1 = time = 3\nstateno = 900\n" \
+	+ "[State 800, send]\ntype = Helper\ntrigger1 = time = 3\nstateno = 900\npos = 30, -10\npostype = p2\n" \
 	+ "[State 800, safe]\ntype = NotHitBy\ntrigger1 = time = [0,4]\nvalue = SCA\ntime = 1\n" \
 	+ "[State 800, firm]\ntype = HitOverride\ntrigger1 = time = 2\ntime = 4\n" \
 	+ "[State 800, end]\ntype = ChangeState\ntrigger1 = time = 10\nvalue = 0\n" \
+	+ "[Statedef 810]\nmovetype = A\nanim = 0\n" \
+	+ "[State 810, fire]\ntype = Projectile\ntrigger1 = time = 2\nprojanim = 900\nvelocity = 4, 0\n" \
+	+ "offset = 20, -30\nremovetime = 30\ndamage = 12\n" \
+	+ "[State 810, end]\ntype = ChangeState\ntrigger1 = time = 10\nvalue = 0\n" \
 	+ "[Statedef 900]\nanim = 900\n" \
+	+ "[State 900, go]\ntype = VelSet\ntrigger1 = time = 0\nx = 3\n" \
 	+ "[State 900, hit]\ntype = HitDef\ntrigger1 = TimeMod = 4, 0\ndamage = 10\n"
 const CMD: String = "[Command]\nname = \"a\"\ncommand = ~D, F, a\n[Statedef -1]\n" \
 	+ "[State -1, a]\ntype = ChangeState\nvalue = 200\ntriggerall = power >= 500\n" \
@@ -39,7 +44,7 @@ var _dir: String
 
 
 func run() -> void:
-	plan(9)
+	plan(10)
 	_dir = RunScratch.path("mugen_fixture")
 	DirAccess.make_dir_recursive_absolute(_dir)
 	for name: String in ["Fixture.def", "Fixture.cmd", "Fixture.cns", "fixture.air"]:
@@ -52,9 +57,10 @@ func run() -> void:
 
 func _reading() -> void:
 	var info: Dictionary = MugenIni.parse(DEF)[0]
-	equal("a section keeps its keys in lower case, drops a comment and keeps a quoted value",
-		[info["name"], MugenIni.value(info, "name"), MugenIni.value(info, "none", "x")],
-		["info", "\"Fixture Fighter\"", "x"])
+	equal("a section keeps its keys in lower case, drops a comment and keeps a quoted value; a sum starts with its number",
+		[info["name"], MugenIni.value(info, "name"), MugenIni.value(info, "none", "x"),
+		MugenIni.first_number("12+random%2"), MugenIni.first_number("random%2", -1.0)],
+		["info", "\"Fixture Fighter\"", "x", 12.0, -1.0])
 	var swing: Array = MugenAir.parse(AIR)[200]
 	equal("an animation gives its ticks, its hurting span and its box",
 		[MugenAir.ticks_before(swing, 2), MugenAir.length(swing), MugenAir.spans(swing, "hit", true),
@@ -77,7 +83,7 @@ func _converting() -> void:
 		moves[made["state"]] = made
 	equal("the attack, the dodge and the sender are kept; the idle and the sent state are not",
 		[result["name"], result["author"], moves.keys(), result["problems"]],
-		["Fixture Fighter", "nobody", [200, 700, 800], PackedStringArray()])
+		["Fixture Fighter", "nobody", [200, 700, 800, 810], PackedStringArray()])
 	var swing: Dictionary = moves.get(200, {})
 	equal("an attack's times, power, weight, push and chain follow the formula",
 		_round([swing["startup"], swing["active"], swing["recovery"], swing["power"], swing["poise"],
@@ -91,16 +97,26 @@ func _converting() -> void:
 		_round([roll["iframes_from"], roll["iframes_to"], roll["travel_speed"], roll["hits"]]),
 		[0.0, 0.2, 6.0, 0.0])
 	var sender: Dictionary = moves.get(800, {})
-	equal("a state that hurts through what it sends out takes those hits, and keeps its armour stretch",
-		_round([sender["startup"], sender["hits"], sender["power"], sender["iframes_to"], sender["armour_from"],
-		sender["armour_to"]]) + [sender["notes"]],
-		[0.05, 2.0, 4.0, 0.083, 0.033, 0.1, PackedStringArray(["sends out state 900 at 0.05s"])])
+	var sent: Dictionary = DictRead.get_array(sender, "events")[0]
+	var flown: Dictionary = DictRead.get_dict(sent, "shot")
+	equal("a helper that hurts flies as a shot from the foe at its own speed; the sender keeps no hit of it",
+		_round([sender["hits"], sender["power"], sender["iframes_to"], sender["armour_from"], sender["armour_to"],
+		sent["at"], sent["amount"], flown["hits"], flown["power"]]) + [sent["kind"], sent["foe"], _round(sent["offset"] as Array),
+		sender["notes"]],
+		[0.0, 0.0, 0.083, 0.033, 0.1, 0.05, 3.6, 2.0, 4.0, "shot", true, [0.0, 0.2, -0.6],
+		PackedStringArray(["sends out state 900 at 0.05s", "state 900 flies as a shot from 0.05s"])])
+	var fired: Dictionary = DictRead.get_array(moves.get(810, {}) as Dictionary, "events")[0]
+	var bolt: Dictionary = DictRead.get_dict(fired, "shot")
+	equal("a Projectile is a shot of one hit for its removetime, from its offset at its velocity",
+		_round([fired["at"], fired["amount"], bolt["hits"], bolt["power"], bolt["active"]]) + [fired["foe"],
+		_round(fired["offset"] as Array)],
+		[0.033, 4.8, 1.0, 4.8, 0.5, false, [0.0, 0.6, -0.4]])
 	var written: PackedStringArray = MugenCharacter.write(result, _dir.path_join("out"))
 	var saved: ActionMove = load(_dir.path_join("out/moves/fx_200.tres"))
 	equal("the output is a report, a JSON file and one move file each, which loads as written",
 		[written.size(), saved.id, snappedf(saved.startup, 0.001), saved.hits, saved.poise,
 		FileAccess.get_file_as_string(_dir.path_join("out/report.md")).contains("| move/fx_700 |")],
-		[5, &"move/fx_200", 0.1, 1, 2, true])
+		[6, &"move/fx_200", 0.1, 1, 2, true])
 
 
 func _round(values: Array) -> Array:

@@ -578,7 +578,10 @@ The formula (`tools/mugen/mugen_formula.gd`):
 | `chain_after` | when a `ChangeState` that waits for a button may fire |
 | button and meter (report only) | the `.cmd` file's `ChangeState` into the state |
 
-A state that hurts only through a `Helper` takes that helper state's hits. What has no field
+What a state sends out that hurts flies on its own (C8.16c): a `Helper` whose state has a
+`HitDef`, and every `Projectile`, is a SHOT event on the move, with its own numbers by this
+formula, its start (`pos`, or the foe's feet for `postype = p2`) and its first forward speed.
+Its hits are not the sender's. What has no field
 on a move is written in the move's notes: what it sends out, a third untouchable stretch or
 a second armour stretch, every controller not converted, and every trigger
 that depends on a button, a variable or the foe.
@@ -635,7 +638,7 @@ What Arima's files use most, and where that lands here:
 | `VelSet`, `VelAdd`, `PosSet` (148) | Movement inside a move, changing per frame | One `travel_speed` per move | A speed curve: several timed speeds on a move |
 | `PlaySnd` (302), `Explod` (305) | Timed sounds and effect pictures | SOUND and EFFECT events on the move (C8.16; the converter fills sounds, C8.16b) | Timed effect pictures on a move, the same way |
 | `EnvShake` (104), `SuperPause` (20), `Pause` (3), `Zoom` (8) | Screen shake, a freeze before a super, hit pause | None | **Hit pause and screen shake as fields on a move** |
-| `Helper` (49) + `DestroySelf` | Projectiles and thrown weapons with their own path and hits | `Projectile`, barrage shots | A move that sends out a shot at a time (now only a power's barrage can) |
+| `Helper` (49) + `DestroySelf` | Projectiles and thrown weapons with their own path and hits | `Projectile`, barrage shots, SHOT events | Done in C8.16c: the converter makes them SHOT events |
 | `NotHitBy` (12) | Untouchable for a stretch | `iframes_from/to` (one stretch) | A second stretch (the converter notes later ones and drops them) |
 | `HitOverride` (9) | Super armour: take the hit, keep the move | `knockback_taken`, no flinch passive | **Armour as a stretch on a move** |
 | `ReversalDef` (3) | A counter: catch the foe's hit and answer | Counter stance (C6.6d) | - |

@@ -55,10 +55,14 @@ static func number(section: Dictionary, key: String, fallback: float = 0.0) -> f
 	return first_number(value(section, key), fallback)
 
 
-## The first number in `text`, or `fallback` when it does not start with one.
+## The first number in `text`, or `fallback` when it does not start with one. An expression
+## that starts with a number gives that number (`"2407+random%2"` gives 2407; C8.16c).
 static func first_number(text: String, fallback: float = 0.0) -> float:
 	var head: String = text.get_slice(",", 0).strip_edges()
-	return head.to_float() if head.is_valid_float() else fallback
+	if head.is_valid_float():
+		return head.to_float()
+	var found: RegExMatch = RegEx.create_from_string("^-?[0-9]+(\\.[0-9]+)?(?![0-9.]*\\s*[a-zA-Z(])").search(head)
+	return found.get_string().to_float() if found != null else fallback
 
 
 ## The numbers of a comma list (`"-3, 0"` gives [-3, 0]); a part that is no number is 0.

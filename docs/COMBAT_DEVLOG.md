@@ -4797,3 +4797,10 @@ the order, hit the wisp (60 to 42), and are gone on her third turn after. Ladder
 **Gaps.** No windowed capture (the battle menu cannot be pressed from the command line).
 `lifetime` and `moves_each` do not count in a battle. An untouchable called foe could never be
 beaten, so the fight would need its owner down first (the owner falling sends them away).
+
+## 2026-11-15 — C8.16c · The converter's sent-out shots (combat 0.137.0)
+
+- **Did:** a `Helper` whose state hurts, and a `Projectile`, become SHOT events on the converted move (its own move, start, speed); `MoveEvent.at_foe` starts a shot at the aimed foe (`postype = p2`); the sender keeps no hit of it, and a state that only shoots is still kept. `MugenIni.first_number` reads `2407+random%2` as 2407. Eto's kit rebuilt.
+- **Why:** the helpers' hits were folded into the sender's own body box, so a spike under the foe struck beside the sender.
+- **Verified:** suite, ladder (below). Kit probe on Eto, four runs: the shots that fired (the kakuja Noroi's 2406 at the foe, the kakuja Tatara's 2461) struck, none missed.
+- **Gaps:** Arima's kit is not rebuilt: his source files are gone with the container reset. A many-hit shot strikes each foe once. A shot's sounds and `Explod` pictures, and any fall (y speed), are not converted.

@@ -19,7 +19,9 @@ extends RefCounted
 ##   over 20, at most 1), each `Pause` or `SuperPause` a hit pause. `MugenEvents` builds them.
 ## - The HITBOX is the box round the hurting boxes of the first hit's frame, `depth` thick.
 ## - A button the state waits for before going on gives `chain_after`.
-## Sent-out helpers have no field on a move; they are reported in `notes` for the author.
+## - SHOTS (C8.16c): each shot `MugenState` found is a shot event: its own numbers by this
+##   same formula, its start (`offset`, metres; `foe` when it starts at the foe) and its speed
+##   in metres a second. A sent-out state that does not hurt is only noted.
 ##
 ## OWNS: the numbers of the conversion.
 ## MUST NOT: read a file. `MugenState` collects the facts.
@@ -47,7 +49,9 @@ static func numbers(facts: Dictionary, scale: Dictionary) -> Dictionary:
 		damage += DictRead.get_float(hit, "damage")
 	var out: Dictionary = {"state": facts["state"], "anim": facts["anim"], "hits": hits.size(),
 		"length": length / TICKS, "notes": _notes(facts)}
-	out["events"] = _events(facts, length)
+	var events: Array = _events(facts, length) + _shots(facts, scale)
+	events.sort_custom(func(x: Dictionary, y: Dictionary) -> bool: return DictRead.get_float(x, "at") < DictRead.get_float(y, "at"))
+	out["events"] = events
 	var dodges: Array[Vector2i] = _untouchable(facts)
 	var armour: Array[Vector2i] = _armour(facts)
 	armour.resize(1)
@@ -162,6 +166,18 @@ static func _events(facts: Dictionary, length: int) -> Array:
 	return kept
 
 
+# The shot events, each with its own move's numbers, earliest first.
+static func _shots(facts: Dictionary, scale: Dictionary) -> Array:
+	var mpp: float = scale["metres_per_pixel"]
+	var out: Array = []
+	for shot: Dictionary in DictRead.get_array(facts, "shots"):
+		out.append({"at": clampi(DictRead.get_int(shot, "tick"), 0, maxi(DictRead.get_int(facts, "length"), 1)) / TICKS,
+			"kind": "shot", "foe": shot["foe"], "amount": snappedf(DictRead.get_float(shot, "speed") * TICKS * mpp, 0.01),
+			"offset": DictRead.put_vector3(Vector3(0.0, -DictRead.get_float(shot, "y") * mpp, -DictRead.get_float(shot, "x") * mpp)),
+			"shot": numbers(shot["facts"] as Dictionary, scale)})
+	return out
+
+
 # The fastest forward speed set before the hits end (or at any time, for a move with no hit).
 static func _speed(facts: Dictionary, first: int, last: int) -> float:
 	var best: float = 0.0
@@ -175,6 +191,8 @@ static func _notes(facts: Dictionary) -> PackedStringArray:
 	var out: PackedStringArray = PackedStringArray()
 	for spawn: Dictionary in facts["spawns"]:
 		out.append("sends out state %d at %.2fs" % [spawn["state"], DictRead.get_int(spawn, "tick") / TICKS])
+	for shot: Dictionary in DictRead.get_array(facts, "shots"):
+		out.append("state %d flies as a shot from %.2fs" % [shot["state"], DictRead.get_int(shot, "tick") / TICKS])
 	if _untouchable(facts).size() > 2:
 		out.append("more than two untouchable stretches; only the first two are kept")
 	if _armour(facts).size() > 1:

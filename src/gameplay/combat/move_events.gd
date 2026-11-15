@@ -6,7 +6,8 @@ extends Node
 ## frame it reads the body's move clock (held by its `Hurtbox`) and does every event of the
 ## playing move whose time has come, once per swing:
 ## - SOUND plays at the body. EFFECT shows a picture near the body for its seconds.
-## - SHOT sends a `Projectile` out the way the body faces.
+## - SHOT sends a `Projectile` out the way the body faces; one `at_foe` starts at the foe the
+##   body aims at (`BarrageRun.aim_of`: its lock-on, else the nearest foe in sight).
 ## - SHAKE asks the camera to shake (`Events.camera_shake_requested`).
 ## - PAUSE stops the fight (`CombatClock`) for its seconds of real time, then puts the speed
 ##   back. A pause asked for while the fight is already stopped is skipped.
@@ -122,6 +123,9 @@ func _shoot(body: Node3D, event: MoveEvent) -> void:
 	# A shot never starts inside or behind a wall (C9.12).
 	var lift: Vector3 = Vector3.UP * CombatSight.EYE
 	shot.global_position = CombatSight.short_of(body, body.global_position + lift, _spot(body, event.offset))
+	var foe: Combatant = BarrageRun.aim_of(shot.attacker, []) if event.at_foe and shot.attacker != null else null
+	if foe != null:
+		shot.global_position = _spot(body, event.offset) - body.global_position + (foe.get_parent() as Node3D).global_position
 	shot.direction = way
 
 

@@ -3,7 +3,8 @@ extends RefCounted
 ## Converts one whole M.U.G.E.N character folder into our move data (C9.9a).
 ##
 ## IN PLAIN WORDS: give it the character's `.def` file. It finds the other files the `.def`
-## names, reads every state, and keeps each one that hurts (an attack) or that makes its user
+## names, reads every state, and keeps each one that hurts (an attack, or one that sends out a
+## shot, C8.16c) or that makes its user
 ## untouchable while moving (a dodge). `write` then saves, in a folder of your choosing:
 ## - `moves.json`: every kept move with its numbers, its button and its notes;
 ## - `report.md`: the same as a table to read, with what could not be converted;
@@ -54,10 +55,11 @@ static func convert(def_path: String, options: Dictionary = {}) -> Dictionary:
 		for spawn: Dictionary in MugenState.facts(number, states, anims, false)["spawns"]:
 			sent[spawn["state"]] = true
 	for number: int in states:
-		var made: Dictionary = MugenFormula.numbers(MugenState.facts(number, states, anims),
-			DictRead.get_dict(out, "scale"))
+		var facts: Dictionary = MugenState.facts(number, states, anims)
+		var shoots: bool = not (facts["shots"] as Array).is_empty()
+		var made: Dictionary = MugenFormula.numbers(facts, DictRead.get_dict(out, "scale"))
 		var dodge: bool = made["iframes_to"] > made["iframes_from"] and made["travel_speed"] != 0.0
-		if number < 0 or sent.has(number) or (DictRead.get_int(made, "hits") == 0 and not dodge):
+		if number < 0 or sent.has(number) or (DictRead.get_int(made, "hits") == 0 and not dodge and not shoots):
 			continue
 		made.merge(inputs.get(number, {}) as Dictionary)
 		var id := StringName("move/%s_%d" % [settings["prefix"], number])
