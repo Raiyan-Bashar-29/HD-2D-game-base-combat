@@ -4653,3 +4653,21 @@ passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The str
   passed, the seven checkers, stripped 4476 passed, 30 skipped.
 - **Gaps:** Noroi and Tatara wait for C8.10; the kakuja walks on the human sheet; one attack
   button; the build tool writes absolute paths into the loadout (fixed by hand to `res://`).
+
+## 2026-11-15 — C9.11 · The mechanics guide (combat 0.130.0)
+
+- **Did:** `docs/MECHANICS_GUIDE.md` (the parts; a kit going on; a power from key press to hit
+  in the field and in a battle; the damage path; moves, statuses, gauges, forms, every
+  mechanism and its hook; passives; Arima and Eto taken apart; traps). `docs/POWER_COOKBOOK.md`
+  (22 recipes and a five-power example kit). `tools/kit_probe/` (a scene that plays every slot
+  of a kit in every style against a dummy and prints damage, gauges and refusals).
+- **Why:** the owner asked for detailed guides to the mechanics, to make the main character's
+  powers later.
+- **Verified:** the probe on the cookbook's own example kit (read from the page): no problems,
+  every power used, styles swap the slots, the wall halved a probe hit (48 → 26), the
+  finisher scaled with missing hp. On Eto and Arima every special lands but Narukami Pincer.
+  `docs_test` checks every field name in the recipes.
+- **Gaps (found, not fixed):** converted specials do no damage in a turn-based battle (their
+  damage is in the move, which a battle never plays); a kit's passives hold in every stance
+  (Eto's regen should be the kakuja's); Narukami Pincer's lightning is a helper (the helper
+  row). Next: C9.12, Eto in a real area, at the owner's request.
