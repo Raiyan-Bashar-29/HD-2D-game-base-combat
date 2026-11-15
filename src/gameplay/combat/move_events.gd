@@ -6,7 +6,7 @@ extends Node
 ## frame it reads the body's move clock (held by its `Hurtbox`) and does every event of the
 ## playing move whose time has come, once per swing:
 ## - SOUND plays at the body. EFFECT shows a picture near the body for its seconds.
-## - SHOT sends a `Projectile` out the way the body faces; one `at_foe` starts at the foe the
+## - SHOT sends a `Projectile` out the way the body faces, with its arc and `pierce`; one `at_foe` starts at the foe the
 ##   body aims at (`BarrageRun.aim_of`: its lock-on, else the nearest foe in sight).
 ## - SHAKE asks the camera to shake (`Events.camera_shake_requested`).
 ## - PAUSE stops the fight (`CombatClock`) for its seconds of real time, then puts the speed
@@ -118,7 +118,12 @@ func _shoot(body: Node3D, event: MoveEvent) -> void:
 		if child is Hitbox:
 			shot.rng = (child as Hitbox).rng
 	shot.speed = event.amount
+	shot.lift = event.lift
+	shot.fall = event.gravity
+	shot.pierce = event.pierce
 	shot.launch(event.shot)
+	if not event.shot.events.is_empty():
+		shot.add_child(MoveEvents.new())
 	body.get_parent().add_child(shot)
 	# A shot never starts inside or behind a wall (C9.12).
 	var lift: Vector3 = Vector3.UP * CombatSight.EYE
@@ -137,6 +142,9 @@ func _spot(body: Node3D, offset: Vector3) -> Vector3:
 
 
 func _timeline() -> MoveTimeline:
+	# A shot (C8.16d) plays its own move's events on its own clock.
+	if get_parent() is Hitbox:
+		return (get_parent() as Hitbox).timeline
 	for child: Node in get_parent().get_children():
 		if child is Hurtbox:
 			return (child as Hurtbox).timeline

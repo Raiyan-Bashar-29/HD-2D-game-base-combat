@@ -74,6 +74,12 @@ func sweep() -> int:
 
 ## Strikes one hurtbox, unless the move is not live or this swing already struck it.
 ## True when the hurtbox counted the hit.
+## Forgets who this swing has struck, so each may be struck again: a shot of several hits
+## (C8.16d, `Projectile`) calls it between its hits.
+func forget() -> void:
+	_struck.clear()
+
+
 func strike(hurtbox: Hurtbox) -> bool:
 	if timeline == null or not timeline.is_hitting() or attacker == null:
 		return false

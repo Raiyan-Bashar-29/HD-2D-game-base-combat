@@ -13,13 +13,15 @@ extends RefCounted
 ## `hits` [{tick, until, damage, weight, push, box}], `invincible` and `armour` (tick
 ## spans), `speeds` [{tick, x}], `spawns` [{tick, state, x, y, foe}], `sounds` [{tick, group,
 ## index}], `chains` [{tick, state}], `pauses` [{tick, time}] (the screen freezes), `shakes`
-## [{tick, time, ampl}], `shots` [{tick, state, x, y, foe, speed, facts}], `skipped`, `needs`.
+## [{tick, time, ampl}], `shots` [{tick, state, x, y, foe, speed, rise, air, pierce, facts}],
+## `air` (the state falls: `physics = A`), `skipped`, `needs`. Speeds are pixels a tick, y down.
 ##
 ## SHOTS (C8.16c): what a state sends out that hurts flies on its own. A `Helper` whose state
 ## hits, and every `Projectile`, is a shot: where it starts (`x`, `y` pixels from the sender,
 ## or from the foe when `foe`, M.U.G.E.N's `postype = p2`), its speed (pixels a tick, forward)
 ## and the facts of its own state. Its hits are not the sender's: the sender's body box does
-## not strike for them. A `Projectile` lives `removetime` ticks, else `PROJECTILE_TICKS`.
+## not strike for them. A `Projectile` lives `removetime` ticks, else `PROJECTILE_TICKS`, and
+## flies through what it strikes only with `projhits` over 1; a helper always does (C8.16d).
 ##
 ## OWNS: reading states and their controllers.
 ## MUST NOT: convert a unit or build a resource. `MugenFormula` does.
@@ -60,9 +62,10 @@ static func facts(number: int, states: Dictionary, anims: Dictionary, follow: bo
 		"speeds": [], "spawns": [], "sounds": [], "chains": [], "pauses": [], "shakes": [],
 		"shots": [], "skipped": {},
 		"needs": PackedStringArray()}
-	var start: PackedFloat64Array = MugenIni.numbers(MugenIni.value(def, "velset", "0"))
-	if start[0] != 0.0:
-		(out["speeds"] as Array).append({"tick": 0, "x": start[0]})
+	var start: PackedFloat64Array = MugenIni.numbers(MugenIni.value(def, "velset", "0") + ",0")
+	if start[0] != 0.0 or start[1] != 0.0:
+		(out["speeds"] as Array).append({"tick": 0, "x": start[0], "y": start[1]})
+	out["air"] = MugenIni.value(def, "physics").to_lower() == "a"
 	for ctrl: Dictionary in ctrls:
 		_read(ctrl, out, MugenTriggers.span(ctrl, frames, DictRead.get_int(out, "length")), anims)
 	if follow:
@@ -101,8 +104,8 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary, anims: Di
 		"hitoverride":
 			(out["armour"] as Array).append(_held(ctrl, when))
 		"velset", "veladd":
-			if MugenIni.value(ctrl, "x") != "":
-				(out["speeds"] as Array).append({"tick": tick, "x": MugenIni.number(ctrl, "x")})
+			if MugenIni.value(ctrl, "x") != "" or MugenIni.value(ctrl, "y") != "":
+				(out["speeds"] as Array).append({"tick": tick, "x": MugenIni.number(ctrl, "x"), "y": MugenIni.number(ctrl, "y")})
 		"helper":
 			(out["spawns"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "stateno")),
 				"x": pos[0], "y": pos[1], "foe": MugenIni.value(ctrl, "postype").to_lower().begins_with("p2")})
@@ -158,9 +161,11 @@ static func _projectile(ctrl: Dictionary, out: Dictionary, tick: int, pos: Packe
 	var sent: Dictionary = {"state": out["state"], "anim": int(MugenIni.number(ctrl, "projanim", -1.0)),
 		"frames": frames, "length": life, "hits": [_one(ctrl, 0, life, MugenAir.bounds(frames, 0, "hit"))],
 		"invincible": [], "armour": [], "speeds": [], "spawns": [], "sounds": [], "chains": [],
-		"pauses": [], "shakes": [], "shots": [], "skipped": {}, "needs": PackedStringArray()}
+		"pauses": [], "shakes": [], "shots": [], "air": false, "skipped": {}, "needs": PackedStringArray()}
+	var velocity: PackedFloat64Array = MugenIni.numbers(MugenIni.value(ctrl, "velocity", "0") + ",0")
 	(out["shots"] as Array).append({"tick": tick, "state": out["state"], "x": pos[0], "y": pos[1], "foe": false,
-		"speed": MugenIni.number(ctrl, "velocity"), "facts": sent})
+		"speed": velocity[0], "rise": velocity[1], "air": false,
+		"pierce": MugenIni.number(ctrl, "projhits", 1.0) > 1.0, "facts": sent})
 
 
 # The span a NotHitBy or HitOverride holds: from its first firing to its last, plus its `time`.
@@ -176,12 +181,12 @@ static func _follow(out: Dictionary, states: Dictionary, anims: Dictionary) -> v
 		var sent: Dictionary = facts(DictRead.get_int(spawn, "state"), states, anims, false)
 		if (sent["hits"] as Array).is_empty():
 			continue
-		var speed: float = 0.0
+		var speed: Vector2 = Vector2.ZERO
 		for entry: Dictionary in sent["speeds"]:
-			if speed == 0.0:
-				speed = DictRead.get_float(entry, "x")
+			speed.x = speed.x if speed.x != 0.0 else DictRead.get_float(entry, "x")
+			speed.y = speed.y if speed.y != 0.0 else DictRead.get_float(entry, "y")
 		var shot: Dictionary = spawn.duplicate()
-		shot.merge({"speed": speed, "facts": sent})
+		shot.merge({"speed": speed.x, "rise": speed.y, "air": sent["air"], "pierce": true, "facts": sent})
 		(out["shots"] as Array).append(shot)
 
 

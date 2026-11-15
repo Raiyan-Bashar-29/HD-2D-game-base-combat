@@ -2,8 +2,8 @@ extends TestCase
 ## Move events, armour and a second untouchable stretch (C8.16): a move's timed events are
 ## checked for mistakes; the clock knows both untouchable stretches, the armour stretch and a
 ## speed change; the `MoveEvents` node does each event once per swing (a shake, a hit pause, a
-## shot, an effect picture, a sound); a shot `at_foe` starts at the foe (C8.16c); and a hit
-## inside the armour stretch hurts without a push.
+## shot, an effect picture, a sound); and a hit inside the armour stretch hurts without a
+## push. What a shot does in flight is `move_shots_test`.
 ##
 ## OWNS: assertions about `MoveEvent`, `MoveEvents`, and the C8.16 parts of `ActionMove`,
 ## `MoveTimeline` and `Hurtbox`.
@@ -15,7 +15,7 @@ var _pushes: int = 0
 
 
 func run() -> void:
-	plan(14)
+	plan(13)
 	SaveFixture.activate()
 	Flags.clear_all()
 	CombatClock.reset()
@@ -24,7 +24,6 @@ func run() -> void:
 	_shapes()
 	_the_clock()
 	_on_a_body()
-	_at_foe()
 	_armour()
 	Events.camera_shake_requested.disconnect(_on_shake)
 	Events.knockback_requested.disconnect(_on_push)
@@ -179,28 +178,6 @@ func _on_a_body() -> void:
 		picture.free()
 	if flying != null:
 		flying.free()
-
-
-func _at_foe() -> void:
-	var hero := _actor(&"fixture_far_hero", &"side_a", Vector3(-20, 0, 0))
-	var foe := _actor(&"fixture_far_foe", &"side_b", Vector3(-20, 0, -4))
-	var events: MoveEvents = hero.get_child(5) as MoveEvents
-	var clock := MoveTimeline.new()
-	(hero.get_child(3) as Hurtbox).timeline = clock
-	var move := _move()
-	var shot := _event(MoveEvent.Kind.SHOT, 0.0, 0.0)
-	shot.shot = _strike(3.0)
-	shot.at_foe = true
-	shot.offset = Vector3(0.0, 0.5, 0.0)
-	move.events = [shot]
-	clock.start(move)
-	events.watch()
-	var shots: Array[Node] = get_tree().get_nodes_in_group(Projectile.GROUP)
-	var placed: Projectile = shots[0] as Projectile if shots.size() == 1 else null
-	equal("a shot at the foe starts at the foe's feet plus its offset, not at the body",
-		placed != null and placed.global_position.is_equal_approx(foe.global_position + Vector3(0, 0.5, 0)), true)
-	if placed != null:
-		placed.free()
 
 
 func _armour() -> void:

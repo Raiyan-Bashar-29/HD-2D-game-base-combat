@@ -4804,3 +4804,10 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Why:** the helpers' hits were folded into the sender's own body box, so a spike under the foe struck beside the sender.
 - **Verified:** suite, ladder (below). Kit probe on Eto, four runs: the shots that fired (the kakuja Noroi's 2406 at the foe, the kakuja Tatara's 2461) struck, none missed.
 - **Gaps:** Arima's kit is not rebuilt: his source files are gone with the container reset. A many-hit shot strikes each foe once. A shot's sounds and `Explod` pictures, and any fall (y speed), are not converted.
+
+## 2026-11-15 — C8.16d · Shots that fall, hit over time and sound (combat 0.138.0)
+
+- **Did:** `MoveEvent.lift`, `gravity`, `pierce`; `Projectile.lift`/`fall` and one-hit-at-a-time pierce shots (`Hitbox.forget`); a shot's own events play on a `MoveEvents` the sender gives it. Converter: y speed, `yaccel` fall for air states, `pierce`, the shot's own sounds and shakes. Eto rebuilt.
+- **Why:** the gaps C8.16c recorded (owner: fix the issues that exist).
+- **Verified:** suite and ladder (below); kit probe on Eto, four runs: every shot struck, Tatara's 2461 fire 6 times over its life.
+- **Gaps:** `Explod` pictures are C8.16e. Arima still needs his upload. A shot's own sent-out shots are not followed.

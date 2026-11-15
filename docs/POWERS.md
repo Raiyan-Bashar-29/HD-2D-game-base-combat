@@ -581,7 +581,9 @@ The formula (`tools/mugen/mugen_formula.gd`):
 What a state sends out that hurts flies on its own (C8.16c): a `Helper` whose state has a
 `HitDef`, and every `Projectile`, is a SHOT event on the move, with its own numbers by this
 formula, its start (`pos`, or the foe's feet for `postype = p2`) and its first forward speed.
-Its hits are not the sender's. What has no field
+Its hits are not the sender's. It also takes its y speed, its fall (`[Movement] yaccel`, for a
+`physics = A` state), whether it flies through (a helper always; a `Projectile` with `projhits`
+over 1, spreading its hits over its life) and its own sounds (C8.16d). What has no field
 on a move is written in the move's notes: what it sends out, a third untouchable stretch or
 a second armour stretch, every controller not converted, and every trigger
 that depends on a button, a variable or the foe.

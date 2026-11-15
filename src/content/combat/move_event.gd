@@ -10,6 +10,9 @@ extends Resource
 ## - SHOT: `shot` (a move of its own) flies from `offset` the way the body faces, at `amount`
 ##   metres a second. With `at_foe` it starts at `offset` from the foe it aims at instead (a
 ##   spike under the foe, a blade falling on it); with no foe to aim at, from the body.
+##   `lift` (metres a second upward at the start) and `gravity` (metres a second each second,
+##   down) make it arc and fall (C8.16d). A `pierce` shot flies on through what it strikes,
+##   and one of several `hits` strikes again over its active time, a hit at a time.
 ## - SPEED: from now on the move's travel speed is `amount` metres a second.
 ## - SHAKE: the screen shakes with strength `amount` (0 to 1) for `seconds`.
 ## - PAUSE: the whole fight stops for `seconds` (a hit pause).
@@ -31,6 +34,12 @@ enum Kind { SOUND, EFFECT, SHOT, SPEED, SHAKE, PAUSE }
 @export var offset: Vector3 = Vector3.ZERO
 ## A SHOT starts at the foe the body aims at, not at the body.
 @export var at_foe: bool = false
+## A SHOT's upward speed at the start, in metres a second.
+@export var lift: float = 0.0
+## A SHOT's fall, in metres a second each second. 0 flies straight.
+@export var gravity: float = 0.0
+## A SHOT flies on through what it strikes, spreading its hits over its life.
+@export var pierce: bool = false
 
 
 func problems(context: String) -> PackedStringArray:

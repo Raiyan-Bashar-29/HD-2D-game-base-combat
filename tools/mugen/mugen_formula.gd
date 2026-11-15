@@ -21,7 +21,8 @@ extends RefCounted
 ## - A button the state waits for before going on gives `chain_after`.
 ## - SHOTS (C8.16c): each shot `MugenState` found is a shot event: its own numbers by this
 ##   same formula, its start (`offset`, metres; `foe` when it starts at the foe) and its speed
-##   in metres a second. A sent-out state that does not hurt is only noted.
+##   in metres a second; its `lift` (their y speed, up), its `gravity` (their `yaccel` x 3600,
+##   for a state that falls) and `pierce` (C8.16d). A sent-out state that does not hurt is only noted.
 ##
 ## OWNS: the numbers of the conversion.
 ## MUST NOT: read a file. `MugenState` collects the facts.
@@ -173,6 +174,8 @@ static func _shots(facts: Dictionary, scale: Dictionary) -> Array:
 	for shot: Dictionary in DictRead.get_array(facts, "shots"):
 		out.append({"at": clampi(DictRead.get_int(shot, "tick"), 0, maxi(DictRead.get_int(facts, "length"), 1)) / TICKS,
 			"kind": "shot", "foe": shot["foe"], "amount": snappedf(DictRead.get_float(shot, "speed") * TICKS * mpp, 0.01),
+			"lift": snappedf(-DictRead.get_float(shot, "rise") * TICKS * mpp, 0.01), "pierce": DictRead.get_bool(shot, "pierce"),
+			"gravity": snappedf(DictRead.get_float(scale, "gravity") * TICKS * TICKS * mpp, 0.01) if DictRead.get_bool(shot, "air") else 0.0,
 			"offset": DictRead.put_vector3(Vector3(0.0, -DictRead.get_float(shot, "y") * mpp, -DictRead.get_float(shot, "x") * mpp)),
 			"shot": numbers(shot["facts"] as Dictionary, scale)})
 	return out

@@ -15,6 +15,12 @@ extends Hitbox
 ## It always faces along `direction` (its -z), so a long box (a beam) lies along its line. It runs
 ## on fight time (`CombatClock`), so a stopped fight freezes it in the air.
 ##
+## ARC AND HITS OVER TIME (C8.16d): `lift` is an upward speed that `fall` takes away each
+## second, so a thrown thing rises and falls. A `pierce` shot of several `hits` strikes one hit
+## at a time, again every `active / hits` seconds, instead of all its hits at once. A shot
+## a move event sends whose move has events of its own (its sounds) plays them on a
+## `MoveEvents` that `MoveEvents` gives it.
+##
 ## WHERE IT LANDS (C6.26): a shot whose flight ends without it striking anyone says where it
 ## ended (`landed`), so a plant can leave something in the ground there (the shards that missed).
 ##
@@ -43,9 +49,16 @@ var turn_rate: float = 0.0
 var homing_at: Node3D
 ## True: it flies on through what it strikes.
 var pierce: bool = false
+## Metres a second upward, taken away by `fall` (metres a second each second). Not `gravity`:
+## an `Area3D` has its own.
+var lift: float = 0.0
+var fall: float = 0.0
 
 var _gone: bool = false
 var _struck_any: bool = false
+# A pierce shot of several hits: seconds between its hits, and since the last.
+var _every: float = 0.0
+var _since: float = 0.0
 
 
 func _ready() -> void:
@@ -58,7 +71,12 @@ func _physics_process(delta: float) -> void:
 
 
 ## Readies the shot `shot` on a clock of its own and shapes the box to it. Call before adding.
+## Set `pierce` first: a pierce shot of several hits plays them one at a time.
 func launch(shot: ActionMove) -> void:
+	if pierce and shot.hits > 1 and shot.active > 0.0:
+		_every = shot.active / shot.hits
+		shot = shot.duplicate() as ActionMove
+		shot.hits = 1
 	timeline = MoveTimeline.new()
 	timeline.start(shot)
 	fit(shot)
@@ -77,7 +95,9 @@ func fly(dt: float) -> void:
 		return
 	if timeline.phase == MoveTimeline.Phase.ACTIVE:
 		_steer(dt)
-		var next: Vector3 = global_position + direction * speed * dt
+		_again(dt)
+		lift -= fall * dt
+		var next: Vector3 = global_position + direction * speed * dt + Vector3.UP * lift * dt
 		var wall: Vector3 = CombatSight.wall_between(self, global_position, next)
 		if wall.is_finite():
 			global_position = wall
@@ -110,6 +130,16 @@ func strike(hurtbox: Hurtbox) -> bool:
 # A shot hits from where it is, not from its shooter.
 func _eye() -> Vector3:
 	return global_position
+
+
+# A pierce shot of several hits forgets who it struck each `_every` seconds.
+func _again(dt: float) -> void:
+	if _every <= 0.0:
+		return
+	_since += dt
+	if _since >= _every:
+		_since -= _every
+		forget()
 
 
 # Turns toward `homing_at`, no faster than `turn_rate` allows.

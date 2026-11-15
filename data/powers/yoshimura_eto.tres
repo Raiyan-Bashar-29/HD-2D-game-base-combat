@@ -490,6 +490,19 @@ amount = 0.2
 seconds = 0.083
 
 [sub_resource type="Resource" id="Resource_66ebf"]
+script = ExtResource("11_0tcwl")
+kind = 4
+amount = 0.15
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_vyavd"]
+script = ExtResource("11_0tcwl")
+at = 0.033
+kind = 4
+amount = 0.2
+seconds = 0.1
+
+[sub_resource type="Resource" id="Resource_r7esw"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_407_shot2"
 startup = 0.0666666666666667
@@ -497,20 +510,34 @@ active = 1.2
 recovery = 0.0666666666666667
 chain_after = 0.0666666666666667
 iframes_to = 1.33333333333333
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_66ebf"), SubResource("Resource_vyavd")])
 power = 16.0
 poise = 1
 hitbox_size = Vector3(1, 3.3392856, 1.6696428)
 hitbox_offset = Vector3(0, 1.1839286, -0.10625)
 
-[sub_resource type="Resource" id="Resource_vyavd"]
+[sub_resource type="Resource" id="Resource_ckrke"]
 script = ExtResource("11_0tcwl")
 at = 0.667
 kind = 2
-shot = SubResource("Resource_66ebf")
+shot = SubResource("Resource_r7esw")
 offset = Vector3(0, 0.30357143, -0.060714286)
 at_foe = true
+pierce = true
 
-[sub_resource type="Resource" id="Resource_r7esw"]
+[sub_resource type="Resource" id="Resource_xyr5t"]
+script = ExtResource("11_0tcwl")
+kind = 4
+amount = 0.2
+seconds = 0.1
+
+[sub_resource type="Resource" id="Resource_htfxc"]
+script = ExtResource("11_0tcwl")
+kind = 4
+amount = 0.15
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_x8o45"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_407_shot3"
 startup = 0.316666666666667
@@ -518,21 +545,23 @@ active = 0.05
 recovery = 0.383333333333333
 chain_after = 0.383333333333333
 iframes_to = 0.75
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_xyr5t"), SubResource("Resource_htfxc")])
 power = 16.0
 poise = 1
 knockback = 0.4
 hitbox_size = Vector3(1, 3.9767857, 1.8821429)
 hitbox_offset = Vector3(0, 1.9580357, 0.030357143)
 
-[sub_resource type="Resource" id="Resource_ckrke"]
+[sub_resource type="Resource" id="Resource_wk7g7"]
 script = ExtResource("11_0tcwl")
 at = 1.333
 kind = 2
-shot = SubResource("Resource_r7esw")
+shot = SubResource("Resource_x8o45")
 offset = Vector3(0, -0.060714286, 0)
 at_foe = true
+pierce = true
 
-[sub_resource type="Resource" id="Resource_xyr5t"]
+[sub_resource type="Resource" id="Resource_plchc"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_407"
 startup = 0.0
@@ -540,29 +569,29 @@ active = 2.28333333333333
 recovery = 0.0
 iframes_from = 0.2
 iframes_to = 2.08333333333333
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_hmtiu"), SubResource("Resource_v5ji8"), SubResource("Resource_vyavd"), SubResource("Resource_ckrke")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_hmtiu"), SubResource("Resource_v5ji8"), SubResource("Resource_ckrke"), SubResource("Resource_wk7g7")])
 
-[sub_resource type="Resource" id="Resource_htfxc"]
+[sub_resource type="Resource" id="Resource_dndud"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_xyr5t")
+move = SubResource("Resource_plchc")
 weight = 2.0
 
-[sub_resource type="Resource" id="Resource_x8o45"]
+[sub_resource type="Resource" id="Resource_kx07u"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("30_fmp8e")
 
-[sub_resource type="Resource" id="Resource_wk7g7"]
+[sub_resource type="Resource" id="Resource_6bt4q"]
 script = ExtResource("11_0tcwl")
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_plchc"]
+[sub_resource type="Resource" id="Resource_27j7x"]
 script = ExtResource("11_0tcwl")
 at = 0.617
 sound = ExtResource("31_a4bp6")
 
-[sub_resource type="Resource" id="Resource_dndud"]
+[sub_resource type="Resource" id="Resource_1gupw"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_419"
 startup = 0.0
@@ -570,17 +599,17 @@ active = 3.15
 recovery = 0.0166666666666667
 chain_after = 0.0166666666666667
 iframes_to = 1.8
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_x8o45"), SubResource("Resource_wk7g7"), SubResource("Resource_plchc")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_kx07u"), SubResource("Resource_6bt4q"), SubResource("Resource_27j7x")])
 power = 0.8
 hits = 48
 poise = 1
 
-[sub_resource type="Resource" id="Resource_kx07u"]
+[sub_resource type="Resource" id="Resource_cf8l1"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_dndud")
+move = SubResource("Resource_1gupw")
 weight = 5.0
 
-[sub_resource type="Resource" id="Resource_6bt4q"]
+[sub_resource type="Resource" id="Resource_t7eac"]
 script = ExtResource("27_euy1k")
 aggro_radius = 8.0
 give_up_radius = 12.0
@@ -588,27 +617,27 @@ attack_range = 2.5
 attack_cooldown = 1.5
 move_speed = 2.0
 wander_radius = 0.0
-moves = Array[ExtResource("28_v7vr2")]([SubResource("Resource_ysx18"), SubResource("Resource_htfxc"), SubResource("Resource_kx07u")])
+moves = Array[ExtResource("28_v7vr2")]([SubResource("Resource_ysx18"), SubResource("Resource_dndud"), SubResource("Resource_cf8l1")])
 
-[sub_resource type="Resource" id="Resource_27j7x"]
+[sub_resource type="Resource" id="Resource_ukski"]
 script = ExtResource("11_0tcwl")
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_1gupw"]
+[sub_resource type="Resource" id="Resource_qv8np"]
 script = ExtResource("11_0tcwl")
 at = 0.2
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_cf8l1"]
+[sub_resource type="Resource" id="Resource_sv2gi"]
 script = ExtResource("11_0tcwl")
 at = 0.25
 sound = ExtResource("33_kf8ot")
 
-[sub_resource type="Resource" id="Resource_t7eac"]
+[sub_resource type="Resource" id="Resource_a6qbl"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_460"
 startup = 0.2
@@ -616,33 +645,33 @@ active = 0.0166666666666667
 recovery = 0.333333333333333
 chain_after = 0.333333333333333
 iframes_to = 0.55
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_27j7x"), SubResource("Resource_1gupw"), SubResource("Resource_cf8l1")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_ukski"), SubResource("Resource_qv8np"), SubResource("Resource_sv2gi")])
 power = 20.0
 poise = 1
 knockback = 1.01
 
-[sub_resource type="Resource" id="Resource_ukski"]
+[sub_resource type="Resource" id="Resource_c4whv"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_t7eac")
+move = SubResource("Resource_a6qbl")
 weight = 2.0
 
-[sub_resource type="Resource" id="Resource_qv8np"]
+[sub_resource type="Resource" id="Resource_lheh8"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("34_yry83")
 
-[sub_resource type="Resource" id="Resource_sv2gi"]
+[sub_resource type="Resource" id="Resource_yu13u"]
 script = ExtResource("11_0tcwl")
 at = 0.067
 sound = ExtResource("35_082hs")
 
-[sub_resource type="Resource" id="Resource_a6qbl"]
+[sub_resource type="Resource" id="Resource_anq6m"]
 script = ExtResource("11_0tcwl")
 at = 0.2
 kind = 4
 amount = 0.2
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_c4whv"]
+[sub_resource type="Resource" id="Resource_xqfq3"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_462"
 startup = 0.2
@@ -650,40 +679,40 @@ active = 0.25
 recovery = 0.25
 chain_after = 0.25
 iframes_to = 0.7
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_qv8np"), SubResource("Resource_sv2gi"), SubResource("Resource_a6qbl")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_lheh8"), SubResource("Resource_yu13u"), SubResource("Resource_anq6m")])
 power = 28.0
 poise = 1
 knockback = 1.01
 hitbox_size = Vector3(1, 1.6089286, 4.7357144)
 hitbox_offset = Vector3(0, 0.8044643, -2.3678572)
 
-[sub_resource type="Resource" id="Resource_lheh8"]
+[sub_resource type="Resource" id="Resource_o4v6q"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_c4whv")
+move = SubResource("Resource_xqfq3")
 
-[sub_resource type="Resource" id="Resource_yu13u"]
+[sub_resource type="Resource" id="Resource_oir7f"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("34_yry83")
 
-[sub_resource type="Resource" id="Resource_anq6m"]
+[sub_resource type="Resource" id="Resource_bw2q2"]
 script = ExtResource("11_0tcwl")
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_xqfq3"]
+[sub_resource type="Resource" id="Resource_ek1ud"]
 script = ExtResource("11_0tcwl")
 at = 0.067
 sound = ExtResource("35_082hs")
 
-[sub_resource type="Resource" id="Resource_o4v6q"]
+[sub_resource type="Resource" id="Resource_ttt05"]
 script = ExtResource("11_0tcwl")
 at = 0.467
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_oir7f"]
+[sub_resource type="Resource" id="Resource_km0i8"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_465"
 startup = 0.533333333333333
@@ -691,60 +720,60 @@ active = 0.0666666666666667
 recovery = 0.483333333333333
 chain_after = 0.483333333333333
 iframes_to = 1.08333333333333
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_yu13u"), SubResource("Resource_anq6m"), SubResource("Resource_xqfq3"), SubResource("Resource_o4v6q")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_oir7f"), SubResource("Resource_bw2q2"), SubResource("Resource_ek1ud"), SubResource("Resource_ttt05")])
 power = 20.0
 poise = 1
 knockback = 1.01
 hitbox_size = Vector3(1, 2.125, 5.1)
 hitbox_offset = Vector3(0, 1.0321429, -1.7910714)
 
-[sub_resource type="Resource" id="Resource_bw2q2"]
+[sub_resource type="Resource" id="Resource_tqyxi"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_oir7f")
+move = SubResource("Resource_km0i8")
 
-[sub_resource type="Resource" id="Resource_ek1ud"]
+[sub_resource type="Resource" id="Resource_xawk3"]
 script = ExtResource("27_euy1k")
 aggro_radius = 8.0
 give_up_radius = 12.0
 attack_range = 2.0
 move_speed = 3.0
 wander_radius = 0.0
-moves = Array[ExtResource("28_v7vr2")]([SubResource("Resource_ukski"), SubResource("Resource_lheh8"), SubResource("Resource_bw2q2")])
+moves = Array[ExtResource("28_v7vr2")]([SubResource("Resource_c4whv"), SubResource("Resource_o4v6q"), SubResource("Resource_tqyxi")])
 
-[sub_resource type="Resource" id="Resource_ttt05"]
+[sub_resource type="Resource" id="Resource_feiog"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("39_dedtx")
 frames = 29
 feet = Vector2i(268, 132)
 seconds = 2.33333333333333
 
-[sub_resource type="Resource" id="Resource_km0i8"]
+[sub_resource type="Resource" id="Resource_n13gb"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("40_lt2bg")
 frames = 17
 feet = Vector2i(77, 94)
 seconds = 2.28333333333333
 
-[sub_resource type="Resource" id="Resource_tqyxi"]
+[sub_resource type="Resource" id="Resource_ws6c4"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("41_1rwrs")
 frames = 17
 feet = Vector2i(233, 156)
 seconds = 1.8
 
-[sub_resource type="Resource" id="Resource_xawk3"]
+[sub_resource type="Resource" id="Resource_ur2fu"]
 script = ExtResource("42_h4jdf")
 sheet = ExtResource("43_1m5h4")
 layout = ExtResource("37_2gk68")
 pixel_size = 0.0303571428571429
 ground_offset = -0.0303571428571429
 moves = Dictionary[StringName, ExtResource("38_kqx0h")]({
-&"move/yoshimura_eto_406": SubResource("Resource_ttt05"),
-&"move/yoshimura_eto_407": SubResource("Resource_km0i8"),
-&"move/yoshimura_eto_419": SubResource("Resource_tqyxi")
+&"move/yoshimura_eto_406": SubResource("Resource_feiog"),
+&"move/yoshimura_eto_407": SubResource("Resource_n13gb"),
+&"move/yoshimura_eto_419": SubResource("Resource_ws6c4")
 })
 
-[sub_resource type="Resource" id="Resource_feiog"]
+[sub_resource type="Resource" id="Resource_xnvb3"]
 script = ExtResource("36_516ah")
 combatant_id = &"yoshimura_eto_noroi"
 name_key = "combat.member.yoshimura_eto_noroi.name"
@@ -754,42 +783,42 @@ base_stats = Dictionary[StringName, float]({
 &"max_hp": 40.0
 })
 attack_tags = Array[StringName]([&"kagune"])
-art = SubResource("Resource_xawk3")
+art = SubResource("Resource_ur2fu")
 
-[sub_resource type="Resource" id="Resource_n13gb"]
+[sub_resource type="Resource" id="Resource_aiyx2"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("45_pittw")
 frames = 8
 feet = Vector2i(28, 57)
 seconds = 0.55
 
-[sub_resource type="Resource" id="Resource_ws6c4"]
+[sub_resource type="Resource" id="Resource_5i0l5"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("46_qydee")
 frames = 11
 feet = Vector2i(146, 73)
 seconds = 0.7
 
-[sub_resource type="Resource" id="Resource_ur2fu"]
+[sub_resource type="Resource" id="Resource_rnm2a"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("47_ppkcy")
 frames = 16
 feet = Vector2i(156, 59)
 seconds = 1.08333333333333
 
-[sub_resource type="Resource" id="Resource_xnvb3"]
+[sub_resource type="Resource" id="Resource_6nfxv"]
 script = ExtResource("42_h4jdf")
 sheet = ExtResource("48_6gr2m")
 layout = ExtResource("44_s8xul")
 pixel_size = 0.0303571428571429
 ground_offset = -0.0303571428571429
 moves = Dictionary[StringName, ExtResource("38_kqx0h")]({
-&"move/yoshimura_eto_460": SubResource("Resource_n13gb"),
-&"move/yoshimura_eto_462": SubResource("Resource_ws6c4"),
-&"move/yoshimura_eto_465": SubResource("Resource_ur2fu")
+&"move/yoshimura_eto_460": SubResource("Resource_aiyx2"),
+&"move/yoshimura_eto_462": SubResource("Resource_5i0l5"),
+&"move/yoshimura_eto_465": SubResource("Resource_rnm2a")
 })
 
-[sub_resource type="Resource" id="Resource_aiyx2"]
+[sub_resource type="Resource" id="Resource_a3gbu"]
 script = ExtResource("36_516ah")
 combatant_id = &"yoshimura_eto_tatara"
 name_key = "combat.member.yoshimura_eto_tatara.name"
@@ -799,77 +828,77 @@ base_stats = Dictionary[StringName, float]({
 &"max_hp": 30.0
 })
 attack_tags = Array[StringName]([&"kagune"])
-art = SubResource("Resource_xnvb3")
+art = SubResource("Resource_6nfxv")
 
-[sub_resource type="Resource" id="Resource_5i0l5"]
+[sub_resource type="Resource" id="Resource_y2rmq"]
 script = ExtResource("2_xhgri")
 name_key = "combat.status.yoshimura_eto_helpers_out.name"
 unit = 1
 duration = 9999.0
 id = &"status/yoshimura_eto_helpers_out"
 
-[sub_resource type="Resource" id="Resource_rnm2a"]
+[sub_resource type="Resource" id="Resource_wpten"]
 script = ExtResource("49_rlq00")
-fighters = Array[ExtResource("36_516ah")]([SubResource("Resource_feiog"), SubResource("Resource_aiyx2")])
-brains = Array[ExtResource("27_euy1k")]([SubResource("Resource_6bt4q"), SubResource("Resource_ek1ud")])
+fighters = Array[ExtResource("36_516ah")]([SubResource("Resource_xnvb3"), SubResource("Resource_a3gbu")])
+brains = Array[ExtResource("27_euy1k")]([SubResource("Resource_t7eac"), SubResource("Resource_xawk3")])
 lifetime = 20.0
 cap = 2
-owner_status = SubResource("Resource_5i0l5")
+owner_status = SubResource("Resource_y2rmq")
 turns = 3
 
-[sub_resource type="Resource" id="Resource_6nfxv"]
+[sub_resource type="Resource" id="Resource_5geib"]
 script = ExtResource("18_3b3to")
 stat = &"defence"
 op = 1
 value = 1.2
 
-[sub_resource type="Resource" id="Resource_a3gbu"]
+[sub_resource type="Resource" id="Resource_q03sh"]
 script = ExtResource("2_xhgri")
 name_key = "combat.status.yoshimura_eto_resolve.name"
 unit = 1
 duration = 2.0
-modifiers = Array[ExtResource("18_3b3to")]([SubResource("Resource_6nfxv")])
+modifiers = Array[ExtResource("18_3b3to")]([SubResource("Resource_5geib")])
 id = &"status/yoshimura_eto_resolve"
 
-[sub_resource type="Resource" id="Resource_y2rmq"]
+[sub_resource type="Resource" id="Resource_asa5b"]
 script = ExtResource("51_sqfbq")
 name_key = "combat.power.yoshimura_eto_noroi_tatara.name"
 cost_pool = &"kagune"
 cost = 8
 target = 0
-statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_a3gbu")])
+statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_q03sh")])
 id = &"skill/yoshimura_eto_noroi_tatara"
 
-[sub_resource type="Resource" id="Resource_wpten"]
+[sub_resource type="Resource" id="Resource_vned4"]
 script = ExtResource("7_5f0ow")
 power_id = &"power/yoshimura_eto_noroi_tatara"
 name_key = "combat.power.yoshimura_eto_noroi_tatara.name"
 desc_key = "combat.power.yoshimura_eto_noroi_tatara.desc"
-skill = SubResource("Resource_y2rmq")
-mechanism = SubResource("Resource_rnm2a")
+skill = SubResource("Resource_asa5b")
+mechanism = SubResource("Resource_wpten")
 cooldown = 12.0
 requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_human"])
 
-[sub_resource type="Resource" id="Resource_5geib"]
+[sub_resource type="Resource" id="Resource_qt6tg"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("52_15ewd")
 
-[sub_resource type="Resource" id="Resource_q03sh"]
+[sub_resource type="Resource" id="Resource_ceqex"]
 script = ExtResource("11_0tcwl")
 at = 0.25
 sound = ExtResource("53_ugduf")
 
-[sub_resource type="Resource" id="Resource_asa5b"]
+[sub_resource type="Resource" id="Resource_5qkba"]
 script = ExtResource("11_0tcwl")
 at = 0.25
 sound = ExtResource("14_31mqn")
 
-[sub_resource type="Resource" id="Resource_vned4"]
+[sub_resource type="Resource" id="Resource_j61yb"]
 script = ExtResource("11_0tcwl")
 at = 0.25
 sound = ExtResource("15_epkqv")
 
-[sub_resource type="Resource" id="Resource_qt6tg"]
+[sub_resource type="Resource" id="Resource_r34n0"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_500"
 startup = 0.283333333333333
@@ -878,7 +907,7 @@ recovery = 0.283333333333333
 chain_after = 0.283333333333333
 iframes_from = 0.483333333333333
 iframes_to = 0.683333333333333
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_5geib"), SubResource("Resource_q03sh"), SubResource("Resource_asa5b"), SubResource("Resource_vned4")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_qt6tg"), SubResource("Resource_ceqex"), SubResource("Resource_5qkba"), SubResource("Resource_j61yb")])
 power = 40.0
 poise = 3
 knockback = 0.4
@@ -886,74 +915,74 @@ hitbox_size = Vector3(1, 1.9428571, 3.0660715)
 hitbox_offset = Vector3(0, 0.7285714, -0.13660714)
 travel_speed = 36.4285714285714
 
-[sub_resource type="Resource" id="Resource_ceqex"]
+[sub_resource type="Resource" id="Resource_ve1n4"]
 script = ExtResource("51_sqfbq")
 name_key = "combat.power.yoshimura_eto_air_strike.name"
 cost_pool = &"kagune"
 cost = 17
 target = 0
-statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_a3gbu")])
+statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_q03sh")])
 id = &"skill/yoshimura_eto_air_strike"
 
-[sub_resource type="Resource" id="Resource_5qkba"]
+[sub_resource type="Resource" id="Resource_emu2s"]
 script = ExtResource("7_5f0ow")
 power_id = &"power/yoshimura_eto_air_strike"
 name_key = "combat.power.yoshimura_eto_air_strike.name"
 desc_key = "combat.power.yoshimura_eto_air_strike.desc"
-skill = SubResource("Resource_ceqex")
-move = SubResource("Resource_qt6tg")
+skill = SubResource("Resource_ve1n4")
+move = SubResource("Resource_r34n0")
 cooldown = 4.0
 requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_human"])
 
-[sub_resource type="Resource" id="Resource_j61yb"]
+[sub_resource type="Resource" id="Resource_3yj0g"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("52_15ewd")
 
-[sub_resource type="Resource" id="Resource_r34n0"]
+[sub_resource type="Resource" id="Resource_mbnlw"]
 script = ExtResource("11_0tcwl")
 kind = 5
 seconds = 0.5
 
-[sub_resource type="Resource" id="Resource_ve1n4"]
+[sub_resource type="Resource" id="Resource_qpynk"]
 script = ExtResource("11_0tcwl")
 at = 0.8170000000000001
 sound = ExtResource("16_7msa1")
 
-[sub_resource type="Resource" id="Resource_emu2s"]
+[sub_resource type="Resource" id="Resource_q52kp"]
 script = ExtResource("11_0tcwl")
 at = 0.8170000000000001
 sound = ExtResource("14_31mqn")
 
-[sub_resource type="Resource" id="Resource_3yj0g"]
+[sub_resource type="Resource" id="Resource_5lm8c"]
 script = ExtResource("11_0tcwl")
 at = 0.8170000000000001
 sound = ExtResource("54_yll7g")
 
-[sub_resource type="Resource" id="Resource_mbnlw"]
+[sub_resource type="Resource" id="Resource_xg1t6"]
 script = ExtResource("11_0tcwl")
 at = 0.8170000000000001
 kind = 4
 amount = 0.3
 seconds = 0.167
 
-[sub_resource type="Resource" id="Resource_qpynk"]
+[sub_resource type="Resource" id="Resource_2jil3"]
 script = ExtResource("11_0tcwl")
 at = 0.867
 sound = ExtResource("55_141n3")
 
-[sub_resource type="Resource" id="Resource_q52kp"]
+[sub_resource type="Resource" id="Resource_4rrmi"]
 script = ExtResource("11_0tcwl")
 at = 0.867
 sound = ExtResource("24_nbhm1")
 
-[sub_resource type="Resource" id="Resource_5lm8c"]
+[sub_resource type="Resource" id="Resource_w08xk"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_510"
 startup = 0.866666666666667
 active = 0.05
 recovery = 0.616666666666667
 chain_after = 0.616666666666667
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_j61yb"), SubResource("Resource_r34n0"), SubResource("Resource_ve1n4"), SubResource("Resource_emu2s"), SubResource("Resource_3yj0g"), SubResource("Resource_mbnlw"), SubResource("Resource_qpynk"), SubResource("Resource_q52kp")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_3yj0g"), SubResource("Resource_mbnlw"), SubResource("Resource_qpynk"), SubResource("Resource_q52kp"), SubResource("Resource_5lm8c"), SubResource("Resource_xg1t6"), SubResource("Resource_2jil3"), SubResource("Resource_4rrmi")])
 power = 16.0
 poise = 1
 knockback = 1.01
@@ -961,44 +990,44 @@ hitbox_size = Vector3(1, 2.9142857, 3.4607143)
 hitbox_offset = Vector3(0, 1.4571428, -0.60714287)
 travel_speed = 3.64285714285714
 
-[sub_resource type="Resource" id="Resource_xg1t6"]
+[sub_resource type="Resource" id="Resource_texb3"]
 script = ExtResource("51_sqfbq")
 name_key = "combat.power.yoshimura_eto_bronze_tree.name"
 cost_pool = &"kagune"
 cost = 17
 target = 0
-statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_a3gbu")])
+statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_q03sh")])
 id = &"skill/yoshimura_eto_bronze_tree"
 
-[sub_resource type="Resource" id="Resource_2jil3"]
+[sub_resource type="Resource" id="Resource_bliqi"]
 script = ExtResource("7_5f0ow")
 power_id = &"power/yoshimura_eto_bronze_tree"
 name_key = "combat.power.yoshimura_eto_bronze_tree.name"
 desc_key = "combat.power.yoshimura_eto_bronze_tree.desc"
-skill = SubResource("Resource_xg1t6")
-move = SubResource("Resource_5lm8c")
+skill = SubResource("Resource_texb3")
+move = SubResource("Resource_w08xk")
 cooldown = 4.0
 requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_human"])
 forbids_statuses = Array[StringName]([&"status/yoshimura_eto_helpers_out"])
 
-[sub_resource type="Resource" id="Resource_4rrmi"]
+[sub_resource type="Resource" id="Resource_b7akg"]
 script = ExtResource("11_0tcwl")
 at = 0.017
 sound = ExtResource("56_gnlgh")
 
-[sub_resource type="Resource" id="Resource_w08xk"]
+[sub_resource type="Resource" id="Resource_6fdnj"]
 script = ExtResource("11_0tcwl")
 at = 0.017
 sound = ExtResource("57_rtmfa")
 
-[sub_resource type="Resource" id="Resource_texb3"]
+[sub_resource type="Resource" id="Resource_iujx1"]
 script = ExtResource("11_0tcwl")
 at = 0.083
 kind = 4
 amount = 0.2
 seconds = 0.167
 
-[sub_resource type="Resource" id="Resource_bliqi"]
+[sub_resource type="Resource" id="Resource_mcef5"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2502"
 startup = 0.0
@@ -1006,69 +1035,69 @@ active = 0.0833333333333333
 recovery = 0.616666666666667
 chain_after = 0.616666666666667
 iframes_to = 0.7
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_4rrmi"), SubResource("Resource_w08xk"), SubResource("Resource_texb3")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_b7akg"), SubResource("Resource_6fdnj"), SubResource("Resource_iujx1")])
 power = 120.0
 poise = 1
 knockback = 1.01
 hitbox_size = Vector3(1, 3.369643, 4.1285715)
 hitbox_offset = Vector3(0, 0.95625, -1.2446429)
 
-[sub_resource type="Resource" id="Resource_b7akg"]
+[sub_resource type="Resource" id="Resource_woafo"]
 script = ExtResource("51_sqfbq")
 name_key = "combat.power.yoshimura_eto_air_fall.name"
 cost_pool = &"kagune"
 cost = 25
 target = 0
-statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_a3gbu")])
+statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_q03sh")])
 id = &"skill/yoshimura_eto_air_fall"
 
-[sub_resource type="Resource" id="Resource_6fdnj"]
+[sub_resource type="Resource" id="Resource_7t0ep"]
 script = ExtResource("7_5f0ow")
 power_id = &"power/yoshimura_eto_air_fall"
 name_key = "combat.power.yoshimura_eto_air_fall.name"
 desc_key = "combat.power.yoshimura_eto_air_fall.desc"
-skill = SubResource("Resource_b7akg")
-move = SubResource("Resource_bliqi")
+skill = SubResource("Resource_woafo")
+move = SubResource("Resource_mcef5")
 cooldown = 8.0
 requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_kakuja"])
 
-[sub_resource type="Resource" id="Resource_iujx1"]
+[sub_resource type="Resource" id="Resource_0ehue"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("52_15ewd")
 
-[sub_resource type="Resource" id="Resource_mcef5"]
+[sub_resource type="Resource" id="Resource_feuwq"]
 script = ExtResource("11_0tcwl")
 kind = 5
 seconds = 0.5
 
-[sub_resource type="Resource" id="Resource_woafo"]
+[sub_resource type="Resource" id="Resource_1e0lo"]
 script = ExtResource("11_0tcwl")
 at = 0.083
 sound = ExtResource("20_q50ad")
 
-[sub_resource type="Resource" id="Resource_7t0ep"]
+[sub_resource type="Resource" id="Resource_qmt35"]
 script = ExtResource("11_0tcwl")
 at = 1.167
 sound = ExtResource("58_iifdc")
 
-[sub_resource type="Resource" id="Resource_0ehue"]
+[sub_resource type="Resource" id="Resource_3d200"]
 script = ExtResource("11_0tcwl")
 at = 1.167
 sound = ExtResource("56_gnlgh")
 
-[sub_resource type="Resource" id="Resource_feuwq"]
+[sub_resource type="Resource" id="Resource_ma7vo"]
 script = ExtResource("11_0tcwl")
 at = 1.167
 sound = ExtResource("59_mcew8")
 
-[sub_resource type="Resource" id="Resource_1e0lo"]
+[sub_resource type="Resource" id="Resource_7l221"]
 script = ExtResource("11_0tcwl")
 at = 1.167
 kind = 4
 amount = 0.4
 seconds = 0.333
 
-[sub_resource type="Resource" id="Resource_qmt35"]
+[sub_resource type="Resource" id="Resource_6svng"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2600"
 startup = 1.25
@@ -1076,70 +1105,70 @@ active = 0.333333333333333
 recovery = 0.166666666666667
 chain_after = 0.166666666666667
 iframes_to = 1.75
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_iujx1"), SubResource("Resource_mcef5"), SubResource("Resource_woafo"), SubResource("Resource_7t0ep"), SubResource("Resource_0ehue"), SubResource("Resource_feuwq"), SubResource("Resource_1e0lo")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_0ehue"), SubResource("Resource_feuwq"), SubResource("Resource_1e0lo"), SubResource("Resource_qmt35"), SubResource("Resource_3d200"), SubResource("Resource_ma7vo"), SubResource("Resource_7l221")])
 power = 16.0
 poise = 1
 hitbox_size = Vector3(1, 8, 8)
 hitbox_offset = Vector3(0, 4, 0.19732143)
 
-[sub_resource type="Resource" id="Resource_3d200"]
+[sub_resource type="Resource" id="Resource_iub5l"]
 script = ExtResource("51_sqfbq")
 name_key = "combat.power.yoshimura_eto_one_eyed_owl.name"
 cost_pool = &"kagune"
 cost = 7
 target = 0
-statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_a3gbu")])
+statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_q03sh")])
 id = &"skill/yoshimura_eto_one_eyed_owl"
 
-[sub_resource type="Resource" id="Resource_ma7vo"]
+[sub_resource type="Resource" id="Resource_y0asj"]
 script = ExtResource("7_5f0ow")
 power_id = &"power/yoshimura_eto_one_eyed_owl"
 name_key = "combat.power.yoshimura_eto_one_eyed_owl.name"
 desc_key = "combat.power.yoshimura_eto_one_eyed_owl.desc"
-skill = SubResource("Resource_3d200")
-move = SubResource("Resource_qmt35")
+skill = SubResource("Resource_iub5l")
+move = SubResource("Resource_6svng")
 cooldown = 4.0
 requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_kakuja"])
 
-[sub_resource type="Resource" id="Resource_7l221"]
+[sub_resource type="Resource" id="Resource_gaw5x"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("60_j667m")
 
-[sub_resource type="Resource" id="Resource_6svng"]
+[sub_resource type="Resource" id="Resource_yjohb"]
 script = ExtResource("11_0tcwl")
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_iub5l"]
+[sub_resource type="Resource" id="Resource_5d3hs"]
 script = ExtResource("11_0tcwl")
 at = 0.217
 sound = ExtResource("61_mqf1m")
 
-[sub_resource type="Resource" id="Resource_y0asj"]
+[sub_resource type="Resource" id="Resource_68r2m"]
 script = ExtResource("11_0tcwl")
 at = 0.217
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_gaw5x"]
+[sub_resource type="Resource" id="Resource_eutd8"]
 script = ExtResource("11_0tcwl")
 at = 0.75
 sound = ExtResource("62_rpnhp")
 
-[sub_resource type="Resource" id="Resource_yjohb"]
+[sub_resource type="Resource" id="Resource_wfesp"]
 script = ExtResource("11_0tcwl")
 at = 0.833
 sound = ExtResource("63_2f7op")
 
-[sub_resource type="Resource" id="Resource_5d3hs"]
+[sub_resource type="Resource" id="Resource_a27g5"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2405"
 startup = 0.216666666666667
 active = 0.7
 chain_after = 0.3
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_7l221"), SubResource("Resource_6svng"), SubResource("Resource_iub5l"), SubResource("Resource_y0asj"), SubResource("Resource_gaw5x"), SubResource("Resource_yjohb")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_gaw5x"), SubResource("Resource_yjohb"), SubResource("Resource_5d3hs"), SubResource("Resource_68r2m"), SubResource("Resource_eutd8"), SubResource("Resource_wfesp")])
 power = 26.0
 hits = 2
 poise = 1
@@ -1147,38 +1176,38 @@ knockback = 1.01
 hitbox_size = Vector3(1, 1.7, 5.3732142)
 hitbox_offset = Vector3(0, 0.81964284, -3.9919643)
 
-[sub_resource type="Resource" id="Resource_68r2m"]
+[sub_resource type="Resource" id="Resource_xa18c"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_5d3hs")
+move = SubResource("Resource_a27g5")
 weight = 33.0
 
-[sub_resource type="Resource" id="Resource_eutd8"]
+[sub_resource type="Resource" id="Resource_ufpq1"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("63_2f7op")
 
-[sub_resource type="Resource" id="Resource_wfesp"]
+[sub_resource type="Resource" id="Resource_icq66"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("64_3kb23")
 
-[sub_resource type="Resource" id="Resource_a27g5"]
+[sub_resource type="Resource" id="Resource_pdf0o"]
 script = ExtResource("11_0tcwl")
 kind = 4
 amount = 0.2
 seconds = 0.067
 
-[sub_resource type="Resource" id="Resource_xa18c"]
+[sub_resource type="Resource" id="Resource_m4k2u"]
 script = ExtResource("11_0tcwl")
 at = 0.133
 sound = ExtResource("65_g24bs")
 
-[sub_resource type="Resource" id="Resource_ufpq1"]
+[sub_resource type="Resource" id="Resource_2hwch"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2402"
 startup = 0.0
 active = 0.6
 recovery = 0.0
 armour_to = 0.6
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_eutd8"), SubResource("Resource_wfesp"), SubResource("Resource_a27g5"), SubResource("Resource_xa18c")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_ufpq1"), SubResource("Resource_icq66"), SubResource("Resource_pdf0o"), SubResource("Resource_m4k2u")])
 power = 4.0
 hits = 2
 poise = 1
@@ -1187,24 +1216,41 @@ hitbox_size = Vector3(1, 2.8232143, 3.9464285)
 hitbox_offset = Vector3(0, 1.1991072, -0.060714286)
 travel_speed = 5.46428571428571
 
-[sub_resource type="Resource" id="Resource_icq66"]
+[sub_resource type="Resource" id="Resource_f0hx6"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_ufpq1")
+move = SubResource("Resource_2hwch")
 weight = 50.0
 
-[sub_resource type="Resource" id="Resource_pdf0o"]
+[sub_resource type="Resource" id="Resource_tbjhf"]
 script = ExtResource("11_0tcwl")
 at = 0.167
 sound = ExtResource("66_3l77j")
 
-[sub_resource type="Resource" id="Resource_m4k2u"]
+[sub_resource type="Resource" id="Resource_oyfmw"]
 script = ExtResource("11_0tcwl")
 at = 0.167
 kind = 4
 amount = 0.4
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_2hwch"]
+[sub_resource type="Resource" id="Resource_k7rwb"]
+script = ExtResource("11_0tcwl")
+sound = ExtResource("65_g24bs")
+
+[sub_resource type="Resource" id="Resource_kbhej"]
+script = ExtResource("11_0tcwl")
+kind = 4
+amount = 0.15
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_7g6pe"]
+script = ExtResource("11_0tcwl")
+at = 0.033
+kind = 4
+amount = 0.2
+seconds = 0.1
+
+[sub_resource type="Resource" id="Resource_t6w5e"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2406_shot2"
 startup = 0.0
@@ -1212,34 +1258,36 @@ active = 0.583333333333333
 recovery = 0.566666666666667
 chain_after = 0.566666666666667
 iframes_to = 1.15
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_k7rwb"), SubResource("Resource_kbhej"), SubResource("Resource_7g6pe")])
 power = 8.0
 hits = 2
 poise = 1
 hitbox_size = Vector3(1, 2.1553571, 1.1535715)
 hitbox_offset = Vector3(0, 1.0473214, -0.09107143)
 
-[sub_resource type="Resource" id="Resource_f0hx6"]
+[sub_resource type="Resource" id="Resource_2v5sc"]
 script = ExtResource("11_0tcwl")
 at = 0.333
 kind = 2
-shot = SubResource("Resource_2hwch")
+shot = SubResource("Resource_t6w5e")
 offset = Vector3(0, -0.060714286, -0.060714286)
 at_foe = true
+pierce = true
 
-[sub_resource type="Resource" id="Resource_tbjhf"]
+[sub_resource type="Resource" id="Resource_2w0t2"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2406"
 startup = 0.0
 active = 2.0
 recovery = 0.0
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_pdf0o"), SubResource("Resource_m4k2u"), SubResource("Resource_f0hx6")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_tbjhf"), SubResource("Resource_oyfmw"), SubResource("Resource_2v5sc")])
 
-[sub_resource type="Resource" id="Resource_oyfmw"]
+[sub_resource type="Resource" id="Resource_ho7lx"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_tbjhf")
+move = SubResource("Resource_2w0t2")
 weight = 33.0
 
-[sub_resource type="Resource" id="Resource_k7rwb"]
+[sub_resource type="Resource" id="Resource_qsjcn"]
 script = ExtResource("27_euy1k")
 aggro_radius = 10.0
 give_up_radius = 14.0
@@ -1248,56 +1296,56 @@ attack_range = 3.0
 attack_cooldown = 1.2
 move_speed = 2.0
 wander_radius = 0.0
-moves = Array[ExtResource("28_v7vr2")]([SubResource("Resource_68r2m"), SubResource("Resource_icq66"), SubResource("Resource_oyfmw")])
+moves = Array[ExtResource("28_v7vr2")]([SubResource("Resource_xa18c"), SubResource("Resource_f0hx6"), SubResource("Resource_ho7lx")])
 
-[sub_resource type="Resource" id="Resource_kbhej"]
+[sub_resource type="Resource" id="Resource_3efkr"]
 script = ExtResource("11_0tcwl")
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_7g6pe"]
+[sub_resource type="Resource" id="Resource_avbks"]
 script = ExtResource("11_0tcwl")
 at = 0.35000000000000003
 sound = ExtResource("67_s5ywl")
 
-[sub_resource type="Resource" id="Resource_t6w5e"]
+[sub_resource type="Resource" id="Resource_dbi1m"]
 script = ExtResource("11_0tcwl")
 at = 0.35000000000000003
 kind = 4
 amount = 0.1
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_2v5sc"]
+[sub_resource type="Resource" id="Resource_glgqj"]
 script = ExtResource("11_0tcwl")
 at = 1.117
 sound = ExtResource("68_mav3e")
 
-[sub_resource type="Resource" id="Resource_2w0t2"]
+[sub_resource type="Resource" id="Resource_mton6"]
 script = ExtResource("11_0tcwl")
 at = 1.2670000000000001
 kind = 4
 amount = 0.4
 seconds = 0.133
 
-[sub_resource type="Resource" id="Resource_ho7lx"]
+[sub_resource type="Resource" id="Resource_ekkun"]
 script = ExtResource("11_0tcwl")
 at = 1.367
 sound = ExtResource("69_nwapy")
 
-[sub_resource type="Resource" id="Resource_qsjcn"]
+[sub_resource type="Resource" id="Resource_a081f"]
 script = ExtResource("11_0tcwl")
 at = 1.367
 sound = ExtResource("70_nbkf1")
 
-[sub_resource type="Resource" id="Resource_3efkr"]
+[sub_resource type="Resource" id="Resource_s5ywx"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2460"
 startup = 0.45
 active = 0.916666666666667
 recovery = 0.55
 chain_after = 0.55
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_kbhej"), SubResource("Resource_7g6pe"), SubResource("Resource_t6w5e"), SubResource("Resource_2v5sc"), SubResource("Resource_2w0t2"), SubResource("Resource_ho7lx"), SubResource("Resource_qsjcn")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_3efkr"), SubResource("Resource_avbks"), SubResource("Resource_dbi1m"), SubResource("Resource_glgqj"), SubResource("Resource_mton6"), SubResource("Resource_ekkun"), SubResource("Resource_a081f")])
 power = 26.0
 hits = 2
 poise = 1
@@ -1305,42 +1353,42 @@ knockback = 1.01
 hitbox_size = Vector3(1, 2.6107142, 3.4910715)
 hitbox_offset = Vector3(0, 1.3053571, -0.92589283)
 
-[sub_resource type="Resource" id="Resource_avbks"]
+[sub_resource type="Resource" id="Resource_hlakm"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_3efkr")
+move = SubResource("Resource_s5ywx")
 
-[sub_resource type="Resource" id="Resource_dbi1m"]
+[sub_resource type="Resource" id="Resource_qi4ya"]
 script = ExtResource("11_0tcwl")
 sound = ExtResource("71_el68n")
 
-[sub_resource type="Resource" id="Resource_glgqj"]
+[sub_resource type="Resource" id="Resource_mg1sn"]
 script = ExtResource("11_0tcwl")
 at = 0.25
 kind = 4
 amount = 0.4
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_mton6"]
+[sub_resource type="Resource" id="Resource_w04tq"]
 script = ExtResource("11_0tcwl")
 at = 0.333
 sound = ExtResource("72_7blhl")
 
-[sub_resource type="Resource" id="Resource_ekkun"]
+[sub_resource type="Resource" id="Resource_mw542"]
 script = ExtResource("11_0tcwl")
 at = 0.333
 sound = ExtResource("70_nbkf1")
 
-[sub_resource type="Resource" id="Resource_a081f"]
+[sub_resource type="Resource" id="Resource_ox71y"]
 script = ExtResource("11_0tcwl")
 at = 1.5
 sound = ExtResource("73_oxump")
 
-[sub_resource type="Resource" id="Resource_s5ywx"]
+[sub_resource type="Resource" id="Resource_2qjwp"]
 script = ExtResource("11_0tcwl")
 at = 1.5170000000000001
 sound = ExtResource("74_j61sn")
 
-[sub_resource type="Resource" id="Resource_hlakm"]
+[sub_resource type="Resource" id="Resource_6ceyk"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2461_shot6"
 startup = 0.0
@@ -1355,61 +1403,62 @@ knockback = 0.4
 hitbox_size = Vector3(1, 4.3107142, 8)
 hitbox_offset = Vector3(0, 0, -4.9633927)
 
-[sub_resource type="Resource" id="Resource_qi4ya"]
+[sub_resource type="Resource" id="Resource_bvkyn"]
 script = ExtResource("11_0tcwl")
 at = 1.667
 kind = 2
-shot = SubResource("Resource_hlakm")
+shot = SubResource("Resource_6ceyk")
 offset = Vector3(0, 1.4875, -0.51607144)
+pierce = true
 
-[sub_resource type="Resource" id="Resource_mg1sn"]
+[sub_resource type="Resource" id="Resource_etitd"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2461"
 startup = 0.25
 active = 0.0833333333333333
 recovery = 3.26666666666667
 chain_after = 3.26666666666667
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_dbi1m"), SubResource("Resource_glgqj"), SubResource("Resource_mton6"), SubResource("Resource_ekkun"), SubResource("Resource_a081f"), SubResource("Resource_s5ywx"), SubResource("Resource_qi4ya")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_qi4ya"), SubResource("Resource_mg1sn"), SubResource("Resource_w04tq"), SubResource("Resource_mw542"), SubResource("Resource_ox71y"), SubResource("Resource_2qjwp"), SubResource("Resource_bvkyn")])
 power = 10.0
 poise = 1
 knockback = 1.01
 hitbox_size = Vector3(1, 1.9125, 2.5196428)
 hitbox_offset = Vector3(0, 0.8651786, -1.2901785)
 
-[sub_resource type="Resource" id="Resource_w04tq"]
+[sub_resource type="Resource" id="Resource_wiwkf"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_mg1sn")
+move = SubResource("Resource_etitd")
 
-[sub_resource type="Resource" id="Resource_mw542"]
+[sub_resource type="Resource" id="Resource_vpvg4"]
 script = ExtResource("11_0tcwl")
 at = 0.267
 sound = ExtResource("70_nbkf1")
 
-[sub_resource type="Resource" id="Resource_ox71y"]
+[sub_resource type="Resource" id="Resource_jn5tp"]
 script = ExtResource("11_0tcwl")
 at = 0.333
 sound = ExtResource("75_7ubbu")
 
-[sub_resource type="Resource" id="Resource_2qjwp"]
+[sub_resource type="Resource" id="Resource_4b7tv"]
 script = ExtResource("11_0tcwl")
 at = 0.333
 kind = 4
 amount = 0.2
 seconds = 0.083
 
-[sub_resource type="Resource" id="Resource_6ceyk"]
+[sub_resource type="Resource" id="Resource_krjfh"]
 script = ExtResource("11_0tcwl")
 at = 1.433
 sound = ExtResource("76_eqwkh")
 
-[sub_resource type="Resource" id="Resource_bvkyn"]
+[sub_resource type="Resource" id="Resource_xyuto"]
 script = ExtResource("11_0tcwl")
 at = 1.433
 kind = 4
 amount = 0.4
 seconds = 0.167
 
-[sub_resource type="Resource" id="Resource_etitd"]
+[sub_resource type="Resource" id="Resource_ugw0q"]
 script = ExtResource("8_70dm3")
 id = &"move/yoshimura_eto_2471"
 startup = 0.333333333333333
@@ -1417,7 +1466,7 @@ active = 1.16666666666667
 recovery = 0.516666666666667
 chain_after = 0.516666666666667
 iframes_to = 2.01666666666667
-events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_mw542"), SubResource("Resource_ox71y"), SubResource("Resource_2qjwp"), SubResource("Resource_6ceyk"), SubResource("Resource_bvkyn")])
+events = Array[ExtResource("11_0tcwl")]([SubResource("Resource_vpvg4"), SubResource("Resource_jn5tp"), SubResource("Resource_4b7tv"), SubResource("Resource_krjfh"), SubResource("Resource_xyuto")])
 power = 8.0
 hits = 2
 poise = 1
@@ -1425,11 +1474,11 @@ knockback = 0.2
 hitbox_size = Vector3(1, 1.5178572, 1.9125)
 hitbox_offset = Vector3(0, 0.7285714, -1.2294643)
 
-[sub_resource type="Resource" id="Resource_wiwkf"]
+[sub_resource type="Resource" id="Resource_ea2gr"]
 script = ExtResource("28_v7vr2")
-move = SubResource("Resource_etitd")
+move = SubResource("Resource_ugw0q")
 
-[sub_resource type="Resource" id="Resource_vpvg4"]
+[sub_resource type="Resource" id="Resource_k6ghj"]
 script = ExtResource("27_euy1k")
 aggro_radius = 10.0
 give_up_radius = 14.0
@@ -1437,42 +1486,42 @@ leash_radius = 16.0
 attack_range = 2.5
 move_speed = 3.0
 wander_radius = 0.0
-moves = Array[ExtResource("28_v7vr2")]([SubResource("Resource_avbks"), SubResource("Resource_w04tq"), SubResource("Resource_wiwkf")])
+moves = Array[ExtResource("28_v7vr2")]([SubResource("Resource_hlakm"), SubResource("Resource_wiwkf"), SubResource("Resource_ea2gr")])
 
-[sub_resource type="Resource" id="Resource_jn5tp"]
+[sub_resource type="Resource" id="Resource_lkli5"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("78_7x0bp")
 frames = 15
 feet = Vector2i(234, 122)
 seconds = 1.21666666666667
 
-[sub_resource type="Resource" id="Resource_4b7tv"]
+[sub_resource type="Resource" id="Resource_mmx22"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("79_nxy1l")
 frames = 9
 feet = Vector2i(139, 105)
 seconds = 0.6
 
-[sub_resource type="Resource" id="Resource_krjfh"]
+[sub_resource type="Resource" id="Resource_3lai7"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("80_2bj3v")
 frames = 3
 feet = Vector2i(152, 102)
 seconds = 1.5
 
-[sub_resource type="Resource" id="Resource_xyuto"]
+[sub_resource type="Resource" id="Resource_sht1m"]
 script = ExtResource("42_h4jdf")
 sheet = ExtResource("81_1uvcg")
 layout = ExtResource("77_ghdo7")
 pixel_size = 0.0303571428571429
 ground_offset = -0.607142857142857
 moves = Dictionary[StringName, ExtResource("38_kqx0h")]({
-&"move/yoshimura_eto_2402": SubResource("Resource_4b7tv"),
-&"move/yoshimura_eto_2405": SubResource("Resource_jn5tp"),
-&"move/yoshimura_eto_2406": SubResource("Resource_krjfh")
+&"move/yoshimura_eto_2402": SubResource("Resource_mmx22"),
+&"move/yoshimura_eto_2405": SubResource("Resource_lkli5"),
+&"move/yoshimura_eto_2406": SubResource("Resource_3lai7")
 })
 
-[sub_resource type="Resource" id="Resource_ugw0q"]
+[sub_resource type="Resource" id="Resource_8f7m3"]
 script = ExtResource("36_516ah")
 combatant_id = &"yoshimura_eto_noroi_kakuja"
 name_key = "combat.member.yoshimura_eto_noroi_kakuja.name"
@@ -1482,42 +1531,42 @@ base_stats = Dictionary[StringName, float]({
 &"max_hp": 60.0
 })
 attack_tags = Array[StringName]([&"kagune"])
-art = SubResource("Resource_xyuto")
+art = SubResource("Resource_sht1m")
 
-[sub_resource type="Resource" id="Resource_ea2gr"]
+[sub_resource type="Resource" id="Resource_8jeig"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("83_1ht0e")
 frames = 16
 feet = Vector2i(48, 95)
 seconds = 1.91666666666667
 
-[sub_resource type="Resource" id="Resource_k6ghj"]
+[sub_resource type="Resource" id="Resource_wenmy"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("84_guhjd")
 frames = 11
 feet = Vector2i(40, 71)
 seconds = 1.71666666666667
 
-[sub_resource type="Resource" id="Resource_lkli5"]
+[sub_resource type="Resource" id="Resource_6oqwk"]
 script = ExtResource("38_kqx0h")
 strip = ExtResource("85_yhhtv")
 frames = 26
 feet = Vector2i(59, 69)
 seconds = 2.01666666666667
 
-[sub_resource type="Resource" id="Resource_mmx22"]
+[sub_resource type="Resource" id="Resource_oaqvw"]
 script = ExtResource("42_h4jdf")
 sheet = ExtResource("86_bsrds")
 layout = ExtResource("82_snnly")
 pixel_size = 0.0303571428571429
 ground_offset = -0.0303571428571429
 moves = Dictionary[StringName, ExtResource("38_kqx0h")]({
-&"move/yoshimura_eto_2460": SubResource("Resource_ea2gr"),
-&"move/yoshimura_eto_2461": SubResource("Resource_k6ghj"),
-&"move/yoshimura_eto_2471": SubResource("Resource_lkli5")
+&"move/yoshimura_eto_2460": SubResource("Resource_8jeig"),
+&"move/yoshimura_eto_2461": SubResource("Resource_wenmy"),
+&"move/yoshimura_eto_2471": SubResource("Resource_6oqwk")
 })
 
-[sub_resource type="Resource" id="Resource_3lai7"]
+[sub_resource type="Resource" id="Resource_4vsel"]
 script = ExtResource("36_516ah")
 combatant_id = &"yoshimura_eto_tatara_kakuja"
 name_key = "combat.member.yoshimura_eto_tatara_kakuja.name"
@@ -1527,44 +1576,44 @@ base_stats = Dictionary[StringName, float]({
 &"max_hp": 50.0
 })
 attack_tags = Array[StringName]([&"kagune"])
-art = SubResource("Resource_mmx22")
+art = SubResource("Resource_oaqvw")
 
-[sub_resource type="Resource" id="Resource_sht1m"]
+[sub_resource type="Resource" id="Resource_qys73"]
 script = ExtResource("49_rlq00")
-fighters = Array[ExtResource("36_516ah")]([SubResource("Resource_ugw0q"), SubResource("Resource_3lai7")])
-brains = Array[ExtResource("27_euy1k")]([SubResource("Resource_k7rwb"), SubResource("Resource_vpvg4")])
+fighters = Array[ExtResource("36_516ah")]([SubResource("Resource_8f7m3"), SubResource("Resource_4vsel")])
+brains = Array[ExtResource("27_euy1k")]([SubResource("Resource_qsjcn"), SubResource("Resource_k6ghj")])
 lifetime = 15.0
 cap = 2
-owner_status = SubResource("Resource_5i0l5")
+owner_status = SubResource("Resource_y2rmq")
 untouchable = true
 turns = 2
 
-[sub_resource type="Resource" id="Resource_8f7m3"]
+[sub_resource type="Resource" id="Resource_jnj1r"]
 script = ExtResource("51_sqfbq")
 name_key = "combat.power.yoshimura_eto_kakuja_noroi_tatara.name"
 cost_pool = &"kagune"
 cost = 17
 target = 0
-statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_a3gbu")])
+statuses = Array[ExtResource("2_xhgri")]([SubResource("Resource_q03sh")])
 id = &"skill/yoshimura_eto_kakuja_noroi_tatara"
 
-[sub_resource type="Resource" id="Resource_8jeig"]
+[sub_resource type="Resource" id="Resource_pk705"]
 script = ExtResource("7_5f0ow")
 power_id = &"power/yoshimura_eto_kakuja_noroi_tatara"
 name_key = "combat.power.yoshimura_eto_kakuja_noroi_tatara.name"
 desc_key = "combat.power.yoshimura_eto_kakuja_noroi_tatara.desc"
-skill = SubResource("Resource_8f7m3")
-mechanism = SubResource("Resource_sht1m")
+skill = SubResource("Resource_jnj1r")
+mechanism = SubResource("Resource_qys73")
 cooldown = 20.0
 requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_kakuja"])
 
-[sub_resource type="Resource" id="Resource_wenmy"]
+[sub_resource type="Resource" id="Resource_4ltd3"]
 script = ExtResource("18_3b3to")
 stat = &"max_kagune"
 value = 100.0
 source = &"kit/yoshimura_eto"
 
-[sub_resource type="Resource" id="Resource_6oqwk"]
+[sub_resource type="Resource" id="Resource_u4hs4"]
 script = ExtResource("18_3b3to")
 stat = &"start_kagune"
 source = &"kit/yoshimura_eto"
@@ -1574,7 +1623,7 @@ script = ExtResource("87_erd13")
 kit_id = &"kit/yoshimura_eto"
 name_key = "combat.kit.yoshimura_eto.name"
 desc_key = "combat.kit.yoshimura_eto.desc"
-powers = Array[ExtResource("7_5f0ow")]([SubResource("Resource_4qdse"), SubResource("Resource_wpten"), SubResource("Resource_5qkba"), SubResource("Resource_2jil3"), SubResource("Resource_6fdnj"), SubResource("Resource_ma7vo"), SubResource("Resource_8jeig")])
+powers = Array[ExtResource("7_5f0ow")]([SubResource("Resource_4qdse"), SubResource("Resource_vned4"), SubResource("Resource_emu2s"), SubResource("Resource_bliqi"), SubResource("Resource_7t0ep"), SubResource("Resource_y0asj"), SubResource("Resource_pk705")])
 passive_skills = Array[ExtResource("3_pdid5")]([ExtResource("4_o4lhe"), ExtResource("5_h6n6u"), ExtResource("6_4o6pn")])
-stat_bonuses = Array[ExtResource("18_3b3to")]([SubResource("Resource_wenmy"), SubResource("Resource_6oqwk")])
+stat_bonuses = Array[ExtResource("18_3b3to")]([SubResource("Resource_4ltd3"), SubResource("Resource_u4hs4")])
 gauges = Array[ExtResource("1_phgfg")]([SubResource("Resource_5080d")])

@@ -103,7 +103,12 @@ static func _scale(sections: Array[Dictionary], anims: Dictionary, settings: Dic
 		if body <= 0.0 and section["name"] == "size":
 			body = MugenIni.number(section, "height", 60.0)
 	body = body if body > 0.0 else 60.0
-	return {"metres_per_pixel": DictRead.get_float(settings, "height") / body, "body_height": body,
+	# Their fall: `[Movement] yaccel` pixels a tick each tick (C8.16d), 0.44 when not given.
+	var fall: float = 0.44
+	for section: Dictionary in sections:
+		if section["name"] == "movement":
+			fall = MugenIni.number(section, "yaccel", fall)
+	return {"metres_per_pixel": DictRead.get_float(settings, "height") / body, "body_height": body, "gravity": fall,
 		"power_scale": DictRead.get_float(settings, "power_scale"), "depth": DictRead.get_float(settings, "depth")}
 
 
