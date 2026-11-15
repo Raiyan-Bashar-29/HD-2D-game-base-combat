@@ -35,6 +35,7 @@ enum Reason {
 	GEAR,  ## The piece or kind of gear it needs is not worn (C7.3).
 	ONCE,  ## A once-per-battle power already used in this battle, or in this area (C6.5f).
 	UPGRADE,  ## The piece that carries it is not upgraded far enough (C7.5).
+	FORBIDDEN,  ## A status it forbids is held (`forbids_statuses`, C8.10a).
 }
 
 
@@ -62,6 +63,9 @@ static func refusal(user: Combatant, power: Power, hour: float = -1.0) -> Reason
 	for status_id: StringName in power.requires_statuses:
 		if statuses == null or statuses.stacks(status_id) == 0:
 			return Reason.STATUS
+	for status_id: StringName in power.forbids_statuses:
+		if statuses != null and statuses.stacks(status_id) > 0:
+			return Reason.FORBIDDEN
 	if power.requires_fraction > 0.0 and _fraction(user, power.requires_pool) < power.requires_fraction:
 		return Reason.POOL
 	if statuses != null and statuses.blocker(StatusEffect.Block.NO_SKILLS) != &"":

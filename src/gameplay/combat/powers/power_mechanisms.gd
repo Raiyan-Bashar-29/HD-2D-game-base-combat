@@ -14,7 +14,7 @@ extends RefCounted
 ## The base's own mechanisms: kind -> executor script path. `form` came in C6.5a, `barrier` in C6.6a,
 ## `barrage` in C6.7, `plant` in C6.26, `finisher` in C6.8,
 ## `battlefield` in C6.9a, `blink` in C6.12a, `sacrifice` and `refresh` in C6.12b,
-## `foresight` in C6.10, `command` and `grant` in C6.11.
+## `foresight` in C6.10, `command` and `grant` in C6.11, `summon` in C8.10a.
 const BUILT_IN: Dictionary[StringName, String] = {
 	&"form": "res://src/gameplay/combat/powers/mechanisms/form_run.gd",
 	&"barrier": "res://src/gameplay/combat/powers/mechanisms/barrier_run.gd",
@@ -22,6 +22,7 @@ const BUILT_IN: Dictionary[StringName, String] = {
 	&"plant": "res://src/gameplay/combat/powers/mechanisms/plant_run.gd",
 	&"finisher": "res://src/gameplay/combat/powers/mechanisms/finisher_run.gd",
 	&"battlefield": "res://src/gameplay/combat/powers/mechanisms/battlefield_run.gd",
+	&"summon": "res://src/gameplay/combat/powers/mechanisms/summon_run.gd",
 	&"blink": "res://src/gameplay/combat/powers/mechanisms/blink_run.gd",
 	&"sacrifice": "res://src/gameplay/combat/powers/mechanisms/sacrifice_run.gd",
 	&"refresh": "res://src/gameplay/combat/powers/mechanisms/refresh_run.gd",

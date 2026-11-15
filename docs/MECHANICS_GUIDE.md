@@ -302,6 +302,12 @@ The built-in mechanisms (the table that maps them is `PowerMechanisms.BUILT_IN`)
 | `foresight` | `ForesightMechanism` | rewrite hits (`dodge`, `force`), `observe`, `reveal` | use, and `Foresight.rewrite` in `Combatant.hit` |
 | `command` | `CommandMechanism` | OBEY, STOP, FORGET or FALL a foe in sight | use |
 | `grant` | `GrantMechanism` | give allies statuses or lend them a whole kit for `lasts` | use, tick |
+| `summon` | `SummonMechanism` | `fighters` (each with its `brains` entry) appear beside the user, on its side, as `OwnedFighter`s; `lifetime`, `cap`, `owner_status` | use, tick, end |
+
+A summon is an `ActionEnemy` whose side is its owner's and whose home is its owner, so it
+follows and fights with no new brain. Pair `owner_status` with another power's
+`forbids_statuses` for "only while no helper is out", or `requires_statuses` for "only while
+one is".
 
 The counter stance (M13) has no class: it is a form or a timed barrier whose status has the
 COUNTER reaction and a `counter_move`.

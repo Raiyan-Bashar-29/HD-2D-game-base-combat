@@ -35,6 +35,8 @@ extends Resource
 @export var cooldown: float = 0.0
 ## Status ids the user must hold to use it.
 @export var requires_statuses: Array[StringName] = []
+## Status ids the user must NOT hold to use it (C8.10a): "only while no helper is out".
+@export var forbids_statuses: Array[StringName] = []
 ## Status ids taken off the user when it is used (for combinations: two primers, one finisher).
 @export var consumes_statuses: Array[StringName] = []
 ## A pool that must be at least `requires_fraction` full, such as a gauge for a finisher.

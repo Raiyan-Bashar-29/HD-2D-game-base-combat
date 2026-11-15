@@ -336,6 +336,15 @@ Give the guard's status the COUNTER reaction (`reactions = [0]`, `reaction_chanc
 everything on the line travelled (`path_width`). In a battle, `sooner` moves the user's next
 turn forward.
 
+### R17b · Helpers that fight beside you (summons)
+
+`SummonMechanism`: `fighters` (one `CombatantDef` each) and `brains` (one `ActionBrain` each,
+same order: its moves are what the helper swings), `spread` metres from the user, `lifetime`
+seconds (0 = until sent away), `cap` (the most out at once; the oldest goes), and
+`owner_status`, held while any is out. They leave when the user falls, the kit comes off or
+the area is left. "Only while no helper is out" is `forbids_statuses = [<owner_status id>]` on
+the other power. Field only for now; a battle ignores it (C8.10c).
+
 ### R18 · A domain
 
 `BattlefieldMechanism`: `radius` and `seconds` (field) or `turns` (battle), and `effects`, each

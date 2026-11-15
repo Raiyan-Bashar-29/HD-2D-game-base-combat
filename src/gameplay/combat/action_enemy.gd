@@ -45,6 +45,8 @@ extends CharacterBody3D
 ## What the fall safety net does with this foe below the kill height (C5.8): false fells it
 ## where it is, true puts it back at its home unhurt (a foe a quest needs alive).
 @export var returns_home: bool = false
+## False for a fighter that gives nothing when it falls: an owned fighter (C8.10a).
+@export var grants_reward: bool = true
 
 var decider: ActionDecider
 var timeline: MoveTimeline = MoveTimeline.new()
@@ -211,6 +213,8 @@ func _fall() -> void:
 		return
 	_fallen = true
 	_gone_in = linger
+	if not grants_reward:
+		return
 	var mine: Combatant = Combatant.of(self)
 	var rolled: Array[StringName] = LootRoll.roll(fighter.loot_table if fighter != null else null, rng)
 	Events.field_enemy_defeated.emit(mine.combatant_id if mine != null else &"", experience, loot + rolled)

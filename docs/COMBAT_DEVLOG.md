@@ -4708,3 +4708,21 @@ ledge into the void (the probe saw her fall to y −49).
 - A barrage pattern that spawns around the target can spawn past a wall.
 - Enemies still choose a target behind a wall; they walk round on the navmesh.
 - A wall lower than 0.8 m does not block, which is intended.
+
+## 2026-11-15 — C8.10a · Owned fighters, the engine (combat 0.132.0)
+
+**Did.** `SummonMechanism` (kind `summon`) and `SummonRun`: a use makes one `OwnedFighter`
+(`scenes/objects/owned_fighter.tscn`, inherits the enemy prefab) per entry, beside the user and
+never past a wall, as a sibling of the user's body. `OwnedFighter` takes its owner's `side()`,
+treats its owner as home (so it follows), and gives no reward (`ActionEnemy.grants_reward`).
+The run keeps its list and clocks; one leaves on `lifetime`, over `cap`, when the user falls,
+when the kit comes off, or when it is freed (fell, or the area was left). `owner_status` is held
+while any is out; `Power.forbids_statuses` with the new reason FORBIDDEN refuses a power while
+it is (words: `ui.battle.reason.forbidden_status`).
+**Why.** Eto's special 400 summons Noroi and Tatara, and Bronze tree needs "no helpers out".
+The row was split: the engine here, Eto's data in C8.10b, the rest in C8.10c.
+**Verified.** `tests/unit/summon_test.gd` 8/8; the no-reward check fails with the reward on.
+Ladder below.
+**Gaps.** No battle side; no linked hp; not saved; a summon picks targets as an enemy does
+(walls ignored, C9.12's gap).
+**Unblocks.** C8.10b.
