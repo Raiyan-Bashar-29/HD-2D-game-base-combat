@@ -42,7 +42,7 @@ func _physics_process(delta: float) -> void:
 ## `delta` seconds of real time pass; the gauge fills for that much fight time.
 func tick(delta: float) -> void:
 	if not _down():
-		gauge.fill(CombatClock.scaled(delta))
+		gauge.fill(CombatClock.scaled(delta) * FighterTime.rate(get_parent()))
 	_announce()
 
 

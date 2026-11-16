@@ -67,7 +67,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	fly(CombatClock.scaled(delta))
+	fly(CombatClock.scaled(delta) * FighterTime.of_attacker(attacker))
 
 
 ## Readies the shot `shot` on a clock of its own and shapes the box to it. Call before adding.

@@ -46,7 +46,7 @@ func _exit_tree() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	watch(CombatClock.scaled(delta))
+	watch(CombatClock.scaled(delta) * FighterTime.of_attacker(attacker))
 
 
 ## Readies the plant to play `eruption` when it goes off, and shapes its box. Call before adding.

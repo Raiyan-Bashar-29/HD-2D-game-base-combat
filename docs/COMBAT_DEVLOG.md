@@ -4855,3 +4855,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `CloneMechanism.actions`; in a battle `CloneRun.use` arms that many of the user's turns, `tick` (turn start) makes each live, and a live turn answers each `combatant_damaged` the user causes with `power_fraction` of it on the same fighter (announced, never echoed again). No `Battle` change.
 - **Verified:** `clone_battle_test` 3/3 (turns hit [2, 2, 1]; the echo is half); ladder (below).
 - **Gaps:** heals, statuses and Boost spending are not doubled; a counter the user makes during a doubled turn is echoed too.
+
+## 2026-11-16 — C8.11a · Each fighter's own time (combat 0.146.0)
+
+- **Did:** `FighterTime` (gameplay): `rate(body)` = 1 + the stat `time_rate`, floored at 0. `ActionFighter` and `ActionEnemy` tick statuses on the fight clock, then run the rest at their rate (an enemy's walk too; a stopped player is held). Shots, blasts and clone ghosts use their attacker's rate; the ATB gauge its holder's.
+- **Verified:** `fighter_time_test` 4/4; ladder (below).
+- **Gaps:** no power that puts a time stop on everyone but its user yet (data with a battlefield or grant can); in a battle `time_rate` does nothing (use `speed`).

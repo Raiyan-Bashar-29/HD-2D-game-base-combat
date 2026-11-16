@@ -103,6 +103,9 @@ func act(delta: float) -> ActionDecider.State:
 	var statuses: StatusSet = StatusSet.of(self)
 	if statuses != null:
 		statuses.tick_seconds(dt)
+	# Its own time speed (C8.11a): statuses count on the fight's clock, the rest on its own.
+	var rate: float = FighterTime.rate(self)
+	dt *= rate
 	# A stagger that has just worn off refills the shield (C4.6).
 	var me: Combatant = Combatant.of(self)
 	if me != null:
@@ -123,6 +126,8 @@ func act(delta: float) -> ActionDecider.State:
 		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0 or halted or Juggle.airborne(self) or Grab.held(self),
 		defeated, rng)
 	_carry_out(state, to_target)
+	velocity.x *= rate
+	velocity.z *= rate
 	if _fallen:
 		_gone_in -= dt
 		if _gone_in <= 0.0 and not is_queued_for_deletion():

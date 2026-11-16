@@ -41,7 +41,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	step(CombatClock.scaled(delta))
+	step(CombatClock.scaled(delta) * FighterTime.rate(source))
 
 
 ## The source started `move`: the ghost plays it `delay` seconds from now.

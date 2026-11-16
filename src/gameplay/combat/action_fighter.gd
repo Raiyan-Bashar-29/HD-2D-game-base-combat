@@ -97,6 +97,8 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	if statuses != null:
 		statuses.tick_seconds(dt)
+	# Its own time speed (C8.11a): statuses count on the fight's clock, the rest on its own.
+	dt *= FighterTime.rate(get_parent())
 	# A stagger that has just worn off refills the shield (C4.6).
 	var me: Combatant = Combatant.of(get_parent())
 	if me != null:
@@ -211,7 +213,8 @@ func _move_body() -> void:
 	if _body == null:
 		return
 	var player: PlayerController = _body as PlayerController
-	var holding: bool = timeline.busy() or _stun_left > 0.0 or Juggle.airborne(_body) or Grab.held(_body)
+	var holding: bool = timeline.busy() or _stun_left > 0.0 or Juggle.airborne(_body) or Grab.held(_body) \
+			or FighterTime.rate(_body) <= 0.0
 	if player != null:
 		if holding:
 			player.lock_input(LOCK)

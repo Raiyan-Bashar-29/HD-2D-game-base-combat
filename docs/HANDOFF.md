@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C8.11** (time: stop, rate and rewind), then C8.13, C8.14, C8.17–C8.19. C6.13a/b (the clone, combat 0.145.0) and C8.10f are done.
+- **Next: C8.11b** (rewind: a time record), then C8.13, C8.14, C8.17–C8.19. C8.11a (`time_rate`, combat 0.146.0) and C6.13 are done.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
