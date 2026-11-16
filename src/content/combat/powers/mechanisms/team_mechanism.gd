@@ -7,8 +7,8 @@ extends PowerMechanism
 ## `hits` times at `power` with `element`, and each landed hit counts against a weakness. It is
 ## ready only in a battle, while every fighter in `partners` stands on the user's side and is
 ## awake; with no partners named, everyone standing on the user's side joins (an all-out). With
-## `needs_broken`, it waits until every standing foe is broken. In a CTB order each partner is
-## pushed back `partner_delay` ticks, so the tech costs them time too.
+## `needs_broken`, it waits until every standing foe is broken. With `partner_delay` above 0,
+## each partner pays with time: pushed back that much in CTB, its next turn lost in rounds.
 ##
 ## OWNS: the shape of a team tech.
 ## MUST NOT: hold running state. `TeamRun` (gameplay) runs it; `TeamAttacks` says when it is ready.
@@ -23,7 +23,8 @@ extends PowerMechanism
 @export var hits: int = 1
 ## The strikes' element; empty uses each member's worn weapon's, else none.
 @export var element: StringName = &""
-## In a CTB order, how far each partner is pushed back.
+## Above 0, partners pay with time: pushed back this much in a CTB order, their next turn lost
+## in a round order (C8.21).
 @export var partner_delay: float = 0.0
 
 

@@ -8,24 +8,37 @@ extends TurnScheduler
 ## A ROUND IS ORDERED WHEN IT STARTS. A speed change, a newcomer or a slowed actor takes effect
 ## from the next round, which is how most round-based games read; anyone who leaves is skipped.
 ##
+## A SKIPPED TURN (C8.21): `skip_next` makes a fighter's next place in the order pass it by.
+##
 ## OWNS: the order of the current round and the round count.
 ## MUST NOT: let anyone act twice in a round.
 
 var _queue: Array[StringName] = []
 var _round: int = 0
+var _skips: Dictionary[StringName, int] = {}
+
+
+## `id` loses its next turn in the order, as a team tech's partner does (C8.21).
+func skip_next(id: StringName) -> void:
+	_skips[id] = _skips.get(id, 0) + 1
 
 
 func next() -> StringName:
 	var owed: StringName = _take_owed()
 	if owed != &"":
 		return owed
-	_skip_departed()
-	if _queue.is_empty():
-		_queue = _ordered()
+	while true:
+		_skip_departed()
 		if _queue.is_empty():
-			return &""
-		_round += 1
-	return _queue.pop_front()
+			_queue = _ordered()
+			if _queue.is_empty():
+				return &""
+			_round += 1
+		var id: StringName = _queue.pop_front()
+		if _skips.get(id, 0) <= 0:
+			return id
+		_skips[id] -= 1
+	return &""
 
 
 func preview(count: int) -> Array[StringName]:

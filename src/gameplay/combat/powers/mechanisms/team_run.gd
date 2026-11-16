@@ -4,7 +4,7 @@ extends PowerExecutor
 ##
 ## IN PLAIN WORDS: `PowerUse` has already checked the tech is ready (`TeamAttacks.ready`). Each
 ## member, the user first, hits each target `hits` times; a landed hit counts against the
-## target's weaknesses. Partners are pushed back in a CTB order. Outside a battle it does nothing.
+## target's weaknesses. Partners are pushed back in a CTB order and lose their next turn in rounds. Outside a battle it does nothing.
 ##
 ## OWNS: the strikes of one team tech.
 ## MUST NOT: decide whether the tech is ready, or pay for it.
@@ -27,6 +27,14 @@ func use(user: Combatant, targets: Array[Combatant], rng: RandomNumberGenerator)
 				var landed: DamageResult = member.hit(target, team.power, element, rng)
 				if landed != null and not landed.missed:
 					Weakness.strike(target, keys)
-		if member != user and team.partner_delay > 0.0 and battle.scheduler is CtbScheduler:
-			(battle.scheduler as CtbScheduler).delay_by(member.combatant_id, team.partner_delay)
+		if member != user and team.partner_delay > 0.0:
+			_spend(battle.scheduler, member.combatant_id, team.partner_delay)
 	Events.team_attacked.emit(user.combatant_id, ids)
+
+
+# A partner pays for the tech with time: pushed back in a CTB order, its next turn lost in rounds.
+static func _spend(order: TurnScheduler, id: StringName, delay: float) -> void:
+	if order is CtbScheduler:
+		(order as CtbScheduler).delay_by(id, delay)
+	elif order is RoundScheduler:
+		(order as RoundScheduler).skip_next(id)

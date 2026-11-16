@@ -3,6 +3,8 @@ extends TestCase
 ## attack just hit; an asleep ally, a failed roll or a missed attack gives none. A dual tech is
 ## refused while its partner is down and, once used, both strike every foe; an all-out waits
 ## until every foe is broken, then everyone strikes; in a CTB order the partner is pushed back.
+## C8.21: a one-target skill that hurts a foe draws follow-ups too; in a round order a partner
+## loses its next turn; team techs sit in their own submenu.
 ##
 ## OWNS: assertions about `TeamAttacks`, `TeamMechanism`, `TeamRun` and `PowerUse.Reason.TEAM`.
 ## MUST NOT: name a game's fighters, kits or encounters, or wait for frames.
@@ -22,7 +24,7 @@ var _friend: Combatant
 
 
 func run() -> void:
-	plan(7)
+	plan(10)
 	_holder = Node.new()
 	attach(_holder)
 	_build()
@@ -34,6 +36,8 @@ func run() -> void:
 	Events.team_attacked.connect(_on_team)
 	_follow_ups()
 	_techs()
+	_after_skill()
+	_rounds_and_menu()
 	Events.followed_up.disconnect(_on_followed)
 	Events.team_attacked.disconnect(_on_team)
 	BattleSetup.release(_battle)
@@ -83,6 +87,39 @@ func _techs() -> void:
 	equal("an all-out waits until every standing foe is broken, then everyone strikes",
 		[refused, PowerUse.use(_hero, all_out, _battle.enemies.duplicate(), RandomNumberGenerator.new()),
 			_teams.back()], [PowerUse.Reason.TEAM, true, [HERO, FRIEND]])
+
+
+func _after_skill() -> void:
+	var foe: Combatant = _battle.enemies[0]
+	_followed.clear()
+	var skill := Skill.new()
+	skill.id = &"skill/fixture_team_jab"
+	skill.name_key = "fixture.skill"
+	skill.power = 5.0
+	skill.sure_hit = true
+	TeamAttacks.use_skill(_hero, skill, [foe], RandomNumberGenerator.new(), 0)
+	var after_hurt: Array[StringName] = _followed.duplicate()
+	var mend := Skill.new()
+	mend.id = &"skill/fixture_team_mend"
+	mend.name_key = "fixture.skill"
+	mend.target = FactionTable.Target.ALLY
+	TeamAttacks.use_skill(_hero, mend, [_friend], RandomNumberGenerator.new(), 0)
+	equal("a one-target skill that hurts a foe draws the follow-up; one on an ally does not",
+		[after_hurt, _followed], [[FRIEND], [FRIEND]])
+
+
+func _rounds_and_menu() -> void:
+	var rounds := RoundScheduler.new()
+	rounds.join(&"a", 10.0)
+	rounds.join(&"b", 5.0)
+	rounds.skip_next(&"b")
+	equal("in a round order a partner's next turn passes it by", [rounds.next(), rounds.next(), rounds.next()],
+		[&"a", &"a", &"b"])
+	var categories: Array[String] = []
+	for command: BattleCommand in PowerMenu.commands(_hero):
+		categories.append(command.category)
+	equal("team techs sit in a submenu of their own", categories,
+		[PowerMenu.TEAM_CATEGORY_KEY, PowerMenu.TEAM_CATEGORY_KEY])
 
 
 func _build() -> void:

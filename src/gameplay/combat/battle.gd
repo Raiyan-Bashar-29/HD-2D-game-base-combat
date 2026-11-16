@@ -316,8 +316,9 @@ func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant], b
 			return false
 	SkillUse.pay(actor, skill)
 	# One-target skills hit the chosen target; ALL skills hit everyone they are allowed to.
-	# What the skill then does is `SkillUse`'s, shared with the field and the hybrid (C2.13).
-	SkillUse.apply(actor, skill, targets if single else targets_for(command), rng, boost)
+	# What the skill then does is `SkillUse`'s, shared with the field and the hybrid (C2.13);
+	# a one-target skill that hurt a foe may draw follow-ups (`TeamAttacks`, C8.21).
+	TeamAttacks.use_skill(actor, skill, targets if single else targets_for(command), rng, boost)
 	# Heavy skills push the user back in a CTB queue; in round-based battles this does nothing.
 	if skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)

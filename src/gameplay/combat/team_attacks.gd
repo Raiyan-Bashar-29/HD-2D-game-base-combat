@@ -3,7 +3,7 @@ extends RefCounted
 ## Team attacks in a turn-based battle (C8.2): allies who follow up, and team techs.
 ##
 ## IN PLAIN WORDS:
-## - FOLLOW-UPS. When a fighter's plain ATTACK lands, each other standing fighter on its side who
+## - FOLLOW-UPS. When a fighter's plain ATTACK lands, or its one-target skill hurts a foe (C8.21), each other standing fighter on its side who
 ##   holds a FOLLOW_UP status (and is not asleep or stunned, and rolls its `reaction_chance`)
 ##   strikes the same foe at once: its status's `counter_move`, or one plain hit. A follow-up
 ##   never sets off another one. `Battle` calls `after_attack` where it used to call only
@@ -21,8 +21,29 @@ extends RefCounted
 static func after_attack(actor: Combatant, target: Combatant, landed: DamageResult,
 		rng: RandomNumberGenerator) -> int:
 	SkillUse.counter(actor, target, landed, rng)
+	if landed == null or landed.missed:
+		return 0
+	return follow_ups(actor, target, rng)
+
+
+## `actor` uses `skill` on `targets` in a battle (C8.21): `SkillUse.apply`, then, when it was a
+## one-target skill at a foe that really hurt it, the follow-ups. `Battle` calls this in place of
+## `SkillUse.apply`.
+static func use_skill(actor: Combatant, skill: Skill, targets: Array[Combatant],
+		rng: RandomNumberGenerator, boost: int) -> void:
+	var target: Combatant = targets[0] if skill.scope == Skill.Scope.ONE and targets.size() == 1 else null
+	var before: int = _hp(target)
+	SkillUse.apply(actor, skill, targets, rng, boost)
+	if target != null and target != actor and actor.can_target(target, FactionTable.Target.ENEMY) \
+			and _hp(target) < before:
+		follow_ups(actor, target, rng)
+
+
+## Each other standing, awake fighter on `actor`'s side holding a FOLLOW_UP status that rolls true
+## strikes `target`, once. A follow-up never sets off another. Returns how many did.
+static func follow_ups(actor: Combatant, target: Combatant, rng: RandomNumberGenerator) -> int:
 	var battle: Battle = Battle.running
-	if battle == null or landed == null or landed.missed:
+	if battle == null:
 		return 0
 	var count: int = 0
 	for ally: Combatant in side_of(battle, actor):
@@ -98,6 +119,11 @@ static func _awake(fighter: Combatant) -> bool:
 		return false
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
 	return statuses == null or statuses.blocker(StatusEffect.Block.SKIP_TURN) == &""
+
+
+static func _hp(fighter: Combatant) -> int:
+	var vitals: Vitals = Vitals.of(fighter.get_parent()) if fighter != null else null
+	return vitals.current(fighter.damage_pool) if vitals != null else 0
 
 
 static func _down(fighter: Combatant) -> bool:

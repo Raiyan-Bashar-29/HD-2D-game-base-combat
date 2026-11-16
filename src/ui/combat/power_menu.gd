@@ -21,6 +21,8 @@ extends RefCounted
 ## MUST NOT: use a power, hold any state, or name a character.
 
 const CATEGORY_KEY: String = "ui.battle.powers"
+## Team techs get a submenu of their own (C8.21).
+const TEAM_CATEGORY_KEY: String = "ui.battle.team_techs"
 const COOLDOWN_TURNS_KEY: String = "ui.battle.reason.cooldown_turns"
 const COOLDOWN_SECONDS_KEY: String = "ui.battle.reason.cooldown_seconds"
 const HOURS_KEY: String = "ui.battle.reason.hours"
@@ -46,7 +48,7 @@ static func commands(user: Combatant) -> Array[BattleCommand]:
 		if power.passive:
 			continue
 		var command := BattleCommand.for_power(power)
-		command.category = CATEGORY_KEY
+		command.category = TEAM_CATEGORY_KEY if power.mechanism is TeamMechanism else CATEGORY_KEY
 		out.append(command)
 	return out
 

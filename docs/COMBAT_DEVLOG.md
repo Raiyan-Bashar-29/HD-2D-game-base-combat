@@ -5019,3 +5019,12 @@ xvfb; the battle screen draws, the Keeper waits off the field and the menu ends 
 (new dev option `--party=<active>|<reserve>`, debug only). The stage's gaps are rows C8.21 and
 C8.22. Correction to the C7.2b entry: field kills go through `Rewards.give` too, so field drops
 roll affixes; only items added to a bag some other way do not.
+
+## 2026-11-16 — C8.21 · Team-attack gaps
+
+**Did.** `TeamAttacks.use_skill` wraps `SkillUse.apply` in a battle: a one-target skill that
+lowered a foe's hp draws follow-ups (shared `follow_ups`). `RoundScheduler.skip_next` gives
+`TeamRun` a round-order cost for partners. `PowerMenu` files team techs under a Team submenu.
+**Verified.** Ladder: 0 warnings; 5032 passed, 0 failed; checkers silent; stripped 4920 passed.
+`team_attack_test` 10. **Gaps.** Field follow-ups (now in C8.22); the order preview does not
+yet show a skipped turn.
