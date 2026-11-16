@@ -34,10 +34,10 @@ const LOOK_AHEAD: float = 0.6
 
 ## Where the line `from` to `to` first meets a wall, or `Vector3.INF` when it is clear (or
 ## `space` is not in a world).
-static func wall_between(space: Node3D, from: Vector3, to: Vector3) -> Vector3:
+static func wall_between(space: Node3D, from: Vector3, to: Vector3, exclude: Array[RID] = []) -> Vector3:
 	if space == null or not space.is_inside_tree() or from.is_equal_approx(to):
 		return Vector3.INF
-	var query := PhysicsRayQueryParameters3D.create(from, to, MASK)
+	var query := PhysicsRayQueryParameters3D.create(from, to, MASK, exclude)
 	query.collide_with_areas = false
 	var hit: Dictionary = space.get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
@@ -71,3 +71,16 @@ static func drop_ahead(body: Node3D, way: Vector3) -> bool:
 		return false
 	var ahead: Vector3 = body.global_position + flat.normalized() * LOOK_AHEAD
 	return not wall_between(body, ahead + Vector3.UP * 0.5, ahead + Vector3.DOWN * STEP_DOWN).is_finite()
+
+
+## The solid bodies directly under `node` (a construct's wall, C8.14a), so a ray aimed at it is
+## not stopped by its own body.
+static func solids(node: Node) -> Array[RID]:
+	var out: Array[RID] = []
+	if node == null:
+		return out
+	for child: Node in node.get_children():
+		var solid: CollisionObject3D = child as CollisionObject3D
+		if solid != null:
+			out.append(solid.get_rid())
+	return out

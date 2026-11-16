@@ -11,6 +11,8 @@ extends Node3D
 ##   away from whoever struck it, as a `Projectile` that belongs to that fighter and so hits
 ##   that fighter's foes.
 ## - With neither it is only breakable: it is gone when its hp is.
+## - `solid` (C8.14a) also makes it a wall: bodies, swings and shots stop at it, but it can be
+##   struck itself (a ray aimed at it ignores its own body).
 ##
 ## It makes its own `Vitals`, `Combatant` and `Hurtbox`, so the usual hit rules apply to it. Its
 ## faction is its own id, which makes it hostile to everyone and everyone hostile to it.
@@ -30,6 +32,9 @@ extends Node3D
 @export var thrown: ActionMove
 ## Metres a second it flies when thrown.
 @export var throw_speed: float = 12.0
+## True for a wall (C8.14a): its box is also solid on `Layers.WORLD`, so it stops bodies, swings
+## and shots behind it, while it can still be struck itself.
+@export var solid: bool = false
 
 var _me: Combatant
 var _done: bool = false
@@ -55,6 +60,15 @@ func _ready() -> void:
 	shape.position = Vector3(0.0, size.y / 2.0, 0.0)
 	hurtbox.add_child(shape)
 	add_child(hurtbox)
+	if solid:
+		var body := StaticBody3D.new()
+		body.collision_layer = Layers.WORLD
+		body.collision_mask = 0
+		var block := CollisionShape3D.new()
+		block.shape = box
+		block.position = shape.position
+		body.add_child(block)
+		add_child(body)
 	var mesh := MeshInstance3D.new()
 	var cube := BoxMesh.new()
 	cube.size = size

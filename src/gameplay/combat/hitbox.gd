@@ -117,7 +117,7 @@ func _eye() -> Vector3:
 func _walled(hurtbox: Hurtbox) -> bool:
 	var target: Node3D = hurtbox.get_parent() as Node3D
 	var at: Vector3 = CombatSight.aim(target if target != null else hurtbox)
-	return CombatSight.wall_between(self, _eye(), at).is_finite()
+	return CombatSight.wall_between(self, _eye(), at, CombatSight.solids(target)).is_finite()
 
 
 func _on_area_entered(area: Area3D) -> void:

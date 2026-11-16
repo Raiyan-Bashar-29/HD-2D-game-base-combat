@@ -309,6 +309,7 @@ The built-in mechanisms (the table that maps them is `PowerMechanisms.BUILT_IN`)
 | `copy` | `CopyMechanism` | remembers the last power another fighter used (`suffered_only`: used on the user) and lends it for `lasts` | use, tick, end |
 | `steal` | `StealMechanism` | the targets' statuses tagged `tag` move to the user, at most `most` | use |
 | `random` | `RandomMechanism` | each use runs one of `powers` (skill and mechanism), free | use, tick, moved, end |
+| `construct` | `ConstructMechanism` | a solid wall (`ArenaThing.solid`) `distance` in front: stops bodies, swings and shots, breakable (`hp`); `lifetime`, `cap`, `upkeep` points/s of `upkeep_pool`; field only | use, tick, end |
 | `clone` | `CloneMechanism` | a `CloneGhost` walks the user's path `delay` s behind and replays each move (not the dodge) at `power_fraction`, for `lifetime` s; cannot be hit; in a battle the next `actions` turns hurt twice (the second at `power_fraction`) | use, moved, end |
 | `summon` | `SummonMechanism` | `fighters` (each with its `brains` entry) appear beside the user, on its side, as `OwnedFighter`s; `lifetime`, `cap`, `owner_status`, `untouchable`, `moves_each`, `linked_hp` (a share of their hurt is the user's), `saved` (the count survives an area change or a load); in a battle they join its sides for `turns` of the user's turns | use, tick, end |
 

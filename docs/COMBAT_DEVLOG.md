@@ -4885,3 +4885,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `StealMechanism`/`StealRun` (cure the tagged status on each target, apply it to the user, up to `most`); `RandomMechanism`/`RandomRun` (pick with the use's rng, land the pick's skill, make and use its executor, forward `tick`/`moved`/`end` until the next pick).
 - **Verified:** `steal_random_test` 4/4; ladder (below).
 - **Gaps:** a stolen status starts with a fresh duration; a random pick's cost, cooldown and rules are skipped on purpose.
+
+## 2026-11-16 — C8.14a · Walls (combat 0.151.0)
+
+- **Did:** `ArenaThing.solid` (a `StaticBody3D` on `WORLD` with its box); `CombatSight.wall_between(..., exclude)` and `solids(node)`, used by `Hitbox._walled` so a wall can be struck; `ConstructMechanism`/`ConstructRun` (placed and turned before entering the tree; lifetime, cap, upkeep in whole points, down on fall/kit off/area left).
+- **Verified:** `construct_test` 5/5; ladder (below).
+- **Gaps:** nothing in a battle; a wall raised over a fighter's body overlaps it; constructs are not saved.
