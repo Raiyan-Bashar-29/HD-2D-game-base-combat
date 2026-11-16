@@ -314,6 +314,7 @@ The built-in mechanisms (the table that maps them is `PowerMechanisms.BUILT_IN`)
 | `wield` | `WieldMechanism` | lends `moves`, `element` and `bonuses` for `lasts` (s or turns), then restores what was there | use, tick, end |
 | `doors` | `DoorsMechanism` | two `LinkedDoor`s `ahead` of the user; a body stepping into one comes out of the other `exit` m out; the user's side only unless `anyone`; `lifetime` | use, tick, end |
 | `clone` | `CloneMechanism` | a `CloneGhost` walks the user's path `delay` s behind and replays each move (not the dodge) at `power_fraction`, for `lifetime` s; cannot be hit; in a battle the next `actions` turns hurt twice (the second at `power_fraction`) | use, moved, end |
+| `team` | `TeamMechanism` | in a battle the user, then each of `partners` (none named: every standing ally), strikes every foe `hits` times at `power`; `needs_broken` waits for every foe to be broken (an all-out); `partner_delay` pushes partners back in CTB; refused (`TEAM`) while not ready | use |
 | `summon` | `SummonMechanism` | `fighters` (each with its `brains` entry) appear beside the user, on its side, as `OwnedFighter`s; `lifetime`, `cap`, `owner_status`, `untouchable`, `moves_each`, `linked_hp` (a share of their hurt is the user's), `saved` (the count survives an area change or a load); in a battle they join its sides for `turns` of the user's turns | use, tick, end |
 
 A summon is an `ActionEnemy` whose side is its owner's and whose home is its owner, so it

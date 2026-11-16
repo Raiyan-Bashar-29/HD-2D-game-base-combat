@@ -296,6 +296,12 @@ signal attack_missed(who: StringName, by: StringName)
 signal attack_blocked(who: StringName, by: StringName)
 ## `who` struck back at `against` through a COUNTER status. Emitted by `SkillUse.counter` (C2.15).
 signal countered(who: StringName, against: StringName)
+## `who` followed an ally's attack on `against` through a FOLLOW_UP status. Emitted by
+## `TeamAttacks` (C8.2).
+signal followed_up(who: StringName, against: StringName)
+## `who` used a team tech, struck by every one of `members` (`who` first). Emitted by `TeamRun`
+## (C8.2).
+signal team_attacked(who: StringName, members: Array[StringName])
 ## A skill aimed at `who` bounced back to `back_to` through a REFLECT status. Emitted by
 ## `SkillUse.apply` (C2.15).
 signal skill_reflected(who: StringName, back_to: StringName, skill_id: StringName)

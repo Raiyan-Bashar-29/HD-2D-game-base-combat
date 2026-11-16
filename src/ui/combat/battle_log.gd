@@ -32,6 +32,8 @@ const REFLECTED_KEY: String = "ui.battle.log.reflected"
 const WEAK_KEY: String = "ui.battle.log.weak"
 const BROKEN_KEY: String = "ui.battle.log.broken"
 const ONE_MORE_KEY: String = "ui.battle.log.one_more"
+const FOLLOW_UP_KEY: String = "ui.battle.log.follow_up"
+const TEAM_KEY: String = "ui.battle.log.team"
 const DEFEATED_KEY: String = "ui.battle.log.defeated"
 const STATUS_KEY: String = "ui.battle.log.status"
 const FIELD_RAISED_KEY: String = "ui.battle.log.field_raised"
@@ -64,6 +66,8 @@ func start() -> void:
 	Events.weakness_revealed.connect(_on_weak)
 	Events.combatant_broken.connect(_on_broken)
 	Events.extra_turn_earned.connect(_on_one_more)
+	Events.followed_up.connect(_on_followed_up)
+	Events.team_attacked.connect(_on_team)
 	Events.combatant_defeated.connect(_on_defeated)
 	Events.status_applied.connect(_on_status)
 	Events.battlefield_raised.connect(_on_field_raised)
@@ -79,6 +83,7 @@ func stop() -> void:
 			[Events.status_resisted, _on_resisted], [Events.turn_skipped, _on_skipped],
 			[Events.countered, _on_countered], [Events.skill_reflected, _on_reflected],
 			[Events.weakness_revealed, _on_weak], [Events.combatant_broken, _on_broken], [Events.extra_turn_earned, _on_one_more],
+			[Events.followed_up, _on_followed_up], [Events.team_attacked, _on_team],
 			[Events.combatant_defeated, _on_defeated], [Events.status_applied, _on_status],
 			[Events.battlefield_raised, _on_field_raised], [Events.battlefield_lowered, _on_field_lowered],
 			[Events.battlefield_clashed, _on_field_clashed]]:
@@ -162,6 +167,17 @@ func _on_broken(who: StringName) -> void:
 
 func _on_one_more(who: StringName) -> void:
 	_add(ONE_MORE_KEY, {"name": _name(who)})
+
+
+func _on_followed_up(who: StringName, _against: StringName) -> void:
+	_add(FOLLOW_UP_KEY, {"name": _name(who)})
+
+
+func _on_team(_who: StringName, members: Array[StringName]) -> void:
+	var names: PackedStringArray = []
+	for one: StringName in members:
+		names.append(_name(one))
+	_add(TEAM_KEY, {"names": ", ".join(names)})
 
 
 func _on_defeated(who: StringName) -> void:

@@ -33,7 +33,9 @@ enum Block { SKIP_TURN, NO_SKILLS, NO_ITEMS, NO_FLEE }
 ## A COUNTER can name a `counter_move` (C6.6d, M13 counter stance): in the field the holder swings
 ## that move at whoever hit it; in a battle the counter strikes with that move's numbers. With
 ## none, the counter is one plain hit with the holder's attack.
-enum Reaction { COUNTER, REFLECT }
+## FOLLOW_UP (C8.2): when an ally's plain ATTACK lands in a battle, the holder strikes the same
+## foe too, with its `counter_move`'s numbers or one plain hit (`TeamAttacks`).
+enum Reaction { COUNTER, REFLECT, FOLLOW_UP }
 
 ## Localization key for the status's name in the battle readout and log (C2.19). Empty shows
 ## the last part of its id.
@@ -63,7 +65,8 @@ enum Reaction { COUNTER, REFLECT }
 @export_range(0.0, 1.0, 0.01) var reaction_chance: float = 1.0
 ## The skill tag a REFLECT bounces. A skill without it (a sword art, say) goes through.
 @export var reflect_tag: StringName = &"magic"
-## COUNTER only: the move that answers a hit (a six-hit thrust, a riposte). Null is a plain hit.
+## COUNTER or FOLLOW_UP: the move that answers a hit or follows an ally's (a six-hit thrust, a
+## riposte). Null is a plain hit.
 @export var counter_move: ActionMove
 ## C6.9c: while held, every hit this holder makes is a sure hit (it cannot miss). A battlefield
 ## with `sure_hit` puts this on its caster (Domain Expansion). A foe holding `cancelled_by`
@@ -148,8 +151,8 @@ func problems() -> PackedStringArray:
 	if takeover != null:
 		found.append_array(takeover.problems("%s (%s) takeover" % [resource_path, id]))
 	if counter_move != null:
-		if not reactions.has(Reaction.COUNTER):
-			found.append("%s (%s) has a counter_move but no COUNTER reaction" % [resource_path, id])
+		if not reactions.has(Reaction.COUNTER) and not reactions.has(Reaction.FOLLOW_UP):
+			found.append("%s (%s) has a counter_move but no COUNTER or FOLLOW_UP reaction" % [resource_path, id])
 		found.append_array(counter_move.problems("%s (%s) counter_move" % [resource_path, id]))
 	for modifier: StatModifier in modifiers:
 		if modifier == null or modifier.stat == &"":

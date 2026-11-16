@@ -7,7 +7,7 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-11-16 · **C8.1: one more turn for a weakness hit.** Combat `0.162.0`. Next: C8.2 (team attacks), then C8.3–C8.5. The order is in `HANDOFF.md` § What is left.
+**Last updated:** 2026-11-16 · **C8.2: team attacks.** Combat `0.163.0`. Next: C8.3 (summons and the reserve line), then C8.4–C8.5. The order is in `HANDOFF.md` § What is left.
 full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, C2.6 builds a battle from an encounter, C2.7 draws it as a screen over the frozen field, C2.8 rewards a win and grows the party, and C2.9 puts a playable fight in the courtyard. **The turn-based formula is complete. The next row is C3.0, which plans the action formula.**
 
 ## How the two repositories relate
@@ -243,7 +243,8 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.162.0** — C8.1, one more. `TurnScheduler.weakness_extra_turns` (from `Encounter.weakness_extra_turns`): a weakness hit on a foe in a fighter's battle turn owes it the next turn (`again`, taken first by `next()`, shown first by `preview()`), up to that many in a row; `Events.extra_turn_earned` and a battle-log line. `one_more_test` 5.
+- **0.163.0** — C8.2, team attacks. A FOLLOW_UP status (`StatusEffect.Reaction`): when an ally's plain ATTACK lands in a battle, the holder strikes the same foe too (`TeamAttacks.after_attack`, after the counter). A `team` mechanism (`TeamMechanism`, `TeamRun`): the user and its `partners` strike every foe in turn (dual or triple tech; no partners = everyone, an all-out); `needs_broken` waits for every foe to be broken; `partner_delay` pushes partners back in CTB; refused with `PowerUse.Reason.TEAM` while not ready. Log lines for both. `team_attack_test` 7.
+- 0.162.0 — C8.1, one more. `TurnScheduler.weakness_extra_turns` (from `Encounter.weakness_extra_turns`): a weakness hit on a foe in a fighter's battle turn owes it the next turn (`again`, taken first by `next()`, shown first by `preview()`), up to that many in a row; `Events.extra_turn_earned` and a battle-log line. `one_more_test` 5.
 - 0.161.0 — C7.8, the craft screen. `CraftStation` (an `Interactable` with a `station` id) emits `Events.craft_requested`; `CraftHost` (under the UI layer) opens `CraftScreen` over the player's bag: the recipes known there with what they need, greyed with the reason when `Crafting` refuses, made on a press; pieces that give something back, taken apart on a press. `craft_screen_test` 5.
 - 0.160.0 — C7.7b, the weapon on screen. `WeaponLine`: the piece in the first slot and, as its mode, the form its own kit holds ("IXA (Shield)"), on the field HUD's line and the battle screen's line. Form names beside each member were already there (C6.5d). `weapon_line_test` 4.
 - 0.159.0 — C7.7a, the gear screen (G). `GearScreen`: a row per slot with the worn piece in its rarity's colour; pressing a slot lists the bag's pieces that fit, each with its stat changes against the worn one, greyed with the reason when `GearSet` refuses; take off (not a cursed piece); the next member. `LoadoutHost` opens it on `CombatActions.GEAR`; `--press=gear` in the dev stage. `gear_screen_test` 7; capture taken.
@@ -973,7 +974,7 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C7.9 | The armoury: weapons | TODO. IXA, Owl, Ea and the other heroes' weapons as data, a probe and captures. Needs C6.26, C6.9, C7.5 |
 | C7.10 | The armoury: armours | TODO. The armour table as data; `AUTHORING.md` § Gear, Battlefields and Transformations. Needs C7.9, C8.6, C9.5; also builds the armour table in `PASSIVES.md` |
 | C8.1 | An extra turn for a weakness hit | **DONE** (combat `0.162.0`: One More as `weakness_extra_turns` on the turn order; gaps: no Press Turn icons (a half-turn economy), a crit does not earn one, the hybrid's ATB is untouched) |
-| C8.2 | Team attacks | TODO. All-out, chain and dual techs; follow-up attacks from a waiting ally |
+| C8.2 | Team attacks | **DONE** (combat `0.163.0`: FOLLOW_UP statuses, the `team` mechanism for dual/triple techs, chains and all-outs; gaps: no follow-ups in the field or after a skill, no team-tech menu of its own (they list as powers), partners lose no turn in a round order) |
 | C8.3 | Summons and the reserve line | TODO. Fighters that join mid-fight; swapping party members in a battle |
 | C8.4 | Elemental reactions | TODO. Two elements on one target make a third effect, as data |
 | C8.5 | Rows and positions | TODO. Front and back rows, knock-back between them |

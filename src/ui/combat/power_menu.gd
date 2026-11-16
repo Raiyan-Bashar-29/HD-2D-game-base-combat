@@ -26,6 +26,7 @@ const COOLDOWN_SECONDS_KEY: String = "ui.battle.reason.cooldown_seconds"
 const HOURS_KEY: String = "ui.battle.reason.hours"
 const STATUS_KEY: String = "ui.battle.reason.needs_status"
 const FORBIDDEN_KEY: String = "ui.battle.reason.forbidden_status"
+const TEAM_KEY: String = "ui.battle.reason.team"
 const SEALED_KEY: String = "ui.battle.reason.sealed"
 const POOL_KEY: String = "ui.battle.reason.pool_low"
 const GEAR_KEY: String = "ui.battle.reason.needs_gear"
@@ -82,6 +83,8 @@ static func reason_key(user: Combatant, power: Power) -> String:
 			return STATUS_KEY
 		PowerUse.Reason.FORBIDDEN:
 			return FORBIDDEN_KEY
+		PowerUse.Reason.TEAM:
+			return TEAM_KEY
 		PowerUse.Reason.SEALED:
 			return SEALED_KEY
 		PowerUse.Reason.POOL:

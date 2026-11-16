@@ -258,8 +258,8 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 					# Each landed swing counts against a weakness to what the attack carries.
 					Weakness.strike(targets[0], keys)
 			# Only a plain attack is countered, once however many swings landed; a skill is
-			# answered by REFLECT instead (C2.15).
-			SkillUse.counter(actor, targets[0], landed, rng)
+			# answered by REFLECT instead (C2.15). Then waiting allies may follow up (C8.2).
+			TeamAttacks.after_attack(actor, targets[0], landed, rng)
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			if not _use(actor, command, targets, boost):
 				return false

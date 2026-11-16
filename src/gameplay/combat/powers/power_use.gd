@@ -37,6 +37,7 @@ enum Reason {
 	UPGRADE,  ## The piece that carries it is not upgraded far enough (C7.5).
 	FORBIDDEN,  ## A status it forbids is held (`forbids_statuses`, C8.10a).
 	SEALED,  ## A held status seals it, by its id or one of its tags (`StatusEffect.seals`, C8.13a).
+	TEAM,  ## A team tech whose partners or broken foes are not there (`TeamAttacks.ready`, C8.2).
 }
 
 
@@ -69,6 +70,8 @@ static func refusal(user: Combatant, power: Power, hour: float = -1.0) -> Reason
 			return Reason.FORBIDDEN
 	if statuses != null and _sealed(statuses, power):
 		return Reason.SEALED
+	if power.mechanism is TeamMechanism and not TeamAttacks.ready(user, power.mechanism as TeamMechanism):
+		return Reason.TEAM
 	if power.requires_fraction > 0.0 and _fraction(user, power.requires_pool) < power.requires_fraction:
 		return Reason.POOL
 	if statuses != null and statuses.blocker(StatusEffect.Block.NO_SKILLS) != &"":

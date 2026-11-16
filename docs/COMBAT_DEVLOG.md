@@ -4957,3 +4957,15 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `TurnScheduler.weakness_extra_turns`, `again(id)`, `_take_owed`, `_owed_preview`, used by `RoundScheduler` and `CtbScheduler`; `Encounter.weakness_extra_turns` set by `BattleSetup.build`. `Weakness.strike` asks `_one_more`: the fighter whose battle turn it is, striking a foe, is owed the next turn; `Events.extra_turn_earned`; battle log `ui.battle.log.one_more`. `battle.gd` (at its budget) is untouched.
 - **Verified:** `one_more_test` 5/5; ladder: 0 warnings, 4992 passed, checkers clean, stripped 4880.
 - **Gaps:** no Press Turn (half-turn icons); only weakness hits count (not crits or knock-downs); the hybrid's ATB gauge is not changed.
+
+## 2026-11-16 — C8.2 · Team attacks
+
+**Did.** A FOLLOW_UP reaction on statuses: a waiting ally strikes the foe a side-mate's plain
+attack just hit (`TeamAttacks.after_attack`, which `Battle` now calls where it called only
+`SkillUse.counter`). A `team` power mechanism (`TeamMechanism` / `TeamRun`) for dual and triple
+techs, chains and the all-out; `PowerUse.Reason.TEAM` while its partners or broken foes are not
+there. `Events.followed_up`, `Events.team_attacked`, two battle-log lines, one refusal string.
+**Why.** Board row C8.2. `battle.gd` is at its budget, so techs ride the POWER path.
+**Verified.** Ladder: 0 warnings; 5000 passed, 0 failed; checkers silent; stripped 4888 passed.
+`team_attack_test` 7. **Gaps.** No follow-ups in the field or after a skill; techs list as
+ordinary powers; partners lose no turn in a round order; no demo kit uses a tech yet.
