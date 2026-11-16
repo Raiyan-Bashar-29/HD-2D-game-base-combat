@@ -41,6 +41,12 @@ func run() -> void:
 	equal("a use over the cap takes the oldest down", [run.standing(), wall.is_queued_for_deletion()], [1, true])
 	run.tick(6.0)
 	equal("its lifetime takes it down", run.standing(), 0)
+	_upkeep(me, run, build, power)
+	world.free()
+	Flags.clear_all()
+
+
+func _upkeep(me: Combatant, run: ConstructRun, build: ConstructMechanism, power: Power) -> void:
 	build.lifetime = 0.0
 	build.upkeep_pool = &"mp"
 	build.upkeep = 2.0
@@ -53,8 +59,6 @@ func run() -> void:
 	PowerUse.use(me, power, [], _rng)
 	Events.combatant_defeated.emit(me.combatant_id)
 	equal("the user falling takes it down", run.standing(), 0)
-	world.free()
-	Flags.clear_all()
 
 
 func _walls(world: Node3D) -> Array[ArenaThing]:
