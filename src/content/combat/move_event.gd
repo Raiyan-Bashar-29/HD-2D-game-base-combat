@@ -6,7 +6,8 @@ extends Resource
 ## IN PLAIN WORDS: an `ActionMove` holds a list of these, in time order. `at` is seconds after
 ## the move starts. Which other fields matter depends on `kind`:
 ## - SOUND: `sound` plays at the body.
-## - EFFECT: `picture` shows at `offset` from the body for `seconds`.
+## - EFFECT: `picture` shows at `offset` from the body for `seconds`, `amount` metres to a
+##   pixel (0: 0.02; C8.16e).
 ## - SHOT: `shot` (a move of its own) flies from `offset` the way the body faces, at `amount`
 ##   metres a second. With `at_foe` it starts at `offset` from the foe it aims at instead (a
 ##   spike under the foe, a blade falling on it); with no foe to aim at, from the body.

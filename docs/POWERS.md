@@ -583,7 +583,9 @@ What a state sends out that hurts flies on its own (C8.16c): a `Helper` whose st
 formula, its start (`pos`, or the foe's feet for `postype = p2`) and its first forward speed.
 Its hits are not the sender's. It also takes its y speed, its fall (`[Movement] yaccel`, for a
 `physics = A` state), whether it flies through (a helper always; a `Projectile` with `projhits`
-over 1, spreading its hits over its life) and its own sounds (C8.16d). What has no field
+over 1, spreading its hits over its life) and its own sounds (C8.16d), and the shots it sends
+out (C8.16e). Each `Explod` is an effect picture (`effects/anim_<n>.png`, written by
+`mugen_sprites.gd --effects=<anims>`), shown for its animation's length (C8.16e). What has no field
 on a move is written in the move's notes: what it sends out, a third untouchable stretch or
 a second armour stretch, every controller not converted, and every trigger
 that depends on a button, a variable or the foe.

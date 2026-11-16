@@ -52,7 +52,7 @@ static func convert(def_path: String, options: Dictionary = {}) -> Dictionary:
 	var inputs: Dictionary = _inputs(MugenIni.read(DictRead.get_string(files, "cmd")))
 	var sent: Dictionary = {}
 	for number: int in states:
-		for spawn: Dictionary in MugenState.facts(number, states, anims, false)["spawns"]:
+		for spawn: Dictionary in MugenState.facts(number, states, anims, 0)["spawns"]:
 			sent[spawn["state"]] = true
 	for number: int in states:
 		var facts: Dictionary = MugenState.facts(number, states, anims)

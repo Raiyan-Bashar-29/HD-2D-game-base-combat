@@ -4,7 +4,7 @@ extends SceneTree
 ## IN PLAIN WORDS:
 ##   godot --headless --script tools/mugen_sprites.gd -- <character.def> <output folder>
 ##       [--height=1.7] [--frames=8] [--max-cell=256] [--walk=0,20,100]
-##       [--actions=200,201] [--sounds=all|none|0_1,5_0]
+##       [--actions=200,201] [--sounds=all|none|0_1,5_0] [--effects=1007,1011]
 ## It writes a walking sheet, a strip per animation, the sounds, an index and a credits file.
 ## What each is, and the options, are in `tools/mugen/mugen_sprite_files.gd`. The companion
 ## `tools/mugen_convert.gd` converts the moves. ONLY use a character the owner has said is
@@ -13,7 +13,7 @@ extends SceneTree
 ## OWNS: reading the command line and printing the result.
 ## MUST NOT: hold any rule of the unpacking.
 
-const TEXT_OPTIONS: PackedStringArray = ["walk", "actions", "sounds"]
+const TEXT_OPTIONS: PackedStringArray = ["walk", "actions", "sounds", "effects"]
 
 
 func _init() -> void:
@@ -28,7 +28,7 @@ func _init() -> void:
 			paths.append(arg)
 	if paths.size() < 2:
 		print("usage: -- <character.def> <output folder> [--height=1.7] [--frames=8] "
-			+ "[--max-cell=256] [--walk=0,20,100] [--actions=200,201] [--sounds=all|none|0_1,5_0]")
+			+ "[--max-cell=256] [--walk=0,20,100] [--actions=200,201] [--sounds=all|none|0_1,5_0] [--effects=1007,1011]")
 		quit(2)
 		return
 	var index: Dictionary = MugenSpriteFiles.write(paths[0], paths[1], options)

@@ -6,8 +6,9 @@ extends Node
 ## frame it reads the body's move clock (held by its `Hurtbox`) and does every event of the
 ## playing move whose time has come, once per swing:
 ## - SOUND plays at the body. EFFECT shows a picture near the body for its seconds.
-## - SHOT sends a `Projectile` out the way the body faces, with its arc and `pierce`; one `at_foe` starts at the foe the
-##   body aims at (`BarrageRun.aim_of`: its lock-on, else the nearest foe in sight).
+## - SHOT sends a `Projectile` out the way the body faces, with its arc and `pierce`; one
+##   `at_foe` starts at the foe the body aims at (`BarrageRun.aim_of`: its lock-on, else the
+##   nearest foe in sight). On a shot (its own events) it sends a shot for the same attacker.
 ## - SHAKE asks the camera to shake (`Events.camera_shake_requested`).
 ## - PAUSE stops the fight (`CombatClock`) for its seconds of real time, then puts the speed
 ##   back. A pause asked for while the fight is already stopped is skipped.
@@ -102,7 +103,7 @@ func _effect(body: Node3D, event: MoveEvent) -> void:
 	sprite.name = EFFECT_NAME
 	sprite.texture = event.picture
 	sprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sprite.pixel_size = 0.02
+	sprite.pixel_size = event.amount if event.amount > 0.0 else 0.02
 	body.get_parent().add_child(sprite)
 	sprite.global_position = _spot(body, event.offset)
 	get_tree().create_timer(event.seconds, false).timeout.connect(sprite.queue_free)
@@ -113,7 +114,8 @@ func _shoot(body: Node3D, event: MoveEvent) -> void:
 		return
 	var way: Vector3 = BarrageRun.facing_of(body)
 	var shot := Projectile.new()
-	shot.attacker = Combatant.of(body)
+	# A shot a shot sends out (C8.16e) strikes for the first shot's attacker.
+	shot.attacker = Combatant.of(body) if not body is Hitbox else (body as Hitbox).attacker
 	for child: Node in body.get_children():
 		if child is Hitbox:
 			shot.rng = (child as Hitbox).rng

@@ -18,7 +18,7 @@ var _sff: MugenSff
 
 
 func run() -> void:
-	plan(7)
+	plan(8)
 	equal("the checksum is the PNG one, RLE8 repeats, and LZ5 runs and copies back",
 		[MugenPacking.crc32("123456789".to_ascii_buffer()), MugenPacking.rle8(PackedByteArray([0x43, 2, 1]), 4),
 		MugenPacking.lz5(PackedByteArray([0x04, 0x41, 0x22, 0x02, 0x02]), 6)],
@@ -116,7 +116,7 @@ func _writing() -> void:
 		file.store_buffer(files[name] as PackedByteArray)
 		file.close()
 	var out: String = _dir().path_join("out")
-	var index: Dictionary = MugenSpriteFiles.write(_dir().path_join("fx.def"), out, {"height": 1.0, "frames": 4})
+	var index: Dictionary = MugenSpriteFiles.write(_dir().path_join("fx.def"), out, {"height": 1.0, "frames": 4, "effects": "20"})
 	var layout: SpriteSheetLayout = load(out.path_join("sheet_layout.tres"))
 	var sheet: Image = Image.load_from_file(out.path_join("sheet.png"))
 	equal("the folder holds a sheet with its layout, a strip per animation, the sound, an index and the credit",
@@ -126,6 +126,9 @@ func _writing() -> void:
 		FileAccess.get_file_as_string(out.path_join("CREDITS.md")).contains("nobody"),
 		FileAccess.file_exists(out.path_join("strips/anim_20.png")), FileAccess.file_exists(out.path_join("sprites.json"))],
 		[PackedStringArray(), ["0", "20"], ["sounds/5_7.wav"], 0.5, PackedStringArray(), 2, -1, "RIFF", true, true, true])
+	var picture: Image = Image.load_from_file(out.path_join("effects/anim_20.png"))
+	equal("an effect animation named is written as its middle frame alone (C8.16e)",
+		[index["effects"], picture != null and picture.get_width() > 0], [["effects/anim_20.png"], true])
 
 
 func _dir() -> String:

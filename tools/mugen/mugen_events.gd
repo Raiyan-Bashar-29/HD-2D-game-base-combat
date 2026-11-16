@@ -4,7 +4,8 @@ extends RefCounted
 ##
 ## IN PLAIN WORDS: `MugenFormula` lists a move's events as plain data: a sound file and its
 ## time, a screen shake, a hit pause. This file turns each into a `MoveEvent` on the move. A
-## shot (C8.16c) is a `MoveEvent` SHOT whose move is built by the same formula, its box kept
+## `Explod` picture (C8.16e) is an EFFECT whose picture is looked for in `folder`, as sounds
+## are, and left out when it is not there. A shot (C8.16c) is a `MoveEvent` SHOT whose move is built by the same formula, its box kept
 ## inside `most` metres, with its arc, `pierce` and its own sounds (C8.16d). A sound needs
 ## its file: it is looked for in `folder`, the folder the sprites and sounds were unpacked into. A sound whose file is not there is left out, with no problem said, because
 ## the author may have unpacked only some sounds.
@@ -30,6 +31,12 @@ static func fill(move: ActionMove, made: Dictionary, folder: String, most: float
 				out.kind = MoveEvent.Kind.SHAKE
 			"pause":
 				out.kind = MoveEvent.Kind.PAUSE
+			"effect":
+				out.kind = MoveEvent.Kind.EFFECT
+				out.offset = DictRead.get_vector3(event, "offset")
+				out.picture = _picture(folder.path_join(DictRead.get_string(event, "file")))
+				if folder == "" or out.picture == null:
+					continue
 			"shot":
 				out.kind = MoveEvent.Kind.SHOT
 				out.at_foe = DictRead.get_bool(event, "foe")
@@ -46,6 +53,14 @@ static func fill(move: ActionMove, made: Dictionary, folder: String, most: float
 			_:
 				continue
 		move.events.append(out)
+
+
+# The picture at `path`: the imported one, else the file read as it is, else nothing.
+static func _picture(path: String) -> Texture2D:
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	var image: Image = Image.load_from_file(path) if FileAccess.file_exists(path) else null
+	return ImageTexture.create_from_image(image) if image != null else null
 
 
 # The sound at `path`: the imported one, else the file read as it is, else nothing.

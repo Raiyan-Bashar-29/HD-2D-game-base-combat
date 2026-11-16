@@ -22,7 +22,9 @@ extends RefCounted
 ## - SHOTS (C8.16c): each shot `MugenState` found is a shot event: its own numbers by this
 ##   same formula, its start (`offset`, metres; `foe` when it starts at the foe) and its speed
 ##   in metres a second; its `lift` (their y speed, up), its `gravity` (their `yaccel` x 3600,
-##   for a state that falls) and `pierce` (C8.16d). A sent-out state that does not hurt is only noted.
+##   for a state that falls) and `pierce` (C8.16d). A shot's own shots are followed one level.
+## - EFFECTS (C8.16e): each `Explod` is an effect picture, `effects/anim_<n>.png` in the art
+##   folder, shown for its animation's length (0.1 to 2 s) at its `pos`, at our pixel size. A sent-out state that does not hurt is only noted.
 ##
 ## OWNS: the numbers of the conversion.
 ## MUST NOT: read a file. `MugenState` collects the facts.
@@ -50,7 +52,7 @@ static func numbers(facts: Dictionary, scale: Dictionary) -> Dictionary:
 		damage += DictRead.get_float(hit, "damage")
 	var out: Dictionary = {"state": facts["state"], "anim": facts["anim"], "hits": hits.size(),
 		"length": length / TICKS, "notes": _notes(facts)}
-	var events: Array = _events(facts, length) + _shots(facts, scale)
+	var events: Array = _events(facts, length, scale) + _shots(facts, scale)
 	events.sort_custom(func(x: Dictionary, y: Dictionary) -> bool: return DictRead.get_float(x, "at") < DictRead.get_float(y, "at"))
 	out["events"] = events
 	var dodges: Array[Vector2i] = _untouchable(facts)
@@ -145,9 +147,15 @@ static func _merged(spans: Array[Vector2i], length: int) -> Array[Vector2i]:
 	return out
 
 
-# The timed events, earliest first, each once: sounds, screen shakes and hit pauses.
-static func _events(facts: Dictionary, length: int) -> Array:
+# The timed events, earliest first, each once: effect pictures (C8.16e), sounds, screen shakes
+# and hit pauses.
+static func _events(facts: Dictionary, length: int, scale: Dictionary) -> Array:
+	var mpp: float = DictRead.get_float(scale, "metres_per_pixel")
 	var out: Array = []
+	for effect: Dictionary in DictRead.get_array(facts, "effects"):
+		out.append({"tick": effect["tick"], "kind": "effect", "file": "effects/anim_%d.png" % effect["anim"], "amount": mpp,
+			"seconds": clampi(DictRead.get_int(effect, "length"), 6, 120) / TICKS,
+			"offset": DictRead.put_vector3(Vector3(0.0, -DictRead.get_float(effect, "y") * mpp, -DictRead.get_float(effect, "x") * mpp))})
 	for sound: Dictionary in DictRead.get_array(facts, "sounds"):
 		out.append({"tick": sound["tick"], "kind": "sound", "file": "sounds/%d_%d.wav" % [sound["group"], sound["index"]]})
 	for shake: Dictionary in DictRead.get_array(facts, "shakes"):

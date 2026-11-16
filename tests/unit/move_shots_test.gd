@@ -1,7 +1,8 @@
 extends TestCase
 ## What a shot sent by a move event does (C8.16c, C8.16d): one `at_foe` starts at the foe; one
 ## with lift and a fall arcs; a pierce shot of several hits strikes one hit at a time; one that
-## does not pierce lands all its hits at once and is gone; a shot's own events play on it.
+## does not pierce lands all its hits at once and is gone; a shot's own events play on it,
+## and its own shot strikes for the same attacker; an effect shows at its own scale (C8.16e).
 ##
 ## OWNS: assertions about `MoveEvent.at_foe`, `lift`, `gravity`, `pierce`, and the C8.16d parts
 ## of `Projectile` and `Hitbox.forget`.
@@ -11,12 +12,13 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(5)
+	plan(7)
 	SaveFixture.activate()
 	Flags.clear_all()
 	CombatClock.reset()
 	_at_foe()
 	_shot_life()
+	_inner_and_effect()
 	for actor: Node in _actors:
 		actor.free()
 	CombatClock.reset()
@@ -78,6 +80,45 @@ func _shot_life() -> void:
 		own.watch()
 	equal("a shot's own MoveEvents plays the sound of the shot's move on the shot's clock", own != null and own.done == 1, true)
 	ringing.free()
+
+
+func _inner_and_effect() -> void:
+	var hero := _actor(&"fixture_inner_hero", &"side_a", Vector3(60, 0, 0))
+	var outer := _strike(3.0)
+	var inner := _event(MoveEvent.Kind.SHOT, 0.0, 2.0)
+	inner.shot = _strike(1.0)
+	var spark := _event(MoveEvent.Kind.EFFECT, 0.0, 0.05, 0.5)
+	spark.picture = ImageTexture.create_from_image(Image.create(4, 4, false, Image.FORMAT_RGBA8))
+	outer.events = [inner, spark]
+	var send := _event(MoveEvent.Kind.SHOT, 0.0, 1.0)
+	send.shot = outer
+	var move := _move()
+	move.events = [send]
+	var clock := MoveTimeline.new()
+	(hero.get_child(3) as Hurtbox).timeline = clock
+	clock.start(move)
+	(hero.get_child(5) as MoveEvents).watch()
+	var first: Projectile = _flying_now()[0] as Projectile if _flying_now().size() == 1 else null
+	var own: MoveEvents = first.get_child(first.get_child_count() - 1) as MoveEvents if first != null else null
+	if own != null:
+		own.watch()
+	var shots: Array[Node] = _flying_now()
+	var second: Projectile = shots[1] as Projectile if shots.size() == 2 else null
+	equal("a shot's own shot is sent, and strikes for the hero",
+		[shots.size(), second != null and second.attacker == Combatant.of(hero)], [2, true])
+	var scales: Array[float] = []
+	for child: Node in hero.get_parent().get_children():
+		if child is Sprite3D:
+			scales.append(snappedf((child as Sprite3D).pixel_size, 0.001))
+			child.free()
+	equal("an effect shows at its own metres to a pixel", scales, [0.05])
+	for shot: Node in shots:
+		shot.free()
+
+
+# The shots in flight that have not ended (an ended one waits a frame to be freed).
+func _flying_now() -> Array[Node]:
+	return get_tree().get_nodes_in_group(Projectile.GROUP).filter(func(shot: Node) -> bool: return not (shot as Projectile).gone())
 
 
 # A shot from `hero`'s side, in the tree at its feet, its move `hits` hits of `power`, `active` s.

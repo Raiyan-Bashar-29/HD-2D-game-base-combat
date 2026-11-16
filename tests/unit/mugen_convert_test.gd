@@ -1,5 +1,5 @@
 extends TestCase
-## The M.U.G.E.N converter (C9.9a, shots C8.16c and C8.16d): a made-up character, written to this run's scratch folder,
+## The M.U.G.E.N converter (C9.9a, shots C8.16c to C8.16e): a made-up character, written to this run's scratch folder,
 ## is read and turned into moves by the formula in `MugenFormula`.
 ##
 ## OWNS: assertions about `MugenIni`, `MugenAir`, `MugenTriggers`, `MugenState`, `MugenFormula`
@@ -26,6 +26,7 @@ const CNS: String = "[Movement]\nyaccel = 0.5\n[Statedef 0]\ntype = S\nanim = 0\
 	+ "[State 700, end]\ntype = ChangeState\ntrigger1 = AnimTime = 0\nvalue = 0\n" \
 	+ "[Statedef 800]\nmovetype = A\nanim = 0\n" \
 	+ "[State 800, send]\ntype = Helper\ntrigger1 = time = 3\nstateno = 900\npos = 30, -10\npostype = p2\n" \
+	+ "[State 800, spark]\ntype = Explod\ntrigger1 = time = 1\nanim = 900\npos = 10, -20\n" \
 	+ "[State 800, safe]\ntype = NotHitBy\ntrigger1 = time = [0,4]\nvalue = SCA\ntime = 1\n" \
 	+ "[State 800, firm]\ntype = HitOverride\ntrigger1 = time = 2\ntime = 4\n" \
 	+ "[State 800, end]\ntype = ChangeState\ntrigger1 = time = 10\nvalue = 0\n" \
@@ -36,7 +37,9 @@ const CNS: String = "[Movement]\nyaccel = 0.5\n[Statedef 0]\ntype = S\nanim = 0\
 	+ "[Statedef 900]\nanim = 900\nphysics = A\n" \
 	+ "[State 900, go]\ntype = VelSet\ntrigger1 = time = 0\nx = 3\ny = -4\n" \
 	+ "[State 900, ring]\ntype = PlaySnd\ntrigger1 = time = 1\nvalue = S5, 2\n" \
-	+ "[State 900, hit]\ntype = HitDef\ntrigger1 = TimeMod = 4, 0\ndamage = 10\n"
+	+ "[State 900, more]\ntype = Helper\ntrigger1 = time = 2\nstateno = 950\n" \
+	+ "[State 900, hit]\ntype = HitDef\ntrigger1 = TimeMod = 4, 0\ndamage = 10\n" \
+	+ "[Statedef 950]\nanim = 900\n[State 950, hit]\ntype = HitDef\ntrigger1 = time = 0\ndamage = 5\n"
 const CMD: String = "[Command]\nname = \"a\"\ncommand = ~D, F, a\n[Statedef -1]\n" \
 	+ "[State -1, a]\ntype = ChangeState\nvalue = 200\ntriggerall = power >= 500\n" \
 	+ "trigger1 = command = \"a\"\n"
@@ -45,7 +48,7 @@ var _dir: String
 
 
 func run() -> void:
-	plan(11)
+	plan(12)
 	_dir = RunScratch.path("mugen_fixture")
 	DirAccess.make_dir_recursive_absolute(_dir)
 	for name: String in ["Fixture.def", "Fixture.cmd", "Fixture.cns", "fixture.air"]:
@@ -109,7 +112,7 @@ func _converting() -> void:
 # The sender of a helper shot (800) and of a `Projectile` (810).
 func _shooting(moves: Dictionary) -> void:
 	var sender: Dictionary = moves.get(800, {})
-	var sent: Dictionary = DictRead.get_array(sender, "events")[0]
+	var sent: Dictionary = _first(DictRead.get_array(sender, "events"), "shot")
 	var flown: Dictionary = DictRead.get_dict(sent, "shot")
 	equal("a helper that hurts flies as a shot from the foe at its own speed; the sender keeps no hit of it",
 		_round([sender["hits"], sender["power"], sender["iframes_to"], sender["armour_from"], sender["armour_to"],
@@ -120,12 +123,26 @@ func _shooting(moves: Dictionary) -> void:
 	equal("the helper's shot rises, falls by their yaccel, flies through and keeps its own sound",
 		_round([sent["lift"], sent["gravity"]]) + [sent["pierce"], DictRead.get_string(DictRead.get_array(flown, "events")[0] as Dictionary, "file")],
 		[4.8, 36.0, true, "sounds/5_2.wav"])
+	var spark: Dictionary = _first(DictRead.get_array(sender, "events"), "effect")
+	var inner: Dictionary = _first(DictRead.get_array(flown, "events"), "shot")
+	equal("an Explod is an effect picture for its length at its pos; a shot's own helper is a shot inside it",
+		_round([spark["at"], spark["seconds"], spark["amount"]]) + [spark["file"], _round(spark["offset"] as Array),
+		DictRead.get_dict(inner, "shot").get("power", 0.0)],
+		[0.017, 0.133, 0.02, "effects/anim_900.png", [0.0, 0.4, -0.2], 2.0])
 	var fired: Dictionary = DictRead.get_array(moves.get(810, {}) as Dictionary, "events")[0]
 	var bolt: Dictionary = DictRead.get_dict(fired, "shot")
 	equal("a Projectile is a shot of one hit for its removetime, from its offset at its velocity, flat and ended by a hit",
 		_round([fired["at"], fired["amount"], bolt["hits"], bolt["power"], bolt["active"], fired["lift"], fired["gravity"]])
 		+ [fired["foe"], _round(fired["offset"] as Array), fired["pierce"]],
 		[0.033, 4.8, 1.0, 4.8, 0.5, 0.0, 0.0, false, [0.0, 0.6, -0.4], false])
+
+
+# The first event of `kind` in `events`, else an empty one.
+func _first(events: Array, kind: String) -> Dictionary:
+	for event: Dictionary in events:
+		if event["kind"] == kind:
+			return event
+	return {}
 
 
 func _round(values: Array) -> Array:

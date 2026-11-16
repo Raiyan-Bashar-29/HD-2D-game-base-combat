@@ -9,6 +9,8 @@ extends RefCounted
 ##   every one whose cell is no bigger than `max_cell` pixels, so a body and not a screen-wide
 ##   effect);
 ## - `sounds/<group>_<index>.wav`: the sounds asked for (default: all);
+## - `effects/anim_<number>.png`: for each animation `effects` names, its middle frame alone,
+##   the picture a converted move's effect event shows (C8.16e; default: none);
 ## - `sprites.json`: the index. For each strip its frame count, cell, feet pixel and ticks; and
 ##   `pixel_size`, the metres one pixel stands for, THE SAME scale the move converter uses, so
 ##   the art and the hitboxes agree;
@@ -18,7 +20,7 @@ extends RefCounted
 ## MUST NOT: hold cell maths (`MugenSprites`) or name a character.
 
 const DEFAULTS: Dictionary = {"height": 1.7, "frames": 8, "max_cell": 256, "walk": "0,20,100",
-	"actions": "", "sounds": "all"}
+	"actions": "", "sounds": "all", "effects": ""}
 
 
 ## Unpacks the character at `def_path` into `directory`. Returns the index, with `problems`.
@@ -27,7 +29,7 @@ static func write(def_path: String, directory: String, options: Dictionary = {})
 	var about: Dictionary = MugenCharacter.about(def_path)
 	var files: Dictionary = about["files"]
 	var scale: Dictionary = MugenCharacter.convert(def_path, {"height": settings["height"]}).get("scale", {})
-	var out: Dictionary = {"name": about["name"], "author": about["author"], "strips": {}, "sounds": [],
+	var out: Dictionary = {"name": about["name"], "author": about["author"], "strips": {}, "sounds": [], "effects": [],
 		"pixel_size": DictRead.get_float(scale, "metres_per_pixel"), "problems": PackedStringArray()}
 	var sff: MugenSff = MugenSff.open(DictRead.get_string(files, "sprite"))
 	var anims: Dictionary = MugenAir.read(DictRead.get_string(files, "anim"))
@@ -40,6 +42,8 @@ static func write(def_path: String, directory: String, options: Dictionary = {})
 	for action: int in _wanted(sff, anims, settings):
 		_strip(sff, anims.get(action, []) as Array, action, directory, out)
 	_sounds(DictRead.get_string(files, "sound"), directory, DictRead.get_string(settings, "sounds"), out)
+	for part: String in DictRead.get_string(settings, "effects").split(",", false):
+		_effect(sff, anims.get(part.to_int(), []) as Array, part.to_int(), directory, out)
 	var credit: String = "# %s\n\nSprites and sounds from the M.U.G.E.N character \"%s\" by **%s**.\n" % [
 		about["name"], about["name"], about["author"]]
 	_save(directory.path_join("CREDITS.md"), credit + "Unpacked by `tools/mugen_sprites.gd`. Used with the owner's say-so; keep this file with them.\n")
@@ -104,6 +108,17 @@ static func _strip(sff: MugenSff, frames: Array, action: int, directory: String,
 	var feet: Vector2i = made["feet"]
 	(out["strips"] as Dictionary)[str(action)] = {"file": file, "frames": frames.size(), "cell": [cell.x, cell.y],
 		"feet": [feet.x, feet.y], "ticks": made["ticks"], "seconds": float(MugenAir.length(frames)) / 60.0}
+
+
+# The middle frame of animation `action`, alone, as `effects/anim_<action>.png`.
+static func _effect(sff: MugenSff, frames: Array, action: int, directory: String, out: Dictionary) -> void:
+	if frames.is_empty():
+		MugenIni.note(out, "problems", "effect animation %d is not in the file" % action)
+		return
+	DirAccess.make_dir_recursive_absolute(directory.path_join("effects"))
+	var file: String = "effects/anim_%d.png" % action
+	(MugenSprites.strip(sff, [frames[frames.size() / 2]])["image"] as Image).save_png(directory.path_join(file))
+	(out["effects"] as Array).append(file)
 
 
 # Saves the sounds `wanted` names: "all", "none", or a list like "0_1,5_0".

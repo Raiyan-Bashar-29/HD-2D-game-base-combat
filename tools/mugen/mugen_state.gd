@@ -14,7 +14,8 @@ extends RefCounted
 ## spans), `speeds` [{tick, x}], `spawns` [{tick, state, x, y, foe}], `sounds` [{tick, group,
 ## index}], `chains` [{tick, state}], `pauses` [{tick, time}] (the screen freezes), `shakes`
 ## [{tick, time, ampl}], `shots` [{tick, state, x, y, foe, speed, rise, air, pierce, facts}],
-## `air` (the state falls: `physics = A`), `skipped`, `needs`. Speeds are pixels a tick, y down.
+## `air` (the state falls: `physics = A`), `effects` [{tick, anim, x, y, length}] (each
+## `Explod` of an animation in the character's own file; C8.16e), `skipped`, `needs`. Speeds are pixels a tick, y down.
 ##
 ## SHOTS (C8.16c): what a state sends out that hurts flies on its own. A `Helper` whose state
 ## hits, and every `Projectile`, is a shot: where it starts (`x`, `y` pixels from the sender,
@@ -46,8 +47,9 @@ static func index(sections: Array[Dictionary]) -> Dictionary:
 	return out
 
 
-## The facts of state `number`. `follow` also reads the states its helpers are sent into.
-static func facts(number: int, states: Dictionary, anims: Dictionary, follow: bool = true) -> Dictionary:
+## The facts of state `number`. With `depth` above 0 it also reads the states its helpers are
+## sent into, and theirs, `depth` levels deep (C8.16e: a shot may send out shots).
+static func facts(number: int, states: Dictionary, anims: Dictionary, depth: int = 2) -> Dictionary:
 	var state: Dictionary = states.get(number, {})
 	var def: Dictionary = state.get("def", {})
 	var ctrls: Array = state.get("ctrls", [])
@@ -60,7 +62,7 @@ static func facts(number: int, states: Dictionary, anims: Dictionary, follow: bo
 		"attack": MugenIni.value(def, "movetype").to_lower() == "a",
 		"length": _length(ctrls, frames), "hits": [], "invincible": [], "armour": [],
 		"speeds": [], "spawns": [], "sounds": [], "chains": [], "pauses": [], "shakes": [],
-		"shots": [], "skipped": {},
+		"shots": [], "effects": [], "skipped": {},
 		"needs": PackedStringArray()}
 	var start: PackedFloat64Array = MugenIni.numbers(MugenIni.value(def, "velset", "0") + ",0")
 	if start[0] != 0.0 or start[1] != 0.0:
@@ -68,8 +70,8 @@ static func facts(number: int, states: Dictionary, anims: Dictionary, follow: bo
 	out["air"] = MugenIni.value(def, "physics").to_lower() == "a"
 	for ctrl: Dictionary in ctrls:
 		_read(ctrl, out, MugenTriggers.span(ctrl, frames, DictRead.get_int(out, "length")), anims)
-	if follow:
-		_follow(out, states, anims)
+	if depth > 0:
+		_follow(out, states, anims, depth)
 	return out
 
 
@@ -107,12 +109,9 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary, anims: Di
 			if MugenIni.value(ctrl, "x") != "" or MugenIni.value(ctrl, "y") != "":
 				(out["speeds"] as Array).append({"tick": tick, "x": MugenIni.number(ctrl, "x"), "y": MugenIni.number(ctrl, "y")})
 		"helper":
-			(out["spawns"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "stateno")),
-				"x": pos[0], "y": pos[1], "foe": MugenIni.value(ctrl, "postype").to_lower().begins_with("p2")})
+			_spawn(ctrl, out, tick, pos)
 		"playsnd":
-			var sound: PackedFloat64Array = MugenIni.numbers(MugenIni.value(ctrl, "value").trim_prefix("S").trim_prefix("s"))
-			(out["sounds"] as Array).append({"tick": tick, "group": int(sound[0]),
-				"index": int(sound[sound.size() - 1])})
+			_sound(ctrl, out, tick)
 		"changestate":
 			if "command" in "".join(when["needs"] as PackedStringArray):
 				(out["chains"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "value"))})
@@ -121,7 +120,9 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary, anims: Di
 		"envshake":
 			(out["shakes"] as Array).append({"tick": tick, "time": int(MugenIni.number(ctrl, "time", 1.0)),
 				"ampl": absf(MugenIni.number(ctrl, "ampl", -4.0))})
-		"null", "selfstate", "destroyself", "changeanim", "explod", "turn":
+		"explod":
+			_effect(ctrl, out, tick, pos, anims)
+		"null", "selfstate", "destroyself", "changeanim", "turn":
 			pass
 		_:
 			var skipped: Dictionary = out["skipped"]
@@ -130,6 +131,26 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary, anims: Di
 	for need: String in when["needs"]:
 		if not (out["needs"] as PackedStringArray).has(need) and kind in ["hitdef", "nothitby", "hitoverride"]:
 			MugenIni.note(out, "needs", need)
+
+
+# A `PlaySnd`: its group and index.
+static func _sound(ctrl: Dictionary, out: Dictionary, tick: int) -> void:
+	var sound: PackedFloat64Array = MugenIni.numbers(MugenIni.value(ctrl, "value").trim_prefix("S").trim_prefix("s"))
+	(out["sounds"] as Array).append({"tick": tick, "group": int(sound[0]), "index": int(sound[sound.size() - 1])})
+
+
+# A `Helper`: where it starts, and whether at the foe (`postype = p2`).
+static func _spawn(ctrl: Dictionary, out: Dictionary, tick: int, pos: PackedFloat64Array) -> void:
+	(out["spawns"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "stateno")),
+		"x": pos[0], "y": pos[1], "foe": MugenIni.value(ctrl, "postype").to_lower().begins_with("p2")})
+
+
+# An `Explod` of an animation in the character's own file (C8.16e).
+static func _effect(ctrl: Dictionary, out: Dictionary, tick: int, pos: PackedFloat64Array, anims: Dictionary) -> void:
+	var anim: int = int(MugenIni.number(ctrl, "anim", -1.0))
+	if anims.has(anim):
+		(out["effects"] as Array).append({"tick": tick, "anim": anim, "x": pos[0], "y": pos[1],
+			"length": MugenAir.length(anims[anim] as Array)})
 
 
 # One or more hits of a HitDef: a repeating trigger hits once each time it fires.
@@ -161,7 +182,7 @@ static func _projectile(ctrl: Dictionary, out: Dictionary, tick: int, pos: Packe
 	var sent: Dictionary = {"state": out["state"], "anim": int(MugenIni.number(ctrl, "projanim", -1.0)),
 		"frames": frames, "length": life, "hits": [_one(ctrl, 0, life, MugenAir.bounds(frames, 0, "hit"))],
 		"invincible": [], "armour": [], "speeds": [], "spawns": [], "sounds": [], "chains": [],
-		"pauses": [], "shakes": [], "shots": [], "air": false, "skipped": {}, "needs": PackedStringArray()}
+		"pauses": [], "shakes": [], "shots": [], "effects": [], "air": false, "skipped": {}, "needs": PackedStringArray()}
 	var velocity: PackedFloat64Array = MugenIni.numbers(MugenIni.value(ctrl, "velocity", "0") + ",0")
 	(out["shots"] as Array).append({"tick": tick, "state": out["state"], "x": pos[0], "y": pos[1], "foe": false,
 		"speed": velocity[0], "rise": velocity[1], "air": false,
@@ -174,11 +195,11 @@ static func _held(ctrl: Dictionary, when: Dictionary) -> Vector2i:
 
 
 # Each sent-out helper whose state hurts is a shot, flying at its state's first forward speed.
-static func _follow(out: Dictionary, states: Dictionary, anims: Dictionary) -> void:
+static func _follow(out: Dictionary, states: Dictionary, anims: Dictionary, depth: int) -> void:
 	for spawn: Dictionary in out["spawns"]:
 		if not states.has(spawn["state"]):
 			continue
-		var sent: Dictionary = facts(DictRead.get_int(spawn, "state"), states, anims, false)
+		var sent: Dictionary = facts(DictRead.get_int(spawn, "state"), states, anims, depth - 1)
 		if (sent["hits"] as Array).is_empty():
 			continue
 		var speed: Vector2 = Vector2.ZERO

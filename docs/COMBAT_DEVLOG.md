@@ -4811,3 +4811,10 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Why:** the gaps C8.16c recorded (owner: fix the issues that exist).
 - **Verified:** suite and ladder (below); kit probe on Eto, four runs: every shot struck, Tatara's 2461 fire 6 times over its life.
 - **Gaps:** `Explod` pictures are C8.16e. Arima still needs his upload. A shot's own sent-out shots are not followed.
+
+## 2026-11-16 — C8.16e · Effect pictures and shots that shoot (combat 0.139.0)
+
+- **Did:** the converter reads `Explod` into EFFECT events and follows sent states two levels; `mugen_sprites.gd --effects` writes each picture; an EFFECT's `amount` is its pixel size; a shot's own shot strikes for the first shot's attacker. Eto: 53 pictures in her five art folders, 95 effect events.
+- **Why:** the last gaps of C8.16c/d (owner: fix the problems).
+- **Verified:** suite and ladder (below); kit probe on Eto showed pictures from bodies and from shots; a windowed capture of Air Strike shows its pictures in the world.
+- **Gaps:** one frame per picture, not following its owner, centred rather than on its feet pixel. Arima still needs his upload.
