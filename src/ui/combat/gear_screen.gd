@@ -28,6 +28,7 @@ const REFUSED_KEY: String = "combat.loadout.row_refused"
 const SAME_KEY: String = "combat.gear.same"
 const GAIN_KEY: String = "combat.gear.gain"
 const LOSS_KEY: String = "combat.gear.loss"
+const AFFIX_KEY: String = "combat.gear.affix"
 const SLOT_PREFIX: String = "combat.gear.slot."
 const STAT_PREFIX: String = "combat.stat."
 const REFUSAL_PREFIX: String = "combat.gear.refusal."
@@ -137,7 +138,12 @@ func _fill_choices(gear: GearSet) -> void:
 
 static func _sum(diff: Dictionary[StringName, float], item_id: StringName, sign_of: float) -> void:
 	var piece: GearDefinition = GearDb.for_item(item_id) if item_id != &"" else null
-	for modifier: StatModifier in (piece.all_modifiers() if piece != null else []):
+	var all: Array[StatModifier] = []
+	if piece != null:
+		all.append_array(piece.all_modifiers())
+	# What the piece rolled when it dropped counts too (C7.2b).
+	all.append_array(GearAffixes.of(item_id))
+	for modifier: StatModifier in all:
 		if modifier.op == StatModifier.Op.ADD:
 			diff[modifier.stat] = diff.get(modifier.stat, 0.0) + modifier.value * sign_of
 
@@ -151,7 +157,11 @@ static func _named(prefix: String, id: StringName) -> String:
 
 func _item_name(item_id: StringName) -> String:
 	var item: ItemDefinition = ItemDb.definition(item_id)
-	return tr(item.name_key) if item != null else String(item_id)
+	var shown: String = tr(item.name_key) if item != null else String(item_id)
+	# A piece's rolled affixes follow its name, such as "Coat of Embers" (C7.2b).
+	for key: String in GearAffixes.names(item_id):
+		shown = tr(AFFIX_KEY).format({"item": shown, "affix": tr(key)})
+	return shown
 
 
 # A row in its piece's rarity colour.

@@ -169,6 +169,7 @@ static func _fits(bag: Inventory, given: Dictionary[StringName, int]) -> bool:
 # The level is forgotten first, so a set woken by the bag's change no longer counts it.
 static func _use_up(bag: Inventory, piece_id: StringName) -> void:
 	GearUpgrades.forget(piece_id)
+	GearAffixes.forget(piece_id)
 	bag.remove(piece_id)
 
 

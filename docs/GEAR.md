@@ -290,7 +290,7 @@ kind, never dropped at random, never dismantled: IXA, Ea).
 - **`drop_weight` is live.** In a rolled table, a gear line's weight is multiplied by its
   tier's `drop_weight`. 0 means the piece is never rolled; a guaranteed `loot` list still
   gives it.
-- **`color` and `affixes` are declared and not yet read:** the gear screen (C7.7) and affixes
+- **`color` and `affixes` are read** (C7.7 and C7.2b). Formerly: the gear screen (C7.7) and affixes
   (C7.2b) read them. `sockets` is read since C7.4c and `max_upgrade` since C7.5.
 - **A `LootTable`** has `rolls` and `entries`. Each `LootEntry` has `item_id` (empty means
   "nothing this time"), `weight`, `min_count` to `max_count`, and `needs_flag` (the line is in
@@ -304,7 +304,7 @@ kind, never dropped at random, never dismantled: IXA, Ea).
 - **Not built here:** a luck stat on the weights, and money drops (C7.6 brings money).
 
 **Affixes.** An `Affix` is a named extra modifier with a range ("of Embers": `fire_power`
-+5 to +10 %). A rolled piece's affixes are saved in `Flags` under the piece's instance key.
++5 to +10 %). A rolled piece's affixes are saved in `Flags` as `affix/<item id>` (built, C7.2b: `GearAffixes`, `data/affixes/`).
 Unique pieces (max stack 1) can roll; stacked pieces cannot. Built last (C7.2b), because it
 needs per-instance state.
 

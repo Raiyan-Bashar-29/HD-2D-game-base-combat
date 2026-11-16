@@ -47,6 +47,7 @@ static func lend(gear: GearSet) -> void:
 				fighter.lent_tags.append(tag)
 	GearSetBonuses.apply(gear, kits)
 	GearSockets.apply(gear)
+	GearAffixes.apply(gear)
 	GearUpgrades.apply(gear)
 	PassiveLending.gear(gear)
 	var powers: PowerSet = PowerSet.of(body)

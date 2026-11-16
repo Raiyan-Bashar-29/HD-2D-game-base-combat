@@ -79,6 +79,8 @@ static func give(experience: int, loot: Array[StringName], members: Array[Combat
 	for item_id: StringName in loot:
 		if inventory != null and inventory.add(item_id, 1):
 			given.items.append(item_id)
+			# A unique piece of gear rolls its affixes as it is given (C7.2b).
+			GearAffixes.roll(item_id)
 		else:
 			given.left_behind.append(item_id)
 	return given

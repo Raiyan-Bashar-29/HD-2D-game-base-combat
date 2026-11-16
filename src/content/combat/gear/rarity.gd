@@ -15,8 +15,8 @@ extends ContentEntry
 ## `sockets` adds sockets to every piece of the tier (C7.4c, `GearDefinition.socket_count`), and
 ## `max_upgrade` caps how high its pieces are upgraded (C7.5, `GearDefinition.upgrade_cap`).
 ##
-## READ LATER: `color` (the gear screen, C7.7) and `affixes` (C7.2b).
-## They are here now so a tier is written once.
+## `color` tints the piece on the gear screen (C7.7); `affixes` is how many random extra
+## modifiers a dropped unique piece rolls (C7.2b, `GearAffixes`).
 ##
 ## OWNS: the data of one tier, and the scaling rule for one stat change.
 ## MUST NOT: know which pieces have it, or touch an autoload.

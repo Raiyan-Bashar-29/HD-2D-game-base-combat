@@ -5000,3 +5000,13 @@ in `Combatant.hit` around `receive`: close blows halved from and onto a screened
 `knock_back`/`pull` tags move a target, `Events.row_changed` and two log lines. Battle only.
 **Verified.** Ladder: 0 warnings; 5022 passed, 0 failed; checkers silent; stripped 4910 passed.
 `rows_test` 6. **Gaps.** No Row command; rows not drawn on the battle screen; no demo data.
+
+## 2026-11-16 — C7.2b · Affixes
+
+**Did.** `Affix` (content) and `AffixDb` (`data/affixes/`); `GearAffixes` rolls a unique piece's
+`Rarity.affixes` once when `Rewards.give` hands it over, keeps them in `Flags` as
+`affix/<item id>`, lends them while worn (source `affixes`, from `GearLending`), and forgets them
+on `Crafting.dismantle`. The gear screen names them after the piece and counts them.
+**Verified.** Ladder: 0 warnings; 5029 passed, 0 failed; checkers silent; stripped 4917 passed.
+`affix_test` 6. **Gaps.** Field drops added to the bag outside `Rewards.give` do not roll; no
+demo affix files.

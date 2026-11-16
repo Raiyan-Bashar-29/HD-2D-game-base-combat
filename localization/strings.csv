@@ -449,6 +449,7 @@ combat.gear.hint,,Press a slot to see what fits it.,[~~Press a slot to see what 
 combat.gear.member,,{name},[~~{name}~~]
 combat.gear.slot_row,,{slot}: {item},[~~{slot}: {item}~~]
 combat.gear.empty,,(empty),[~~(empty)~~]
+combat.gear.affix,,{item} {affix},[~~{item} {affix}~~]
 combat.gear.take_off,,Take off {item},[~~Take off {item}~~]
 combat.gear.choices,,Fits {slot}:,[~~Fits {slot}:~~]
 combat.gear.none_fits,,Nothing in the bag fits.,[~~Nothing in the bag fits.~~]
