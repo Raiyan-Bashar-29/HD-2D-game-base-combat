@@ -31,7 +31,7 @@ var _dir: String
 
 
 func run() -> void:
-	plan(16)
+	plan(17)
 	_dir = RunScratch.path("mugen_build")
 	_folder()
 	var result: Dictionary = MugenStarter.write(_dir.path_join("choices.json"))
@@ -156,6 +156,10 @@ func _small_things() -> void:
 		made["armour_to"], made["notes"]],
 		[0.0, 0.1, 0.2, 0.3, 0.1, 0.25, PackedStringArray(["more than two untouchable stretches; only the first two are kept",
 		"more than one armour stretch; only the first is kept"])])
+	var named: Power = (MugenKit.build(CHOICES.merged({"stance_id": "fx_style"}), {200: SWING, 300: BLAST})["kit"] as PowerKit).powers[0]
+	equal("a stance_id names the stance power, its group and its keys",
+		[named.power_id, (named.mechanism as FormMechanism).exclusive_group, named.name_key],
+		[&"power/fx_style", &"fx_style", "combat.power.fx_style.name"])
 
 
 # A special that only calls helpers (its state is not among the moves) and one that may be

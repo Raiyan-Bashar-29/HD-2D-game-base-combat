@@ -1,5 +1,6 @@
 {
 	"name": "arima",
+	"stance_id": "arima_quinque",
 	"moves": "arima_out/moves.json",
 	"sprites": "res://assets/fan/arima_kisho",
 	"out": {

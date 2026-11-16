@@ -4818,3 +4818,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Why:** the last gaps of C8.16c/d (owner: fix the problems).
 - **Verified:** suite and ladder (below); kit probe on Eto showed pictures from bodies and from shots; a windowed capture of Air Strike shows its pictures in the world.
 - **Gaps:** one frame per picture, not following its owner, centred rather than on its feet pixel. Arima still needs his upload.
+
+## 2026-11-16 — C8.16f · Arima rebuilt from his re-upload (combat 0.140.0)
+
+- **Did:** reconverted Arima; unpacked 31 effect pictures and 6 missing sounds into `assets/fan/arima_kisho/`; rebuilt his kit and loadout. Added a `stance_id` choice to `MugenKit` so the rebuild keeps his stance power `power/arima_quinque` (the default name would have broken his slots and shown a missing string).
+- **Verified:** ladder green (4884 passed, stripped 4772); kit probe: all six specials land, shots `arima_550_shot16` and `arima_3150_shot3` strike; windowed capture shows his slot names.
+- **Gaps:** IXA Throw is a grab plus cutscene in the source, kept as a lunge; Owl call is strong (about 300 damage) because each of its hits adds the attacker's attack.

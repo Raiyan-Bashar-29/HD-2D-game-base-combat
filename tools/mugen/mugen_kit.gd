@@ -14,6 +14,7 @@ extends RefCounted
 ##   its skill pays and puts a short `<name>_resolve` status on the user (defence x1.2, 2 s);
 ## - `stances`: each `{id, chain, specials, tint: [r, g, b], stats: {attack: 1.15}}`. They
 ##   become one cycling `FormMechanism`; a stance's specials take a slot only while it is held;
+##   `stance_id` names that power's ids (default `<name>_stance`), so a rebuild keeps saved slots;
 ## - `helpers`, and a special's `summons`, `lifetime`, `cap` and `alone`: see `MugenHelpers`;
 ## - `passives`: paths of `PassiveSkill` files; `stats`, `growth`, `attack_tags`,
 ##   `passive_budget`: the fighter's own numbers; `max_box`: the largest hitbox side, metres.
@@ -140,7 +141,8 @@ static func _resolve(name: String, out: Dictionary) -> StatusEffect:
 static func _stances(choices: Dictionary, moves: Dictionary, stances: Array, out: Dictionary) -> Power:
 	var name: String = DictRead.get_string(choices, "name", "fighter")
 	var cycle := FormMechanism.new()
-	cycle.exclusive_group = StringName(name + "_stance")
+	var cycle_id: String = DictRead.get_string(choices, "stance_id", name + "_stance")
+	cycle.exclusive_group = StringName(cycle_id)
 	for stance: Dictionary in stances:
 		var word: String = "%s_%s" % [name, stance["id"]]
 		var form := FormMechanism.new()
@@ -167,9 +169,9 @@ static func _stances(choices: Dictionary, moves: Dictionary, stances: Array, out
 			form.look.tint = Color(DictRead.to_float(tint[0]), DictRead.to_float(tint[1]), DictRead.to_float(tint[2]))
 		cycle.cycle.append(form)
 	var power := Power.new()
-	power.power_id = StringName("power/%s_stance" % name)
-	power.name_key = key(out, "combat.power.%s_stance.name" % name)
-	power.desc_key = key(out, "combat.power.%s_stance.desc" % name)
+	power.power_id = StringName("power/" + cycle_id)
+	power.name_key = key(out, "combat.power.%s.name" % cycle_id)
+	power.desc_key = key(out, "combat.power.%s.desc" % cycle_id)
 	power.mechanism = cycle
 	power.cooldown = 1.0
 	return power
