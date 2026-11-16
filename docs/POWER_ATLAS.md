@@ -146,12 +146,12 @@ fight). "Powers" is how many of the 3,306 the family holds.
 
 | Family | Powers | In plain words | What runs it here | State | Examples |
 |---|---|---|---|---|---|
-| `temporal_rate` | 31 | Speed up or slow down | `time_rate` per fighter; `speed` in a battle | NEW C8.11 | Epitaph; Shinra — Adolla-Linked Speed; Flawless |
+| `temporal_rate` | 31 | Speed up or slow down | `time_rate` per fighter; `speed` in a battle | DONE C8.11a | Epitaph; Shinra — Adolla-Linked Speed; Flawless |
 | `temporal_loop` | 14 | Replay a stretch of the story | A save and reload is the game's own loop | OUT (story, not combat) | Return by Death; The Flash — Speed Force; Cosmic Treadmill |
 | `temporal_stop` | 7 | Stop time for others | `CombatClock` at 0 with the user exempt | NEW C8.11 | Star Platinum — Time Stop; Homura — Time Stop; Time Stop |
-| `temporal_rewind` | 6 | Put things back as they were | A time record: positions, hp and statuses each tick, restored on demand | NEW C8.11 | Rewind; Time Magic |
+| `temporal_rewind` | 6 | Put things back as they were | A time record: positions, hp and statuses each tick, restored on demand | DONE C8.11b (`rewind`) | Rewind; Time Magic |
 | `temporal_skip` | 3 | Skip a slice of time | The user acts while others' clocks jump | NEW C8.11 | Time-Skip |
-| `personal_state_rewind` | 2 | Put yourself back a few seconds | The time record, one fighter | NEW C8.11 | Ekko: Chronobreak; Tracer: Recall |
+| `personal_state_rewind` | 2 | Put yourself back a few seconds | The time record, one fighter | DONE C8.11b (`rewind`) | Ekko: Chronobreak; Tracer: Recall |
 | `personal_time_stop` | 1 | Stop chosen fighters only | A per-fighter `time_rate` stat read beside `CombatClock` | NEW C8.11 | The World — Time Stop |
 | `time_erasure` | 1 | See what is coming, then erase that slice | M7 `foresight` DODGE plus a skip | PLANNED C6.10, NEW C8.11 | King Crimson — Time Erasure |
 | `object_motion_rewind` | 1 | Run an object's path backwards | The time record on a placed thing or projectile | NEW C8.11 | Recall |

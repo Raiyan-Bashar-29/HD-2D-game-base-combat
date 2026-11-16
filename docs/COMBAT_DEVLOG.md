@@ -4861,3 +4861,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `FighterTime` (gameplay): `rate(body)` = 1 + the stat `time_rate`, floored at 0. `ActionFighter` and `ActionEnemy` tick statuses on the fight clock, then run the rest at their rate (an enemy's walk too; a stopped player is held). Shots, blasts and clone ghosts use their attacker's rate; the ATB gauge its holder's.
 - **Verified:** `fighter_time_test` 4/4; ladder (below).
 - **Gaps:** no power that puts a time stop on everyone but its user yet (data with a battlefield or grant can); in a battle `time_rate` does nothing (use `speed`).
+
+## 2026-11-16 — C8.11b · Rewind (combat 0.147.0)
+
+- **Did:** `RewindMechanism` and `RewindRun`: every tick writes the user's place and hp (keeping just over `back`); a use restores the newest record at least `back` old (else the oldest). Place only in the field; `Vitals.set_to` never raises the fallen.
+- **Verified:** `rewind_test` 4/4; ladder (below).
+- **Gaps:** statuses and other pools are not put back; nobody but the user, and no thrown thing, can be rewound.
