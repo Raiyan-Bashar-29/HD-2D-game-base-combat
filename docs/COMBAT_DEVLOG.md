@@ -4927,3 +4927,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `MugenState` keeps each hit's `rise`, `fall` and `throw` (p1stateno when p2stateno is set) and marks `cancel_on_hit` when a command chain needs the hit to have landed (`on_hit`); `MugenFormula` turns them into `launch` (2 x rise / yaccel / 60), `throw_state`, `cancel_on_hit`; `MugenKit.move` builds `throw_move` one level deep. Arima and Eto reconverted and rebuilt (only those fields changed).
 - **Verified:** `mugen_convert_test` 13/13; both kit probes: no problems, 0 errors; ladder (below).
 - **Gaps:** Arima's IXA Throw stays a lunge (its grab is a helper cutscene).
+
+## 2026-11-16 — C8.18b · Carry and throw (combat 0.158.0)
+
+- **Did:** `ArenaThing.carryable` (+ `label_key`) adds a `CarryPoint` (an `Interactable`, verb TAKE; refused HANDS_FULL while carrying). `Carried` holds it overhead, out of the hurtbox group and not solid; `ActionFighter` turns an attack press into `Carried.throw` along `facing`; a fall, stun, air juggle or grab sets it down. `ArenaThing.throw_from` is the shared flight code (struck or thrown).
+- **Verified:** `carry_test` 6/6; ladder: 0 warnings, 4969 passed, checkers clean, stripped 4857 passed.
+- **Gaps:** no demo thing is carryable yet, so not seen in a windowed run; no carry pose or slower walk; the throw is flat; enemies never carry.

@@ -309,6 +309,7 @@ The built-in mechanisms (the table that maps them is `PowerMechanisms.BUILT_IN`)
 | `copy` | `CopyMechanism` | remembers the last power another fighter used (`suffered_only`: used on the user) and lends it for `lasts` | use, tick, end |
 | `steal` | `StealMechanism` | the targets' statuses tagged `tag` move to the user, at most `most` | use |
 | `random` | `RandomMechanism` | each use runs one of `powers` (skill and mechanism), free | use, tick, moved, end |
+| (thing) | `ArenaThing.carryable` | not a power: the interact button lifts it overhead (`Carried`), the attack button throws it as the carrier's shot (its `thrown` move) | interact, attack |
 | `construct` | `ConstructMechanism` | a solid wall (`ArenaThing.solid`) `distance` in front: stops bodies, swings and shots, breakable (`hp`); `lifetime`, `cap`, `upkeep` points/s of `upkeep_pool`; field only | use, tick, end |
 | `wield` | `WieldMechanism` | lends `moves`, `element` and `bonuses` for `lasts` (s or turns), then restores what was there | use, tick, end |
 | `doors` | `DoorsMechanism` | two `LinkedDoor`s `ahead` of the user; a body stepping into one comes out of the other `exit` m out; the user's side only unless `anyone`; `lifetime` | use, tick, end |

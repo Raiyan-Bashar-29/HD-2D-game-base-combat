@@ -11,6 +11,9 @@ extends Node3D
 ##   away from whoever struck it, as a `Projectile` that belongs to that fighter and so hits
 ##   that fighter's foes.
 ## - With neither it is only breakable: it is gone when its hp is.
+## - `carryable` (C8.18b) also offers it to the interact button: the player lifts it overhead
+##   (`Carried`) and the attack button throws it the way they face, as their own shot (its
+##   `thrown` move; without one it is only set down). Carried, it cannot be struck.
 ## - `solid` (C8.14a) also makes it a wall: bodies, swings and shots stop at it, but it can be
 ##   struck itself (a ray aimed at it ignores its own body).
 ##
@@ -38,10 +41,16 @@ extends Node3D
 ## True: once broken it stays broken, through a re-entry or a load (C8.19), by the flag
 ## `broken/<area>/<thing_id>`. False: it is back whenever the area is entered.
 @export var stays_broken: bool = false
+## True: the interact button picks it up (C8.18b), and `label_key` names it on the prompt.
+@export var carryable: bool = false
+@export var label_key: String = ""
 
 var _me: Combatant
 var _done: bool = false
 var _blast: Planted
+var _hurtbox: Hurtbox
+var _wall: StaticBody3D
+var _point: CarryPoint
 
 
 func _ready() -> void:
@@ -58,7 +67,8 @@ func _ready() -> void:
 	_me.add_to_group(Unseen.INERT)
 	add_child(_me)
 	Vitals.of(self).set_to(&"hp", roundi(hp))
-	var hurtbox := Hurtbox.new()
+	_hurtbox = Hurtbox.new()
+	var hurtbox: Hurtbox = _hurtbox
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
 	box.size = size
@@ -67,14 +77,9 @@ func _ready() -> void:
 	hurtbox.add_child(shape)
 	add_child(hurtbox)
 	if solid:
-		var body := StaticBody3D.new()
-		body.collision_layer = Layers.WORLD
-		body.collision_mask = 0
-		var block := CollisionShape3D.new()
-		block.shape = box
-		block.position = shape.position
-		body.add_child(block)
-		add_child(body)
+		_wall = _make_wall(box, shape.position)
+	if carryable:
+		_point = CarryPoint.reach(self, label_key)
 	var mesh := MeshInstance3D.new()
 	var cube := BoxMesh.new()
 	cube.size = size
@@ -83,6 +88,19 @@ func _ready() -> void:
 	add_child(mesh)
 	Events.combatant_damaged.connect(_on_damaged)
 	Events.combatant_defeated.connect(_on_defeated)
+
+
+# A wall's solid body (C8.14a), the same box as its hurtbox.
+func _make_wall(box: BoxShape3D, at: Vector3) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.collision_layer = Layers.WORLD
+	body.collision_mask = 0
+	var block := CollisionShape3D.new()
+	block.shape = box
+	block.position = at
+	body.add_child(block)
+	add_child(body)
+	return body
 
 
 # It must outlive its own blast, which strikes in its name; then it is gone.
@@ -105,8 +123,17 @@ func _on_damaged(who: StringName, by: StringName, amount: int, _critical: bool) 
 	var from: Node3D = striker.get_parent() as Node3D if striker != null else null
 	if from == null or get_parent() == null:
 		return
-	_done = true
 	var way: Vector3 = global_position - from.global_position
+	throw_from(striker, way)
+
+
+## Sends it flying along `way` as `striker`'s shot (its `thrown` move), then it is gone. A thing
+## with no `thrown` move is set down where it is instead.
+func throw_from(striker: Combatant, way: Vector3) -> void:
+	carried(false)
+	if thrown == null or get_parent() == null or _done:
+		return
+	_done = true
 	way.y = 0.0
 	var shot := Projectile.new()
 	shot.attacker = striker
@@ -116,6 +143,21 @@ func _on_damaged(who: StringName, by: StringName, amount: int, _critical: bool) 
 	shot.global_position = global_position + Vector3(0.0, size.y / 2.0, 0.0)
 	shot.direction = way.normalized() if way.length() > 0.01 else Vector3.FORWARD
 	queue_free()
+
+
+## Lifted (true) or set down (false): carried, nothing can strike it, it is no wall, and it is
+## not offered to the interact button.
+func carried(on: bool) -> void:
+	if _hurtbox != null:
+		_hurtbox.monitorable = not on
+		if on:
+			_hurtbox.remove_from_group(Hurtbox.GROUP)
+		else:
+			_hurtbox.add_to_group(Hurtbox.GROUP)
+	if _wall != null:
+		_wall.collision_layer = 0 if on else Layers.WORLD
+	if _point != null:
+		_point.available = not on
 
 
 # Broken: an explosive bursts where it stands; anything else is simply gone.

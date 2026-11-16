@@ -18,6 +18,7 @@ extends Node
 ## 4c. The moves played are the fighter's own, with a worn weapon's chain in their place
 ##    (`Combatant.field_moves`, C7.3b), unless a running power hands over others on top: a
 ##    form's own attack chain and dodge (`current_moves`, C6.5b).
+## 3a. Holding a thing overhead (`Carried`, C8.18b), the attack button throws it instead.
 ## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
 ## 4d. A counter stance's move (C6.6d) is started on this timeline by the `Hurtbox`; the fighter
 ##    turns to face whoever it counters (`Events.countered`), so the counter swings at them.
@@ -123,6 +124,9 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 		# A press while a move plays is first its timed press, if it has a prompt (C8.8c).
 		if attack and timeline.busy():
 			timeline.time_press()
+		# Carrying a thing (C8.18b), the attack button throws it instead of swinging.
+		if attack and not timeline.busy() and Carried.throw(_body, facing):
+			attack = false
 		_start_moves(attack, dodge)
 	timeline.step(dt)
 	_report_move()
