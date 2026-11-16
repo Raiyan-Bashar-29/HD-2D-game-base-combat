@@ -39,7 +39,8 @@ extends RefCounted
 ##   standing foe.
 ## - Power cooldowns count in the holder's own turns, at the START of each, beside its statuses,
 ##   asleep or not. So "cooldown 3" means used on one turn, usable again three turns later.
-## - SWAP trades the actor for a standing member of `reserve` (`BattleReserve`, C8.3).
+## - SWAP trades the actor for a standing member of `reserve` (`BattleReserve`, C8.3); ROW steps it
+##   between the front and back rows (`Rows`, C8.22b).
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
 ##
 ## IN PLAIN WORDS: this is the referee of a turn-based fight. Hand it two lists of fighters,
@@ -202,7 +203,7 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 			if command.skill != null:
 				filter = command.skill.target
 		# DEFEND and FLEE aim at nobody; SWAP aims at the standing reserve (C8.3).
-		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE:
+		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE, BattleCommand.Kind.ROW:
 			return out
 		BattleCommand.Kind.SWAP:
 			return BattleReserve.ready(self)
@@ -268,9 +269,9 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			if not _use(actor, command, targets, boost):
 				return false
-		BattleCommand.Kind.POWER, BattleCommand.Kind.SWAP:
-			var swap: bool = command.kind == BattleCommand.Kind.SWAP
-			if not (BattleReserve.swap(self, actor, targets) if swap else _power(actor, command, targets)):
+		BattleCommand.Kind.POWER, BattleCommand.Kind.SWAP, BattleCommand.Kind.ROW:
+			var power: bool = command.kind == BattleCommand.Kind.POWER
+			if not (_power(actor, command, targets) if power else BattleReserve.move(self, actor, command.kind, targets)):
 				return false
 		# Guard: a one-turn defence bonus that wears off when this fighter's next turn starts.
 		BattleCommand.Kind.DEFEND:

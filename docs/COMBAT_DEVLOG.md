@@ -5038,3 +5038,14 @@ next `wave` of `reinforcements` when every foe is down. Reinforcements' loot is 
 **Verified.** Ladder: 0 warnings; 5038 passed, 0 failed; checkers silent; stripped 4926 passed.
 `reinforcement_test` 5. **Gaps.** No experience for reinforcements beyond the encounter's own;
 no demo wave (C8.22b).
+
+## 2026-11-16 — C8.22b · The Row command and demo data
+
+**Did.** `BattleCommand.Kind.ROW` through `BattleReserve.move` → `Rows.step`; `BattleMenu.commands`
+offers Row (and Swap) to party members of their own; `name_of` marks "(back)". Demo: three
+`data/affixes/` files and the Keeper's `back_row`.
+**Verified.** Ladder: 0 warnings; 5041 passed, 0 failed; checkers silent; stripped 4929 passed.
+`rows_test` 8. Windowed capture of the thorn-wisp battle: "Keeper (back)" in the readout and the
+turn order, and Row at the foot of the Wanderer's menu. A first ladder run hung: the new test
+waited for the turn of a hero left fallen by an hp round-trip; it now revives through `revive`.
+**Gaps.** Field follow-ups, a free swap, a demo reaction and wave (C8.22c).

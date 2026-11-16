@@ -14,6 +14,13 @@ extends RefCounted
 ## MUST NOT: decide whose turn it is, or end the battle. `Battle` does both.
 
 
+## A SWAP or a ROW by `actor` (C8.22b): the swap below, or a step between the rows.
+static func move(battle: Battle, actor: Combatant, kind: BattleCommand.Kind, targets: Array[Combatant]) -> bool:
+	if kind == BattleCommand.Kind.ROW:
+		return Rows.step(actor)
+	return swap(battle, actor, targets)
+
+
 ## The reserve members who could come in now: those still standing.
 static func ready(battle: Battle) -> Array[Combatant]:
 	var out: Array[Combatant] = []

@@ -40,6 +40,8 @@ const ATTACK_KEY: String = "ui.battle.attack"
 const DEFEND_KEY: String = "ui.battle.defend"
 const FLEE_KEY: String = "ui.battle.flee"
 const SWAP_KEY: String = "ui.battle.swap"
+const ROW_KEY: String = "ui.battle.row"
+const BACK_ROW_KEY: String = "ui.battle.back_row"
 const BACK_KEY: String = "ui.battle.back"
 const POOLS_KEY: String = "ui.battle.pools"
 const ORDER_KEY: String = "ui.battle.order"
@@ -178,6 +180,8 @@ func name_of(fighter: Combatant) -> String:
 	# A field body's "/<node>" tail (a helper that joined, C8.10d) is not part of its name.
 	var suffix: String = id.trim_prefix(String(def.combatant_id)).get_slice("/", 0)
 	var shown: String = tr(def.name_key) + suffix.replace("_", " ")
+	# A back-row fighter says so (C8.22b).
+	shown = tr(BACK_ROW_KEY).format({"name": shown}) if fighter.back_row else shown
 	var form: String = LookSwap.form_name_key(fighter.get_parent())
 	return shown if form == "" else tr(FORM_TITLE_KEY).format({"name": shown, "form": tr(form)})
 
@@ -240,6 +244,8 @@ func _label(command: BattleCommand) -> String:
 			return tr(FLEE_KEY)
 		BattleCommand.Kind.SWAP:
 			return tr(SWAP_KEY)
+		BattleCommand.Kind.ROW:
+			return tr(ROW_KEY)
 	return tr(command.skill.name_key)
 
 

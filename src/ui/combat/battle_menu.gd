@@ -60,7 +60,7 @@ static func refusal(battle: Battle, command: BattleCommand, boost: int) -> Strin
 	match command.kind:
 		BattleCommand.Kind.FLEE:
 			return "" if battle.can_flee else FLEE_REASON_KEY
-		BattleCommand.Kind.DEFEND:
+		BattleCommand.Kind.DEFEND, BattleCommand.Kind.ROW:
 			return ""
 		BattleCommand.Kind.POWER:
 			# `PowerUse` already checked the cost; what is left is someone to aim at.
@@ -93,10 +93,16 @@ static func commands(battle: Battle) -> Array[BattleCommand]:
 			command.kind = kind
 			basic.append(command)
 	var menu: Array[BattleCommand] = PowerMenu.with_powers(basic, battle.current()).duplicate()
-	# A party member of its own may swap with the reserve while someone there stands (C8.3).
-	if battle.party.has(battle.current()) and not battle.guests.has(battle.current().combatant_id) \
-			and not BattleReserve.ready(battle).is_empty():
-		var swap := BattleCommand.new()
-		swap.kind = BattleCommand.Kind.SWAP
-		menu.append(swap)
+	# A party member of its own may change rows (C8.22b), and swap with the reserve while someone
+	# there stands (C8.3).
+	if battle.party.has(battle.current()) and not battle.guests.has(battle.current().combatant_id):
+		menu.append(_plain(BattleCommand.Kind.ROW))
+		if not BattleReserve.ready(battle).is_empty():
+			menu.append(_plain(BattleCommand.Kind.SWAP))
 	return menu
+
+
+static func _plain(kind: BattleCommand.Kind) -> BattleCommand:
+	var command := BattleCommand.new()
+	command.kind = kind
+	return command

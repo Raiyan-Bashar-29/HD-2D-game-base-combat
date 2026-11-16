@@ -8,7 +8,8 @@ extends RefCounted
 ## side still has someone standing at the front to hide behind. A hit tagged `ranged` or `magic`,
 ## or a plain attack by a fighter whose `attack_tags` hold `ranged`, is not a close blow. A
 ## landed hit tagged `knock_back` sends its target to the back row; one tagged `pull` brings it to
-## the front. Outside a battle, where bodies have real places, nothing changes.
+## the front, and the ROW command steps a fighter across by choice (`step`, C8.22b). Outside a
+## battle, where bodies have real places, nothing changes.
 ##
 ## OWNS: the row rule.
 ## MUST NOT: move a field body, or decide what a hit is (its tags say).
@@ -29,6 +30,15 @@ static func soften(attacker: Combatant, target: Combatant, result: DamageResult)
 		result.amount *= BACK_SHARE
 	if target.back_row and _in(battle, target) and _screened(battle, target):
 		result.amount *= BACK_SHARE
+
+
+## `fighter` steps to the other row by choice, the ROW command (C8.22b). False outside a battle.
+static func step(fighter: Combatant) -> bool:
+	if Battle.running == null or not _in(Battle.running, fighter):
+		return false
+	fighter.back_row = not fighter.back_row
+	Events.row_changed.emit(fighter.combatant_id, fighter.back_row)
+	return true
 
 
 ## Moves `target` between rows when `result` landed and carries `knock_back` or `pull`.

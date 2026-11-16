@@ -122,6 +122,7 @@ base_stats = Dictionary[StringName, float]({
 &"regen_mp": 1.0,
 &"speed": 5.0
 })
+back_row = true
 commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("salve"), SubResource("cleanse"), SubResource("raise"), SubResource("bulwark"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
 passive_budget = 4

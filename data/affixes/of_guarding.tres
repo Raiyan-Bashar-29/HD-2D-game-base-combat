@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="Affix" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/gear/affix.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"affix/of_guarding"
+name_key = "combat.affix.of_guarding"
+stat = &"defence"
+low = 1.0
+high = 3.0
