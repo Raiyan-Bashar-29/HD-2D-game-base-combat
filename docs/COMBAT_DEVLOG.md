@@ -4939,3 +4939,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `GearScreen` (a `MenuScreen`, like the loadout screen): a row per slot of `GearSet.configured_rules()`, the worn piece in its `Rarity.color`; a pressed slot lists the bag's fitting pieces (`candidates`) with `compare` (added amounts, stat by stat), greyed with `refusal_key` when refused; take off (greyed for cursed); next member. `CombatActions.GEAR` (G) through `LoadoutHost.toggle(..., gear)`. Slot, stat and refusal names in the CSV; a stat with no row shows its id.
 - **Verified:** `gear_screen_test` 7/7; xvfb capture of the screen opened by `--press=gear`; ladder: 0 warnings, 4976 passed, checkers clean, stripped 4864.
 - **Gaps:** no set bonus, sockets or upgrade level on the screen; multipliers not compared; C7.7b (HUD weapon, battle screen, form names) next.
+
+## 2026-11-16 — C7.7b · The weapon and its mode on screen (combat 0.160.0)
+
+- **Did:** `WeaponLine.text(body)`: the piece in the slot list's first slot, with the form held from that piece's own kit as its mode (`mode_key`); added to `CombatHud._fighter_line` and `BattleScreen._pools_line`. Form names beside members were already done (C6.5d).
+- **Verified:** `weapon_line_test` 4/4; ladder: 0 warnings, 4981 passed, checkers clean, stripped 4869.
+- **Gaps:** the weapon is always the first slot; no capture (the demo starts with no weapon).

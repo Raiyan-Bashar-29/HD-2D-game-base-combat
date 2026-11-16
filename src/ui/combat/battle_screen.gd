@@ -302,6 +302,9 @@ func _pools_line(fighter: Combatant) -> String:
 		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
 			parts.append(tr(POOL_KEY).format({"pool": String(pool).to_upper(),
 					"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	var weapon: String = WeaponLine.text(fighter.get_parent())
+	if weapon != "":
+		parts.append(weapon)
 	var names: Array[String] = []
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
 	for effect: StatusEffect in statuses.held() if statuses != null else []:
