@@ -66,6 +66,8 @@ var spoils: Array[StringName] = []
 ## whoever builds a field fighter (`ActionHost.equip`, `ActionEnemy`); a battle builds fresh
 ## combatants, which stay false. `Weakness` reads it to choose a break in turns or in seconds.
 var real_time: bool = false
+## In a battle, true while this fighter stands in the back row (C8.5, `Rows`).
+var back_row: bool = false
 ## The member's art (C9.9d), copied from its definition; `ArtSwap` shows it. Null means none.
 var art: MemberArt
 ## The element worn gear gives this fighter's plain attack. Written by `GearSet`.
@@ -202,7 +204,10 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 			result.tags.append(flag)
 	if sure:
 		result.tags.append(&"sure_hit")
+	# In a battle, a close blow from or onto the back row is softened (C8.5).
+	Rows.soften(self, target, result)
 	target.receive(result, combatant_id)
+	Rows.shift(target, result)
 	return result
 
 

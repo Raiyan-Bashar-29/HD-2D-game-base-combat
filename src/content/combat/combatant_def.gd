@@ -51,6 +51,8 @@ extends Resource
 ## What it looks and sounds like in the field (C9.9d): a sheet, and a strip and sounds per move.
 ## Null keeps the body's own sheet.
 @export var art: MemberArt
+## Starts a battle in the back row (C8.5, `Rows`): it hits and is hit less by close blows.
+@export var back_row: bool = false
 ## How a party member grows with experience. Null means it never levels: an enemy, or a guest.
 @export var level_curve: LevelCurve
 

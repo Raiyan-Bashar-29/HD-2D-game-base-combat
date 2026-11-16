@@ -4992,3 +4992,11 @@ so battles, the field and the hybrid all react. Marks are built-in statuses a sa
 **Verified.** Ladder: 0 warnings; 5015 passed, 0 failed; checkers silent; stripped 4903 passed.
 `element_reaction_test` 6. **Gaps.** The demo uses one element, so no reaction file ships; marks
 have no icon of their own; no spreading reactions.
+
+## 2026-11-16 — C8.5 · Front and back rows
+
+**Did.** `CombatantDef.back_row` and `Combatant.back_row`; `Rows.soften` and `Rows.shift`, hooked
+in `Combatant.hit` around `receive`: close blows halved from and onto a screened back row,
+`knock_back`/`pull` tags move a target, `Events.row_changed` and two log lines. Battle only.
+**Verified.** Ladder: 0 warnings; 5022 passed, 0 failed; checkers silent; stripped 4910 passed.
+`rows_test` 6. **Gaps.** No Row command; rows not drawn on the battle screen; no demo data.

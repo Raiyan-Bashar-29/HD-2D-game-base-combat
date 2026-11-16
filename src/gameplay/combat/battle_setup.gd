@@ -164,6 +164,7 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 	combatant.traits = def.traits
 	combatant.steal_table = def.steal_table
 	combatant.capture_item = def.capture_item
+	combatant.back_row = def.back_row
 	# Copies of one definition share a kind, so a weakness revealed on one shows on all.
 	combatant.kind = def.combatant_id
 	actor.add_child(combatant)

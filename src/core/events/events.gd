@@ -305,6 +305,8 @@ signal party_swapped(out: StringName, coming: StringName)
 ## A hit on `who` met the mark of another element and set off the reaction `reaction_id`.
 ## Emitted by `ElementReactions` (C8.4).
 signal elements_reacted(who: StringName, reaction_id: StringName)
+## A hit moved `who` to the back row (`back`) or the front. Emitted by `Rows` (C8.5).
+signal row_changed(who: StringName, back: bool)
 ## `who` used a team tech, struck by every one of `members` (`who` first). Emitted by `TeamRun`
 ## (C8.2).
 signal team_attacked(who: StringName, members: Array[StringName])
