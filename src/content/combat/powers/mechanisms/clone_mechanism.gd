@@ -7,7 +7,8 @@ extends PowerMechanism
 ## `delay` seconds later, with its own hitbox, at `power_fraction` of the move's power. It lasts
 ## `lifetime` seconds; a second use replaces it. It cannot be hit. It goes when the user falls,
 ## the kit comes off or the area is left. `tint` colours a copy of the user's sprite.
-## A battle (the next actions happen twice) is C6.13b; a use there does nothing yet.
+## IN A BATTLE (C6.13b): for the user's next `actions` turns, every hurt the user deals is dealt
+## again to the same fighter at `power_fraction` of it (the double strikes too).
 ##
 ## OWNS: the shape of a clone.
 ## MUST NOT: hold running state. `CloneRun` (gameplay) runs it.
@@ -20,6 +21,8 @@ extends PowerMechanism
 @export var power_fraction: float = 1.0
 ## The colour over the ghost's copy of the user's sprite.
 @export var tint: Color = Color(0.6, 0.7, 1.0, 0.5)
+## In a battle, how many of the user's turns after the use are doubled.
+@export var actions: int = 2
 
 
 func kind() -> StringName:
@@ -28,6 +31,6 @@ func kind() -> StringName:
 
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = super.problems(context)
-	if delay < 0.0 or lifetime <= 0.0 or power_fraction < 0.0:
-		found.append("%s has a negative delay or power_fraction, or no lifetime" % context)
+	if delay < 0.0 or lifetime <= 0.0 or power_fraction < 0.0 or actions < 0:
+		found.append("%s has a negative delay, power_fraction or actions, or no lifetime" % context)
 	return found

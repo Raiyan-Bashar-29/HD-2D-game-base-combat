@@ -4849,3 +4849,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** M10 `clone`: `CloneMechanism`, `CloneRun` (`moved` feeds the ghost), `CloneGhost` (a `Hitbox` on fight time that records its source's path and facing, stands `delay` s behind, plays each queued move as a copy at `power_fraction`, and wears a tinted copy of the source's sprite). A second use replaces the ghost; falling, kit off and area left send it away.
 - **Verified:** `clone_test` 8/8; ladder (below).
 - **Gaps:** battle reading is C6.13b; the ghost cannot be hit, does not dodge, and plays no move events (shots, sounds, pictures). No kit uses it yet.
+
+## 2026-11-16 — C6.13b · The clone in a battle (combat 0.145.0)
+
+- **Did:** `CloneMechanism.actions`; in a battle `CloneRun.use` arms that many of the user's turns, `tick` (turn start) makes each live, and a live turn answers each `combatant_damaged` the user causes with `power_fraction` of it on the same fighter (announced, never echoed again). No `Battle` change.
+- **Verified:** `clone_battle_test` 3/3 (turns hit [2, 2, 1]; the echo is half); ladder (below).
+- **Gaps:** heals, statuses and Boost spending are not doubled; a counter the user makes during a doubled turn is echoed too.
