@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C8.19b** (converter: `launch`, `cancel_on_hit`, `throw_move`), then C8.18b (carry a throwable). C8.19a, C8.18a, C8.17 (combat 0.156.0), C8.14, C8.13, C8.11 and C6.13 are done.
+- **Next: C8.18b** (carry a throwable), then C7.7 and C7.8 (gear and craft screens). C8.19, C8.18a, C8.17 (combat 0.157.0), C8.14, C8.13, C8.11 and C6.13 are done.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**

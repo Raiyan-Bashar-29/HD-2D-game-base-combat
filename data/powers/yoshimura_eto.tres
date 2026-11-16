@@ -1483,6 +1483,7 @@ events = Array[ExtResource("11_3kb23")]([SubResource("Resource_pcvd1"), SubResou
 power = 40.0
 poise = 3
 knockback = 0.4
+launch = 0.23
 hitbox_size = Vector3(1, 1.9428571, 3.0660715)
 hitbox_offset = Vector3(0, 0.7285714, -0.13660714)
 travel_speed = 36.4285714285714
@@ -1673,6 +1674,7 @@ events = Array[ExtResource("11_3kb23")]([SubResource("Resource_ytp33"), SubResou
 power = 120.0
 poise = 1
 knockback = 1.01
+launch = 0.38
 hitbox_size = Vector3(1, 3.369643, 4.1285715)
 hitbox_offset = Vector3(0, 0.95625, -1.2446429)
 

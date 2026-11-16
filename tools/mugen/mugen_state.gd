@@ -12,7 +12,8 @@ extends RefCounted
 ## The facts: `state`, `anim`, `attack` (the state calls itself an attack), `length`, `frames`,
 ## `hits` [{tick, until, damage, weight, push, box}], `invincible` and `armour` (tick
 ## spans), `speeds` [{tick, x}], `spawns` [{tick, state, x, y, foe}], `sounds` [{tick, group,
-## index}], `chains` [{tick, state}], `pauses` [{tick, time}] (the screen freezes), `shakes`
+## index}], `chains` [{tick, state}] (`cancel_on_hit` when one is asked for only after a hit lands,
+## C8.19b; each hit also keeps `rise`, `fall` and a throw's `throw` state), `pauses` [{tick, time}] (the screen freezes), `shakes`
 ## [{tick, time, ampl}], `shots` [{tick, state, x, y, foe, speed, rise, air, pierce, facts}],
 ## `air` (the state falls: `physics = A`), `effects` [{tick, anim, x, y, length}] (each
 ## `Explod` of an animation in the character's own file; C8.16e), `skipped`, `needs`. Speeds are pixels a tick, y down.
@@ -113,8 +114,7 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary, anims: Di
 		"playsnd":
 			_sound(ctrl, out, tick)
 		"changestate":
-			if "command" in "".join(when["needs"] as PackedStringArray):
-				(out["chains"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "value"))})
+			_chain(ctrl, out, when, tick)
 		"superpause", "pause":
 			(out["pauses"] as Array).append({"tick": tick, "time": int(MugenIni.number(ctrl, "time", 30.0))})
 		"envshake":
@@ -131,6 +131,16 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary, anims: Di
 	for need: String in when["needs"]:
 		if not (out["needs"] as PackedStringArray).has(need) and kind in ["hitdef", "nothitby", "hitoverride"]:
 			MugenIni.note(out, "needs", need)
+
+
+# A `ChangeState` a button asks for is a chain; one asked for only once the hit has landed also
+# marks the move `cancel_on_hit` (C8.19b).
+static func _chain(ctrl: Dictionary, out: Dictionary, when: Dictionary, tick: int) -> void:
+	if not "command" in "".join(when["needs"] as PackedStringArray):
+		return
+	(out["chains"] as Array).append({"tick": tick, "state": int(MugenIni.number(ctrl, "value"))})
+	if DictRead.get_bool(when, "on_hit"):
+		out["cancel_on_hit"] = true
 
 
 # A `PlaySnd`: its group and index.
@@ -171,7 +181,10 @@ static func _hit(ctrl: Dictionary, out: Dictionary, when: Dictionary) -> void:
 static func _one(ctrl: Dictionary, tick: int, until: int, box: Rect2) -> Dictionary:
 	return {"tick": tick, "until": until, "damage": MugenIni.number(ctrl, "damage"),
 		"weight": _WEIGHTS.get(MugenIni.value(ctrl, "animtype").to_lower(), 4),
-		"push": absf(MugenIni.number(ctrl, "ground.velocity")), "box": box}
+		"push": absf(MugenIni.number(ctrl, "ground.velocity")), "box": box,
+		"rise": -MugenIni.numbers(MugenIni.value(ctrl, "ground.velocity", "0") + ",0,0")[1],
+		"fall": MugenIni.number(ctrl, "fall") > 0.0,
+		"throw": int(MugenIni.number(ctrl, "p1stateno")) if MugenIni.value(ctrl, "p2stateno") != "" else 0}
 
 
 # A `Projectile`: a shot of one hit, its box from the first frame of its `projanim`.

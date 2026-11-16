@@ -74,6 +74,14 @@ static func move(choices: Dictionary, moves: Dictionary, number: int, out: Dicti
 	made.hitbox_offset.y = minf(made.hitbox_offset.y, made.hitbox_size.y * 0.5)
 	made.hitbox_offset.z = maxf(made.hitbox_offset.z, -most * 0.5)
 	MugenEvents.fill(made, moves[number] as Dictionary, DictRead.get_string(choices, "sprites"), most)
+	# A throw (C8.19b): the state the thrower plays is built too, one level deep.
+	var throw: int = DictRead.get_int(moves[number] as Dictionary, "throw_state")
+	if throw > 0 and throw != number and moves.has(throw):
+		var plain: Dictionary = moves.duplicate()
+		var inner: Dictionary = (moves[throw] as Dictionary).duplicate()
+		inner.erase("throw_state")
+		plain[throw] = inner
+		made.throw_move = move(choices, plain, throw, out)
 	return made
 
 

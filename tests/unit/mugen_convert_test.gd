@@ -22,6 +22,14 @@ const CNS: String = "[Movement]\nyaccel = 0.5\n[Statedef 0]\ntype = S\nanim = 0\
 	+ "trigger1 = command = \"a\"\nvalue = 201\n" \
 	+ "[State 200, glow]\ntype = BGPalFX\ntrigger1 = 1\n" \
 	+ "[State 200, end]\ntype = ChangeState\ntrigger1 = AnimTime = 0\nvalue = 0\n" \
+	+ "[Statedef 220]\nmovetype = A\nanim = 200\n" \
+	+ "[State 220, hit]\ntype = HitDef\ntrigger1 = AnimElem = 2\ndamage = 10\nfall = 1\n" \
+	+ "ground.velocity = -2, -6\np1stateno = 230\np2stateno = 231\n" \
+	+ "[State 220, more]\ntype = ChangeState\ntrigger1 = movehit\ntrigger1 = command = \"a\"\nvalue = 200\n" \
+	+ "[State 220, end]\ntype = ChangeState\ntrigger1 = AnimTime = 0\nvalue = 0\n" \
+	+ "[Statedef 230]\nmovetype = A\nanim = 200\n" \
+	+ "[State 230, hit]\ntype = HitDef\ntrigger1 = AnimElem = 2\ndamage = 15\n" \
+	+ "[State 230, end]\ntype = ChangeState\ntrigger1 = AnimTime = 0\nvalue = 0\n" \
 	+ "[Statedef 700]\nmovetype = I\nanim = 700\nvelset = 5, 0\n" \
 	+ "[State 700, end]\ntype = ChangeState\ntrigger1 = AnimTime = 0\nvalue = 0\n" \
 	+ "[Statedef 800]\nmovetype = A\nanim = 0\n" \
@@ -48,7 +56,7 @@ var _dir: String
 
 
 func run() -> void:
-	plan(12)
+	plan(13)
 	_dir = RunScratch.path("mugen_fixture")
 	DirAccess.make_dir_recursive_absolute(_dir)
 	for name: String in ["Fixture.def", "Fixture.cmd", "Fixture.cns", "fixture.air"]:
@@ -87,7 +95,7 @@ func _converting() -> void:
 		moves[made["state"]] = made
 	equal("the attack, the dodge and the sender are kept; the idle and the sent state are not",
 		[result["name"], result["author"], moves.keys(), result["problems"]],
-		["Fixture Fighter", "nobody", [200, 700, 800, 810], PackedStringArray()])
+		["Fixture Fighter", "nobody", [200, 220, 230, 700, 800, 810], PackedStringArray()])
 	var swing: Dictionary = moves.get(200, {})
 	equal("an attack's times, power, weight, push and chain follow the formula",
 		_round([swing["startup"], swing["active"], swing["recovery"], swing["power"], swing["poise"],
@@ -101,12 +109,22 @@ func _converting() -> void:
 		_round([roll["iframes_from"], roll["iframes_to"], roll["travel_speed"], roll["hits"]]),
 		[0.0, 0.2, 6.0, 0.0])
 	_shooting(moves)
+	_launching(moves)
 	var written: PackedStringArray = MugenCharacter.write(result, _dir.path_join("out"))
 	var saved: ActionMove = load(_dir.path_join("out/moves/fx_200.tres"))
 	equal("the output is a report, a JSON file and one move file each, which loads as written",
 		[written.size(), saved.id, snappedf(saved.startup, 0.001), saved.hits, saved.poise,
 		FileAccess.get_file_as_string(_dir.path_join("out/report.md")).contains("| move/fx_700 |")],
-		[6, &"move/fx_200", 0.1, 1, 2, true])
+		[8, &"move/fx_200", 0.1, 1, 2, true])
+
+
+# A launcher that throws (220, C8.19b): it launches for the rise up and down (6 px a tick at
+# 0.5 a tick squared: 24 ticks), its chain is asked for only on a hit, and its throw is 230.
+func _launching(moves: Dictionary) -> void:
+	var built: ActionMove = MugenKit.move({"name": "fx"}, moves, 220, {})
+	equal("a launcher's launch, cancel on hit and throw come from its HitDef and chain",
+		[snappedf(built.launch, 0.01), built.cancel_on_hit, built.throw_move.id if built.throw_move != null else &"",
+		DictRead.get_bool(moves[200] as Dictionary, "cancel_on_hit")], [0.4, true, &"move/fx_230", false])
 
 
 # The sender of a helper shot (800) and of a `Projectile` (810).

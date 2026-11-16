@@ -4921,3 +4921,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `StatusSet` saves and loads `by`, with `applier(status_id)`; `Rewards.grant` on FLED gives only the party's spoils (no experience, no loot); `ArenaThing.stays_broken` sets and reads `broken/<area>/<thing_id>`.
 - **Verified:** `saves_kept_test` 4/4; ladder (below).
 - **Gaps:** a ledger's held sum (a meta) is not saved; no demo thing uses `stays_broken`.
+
+## 2026-11-16 — C8.19b · The converter reads launch, cancel on hit and throws (combat 0.157.0)
+
+- **Did:** `MugenState` keeps each hit's `rise`, `fall` and `throw` (p1stateno when p2stateno is set) and marks `cancel_on_hit` when a command chain needs the hit to have landed (`on_hit`); `MugenFormula` turns them into `launch` (2 x rise / yaccel / 60), `throw_state`, `cancel_on_hit`; `MugenKit.move` builds `throw_move` one level deep. Arima and Eto reconverted and rebuilt (only those fields changed).
+- **Verified:** `mugen_convert_test` 13/13; both kit probes: no problems, 0 errors; ladder (below).
+- **Gaps:** Arima's IXA Throw stays a lunge (its grab is a helper cutscene).

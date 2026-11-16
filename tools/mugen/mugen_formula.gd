@@ -73,11 +73,24 @@ static func numbers(facts: Dictionary, scale: Dictionary) -> Dictionary:
 		"power": snappedf(damage / hits.size() * DictRead.get_float(scale, "power_scale"), 0.1),
 		"poise": lead["weight"], "knockback": snappedf(DictRead.get_float(lead, "push") / FRICTION * mpp, 0.01)})
 	out["chain_after"] = out["recovery"]
+	_after_hit(out, lead, facts, scale)
 	for chain: Dictionary in facts["chains"]:
 		out["chain_after"] = clampf((DictRead.get_int(chain, "tick") - last) / TICKS, 0.0, DictRead.get_float(out, "recovery"))
 		out["chains_to"] = chain["state"]
 	_box(out, lead["box"] as Rect2, scale)
 	return out
+
+
+# What a landed hit leads to (C8.19b): a hit that knocks down while throwing up launches for the
+# time the rise takes up and down; a throw names the state its thrower plays; a chain asked for
+# only on a hit cancels on it.
+static func _after_hit(out: Dictionary, lead: Dictionary, facts: Dictionary, scale: Dictionary) -> void:
+	var gravity: float = maxf(DictRead.get_float(scale, "gravity", 0.44), 0.01)
+	if DictRead.get_bool(lead, "fall") and DictRead.get_float(lead, "rise") > 0.0:
+		out["launch"] = snappedf(2.0 * DictRead.get_float(lead, "rise") / gravity / TICKS, 0.01)
+	if DictRead.get_int(lead, "throw") > 0:
+		out["throw_state"] = DictRead.get_int(lead, "throw")
+	out["cancel_on_hit"] = DictRead.get_bool(facts, "cancel_on_hit")
 
 
 ## `numbers` as an `ActionMove` with the id `id`.
@@ -98,6 +111,8 @@ static func move(made: Dictionary, id: StringName) -> ActionMove:
 	out.hits = maxi(DictRead.get_int(made, "hits"), 1)
 	out.poise = made.get("poise", 0)
 	out.knockback = made.get("knockback", 0.0)
+	out.launch = DictRead.get_float(made, "launch")
+	out.cancel_on_hit = DictRead.get_bool(made, "cancel_on_hit")
 	out.travel_speed = made["travel_speed"]
 	if made.has("hitbox_size"):
 		out.hitbox_size = DictRead.get_vector3(made, "hitbox_size")
