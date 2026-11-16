@@ -30,6 +30,9 @@ extends RefCounted
 ## guest when the user is in the party, one more foe otherwise. It starts full, keeps no gear
 ## and leaves no pool flags (group `SUMMONED`); `dismiss` takes it out of the battle again.
 ##
+## THE RESERVE LINE (C8.3): `bench` members are built like the party into `Battle.reserve`, off
+## the field until a SWAP brings one in; `release` stands them up and frees them like the party.
+##
 ## IN PLAIN WORDS: the factory. Give it an encounter file and the party, and it makes one
 ## fighter node per combatant, picks the turn order the encounter asked for, and starts the
 ## `Battle`. `release` cleans everything up afterwards.
@@ -46,7 +49,8 @@ const SUMMONED: StringName = &"battle_summoned"
 ## `holder` MUST be in the tree: each fighter's sheet, id and pools are wired in its `_ready`,
 ## and before that its `Vitals` would answer for the default owner.
 static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node,
-		rng: RandomNumberGenerator = null, helpers: Array[OwnedFighter] = []) -> Battle:
+		rng: RandomNumberGenerator = null, helpers: Array[OwnedFighter] = [],
+		bench: Array[CombatantDef] = []) -> Battle:
 	if not holder.is_inside_tree():
 		push_error("BattleSetup.build: the holder must be in the tree")
 	var ours: Array[Combatant] = []
@@ -55,18 +59,7 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	var guests: Array[Combatant] = []
 	for one: OwnedFighter in helpers:
 		guests.append(_guest(one, ours, holder))
-	var theirs: Array[Combatant] = []
-	# Count each enemy type first, so only duplicates get a number ("Wisp 1", "Wisp 2").
-	var seen: Dictionary[StringName, int] = {}
-	for def: CombatantDef in encounter.enemies:
-		seen[def.combatant_id] = seen.get(def.combatant_id, 0) + 1
-	var counted: Dictionary[StringName, int] = {}
-	for def: CombatantDef in encounter.enemies:
-		var id: StringName = def.combatant_id
-		if seen[id] > 1:
-			counted[id] = counted.get(id, 0) + 1
-			id = StringName("%s_%d" % [id, counted[def.combatant_id]])
-		theirs.append(_fighter(def, id, holder, true))
+	var theirs: Array[Combatant] = _foes(encounter, holder)
 	# The encounter file chooses the turn order: plain rounds, or CTB where speed buys extra turns.
 	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
 			else RoundScheduler.new()
@@ -78,6 +71,7 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	# Remember each fighter's definition (for names and menus) and each enemy's AI brain.
 	for i: int in party.size():
 		battle.defs[ours[i].combatant_id] = party[i]
+	_bench(battle, bench, holder)
 	for i: int in guests.size():
 		var id: StringName = guests[i].combatant_id
 		battle.guests.append(id)
@@ -98,10 +92,10 @@ static func release(battle: Battle) -> void:
 	for fighter: Combatant in battle.enemies + battle.party:
 		if battle.enemies.has(fighter) or fighter.is_in_group(SUMMONED):
 			_forget_pools(fighter)
-	for fighter: Combatant in battle.party:
+	for fighter: Combatant in battle.party + battle.reserve:
 		if not battle.guests.has(fighter.combatant_id):
 			Vitals.of(fighter.get_parent()).revive(1)
-	for fighter: Combatant in battle.party + battle.enemies:
+	for fighter: Combatant in battle.party + battle.enemies + battle.reserve:
 		var actor: Node = fighter.get_parent()
 		if is_instance_valid(actor):
 			actor.queue_free()
@@ -194,3 +188,37 @@ static func _forget_pools(fighter: Combatant) -> void:
 	for stat: StringName in fighter.base_stats:
 		if String(stat).begins_with(Vitals.MAX_PREFIX):
 			Flags.erase_flag(vitals.key(StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))))
+
+
+## The DEFEND status a battle uses unless a game sets its own: one turn of +100 defence.
+static func default_defend() -> StatusEffect:
+	var guard := StatusEffect.new()
+	guard.id = &"status/defend"
+	guard.name_key = "ui.battle.status.defend"
+	guard.duration = 1.0
+	guard.modifiers = [StatModifier.of(&"defence", StatModifier.Op.ADD, 100.0, &"")]
+	return guard
+
+
+# The reserve line (C8.3): built like the party, kept off the field until a SWAP.
+static func _bench(battle: Battle, bench: Array[CombatantDef], holder: Node) -> void:
+	for def: CombatantDef in bench:
+		battle.reserve.append(_fighter(def, def.combatant_id, holder, false))
+		battle.defs[def.combatant_id] = def
+
+
+# The encounter's enemies, built fresh. Each type is counted first, so only duplicates get a
+# number ("Wisp 1", "Wisp 2").
+static func _foes(encounter: Encounter, holder: Node) -> Array[Combatant]:
+	var theirs: Array[Combatant] = []
+	var seen: Dictionary[StringName, int] = {}
+	for def: CombatantDef in encounter.enemies:
+		seen[def.combatant_id] = seen.get(def.combatant_id, 0) + 1
+	var counted: Dictionary[StringName, int] = {}
+	for def: CombatantDef in encounter.enemies:
+		var id: StringName = def.combatant_id
+		if seen[id] > 1:
+			counted[id] = counted.get(id, 0) + 1
+			id = StringName("%s_%d" % [id, counted[def.combatant_id]])
+		theirs.append(_fighter(def, id, holder, true))
+	return theirs

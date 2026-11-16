@@ -299,6 +299,9 @@ signal countered(who: StringName, against: StringName)
 ## `who` followed an ally's attack on `against` through a FOLLOW_UP status. Emitted by
 ## `TeamAttacks` (C8.2).
 signal followed_up(who: StringName, against: StringName)
+## `out` stepped back into the battle's reserve and `coming` took its place. Emitted by
+## `BattleReserve` (C8.3).
+signal party_swapped(out: StringName, coming: StringName)
 ## `who` used a team tech, struck by every one of `members` (`who` first). Emitted by `TeamRun`
 ## (C8.2).
 signal team_attacked(who: StringName, members: Array[StringName])

@@ -77,3 +77,26 @@ static func refusal(battle: Battle, command: BattleCommand, boost: int) -> Strin
 			if command.skill.toggle_status != null:
 				return ""
 	return TARGET_REASON_KEY if battle.targets_for(command).is_empty() else ""
+
+
+## The current fighter's menu: its authored commands, or Attack, Defend and Flee when it has none.
+## A fighter with no authored commands gets Attack, Defend and Flee. Either way, its hero powers
+## Its hero powers follow under one Powers row (C6.2c).
+static func commands(battle: Battle) -> Array[BattleCommand]:
+	var def: CombatantDef = battle.defs.get(battle.current().combatant_id, null)
+	var basic: Array[BattleCommand] = []
+	if def != null and not def.commands.is_empty():
+		basic = def.commands
+	else:
+		for kind: BattleCommand.Kind in [BattleCommand.Kind.ATTACK, BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE]:
+			var command := BattleCommand.new()
+			command.kind = kind
+			basic.append(command)
+	var menu: Array[BattleCommand] = PowerMenu.with_powers(basic, battle.current()).duplicate()
+	# A party member of its own may swap with the reserve while someone there stands (C8.3).
+	if battle.party.has(battle.current()) and not battle.guests.has(battle.current().combatant_id) \
+			and not BattleReserve.ready(battle).is_empty():
+		var swap := BattleCommand.new()
+		swap.kind = BattleCommand.Kind.SWAP
+		menu.append(swap)
+	return menu

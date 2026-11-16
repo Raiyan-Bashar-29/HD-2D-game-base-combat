@@ -39,6 +39,7 @@ const TITLE_KEY: String = "ui.battle.title"
 const ATTACK_KEY: String = "ui.battle.attack"
 const DEFEND_KEY: String = "ui.battle.defend"
 const FLEE_KEY: String = "ui.battle.flee"
+const SWAP_KEY: String = "ui.battle.swap"
 const BACK_KEY: String = "ui.battle.back"
 const POOLS_KEY: String = "ui.battle.pools"
 const ORDER_KEY: String = "ui.battle.order"
@@ -181,18 +182,9 @@ func name_of(fighter: Combatant) -> String:
 	return shown if form == "" else tr(FORM_TITLE_KEY).format({"name": shown, "form": tr(form)})
 
 
-# A fighter with no authored commands gets Attack, Defend and Flee. Either way, its hero powers
-# follow under one Powers row (C6.2c).
+# The current fighter's commands: `BattleMenu.commands`.
 func _menu() -> Array[BattleCommand]:
-	var def: CombatantDef = battle.defs.get(battle.current().combatant_id, null)
-	if def != null and not def.commands.is_empty():
-		return PowerMenu.with_powers(def.commands, battle.current())
-	var basic: Array[BattleCommand] = []
-	for kind: BattleCommand.Kind in [BattleCommand.Kind.ATTACK, BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE]:
-		var command := BattleCommand.new()
-		command.kind = kind
-		basic.append(command)
-	return PowerMenu.with_powers(basic, battle.current())
+	return BattleMenu.commands(battle)
 
 
 # One command's row: its label with cost or stance state, greyed out with a reason when the
@@ -246,6 +238,8 @@ func _label(command: BattleCommand) -> String:
 			return tr(DEFEND_KEY)
 		BattleCommand.Kind.FLEE:
 			return tr(FLEE_KEY)
+		BattleCommand.Kind.SWAP:
+			return tr(SWAP_KEY)
 	return tr(command.skill.name_key)
 
 
@@ -255,7 +249,8 @@ func _choose(command: BattleCommand) -> void:
 	if command.skill != null and command.skill.toggle_status != null:
 		_act(command, [battle.current()])
 		return
-	var single: bool = command.kind == BattleCommand.Kind.ATTACK or (command.skill != null
+	var single: bool = command.kind == BattleCommand.Kind.ATTACK or command.kind == BattleCommand.Kind.SWAP \
+			or (command.skill != null
 			and command.skill.scope == Skill.Scope.ONE and command.kind != BattleCommand.Kind.DEFEND
 			and command.kind != BattleCommand.Kind.FLEE)
 	if single:

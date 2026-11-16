@@ -4969,3 +4969,15 @@ there. `Events.followed_up`, `Events.team_attacked`, two battle-log lines, one r
 **Verified.** Ladder: 0 warnings; 5000 passed, 0 failed; checkers silent; stripped 4888 passed.
 `team_attack_test` 7. **Gaps.** No follow-ups in the field or after a skill; techs list as
 ordinary powers; partners lose no turn in a round order; no demo kit uses a tech yet.
+
+## 2026-11-16 — C8.3 · The reserve line
+
+**Did.** `Party.reserve` reads the saved reserve; `BattleSetup.build` takes it as `bench` and
+builds it into `Battle.reserve`. A new SWAP command (`BattleReserve.swap`) trades the acting
+party member for a standing reserve member: slot, turn order, turn spent, `Events.party_swapped`,
+a log line. The screen offers Swap while a reserve stands (menu building moved into
+`BattleMenu.commands`, and `BattleSetup` gained `default_defend` and `_foes`, for the budgets).
+**Why.** Board row C8.3; mid-fight joiners already existed as battle summons (C8.10e).
+**Verified.** Ladder: 0 warnings; 5008 passed, 0 failed; checkers silent; stripped 4896 passed.
+`reserve_test` 7. **Gaps.** No enemy reinforcements beyond summons; losing the active line loses
+the fight; no free swap; the demo sets no reserve, so it is not seen in the game yet.

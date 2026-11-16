@@ -39,6 +39,7 @@ extends RefCounted
 ##   standing foe.
 ## - Power cooldowns count in the holder's own turns, at the START of each, beside its statuses,
 ##   asleep or not. So "cooldown 3" means used on one turn, usable again three turns later.
+## - SWAP trades the actor for a standing member of `reserve` (`BattleReserve`, C8.3).
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
 ##
 ## IN PLAIN WORDS: this is the referee of a turn-based fight. Hand it two lists of fighters,
@@ -60,7 +61,7 @@ var rng: RandomNumberGenerator
 var inventory: Inventory
 var can_flee: bool = true
 var flee_chance: float = 1.0
-var defend_status: StatusEffect = _default_defend()
+var defend_status: StatusEffect = BattleSetup.default_defend()
 ## BOOST (C2.16): the pool Boost levels are spent from, the most levels one action may spend,
 ## and how many extra hits each level gives a plain ATTACK. A skill's own `boost_power` and
 ## `boost_hits` say what boosting it does. A fighter with no `max_bp` simply cannot boost.
@@ -79,6 +80,8 @@ var encounter: Encounter
 ## in the field (C8.10d). They play themselves, earn nothing, are not stood back up afterwards,
 ## and the party loses when everyone else is down, however many of them still stand.
 var guests: Array[StringName] = []
+## Party members waiting off the field; a SWAP brings one in (`BattleReserve`, C8.3).
+var reserve: Array[Combatant] = []
 
 var _by_id: Dictionary[StringName, Combatant] = {}
 var _current: Combatant
@@ -198,9 +201,11 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 				return out
 			if command.skill != null:
 				filter = command.skill.target
-		# DEFEND and FLEE aim at nobody.
+		# DEFEND and FLEE aim at nobody; SWAP aims at the standing reserve (C8.3).
 		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE:
 			return out
+		BattleCommand.Kind.SWAP:
+			return BattleReserve.ready(self)
 	# A reviving skill aims only at the fallen; everything else only at those still standing.
 	var reviving: bool = command.skill != null and command.skill.revives() \
 			and command.kind != BattleCommand.Kind.ATTACK
@@ -263,8 +268,9 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			if not _use(actor, command, targets, boost):
 				return false
-		BattleCommand.Kind.POWER:
-			if not _power(actor, command, targets):
+		BattleCommand.Kind.POWER, BattleCommand.Kind.SWAP:
+			var swap: bool = command.kind == BattleCommand.Kind.SWAP
+			if not (BattleReserve.swap(self, actor, targets) if swap else _power(actor, command, targets)):
 				return false
 		# Guard: a one-turn defence bonus that wears off when this fighter's next turn starts.
 		BattleCommand.Kind.DEFEND:
@@ -410,11 +416,3 @@ func _end(how: Outcome) -> void:
 func _vitals(fighter: Combatant) -> Vitals:
 	return Vitals.of(fighter.get_parent())
 
-
-static func _default_defend() -> StatusEffect:
-	var guard := StatusEffect.new()
-	guard.id = &"status/defend"
-	guard.name_key = "ui.battle.status.defend"
-	guard.duration = 1.0
-	guard.modifiers = [StatModifier.of(&"defence", StatModifier.Op.ADD, 100.0, &"")]
-	return guard

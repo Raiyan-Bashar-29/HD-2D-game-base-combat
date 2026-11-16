@@ -64,11 +64,14 @@ func open_encounter(encounter_id: StringName) -> bool:
 		Log.warn(CATEGORY, "cannot start '%s': encounter %s, party of %d, stack %s" % [
 				encounter_id, encounter != null, party.size(), stack != null])
 		return false
+	var bench: Array[CombatantDef] = []
+	for def: CombatantDef in Party.reserve(roster):
+		bench.append(Party.at_level(def))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _seed.randi()
 	# The fighters live under this node, which is in the tree: a fighter's sheet and pools are
 	# set up in its `_ready`, and a screen not yet opened has not had one.
-	var battle: Battle = BattleSetup.build(encounter, party, self, rng, OwnedFighter.standing(get_tree()))
+	var battle: Battle = BattleSetup.build(encounter, party, self, rng, OwnedFighter.standing(get_tree()), bench)
 	battle.inventory = Inventory.of(Director.player)
 	var screen: BattleScreen = BattleScreen.for_battle(battle)
 	if encounter.music != null:

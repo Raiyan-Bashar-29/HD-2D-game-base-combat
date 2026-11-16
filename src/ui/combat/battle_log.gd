@@ -33,6 +33,7 @@ const WEAK_KEY: String = "ui.battle.log.weak"
 const BROKEN_KEY: String = "ui.battle.log.broken"
 const ONE_MORE_KEY: String = "ui.battle.log.one_more"
 const FOLLOW_UP_KEY: String = "ui.battle.log.follow_up"
+const SWAP_KEY: String = "ui.battle.log.swap"
 const TEAM_KEY: String = "ui.battle.log.team"
 const DEFEATED_KEY: String = "ui.battle.log.defeated"
 const STATUS_KEY: String = "ui.battle.log.status"
@@ -67,6 +68,7 @@ func start() -> void:
 	Events.combatant_broken.connect(_on_broken)
 	Events.extra_turn_earned.connect(_on_one_more)
 	Events.followed_up.connect(_on_followed_up)
+	Events.party_swapped.connect(_on_swapped)
 	Events.team_attacked.connect(_on_team)
 	Events.combatant_defeated.connect(_on_defeated)
 	Events.status_applied.connect(_on_status)
@@ -83,7 +85,7 @@ func stop() -> void:
 			[Events.status_resisted, _on_resisted], [Events.turn_skipped, _on_skipped],
 			[Events.countered, _on_countered], [Events.skill_reflected, _on_reflected],
 			[Events.weakness_revealed, _on_weak], [Events.combatant_broken, _on_broken], [Events.extra_turn_earned, _on_one_more],
-			[Events.followed_up, _on_followed_up], [Events.team_attacked, _on_team],
+			[Events.followed_up, _on_followed_up], [Events.party_swapped, _on_swapped], [Events.team_attacked, _on_team],
 			[Events.combatant_defeated, _on_defeated], [Events.status_applied, _on_status],
 			[Events.battlefield_raised, _on_field_raised], [Events.battlefield_lowered, _on_field_lowered],
 			[Events.battlefield_clashed, _on_field_clashed]]:
@@ -120,7 +122,7 @@ func _name(who: StringName) -> String:
 
 
 func _fighter(who: StringName) -> Combatant:
-	for fighter: Combatant in _battle.party + _battle.enemies:
+	for fighter: Combatant in _battle.party + _battle.enemies + _battle.reserve:
 		if is_instance_valid(fighter) and fighter.combatant_id == who:
 			return fighter
 	return null
@@ -171,6 +173,10 @@ func _on_one_more(who: StringName) -> void:
 
 func _on_followed_up(who: StringName, _against: StringName) -> void:
 	_add(FOLLOW_UP_KEY, {"name": _name(who)})
+
+
+func _on_swapped(out: StringName, coming: StringName) -> void:
+	_add(SWAP_KEY, {"in": _name(coming), "out": _name(out)})
 
 
 func _on_team(_who: StringName, members: Array[StringName]) -> void:
