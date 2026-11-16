@@ -4945,3 +4945,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `WeaponLine.text(body)`: the piece in the slot list's first slot, with the form held from that piece's own kit as its mode (`mode_key`); added to `CombatHud._fighter_line` and `BattleScreen._pools_line`. Form names beside members were already done (C6.5d).
 - **Verified:** `weapon_line_test` 4/4; ladder: 0 warnings, 4981 passed, checkers clean, stripped 4869.
 - **Gaps:** the weapon is always the first slot; no capture (the demo starts with no weapon).
+
+## 2026-11-16 — C7.8 · The craft screen (combat 0.161.0)
+
+- **Did:** `Events.craft_requested(station)`; `CraftStation` (`Interactable`, `station` id) emits it; `CraftHost` (new node in `game_root.tscn`) opens `CraftScreen.for_station` over the player's bag. The screen lists `Crafting.known(station)` with `listed` needs (a piece worked on counts), greys a refusal with `refusal_key`, makes on a press (`last` note), and lists pieces whose `salvage` is not empty to take apart.
+- **Verified:** `craft_screen_test` 5/5; ladder: 0 warnings, 4986 passed, checkers clean, stripped 4874.
+- **Gaps:** no station in the demo, so no capture; TRANSMUTE is in the same list as CRAFT; a lucky roll is not called out.

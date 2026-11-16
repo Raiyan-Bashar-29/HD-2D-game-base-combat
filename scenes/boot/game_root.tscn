@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://src/core/boot/game_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://src/ui/hud/screen_fade.gd" id="2_fade"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://src/ui/combat/defence_cue.gd" id="43_cue"]
 [ext_resource type="Script" path="res://src/ui/combat/command_host.gd" id="43_command"]
 [ext_resource type="Script" path="res://src/ui/combat/loadout_host.gd" id="44_loadout"]
+[ext_resource type="Script" path="res://src/ui/combat/craft_host.gd" id="45_craft"]
 [ext_resource type="Script" path="res://src/gameplay/combat/combat_save_guard.gd" id="44_guard"]
 [ext_resource type="Script" path="res://src/ui/hud/loading_indicator.gd" id="9_load"]
 [ext_resource type="Script" path="res://src/systems/debug/dev_probes.gd" id="10_probes"]
@@ -74,6 +75,9 @@ script = ExtResource("43_command")
 
 [node name="LoadoutHost" type="Node" parent="UILayer"]
 script = ExtResource("44_loadout")
+
+[node name="CraftHost" type="Node" parent="UILayer"]
+script = ExtResource("45_craft")
 
 [node name="UiAccessibility" type="Node" parent="UILayer"]
 script = ExtResource("16_access")

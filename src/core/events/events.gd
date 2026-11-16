@@ -352,3 +352,6 @@ signal battle_ended(outcome: int)
 ## The field asked for a fight. Emitted by an `EncounterPoint`, or a game's own trigger, with an
 ## `encounter/<name>` id; whoever hosts battles (C2.7) builds it with `BattleSetup`.
 signal encounter_requested(encounter_id: StringName)
+## The player asked to craft at a station (C7.8). Emitted by a `CraftStation` with its station
+## id (empty for "anywhere"); `CraftHost` opens the craft screen for it.
+signal craft_requested(station: StringName)
