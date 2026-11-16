@@ -1,13 +1,14 @@
 class_name LoadoutHost
 extends Node
-## Opens the passive loadout screen (C9.7) when its key is pressed, and closes it on a second
-## press. It sits beside `CommandHost` under the UI layer.
+## Opens the passive loadout screen (C9.7), or the gear screen (C7.7a), when its key is pressed,
+## and closes it on a second press. It sits beside `CommandHost` under the UI layer.
 ##
-## IN PLAIN WORDS: press L and, if the player is a fighter and no other screen is open,
-## `LoadoutScreen` opens for the controlled member and every follower walking behind them.
+## IN PLAIN WORDS: press L (G for gear) and, if the player is a fighter and no other screen is
+## open, `LoadoutScreen` (`GearScreen`) opens for the controlled member and every follower
+## walking behind them.
 ## A game with no fighter never sees it.
 ##
-## OWNS: turning the loadout key into an open or closed loadout screen, and who is on it.
+## OWNS: turning the loadout and gear keys into an open or closed screen, and who is on it.
 ## MUST NOT: decide what may be chosen, or open over another screen.
 
 ## The loadout of the controlled member. Null means the fighter's own; a test sets its own.
@@ -20,18 +21,20 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed(CombatActions.LOADOUT):
+	var gear: bool = event.is_action_pressed(CombatActions.GEAR)
+	if not gear and not event.is_action_pressed(CombatActions.LOADOUT):
 		return
 	var stack: UiRoot = UiRoot.find(self)
-	if stack != null and toggle(stack, Director.player):
+	if stack != null and toggle(stack, Director.player, gear):
 		get_viewport().set_input_as_handled()
 
 
-## Closes the loadout screen when it is on top, else opens it for `player` and their
-## followers. True when something opened or closed.
-func toggle(stack: UiRoot, player: Node) -> bool:
+## Closes the loadout screen (the gear screen when `gear`) when it is on top, else opens it for
+## `player` and their followers. True when something opened or closed.
+func toggle(stack: UiRoot, player: Node, gear: bool = false) -> bool:
 	var top: UiScreen = stack.top()
-	if top != null and top.screen_id == LoadoutScreen.SCREEN_ID:
+	var wanted: StringName = GearScreen.SCREEN_ID if gear else LoadoutScreen.SCREEN_ID
+	if top != null and top.screen_id == wanted:
 		return stack.close_top()
 	if not stack.is_gameplay_input_allowed():
 		return false
@@ -40,6 +43,8 @@ func toggle(stack: UiRoot, player: Node) -> bool:
 	_gather(player, bodies, defs)
 	if bodies.is_empty():
 		return false
+	if gear:
+		return stack.open(GearScreen.for_members(bodies, defs))
 	return stack.open(LoadoutScreen.for_members(bodies, defs))
 
 

@@ -4933,3 +4933,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `ArenaThing.carryable` (+ `label_key`) adds a `CarryPoint` (an `Interactable`, verb TAKE; refused HANDS_FULL while carrying). `Carried` holds it overhead, out of the hurtbox group and not solid; `ActionFighter` turns an attack press into `Carried.throw` along `facing`; a fall, stun, air juggle or grab sets it down. `ArenaThing.throw_from` is the shared flight code (struck or thrown).
 - **Verified:** `carry_test` 6/6; ladder: 0 warnings, 4969 passed, checkers clean, stripped 4857 passed.
 - **Gaps:** no demo thing is carryable yet, so not seen in a windowed run; no carry pose or slower walk; the throw is flat; enemies never carry.
+
+## 2026-11-16 — C7.7a · The gear screen (combat 0.159.0)
+
+- **Did:** `GearScreen` (a `MenuScreen`, like the loadout screen): a row per slot of `GearSet.configured_rules()`, the worn piece in its `Rarity.color`; a pressed slot lists the bag's fitting pieces (`candidates`) with `compare` (added amounts, stat by stat), greyed with `refusal_key` when refused; take off (greyed for cursed); next member. `CombatActions.GEAR` (G) through `LoadoutHost.toggle(..., gear)`. Slot, stat and refusal names in the CSV; a stat with no row shows its id.
+- **Verified:** `gear_screen_test` 7/7; xvfb capture of the screen opened by `--press=gear`; ladder: 0 warnings, 4976 passed, checkers clean, stripped 4864.
+- **Gaps:** no set bonus, sockets or upgrade level on the screen; multipliers not compared; C7.7b (HUD weapon, battle screen, form names) next.

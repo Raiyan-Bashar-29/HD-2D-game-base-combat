@@ -380,10 +380,12 @@ func _press_slots(list: String) -> void:
 			Events.encounter_requested.emit(StringName(slot.trim_prefix("battle:")))
 			continue
 		var key: int = clampi(slot.to_int(), 1, CombatActions.SLOTS.size()) - 1
-		Log.info("test", "--press slot %d" % (key + 1))
+		# "gear" presses the gear screen's key (C7.7a) instead of a slot.
+		var action: StringName = CombatActions.GEAR if slot == "gear" else CombatActions.SLOTS[key]
+		Log.info("test", "--press %s" % action)
 		for down: bool in [true, false]:
 			var press := InputEventAction.new()
-			press.action = CombatActions.SLOTS[key]
+			press.action = action
 			press.pressed = down
 			Input.parse_input_event(press)
 			await get_tree().physics_frame
