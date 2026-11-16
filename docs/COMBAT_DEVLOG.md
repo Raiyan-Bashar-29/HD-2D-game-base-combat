@@ -4873,3 +4873,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `StatusEffect.seals`, `Power.tags`, `PowerUse.Reason.SEALED` (checked after FORBIDDEN), its menu words `ui.battle.reason.sealed`.
 - **Verified:** `seal_test` 4/4; ladder (below).
 - **Gaps:** no kit tags its powers yet; a passive is not sealed (passives are never "used").
+
+## 2026-11-16 — C8.13b · Copy (combat 0.149.0)
+
+- **Did:** `Events.power_used(who, power: Resource, targets)` after each `PowerUse.use`; `CopyMechanism`/`CopyRun` remember the last power another used (passives and copies never), and a use lends it with `hold_kit` under `copy/<power>` for `lasts`.
+- **Verified:** `copy_test` 5/5; ladder (below).
+- **Gaps:** "seen" has no distance; the borrow is not saved; in a battle a copier starts listening on its first turn.

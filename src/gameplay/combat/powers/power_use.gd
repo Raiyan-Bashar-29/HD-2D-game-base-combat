@@ -112,6 +112,11 @@ static func use(user: Combatant, power: Power, aimed: Array[Combatant],
 	if power.once_per_battle:
 		powers.once.spend(power.power_id)
 	powers.used(power)
+	var landed: Array[StringName] = []
+	for one: Combatant in aimed:
+		if one != null:
+			landed.append(one.combatant_id)
+	Events.power_used.emit(user.combatant_id, power, landed)
 	var statuses: StatusSet = StatusSet.of(body)
 	if statuses != null:
 		for status_id: StringName in power.consumes_statuses:

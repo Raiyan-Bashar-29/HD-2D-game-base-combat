@@ -330,6 +330,10 @@ signal atb_changed(who: StringName, value: float, segments: int)
 ## battle) of cooldown before it can be used again; 0 means it is ready. Emitted by `PowerSet`
 ## (C6.3b) only when that whole number changes, not every frame, so a HUD can show it live.
 signal power_cooldown_changed(who: StringName, power_id: StringName, left: int)
+## `who` used a hero power, landing on `targets` (ids; empty for a power with no skill). `power`
+## is the `Power` resource, typed loosely because `core` may not name content. Emitted by
+## `PowerUse` (C8.13b) after the power has run, so a copy can learn it.
+signal power_used(who: StringName, power: Resource, targets: Array[StringName])
 ## `who` raised the battlefield `power_id` and it stands (C6.9g). Emitted by `BattlefieldRun` after
 ## any clash let it rise, so a log and a HUD can name it and its place.
 signal battlefield_raised(who: StringName, power_id: StringName)
