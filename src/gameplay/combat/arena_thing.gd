@@ -35,6 +35,9 @@ extends Node3D
 ## True for a wall (C8.14a): its box is also solid on `Layers.WORLD`, so it stops bodies, swings
 ## and shots behind it, while it can still be struck itself.
 @export var solid: bool = false
+## True: once broken it stays broken, through a re-entry or a load (C8.19), by the flag
+## `broken/<area>/<thing_id>`. False: it is back whenever the area is entered.
+@export var stays_broken: bool = false
 
 var _me: Combatant
 var _done: bool = false
@@ -44,6 +47,9 @@ var _blast: Planted
 func _ready() -> void:
 	if thing_id == &"":
 		thing_id = StringName("thing/" + String(name))
+	if stays_broken and Flags.get_bool(broken_flag()):
+		queue_free()
+		return
 	add_child(Vitals.new())
 	_me = Combatant.new()
 	_me.combatant_id = thing_id
@@ -117,6 +123,8 @@ func _on_defeated(who: StringName) -> void:
 	if who != thing_id or _done:
 		return
 	_done = true
+	if stays_broken:
+		Flags.set_flag(broken_flag(), true)
 	if burst == null or get_parent() == null:
 		queue_free()
 		return
@@ -127,3 +135,8 @@ func _on_defeated(who: StringName) -> void:
 	get_parent().add_child(_blast)
 	_blast.global_position = global_position
 	_blast.set_off()
+
+
+## The flag that remembers this thing broken, when it `stays_broken`.
+func broken_flag() -> StringName:
+	return StringName("broken/%s/%s" % [Director.current_area_id, thing_id])

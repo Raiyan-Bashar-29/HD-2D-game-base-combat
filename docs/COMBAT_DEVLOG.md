@@ -4915,3 +4915,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `PlayerController` on the floor keeps `max(velocity.y, 0)` (the same rule `ActionEnemy` uses), so `Juggle.lift` raises the player; `FieldDefeat.tick` starts the fall wait when a held status `counts_as_fallen`, and `_get_up` cures such statuses.
 - **Verified:** a headless probe (floor + player, `velocity.y = 6`): highest 0.80 m, back at 0.00; `field_defeat_test` 13/13; ladder (below).
 - **Gaps:** carrying a throwable is C8.18b.
+
+## 2026-11-16 — C8.19a · Saves and flights (combat 0.156.0)
+
+- **Did:** `StatusSet` saves and loads `by`, with `applier(status_id)`; `Rewards.grant` on FLED gives only the party's spoils (no experience, no loot); `ArenaThing.stays_broken` sets and reads `broken/<area>/<thing_id>`.
+- **Verified:** `saves_kept_test` 4/4; ladder (below).
+- **Gaps:** a ledger's held sum (a meta) is not saved; no demo thing uses `stays_broken`.

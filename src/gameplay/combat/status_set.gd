@@ -155,6 +155,11 @@ func fallen() -> bool:
 	return false
 
 
+## Who applied `status_id`, or an empty id when it is not held or nobody did (C8.19).
+func applier(status_id: StringName) -> StringName:
+	return _held[status_id].by if _held.has(status_id) else &""
+
+
 ## The id of whoever the holder obeys now (C6.11): who applied the first held status that
 ## `obeys`, or an empty id while it is its own.
 func obeyed() -> StringName:
@@ -352,7 +357,8 @@ func _collect_save() -> Dictionary:
 	var out: Dictionary = {}
 	for status_id: StringName in _held:
 		var held: Held = _held[status_id]
-		out[String(status_id)] = {"remaining": held.remaining, "stacks": held.stacks, "carry": held.carry}
+		out[String(status_id)] = {"remaining": held.remaining, "stacks": held.stacks, "carry": held.carry,
+			"by": String(held.by)}
 	return out
 
 
@@ -375,6 +381,8 @@ func _apply_save(data: Dictionary, _from_version: int) -> void:
 		held.remaining = DictRead.get_float(row, "remaining", effect.duration)
 		held.stacks = clampi(DictRead.get_int(row, "stacks", 1), 1, effect.max_stacks)
 		held.carry = DictRead.get_float(row, "carry", 0.0)
+		# Who applied it is kept (C8.19), so a late hit or an obey still knows its caster.
+		held.by = StringName(DictRead.get_string(row, "by", ""))
 		_held[effect.id] = held
 		for i: int in held.stacks:
 			_add_modifiers(effect)

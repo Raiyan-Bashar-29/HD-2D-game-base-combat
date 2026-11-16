@@ -37,7 +37,8 @@ var upgraded: Dictionary[StringName, Array] = {}
 
 
 static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) -> Rewards:
-	if battle.outcome() != Battle.Outcome.WON or encounter == null:
+	var fled: bool = battle.outcome() == Battle.Outcome.FLED
+	if (battle.outcome() != Battle.Outcome.WON and not fled) or encounter == null:
 		return Rewards.new()
 	var standing: Array[CombatantDef] = []
 	# What the party stole or captured in the fight comes home with the loot (C8.7b).
@@ -49,6 +50,9 @@ static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) ->
 		var guest: bool = battle.guests.has(fighter.combatant_id)
 		if def != null and not guest and not Vitals.of(fighter.get_parent()).is_defeated():
 			standing.append(def)
+	# A flight keeps what was stolen or captured, and nothing else (C8.19).
+	if fled:
+		return give(0, spoils, [], inventory)
 	var tables: Array[LootTable] = [encounter.loot_table]
 	for enemy: CombatantDef in encounter.enemies:
 		if enemy != null:
