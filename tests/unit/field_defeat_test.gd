@@ -6,14 +6,14 @@ extends TestCase
 ## them up by the loadout's rule.
 ##
 ## OWNS: assertions about `Rewards.give`, `ActionHost.reward`, `ActionEnemy`'s defeat and
-## `FieldDefeat`.
+## `FieldDefeat`. A petrified player is held and got up the same way (C8.18).
 ## MUST NOT: name a game's items, enemies or areas. Items come from `FixtureContent`.
 
 var _announced: Array = []
 
 
 func run() -> void:
-	plan(12)
+	plan(13)
 	Fixtures.activate()
 	SaveFixture.activate()
 	Flags.clear_all()
@@ -122,7 +122,22 @@ func _the_player_falls() -> void:
 	equal("then gets up where they fell with half their hp, and is let go",
 		[Vitals.of(player).current(&"hp"), player.input_holders().has(FieldDefeat.LOCK), defeat.applied],
 		[20, false, DefeatRule.Kind.REVIVE_IN_PLACE])
+	_petrified(player, defeat)
 	player.free()
+
+
+# A petrified player (C8.18) is held as if fallen, and getting up cures the stone.
+func _petrified(player: PlayerController, defeat: FieldDefeat) -> void:
+	var stone := StatusEffect.new()
+	stone.id = &"status/fixture_stone"
+	stone.unit = StatusEffect.Unit.TURNS
+	stone.counts_as_fallen = true
+	StatusSet.of(player).apply(stone)
+	defeat.tick(0.1)
+	var held: bool = player.input_holders().has(FieldDefeat.LOCK)
+	defeat.tick(1.1)
+	equal("a petrified player is held as if fallen, then gets up cured",
+		[held, StatusSet.of(player).fallen(), player.input_holders().has(FieldDefeat.LOCK)], [true, false, false])
 
 
 func _on_enemy_defeated(_who: StringName, experience: int, loot: Array[StringName]) -> void:

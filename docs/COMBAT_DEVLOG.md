@@ -4909,3 +4909,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `ActionFighter._cue_prompt` (player only) sends `defence_prompt(&"press", left)` while a move's prompt window is open and unpressed, `&""` after; `DefenceCue` shows "Now!"; `MoveTimeline.pressed()`. `Unseen.fade(body)` from both fighters' frames. `Delayed.ended` announces the released ledger sum. 12 passive files' statuses got their passive's `name_key` (the HUD showed raw ids).
 - **Verified:** `player_sees_test` 4/4; ladder (below).
 - **Gaps:** the `ArenaThing` box stays (art deferred); no on-screen number popups exist in the field, only the battle log.
+
+## 2026-11-16 — C8.18a · The player's body (combat 0.155.0)
+
+- **Did:** `PlayerController` on the floor keeps `max(velocity.y, 0)` (the same rule `ActionEnemy` uses), so `Juggle.lift` raises the player; `FieldDefeat.tick` starts the fall wait when a held status `counts_as_fallen`, and `_get_up` cures such statuses.
+- **Verified:** a headless probe (floor + player, `velocity.y = 6`): highest 0.80 m, back at 0.00; `field_defeat_test` 13/13; ladder (below).
+- **Gaps:** carrying a throwable is C8.18b.

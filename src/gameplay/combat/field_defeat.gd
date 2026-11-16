@@ -16,6 +16,9 @@ extends Node
 ## save written while the player lay at 0 hp (by a build before `CombatSaveGuard`): such a load
 ## fires no defeat edge, so without this nothing would ever get them up.
 ##
+## A PETRIFIED PLAYER (C8.18) is treated as fallen: a held status that `counts_as_fallen` starts the
+## same wait and rule, and getting up cures it.
+##
 ## OWNS: the wait on the ground and carrying out the rule.
 ## MUST NOT: choose the rule (the loadout does) or decide what an enemy's defeat means.
 
@@ -42,6 +45,9 @@ func _physics_process(delta: float) -> void:
 ## otherwise lie there forever.
 func tick(delta: float) -> void:
 	if _waiting < 0.0:
+		var statuses: StatusSet = StatusSet.of(get_parent())
+		if statuses != null and statuses.fallen() and not Vitals.of(get_parent()).is_defeated():
+			_lie_down()
 		return
 	_waiting -= delta
 	if _waiting <= 0.0:
@@ -53,6 +59,10 @@ func _on_defeated(who: StringName) -> void:
 	var mine: Combatant = Combatant.of(get_parent())
 	if mine == null or who != mine.combatant_id or _waiting >= 0.0:
 		return
+	_lie_down()
+
+
+func _lie_down() -> void:
 	_waiting = maxf(0.0, rule.delay)
 	var player: PlayerController = get_parent() as PlayerController
 	if player != null:
@@ -84,6 +94,10 @@ func _get_up() -> void:
 	var vitals: Vitals = Vitals.of(get_parent())
 	if vitals != null and vitals.is_defeated():
 		vitals.revive(roundi(vitals.maximum(vitals.defeat_pool) * rule.revive_fraction))
+	var statuses: StatusSet = StatusSet.of(get_parent())
+	for effect: StatusEffect in statuses.held() if statuses != null else []:
+		if effect.counts_as_fallen:
+			statuses.cure(effect.id)
 	var player: PlayerController = get_parent() as PlayerController
 	if player != null:
 		player.release_input(LOCK)
