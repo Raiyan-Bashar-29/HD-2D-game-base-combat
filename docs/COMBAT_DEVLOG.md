@@ -4843,3 +4843,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Fixed on the way:** `_send_all` with none out never settled, so a count could outlive its user.
 - **Verified:** `summon_link_test` 6/6; ladder (below).
 - **Gaps:** neither Arima nor Eto uses them yet (their summons are short-lived); a return appears beside the user wherever it stands.
+
+## 2026-11-16 — C6.13a · The clone in the field (combat 0.144.0)
+
+- **Did:** M10 `clone`: `CloneMechanism`, `CloneRun` (`moved` feeds the ghost), `CloneGhost` (a `Hitbox` on fight time that records its source's path and facing, stands `delay` s behind, plays each queued move as a copy at `power_fraction`, and wears a tinted copy of the source's sprite). A second use replaces the ghost; falling, kit off and area left send it away.
+- **Verified:** `clone_test` 8/8; ladder (below).
+- **Gaps:** battle reading is C6.13b; the ghost cannot be hit, does not dodge, and plays no move events (shots, sounds, pictures). No kit uses it yet.

@@ -162,7 +162,7 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | Family | Powers | In plain words | What runs it here | State | Examples |
 |---|---|---|---|---|---|
 | `summon_entities` | 107 | Call fighters that fight for you | An owned-fighter list: each summon knows its owner and power, and leaves with it | NEW C8.10 (field); battle side C8.3 | Ten Shadows Technique; Divine General Mahoraga — Adaptation; Dragon of the Darkness Flame |
-| `clone_actor` | 15 | A double of yourself | M10 `clone` | PLANNED C6.13 | Shadow Clone Technique; Fusion Dance; Potara Fusion |
+| `clone_actor` | 15 | A double of yourself | M10 `clone` | FIELD C6.13a (`CloneMechanism`); battle C6.13b | Shadow Clone Technique; Fusion Dance; Potara Fusion |
 | `autonomous_support` | 8 | A helper that reacts on its own | An owned fighter with an `ActionBrain`/`BattleBrain` | NEW C8.10 | Raphael, Lord of Wisdom; Ciel; Gambits |
 | `animal_control` | 4 | Tame or command beasts | M8 `command` OBEY limited by tag | PLANNED C6.11 | Puff!; Bend Will; Animalism |
 | `copy_previous_action` | 2 | Repeat the last move used | M10 `clone` battle reading (act twice); the last command remembered | PLANNED C6.13 | Mimic; Mimic (Gogo) |
