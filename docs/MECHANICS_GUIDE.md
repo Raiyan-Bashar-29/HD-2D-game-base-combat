@@ -307,6 +307,8 @@ The built-in mechanisms (the table that maps them is `PowerMechanisms.BUILT_IN`)
 | `rewind` | `RewindMechanism` | the user's place and hp go back to `back` seconds ago (a battle: turns, hp only); never raises the fallen | use, tick |
 | (a status) | `StatusEffect.seals` | each entry a power id or a `Power.tags` label; while held, those powers are refused (SEALED) | — |
 | `copy` | `CopyMechanism` | remembers the last power another fighter used (`suffered_only`: used on the user) and lends it for `lasts` | use, tick, end |
+| `steal` | `StealMechanism` | the targets' statuses tagged `tag` move to the user, at most `most` | use |
+| `random` | `RandomMechanism` | each use runs one of `powers` (skill and mechanism), free | use, tick, moved, end |
 | `clone` | `CloneMechanism` | a `CloneGhost` walks the user's path `delay` s behind and replays each move (not the dodge) at `power_fraction`, for `lifetime` s; cannot be hit; in a battle the next `actions` turns hurt twice (the second at `power_fraction`) | use, moved, end |
 | `summon` | `SummonMechanism` | `fighters` (each with its `brains` entry) appear beside the user, on its side, as `OwnedFighter`s; `lifetime`, `cap`, `owner_status`, `untouchable`, `moves_each`, `linked_hp` (a share of their hurt is the user's), `saved` (the count survives an area change or a load); in a battle they join its sides for `turns` of the user's turns | use, tick, end |
 

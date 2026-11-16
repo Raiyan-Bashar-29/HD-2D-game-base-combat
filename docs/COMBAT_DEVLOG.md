@@ -4879,3 +4879,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `Events.power_used(who, power: Resource, targets)` after each `PowerUse.use`; `CopyMechanism`/`CopyRun` remember the last power another used (passives and copies never), and a use lends it with `hold_kit` under `copy/<power>` for `lasts`.
 - **Verified:** `copy_test` 5/5; ladder (below).
 - **Gaps:** "seen" has no distance; the borrow is not saved; in a battle a copier starts listening on its first turn.
+
+## 2026-11-16 — C8.13c · Steal and a random power (combat 0.150.0)
+
+- **Did:** `StealMechanism`/`StealRun` (cure the tagged status on each target, apply it to the user, up to `most`); `RandomMechanism`/`RandomRun` (pick with the use's rng, land the pick's skill, make and use its executor, forward `tick`/`moved`/`end` until the next pick).
+- **Verified:** `steal_random_test` 4/4; ladder (below).
+- **Gaps:** a stolen status starts with a fresh duration; a random pick's cost, cooldown and rules are skipped on purpose.
