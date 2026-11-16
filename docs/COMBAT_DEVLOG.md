@@ -4891,3 +4891,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `ArenaThing.solid` (a `StaticBody3D` on `WORLD` with its box); `CombatSight.wall_between(..., exclude)` and `solids(node)`, used by `Hitbox._walled` so a wall can be struck; `ConstructMechanism`/`ConstructRun` (placed and turned before entering the tree; lifetime, cap, upkeep in whole points, down on fall/kit off/area left).
 - **Verified:** `construct_test` 5/5; ladder (below).
 - **Gaps:** nothing in a battle; a wall raised over a fighter's body overlaps it; constructs are not saved.
+
+## 2026-11-16 — C8.14b · A made weapon (combat 0.152.0)
+
+- **Did:** `WieldMechanism`/`WieldRun`: remember `lent_moves`/`lent_element`, write the weapon's, add bonuses under `wield/<power>` once; restore at the end of `lasts` or on `end`, unless gear wrote its own meanwhile.
+- **Verified:** `wield_test` 5/5; ladder (below).
+- **Gaps:** no look for the weapon; worn gear changed while it is held wins when it ends.
