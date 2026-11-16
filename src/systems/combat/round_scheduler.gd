@@ -16,6 +16,9 @@ var _round: int = 0
 
 
 func next() -> StringName:
+	var owed: StringName = _take_owed()
+	if owed != &"":
+		return owed
 	_skip_departed()
 	if _queue.is_empty():
 		_queue = _ordered()
@@ -26,7 +29,7 @@ func next() -> StringName:
 
 
 func preview(count: int) -> Array[StringName]:
-	var out: Array[StringName] = []
+	var out: Array[StringName] = _owed_preview(count)
 	var order: Array[StringName] = _ordered()
 	if order.is_empty():
 		return out

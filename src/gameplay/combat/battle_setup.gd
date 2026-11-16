@@ -70,6 +70,7 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	# The encounter file chooses the turn order: plain rounds, or CTB where speed buys extra turns.
 	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
 			else RoundScheduler.new()
+	turns.weakness_extra_turns = encounter.weakness_extra_turns
 	var battle := Battle.new(ours + guests, theirs, turns, rng)
 	battle.encounter = encounter
 	battle.can_flee = encounter.can_flee

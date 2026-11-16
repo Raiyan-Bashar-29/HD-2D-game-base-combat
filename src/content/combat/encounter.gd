@@ -15,6 +15,8 @@ enum TurnOrder { ROUNDS, CTB }
 
 @export var enemies: Array[CombatantDef] = []
 @export var turn_order: TurnOrder = TurnOrder.ROUNDS
+## Above 0, hitting a foe's weakness earns one more turn, up to this many in a row (C8.1).
+@export var weakness_extra_turns: int = 0
 @export var can_flee: bool = true
 @export_range(0.0, 1.0, 0.01) var flee_chance: float = 1.0
 ## The music for the fight, played when it opens; the area's own music comes back when it

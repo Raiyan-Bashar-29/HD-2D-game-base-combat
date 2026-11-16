@@ -302,6 +302,9 @@ signal skill_reflected(who: StringName, back_to: StringName, skill_id: StringNam
 ## A hit matched `key` (an element or a skill tag) among `who`'s weaknesses for the first time:
 ## it is now remembered under `weakness/<kind>/<key>`. Emitted by `Weakness` (C2.17).
 signal weakness_revealed(who: StringName, key: StringName)
+## `who` hit a foe's weakness in its battle turn and earned one more turn (C8.1, the turn
+## order's `weakness_extra_turns`). Emitted by `Weakness`.
+signal extra_turn_earned(who: StringName)
 ## `who`'s shield reached zero and it is BROKEN. Emitted by `Weakness` (C2.17), from a weakness
 ## hit or, in real time, from poise (C3.3).
 signal combatant_broken(who: StringName)

@@ -31,6 +31,7 @@ const COUNTERED_KEY: String = "ui.battle.log.countered"
 const REFLECTED_KEY: String = "ui.battle.log.reflected"
 const WEAK_KEY: String = "ui.battle.log.weak"
 const BROKEN_KEY: String = "ui.battle.log.broken"
+const ONE_MORE_KEY: String = "ui.battle.log.one_more"
 const DEFEATED_KEY: String = "ui.battle.log.defeated"
 const STATUS_KEY: String = "ui.battle.log.status"
 const FIELD_RAISED_KEY: String = "ui.battle.log.field_raised"
@@ -62,6 +63,7 @@ func start() -> void:
 	Events.skill_reflected.connect(_on_reflected)
 	Events.weakness_revealed.connect(_on_weak)
 	Events.combatant_broken.connect(_on_broken)
+	Events.extra_turn_earned.connect(_on_one_more)
 	Events.combatant_defeated.connect(_on_defeated)
 	Events.status_applied.connect(_on_status)
 	Events.battlefield_raised.connect(_on_field_raised)
@@ -76,7 +78,7 @@ func stop() -> void:
 			[Events.attack_blocked, _on_blocked],
 			[Events.status_resisted, _on_resisted], [Events.turn_skipped, _on_skipped],
 			[Events.countered, _on_countered], [Events.skill_reflected, _on_reflected],
-			[Events.weakness_revealed, _on_weak], [Events.combatant_broken, _on_broken],
+			[Events.weakness_revealed, _on_weak], [Events.combatant_broken, _on_broken], [Events.extra_turn_earned, _on_one_more],
 			[Events.combatant_defeated, _on_defeated], [Events.status_applied, _on_status],
 			[Events.battlefield_raised, _on_field_raised], [Events.battlefield_lowered, _on_field_lowered],
 			[Events.battlefield_clashed, _on_field_clashed]]:
@@ -156,6 +158,10 @@ func _on_weak(who: StringName, key: StringName) -> void:
 
 func _on_broken(who: StringName) -> void:
 	_add(BROKEN_KEY, {"name": _name(who)})
+
+
+func _on_one_more(who: StringName) -> void:
+	_add(ONE_MORE_KEY, {"name": _name(who)})
 
 
 func _on_defeated(who: StringName) -> void:

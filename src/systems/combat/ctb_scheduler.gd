@@ -69,6 +69,9 @@ func wait_of(id: StringName) -> float:
 
 
 func next() -> StringName:
+	var owed: StringName = _take_owed()
+	if owed != &"":
+		return owed
 	var id: StringName = _soonest(_wait)
 	if id == &"":
 		return id
@@ -80,7 +83,7 @@ func next() -> StringName:
 
 
 func preview(count: int) -> Array[StringName]:
-	var out: Array[StringName] = []
+	var out: Array[StringName] = _owed_preview(count)
 	var waits: Dictionary[StringName, float] = _wait.duplicate()
 	while out.size() < count:
 		var id: StringName = _soonest(waits)

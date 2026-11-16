@@ -4951,3 +4951,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `Events.craft_requested(station)`; `CraftStation` (`Interactable`, `station` id) emits it; `CraftHost` (new node in `game_root.tscn`) opens `CraftScreen.for_station` over the player's bag. The screen lists `Crafting.known(station)` with `listed` needs (a piece worked on counts), greys a refusal with `refusal_key`, makes on a press (`last` note), and lists pieces whose `salvage` is not empty to take apart.
 - **Verified:** `craft_screen_test` 5/5; ladder: 0 warnings, 4986 passed, checkers clean, stripped 4874.
 - **Gaps:** no station in the demo, so no capture; TRANSMUTE is in the same list as CRAFT; a lucky roll is not called out.
+
+## 2026-11-16 — C8.1 · One more turn for a weakness hit (combat 0.162.0)
+
+- **Did:** `TurnScheduler.weakness_extra_turns`, `again(id)`, `_take_owed`, `_owed_preview`, used by `RoundScheduler` and `CtbScheduler`; `Encounter.weakness_extra_turns` set by `BattleSetup.build`. `Weakness.strike` asks `_one_more`: the fighter whose battle turn it is, striking a foe, is owed the next turn; `Events.extra_turn_earned`; battle log `ui.battle.log.one_more`. `battle.gd` (at its budget) is untouched.
+- **Verified:** `one_more_test` 5/5; ladder: 0 warnings, 4992 passed, checkers clean, stripped 4880.
+- **Gaps:** no Press Turn (half-turn icons); only weakness hits count (not crits or knock-downs); the hybrid's ATB gauge is not changed.
