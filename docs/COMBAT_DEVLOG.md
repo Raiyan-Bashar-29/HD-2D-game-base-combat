@@ -4903,3 +4903,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `DoorsMechanism`, `DoorsRun` (place and turn before entering the tree, keep the newest two, link them, lifetime, down on fall/kit off/area left), `LinkedDoor` (`pass_through` on `body_entered`, puts the body `exit` m out of the far door, which lets it be `REST` s; `may_pass` decides by side).
 - **Verified:** `doors_test` 5/5; ladder (below).
 - **Gaps:** shots and thrown things do not pass; no look; nothing in a battle.
+
+## 2026-11-16 — C8.17 · What the player sees (combat 0.154.0)
+
+- **Did:** `ActionFighter._cue_prompt` (player only) sends `defence_prompt(&"press", left)` while a move's prompt window is open and unpressed, `&""` after; `DefenceCue` shows "Now!"; `MoveTimeline.pressed()`. `Unseen.fade(body)` from both fighters' frames. `Delayed.ended` announces the released ledger sum. 12 passive files' statuses got their passive's `name_key` (the HUD showed raw ids).
+- **Verified:** `player_sees_test` 4/4; ladder (below).
+- **Gaps:** the `ArenaThing` box stays (art deferred); no on-screen number popups exist in the field, only the battle log.

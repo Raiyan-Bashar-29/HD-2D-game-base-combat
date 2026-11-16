@@ -29,6 +29,7 @@ value = 1.3
 [sub_resource type="Resource" id="status_1"]
 script = ExtResource("status")
 id = &"status/passive_frenzy"
+name_key = "combat.passive.frenzy.name"
 duration = 0.0
 modifiers = Array[ExtResource("mod")]([SubResource("mod_1")])
 takeover = SubResource("wild")

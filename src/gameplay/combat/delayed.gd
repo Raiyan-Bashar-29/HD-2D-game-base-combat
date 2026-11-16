@@ -28,6 +28,9 @@ static func ended(statuses: StatusSet, effect: StatusEffect, by: StringName, ran
 		var sum: int = statuses.get_meta(SUM, 0)
 		statuses.remove_meta(SUM)
 		Vitals.of(statuses.get_parent()).change(holder.damage_pool, sum)
+		# The held hits land now, so they are announced now: a log or a number shows them (C8.17).
+		if sum < 0:
+			Events.combatant_damaged.emit(holder.combatant_id, by, -sum, false)
 	if ran_out:
 		Contagion.passed(statuses, effect, by)
 	if ran_out and effect.late_power > 0.0 and statuses.is_inside_tree():

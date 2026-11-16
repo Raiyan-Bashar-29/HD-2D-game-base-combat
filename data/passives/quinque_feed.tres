@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="status_1"]
 script = ExtResource("status")
 id = &"status/passive_quinque_feed"
+name_key = "combat.passive.quinque_feed.name"
 duration = 0.0
 tick_pool = &"hp"
 tick_change = -2

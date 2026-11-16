@@ -2,13 +2,15 @@ class_name DefenceCue
 extends Label
 ## The defence prompt on screen (C8.20): "Evade!" or "Block!" in the middle of the view.
 ##
-## IN PLAIN WORDS: it listens to `Events.defence_prompt`. A kind shows its words until
+## IN PLAIN WORDS: it listens to `Events.defence_prompt`. Besides the warnings, `press` is a move's
+## timed press (C8.17), sent by `ActionFighter` while its window is open. A kind shows its words until
 ## `seconds` (at least `LEAST`) have passed or an empty kind clears it.
 ##
 ## OWNS: showing the prompt.
 ## MUST NOT: decide when to warn (`DefenceWatch` does) or read input.
 
-const KEYS: Dictionary[StringName, String] = {&"evade": "ui.combat.defence.evade", &"block": "ui.combat.defence.block"}
+const KEYS: Dictionary[StringName, String] = {&"evade": "ui.combat.defence.evade", &"block": "ui.combat.defence.block",
+	&"press": "ui.combat.defence.press"}
 ## The shortest time a prompt stays up, so a fast hit's warning can still be read.
 const LEAST: float = 0.4
 const VARIATION: StringName = &"HudText"

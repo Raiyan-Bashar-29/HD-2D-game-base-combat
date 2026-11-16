@@ -100,6 +100,11 @@ func step(dt: float) -> Array[int]:
 	return entered
 
 
+## True once this move's prompt has had its press (C8.17: the cue goes when it is pressed).
+func pressed() -> bool:
+	return _pressed
+
+
 ## The attack button, pressed while a move plays: the first press of a move with a `prompt` is
 ## timed against it. Returns the multiplier it earned; 1.0 when it missed or there is no prompt.
 func time_press() -> float:

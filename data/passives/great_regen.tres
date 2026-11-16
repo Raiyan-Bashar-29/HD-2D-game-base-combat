@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="status_1"]
 script = ExtResource("status")
 id = &"status/passive_great_regen"
+name_key = "combat.passive.great_regen.name"
 duration = 0.0
 tick_pool = &"hp"
 tick_change = 8

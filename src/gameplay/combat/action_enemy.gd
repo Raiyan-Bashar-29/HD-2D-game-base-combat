@@ -133,6 +133,7 @@ func act(delta: float) -> ActionDecider.State:
 		if _gone_in <= 0.0 and not is_queued_for_deletion():
 			queue_free()
 	timeline.step(dt)
+	Unseen.fade(self)
 	if _hitbox != null:
 		_hitbox.rotation.y = atan2(-facing.x, -facing.z)
 		if timeline.is_hitting():

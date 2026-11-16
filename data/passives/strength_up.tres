@@ -13,6 +13,7 @@ value = 1.1
 [sub_resource type="Resource" id="status_2"]
 script = ExtResource("status")
 id = &"status/passive_strength_up"
+name_key = "combat.passive.strength_up.name"
 duration = 0.0
 modifiers = Array[ExtResource("mod")]([SubResource("mod_1")])
 tags = Array[StringName]([&"passive"])

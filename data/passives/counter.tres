@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="status_1"]
 script = ExtResource("status")
 id = &"status/passive_counter"
+name_key = "combat.passive.counter.name"
 duration = 0.0
 reactions = Array[int]([0])
 reaction_chance = 0.3

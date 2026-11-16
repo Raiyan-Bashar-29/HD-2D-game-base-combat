@@ -35,6 +35,8 @@ extends Node
 ## only through its lock methods.
 
 const LOCK: StringName = &"action"
+## The kind `Events.defence_prompt` carries for a move's timed press (C8.17).
+const PRESS: StringName = &"press"
 
 ## Who this fighter is, as the loadout that fitted them. A party switch changes it (C4.7).
 var loadout: ActionLoadout
@@ -60,6 +62,7 @@ var _fitted: int = -1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 # The last place the body stood on a floor, where the fall safety net puts it back (C5.8).
 var _safe: Vector3 = Vector3.INF
+var _prompting: bool = false
 
 
 func _ready() -> void:
@@ -123,6 +126,8 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 		_start_moves(attack, dodge)
 	timeline.step(dt)
 	_report_move()
+	_cue_prompt()
+	Unseen.fade(get_parent())
 	_aim_hitbox()
 	_move_body()
 	# Off the world: back to the last floor, and felled, so the defeat rule runs (C5.8).
@@ -196,6 +201,16 @@ func _aim_hitbox() -> void:
 	_hitbox.rotation.y = atan2(-facing.x, -facing.z)
 	if timeline.is_hitting():
 		_hitbox.sweep()
+
+
+# The player's timed press (C8.8c) shows on screen while its window is open and unpressed (C8.17).
+func _cue_prompt() -> void:
+	var window: TimedWindow = timeline.move.prompt if timeline.busy() and timeline.move != null else null
+	var open: bool = window != null and _body is PlayerController and not timeline.pressed() \
+			and window.inside(timeline.elapsed)
+	if open != _prompting:
+		_prompting = open
+		Events.defence_prompt.emit(PRESS if open else &"", window.closes - timeline.elapsed if open else 0.0)
 
 
 # Tells the kit about each move started since last frame, except a dodge (C6.4b).

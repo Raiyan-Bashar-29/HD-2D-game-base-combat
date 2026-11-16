@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="status_1"]
 script = ExtResource("status")
 id = &"status/passive_noro_regrowth"
+name_key = "combat.passive.noro_regrowth.name"
 duration = 0.0
 tick_pool = &"hp"
 tick_change = 15

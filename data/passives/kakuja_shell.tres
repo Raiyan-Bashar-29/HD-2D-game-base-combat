@@ -19,6 +19,7 @@ value = -1.0
 [sub_resource type="Resource" id="status_1"]
 script = ExtResource("status")
 id = &"status/passive_kakuja_shell"
+name_key = "combat.passive.kakuja_shell.name"
 duration = 0.0
 modifiers = Array[ExtResource("mod")]([SubResource("mod_1"), SubResource("mod_2")])
 tags = Array[StringName]([&"passive"])
