@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C8.14c** (linked doors), then C8.17–C8.19. C8.14a/b (walls, made weapon; combat 0.152.0), C8.13, C8.11 and C6.13 are done.
+- **Next: C8.17** (stage-1 gaps: what the player sees), then C8.18, C8.19. C8.14 (walls, made weapon, doors; combat 0.153.0), C8.13, C8.11 and C6.13 are done.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**

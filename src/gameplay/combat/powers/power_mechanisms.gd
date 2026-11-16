@@ -14,7 +14,7 @@ extends RefCounted
 ## The base's own mechanisms: kind -> executor script path. `form` came in C6.5a, `barrier` in C6.6a,
 ## `barrage` in C6.7, `plant` in C6.26, `finisher` in C6.8,
 ## `battlefield` in C6.9a, `blink` in C6.12a, `sacrifice` and `refresh` in C6.12b,
-## `foresight` in C6.10, `command` and `grant` in C6.11, `summon` in C8.10a, `clone` in C6.13a, `rewind` in C8.11b, `copy` in C8.13b, `steal` and `random` in C8.13c, `construct` in C8.14a, `wield` in C8.14b.
+## `foresight` in C6.10, `command` and `grant` in C6.11, `summon` in C8.10a, `clone` in C6.13a, `rewind` in C8.11b, `copy` in C8.13b, `steal` and `random` in C8.13c, `construct` in C8.14a, `wield` in C8.14b, `doors` in C8.14c.
 const BUILT_IN: Dictionary[StringName, String] = {
 	&"form": "res://src/gameplay/combat/powers/mechanisms/form_run.gd",
 	&"barrier": "res://src/gameplay/combat/powers/mechanisms/barrier_run.gd",
@@ -36,6 +36,7 @@ const BUILT_IN: Dictionary[StringName, String] = {
 	&"random": "res://src/gameplay/combat/powers/mechanisms/random_run.gd",
 	&"construct": "res://src/gameplay/combat/powers/mechanisms/construct_run.gd",
 	&"wield": "res://src/gameplay/combat/powers/mechanisms/wield_run.gd",
+	&"doors": "res://src/gameplay/combat/powers/mechanisms/doors_run.gd",
 }
 
 ## Kinds a game (or a test) registered at run time.

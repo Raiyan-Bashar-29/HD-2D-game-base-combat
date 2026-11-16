@@ -4897,3 +4897,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `WieldMechanism`/`WieldRun`: remember `lent_moves`/`lent_element`, write the weapon's, add bonuses under `wield/<power>` once; restore at the end of `lasts` or on `end`, unless gear wrote its own meanwhile.
 - **Verified:** `wield_test` 5/5; ladder (below).
 - **Gaps:** no look for the weapon; worn gear changed while it is held wins when it ends.
+
+## 2026-11-16 — C8.14c · Linked doors (combat 0.153.0)
+
+- **Did:** `DoorsMechanism`, `DoorsRun` (place and turn before entering the tree, keep the newest two, link them, lifetime, down on fall/kit off/area left), `LinkedDoor` (`pass_through` on `body_entered`, puts the body `exit` m out of the far door, which lets it be `REST` s; `may_pass` decides by side).
+- **Verified:** `doors_test` 5/5; ladder (below).
+- **Gaps:** shots and thrown things do not pass; no look; nothing in a battle.
