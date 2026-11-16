@@ -4867,3 +4867,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `RewindMechanism` and `RewindRun`: every tick writes the user's place and hp (keeping just over `back`); a use restores the newest record at least `back` old (else the oldest). Place only in the field; `Vitals.set_to` never raises the fallen.
 - **Verified:** `rewind_test` 4/4; ladder (below).
 - **Gaps:** statuses and other pools are not put back; nobody but the user, and no thrown thing, can be rewound.
+
+## 2026-11-16 — C8.13a · Seals (combat 0.148.0)
+
+- **Did:** `StatusEffect.seals`, `Power.tags`, `PowerUse.Reason.SEALED` (checked after FORBIDDEN), its menu words `ui.battle.reason.sealed`.
+- **Verified:** `seal_test` 4/4; ladder (below).
+- **Gaps:** no kit tags its powers yet; a passive is not sealed (passives are never "used").

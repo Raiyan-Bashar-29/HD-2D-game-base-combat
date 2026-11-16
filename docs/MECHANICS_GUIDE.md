@@ -305,6 +305,7 @@ The built-in mechanisms (the table that maps them is `PowerMechanisms.BUILT_IN`)
 | `grant` | `GrantMechanism` | give allies statuses or lend them a whole kit for `lasts` | use, tick |
 | (a stat) | `time_rate` | `FighterTime`: a fighter runs at 1 + it (0 stopped, 0.5 half); a time stop is a status with ADD -1 (SECONDS) on every fighter but the user, a haste ADD +0.5. Statuses still count on the fight's clock | — |
 | `rewind` | `RewindMechanism` | the user's place and hp go back to `back` seconds ago (a battle: turns, hp only); never raises the fallen | use, tick |
+| (a status) | `StatusEffect.seals` | each entry a power id or a `Power.tags` label; while held, those powers are refused (SEALED) | — |
 | `clone` | `CloneMechanism` | a `CloneGhost` walks the user's path `delay` s behind and replays each move (not the dodge) at `power_fraction`, for `lifetime` s; cannot be hit; in a battle the next `actions` turns hurt twice (the second at `power_fraction`) | use, moved, end |
 | `summon` | `SummonMechanism` | `fighters` (each with its `brains` entry) appear beside the user, on its side, as `OwnedFighter`s; `lifetime`, `cap`, `owner_status`, `untouchable`, `moves_each`, `linked_hp` (a share of their hurt is the user's), `saved` (the count survives an area change or a load); in a battle they join its sides for `turns` of the user's turns | use, tick, end |
 

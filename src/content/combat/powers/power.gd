@@ -56,6 +56,8 @@ extends Resource
 @export var passive: bool = false
 ## True for a power that can be used only once per battle; in the field, once per area.
 @export var once_per_battle: bool = false
+## Free labels a seal can match (C8.13a): `fire`, `time`, `summon`, or any name a game uses.
+@export var tags: Array[StringName] = []
 
 
 ## True when the clock's `hour` (0 to 24, fractions allowed) is inside `active_hours`.

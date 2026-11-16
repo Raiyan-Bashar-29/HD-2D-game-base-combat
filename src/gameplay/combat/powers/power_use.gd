@@ -36,6 +36,7 @@ enum Reason {
 	ONCE,  ## A once-per-battle power already used in this battle, or in this area (C6.5f).
 	UPGRADE,  ## The piece that carries it is not upgraded far enough (C7.5).
 	FORBIDDEN,  ## A status it forbids is held (`forbids_statuses`, C8.10a).
+	SEALED,  ## A held status seals it, by its id or one of its tags (`StatusEffect.seals`, C8.13a).
 }
 
 
@@ -66,6 +67,8 @@ static func refusal(user: Combatant, power: Power, hour: float = -1.0) -> Reason
 	for status_id: StringName in power.forbids_statuses:
 		if statuses != null and statuses.stacks(status_id) > 0:
 			return Reason.FORBIDDEN
+	if statuses != null and _sealed(statuses, power):
+		return Reason.SEALED
 	if power.requires_fraction > 0.0 and _fraction(user, power.requires_pool) < power.requires_fraction:
 		return Reason.POOL
 	if statuses != null and statuses.blocker(StatusEffect.Block.NO_SKILLS) != &"":
@@ -210,3 +213,12 @@ static func _hour(hour: float) -> float:
 	if hour >= 0.0:
 		return hour
 	return Clock.minutes_today() / 60.0
+
+
+# True when a held status seals `power` by its id or one of its tags (C8.13a).
+static func _sealed(statuses: StatusSet, power: Power) -> bool:
+	for effect: StatusEffect in statuses.held():
+		for seal: StringName in effect.seals:
+			if seal == power.power_id or power.tags.has(seal):
+				return true
+	return false

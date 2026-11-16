@@ -53,6 +53,9 @@ enum Reaction { COUNTER, REFLECT }
 @export var tags: Array[StringName] = []
 ## What the holder cannot do while this is held.
 @export var blocks: Array[Block] = []
+## Powers the holder cannot use while this is held (C8.13a, a seal): each entry is a power id or a
+## tag a power carries (`Power.tags`), so a seal can name one power or a whole kind.
+@export var seals: Array[StringName] = []
 ## True for a sleep: the first hit that does damage ends it.
 @export var breaks_on_hit: bool = false
 ## How the holder answers a hit while this is held, and the chance (0 to 1) each one fires.
