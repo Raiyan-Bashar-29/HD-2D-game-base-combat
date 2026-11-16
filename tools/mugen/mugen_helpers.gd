@@ -11,7 +11,7 @@ extends RefCounted
 ##   `random` chances in its stand state);
 ## - `stats`: its numbers; `brain`: any `ActionBrain` field by name (`attack_range`, ...).
 ## A special with `summons: ["<helper id>", ...]` becomes a `SummonMechanism` power, with
-## `lifetime`, `cap`, `untouchable`, `moves_each` and `turns` (a battle's count) from the special. Every summon of one kit shares one status,
+## `lifetime`, `cap`, `untouchable`, `moves_each`, `turns` (a battle's count), `linked_hp` and `saved` from the special. Every summon of one kit shares one status,
 ## `status/<name>_helpers_out`, held while any helper is out; a special with `alone: true`
 ## forbids it, for "only while no helper is out".
 ##
@@ -30,6 +30,8 @@ static func summon(choices: Dictionary, moves: Dictionary, special: Dictionary, 
 	made.untouchable = DictRead.get_bool(special, "untouchable")
 	made.moves_each = DictRead.get_int(special, "moves_each")
 	made.turns = DictRead.get_int(special, "turns")
+	made.linked_hp = DictRead.get_float(special, "linked_hp")
+	made.saved = DictRead.get_bool(special, "saved")
 	made.owner_status = out_status(choices, out)
 	for helper_id: Variant in wanted:
 		var helper: Dictionary = _helper(choices, str(helper_id))

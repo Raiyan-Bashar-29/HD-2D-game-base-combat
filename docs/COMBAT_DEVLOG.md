@@ -4836,3 +4836,10 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** `DefenceWatch` (gameplay, on the player in the hybrid) and `DefenceCue` (UI) over a new `Events.defence_prompt`. A foe's swing winding up in reach, or a foe's shot under 0.5 s away, gives one prompt: BLOCK with a timed-block guard, else EVADE. C6.17 closed: both kits come from the converter.
 - **Verified:** `defence_watch_test` 6/6; in the lantern hall as Arima, two foes' swings each gave one EVADE 0.33 s ahead; ladder (below).
 - **Gaps:** no slow-down; blasts and plants not watched; passive statuses show their raw ids in the HUD line (seen in the capture, older than this).
+
+## 2026-11-16 — C8.10f · A summon's links to its user (combat 0.143.0)
+
+- **Did:** `SummonMechanism.linked_hp` and `saved`; `SummonRun` reads them through a new static `SummonLink` (flag `summon/<user>/<power>`). Leaving an area keeps the count and the summons return once the next is entered; a load brings them on the next tick; falling, the kit coming off, lifetime and cap lower it. The converter reads both from a special.
+- **Fixed on the way:** `_send_all` with none out never settled, so a count could outlive its user.
+- **Verified:** `summon_link_test` 6/6; ladder (below).
+- **Gaps:** neither Arima nor Eto uses them yet (their summons are short-lived); a return appears beside the user wherever it stands.

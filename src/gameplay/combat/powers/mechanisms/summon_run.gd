@@ -19,6 +19,11 @@ extends PowerExecutor
 ## down `turns` of the user's own turns (`tick` comes once a turn there), is sent away at 0 or
 ## once it has fallen, and goes with the battle. `cap`, the owner status, the user falling and
 ## the kit coming off treat them as they treat the field's.
+## LINKED AND SAVED (C8.10f): with `linked_hp`, a hit on one of them also takes that share of
+## the hp it lost from the user. With `saved`, the field count is kept in `Flags` under
+## `summon/<user>/<power>`; leaving the area keeps it, any other leave lowers it, and while
+## the user stands in the field with fewer out (after a new area is entered, or a load), `tick`
+## brings that many back.
 ##
 ## OWNS: the list of fighters this power has out, and their clocks.
 ## MUST NOT: steer a fighter (its brain does), or name a character.
@@ -31,6 +36,10 @@ var _out: Array[OwnedFighter] = []
 var _left: Array[float] = []
 var _called: Array[Combatant] = []
 var _turns: Array[float] = []
+## True from leaving an area until the next is entered, so nobody is brought back between.
+var _away: bool = false
+## True while the area is being left, so the saved count is not lowered.
+var _keeping: bool = false
 
 
 func use(user: Combatant, _targets: Array[Combatant], rng: RandomNumberGenerator) -> void:
@@ -53,6 +62,7 @@ func use(user: Combatant, _targets: Array[Combatant], rng: RandomNumberGenerator
 ## Time passed: in the field, seconds; in a battle, one of the user's turns. Each fighter with a
 ## lifetime (in a battle, `turns`) loses `amount`.
 func tick(amount: float) -> void:
+	_return()
 	for index: int in range(_called.size() - 1, -1, -1):
 		_turns[index] -= amount
 		var one: Combatant = _called[index]
@@ -133,6 +143,7 @@ func _send_all() -> void:
 		_send(index)
 	for index: int in range(_called.size() - 1, -1, -1):
 		_dismiss(index)
+	_settle(null)
 
 
 # Sends the `index`th called fighter out of its battle now.
@@ -170,9 +181,12 @@ func _settle(rng: RandomNumberGenerator) -> void:
 	if none and listening:
 		Events.combatant_defeated.disconnect(_on_defeated)
 		Events.area_unloading.disconnect(_on_area_left)
+		Events.combatant_damaged.disconnect(_on_damaged)
 	elif not none and not listening:
 		Events.combatant_defeated.connect(_on_defeated)
 		Events.area_unloading.connect(_on_area_left)
+		Events.combatant_damaged.connect(_on_damaged)
+	_save()
 	var status: StatusEffect = (mechanism as SummonMechanism).owner_status
 	var body: Node = holder.get_parent() if is_instance_valid(holder) else null
 	var statuses: StatusSet = StatusSet.of(body) if body != null else null
@@ -186,7 +200,42 @@ func _settle(rng: RandomNumberGenerator) -> void:
 
 
 func _on_area_left(_area_id: StringName) -> void:
+	_away = true
+	if not Events.area_entered.is_connected(_on_area_entered):
+		Events.area_entered.connect(_on_area_entered, CONNECT_ONE_SHOT)
+	_keeping = true
 	_send_all()
+	_keeping = false
+
+
+func _on_area_entered(_area_id: StringName) -> void:
+	_away = false
+
+
+func _on_damaged(who: StringName, _by: StringName, amount: int, _critical: bool) -> void:
+	if is_instance_valid(holder) and SummonLink.ours(who, _out, _called):
+		SummonLink.share_hurt(holder.get_parent(), (mechanism as SummonMechanism).linked_hp, amount)
+
+
+func _save() -> void:
+	if not _keeping:
+		SummonLink.save(SummonLink.key(holder, power, mechanism as SummonMechanism), _out.size())
+
+
+# A saved count higher than those out, with the user standing in the field: bring the rest back.
+func _return() -> void:
+	var key: StringName = SummonLink.key(holder, power, mechanism as SummonMechanism)
+	if key.is_empty() or _away or Battle.running != null:
+		return
+	var body: Node3D = holder.get_parent() as Node3D
+	var summon: SummonMechanism = mechanism as SummonMechanism
+	var size: int = mini(summon.fighters.size(), summon.brains.size())
+	var missing: int = Flags.get_int(key) - _out.size()
+	if missing <= 0 or size == 0 or not body.is_inside_tree() or Vitals.of(body).is_defeated():
+		return
+	for _index: int in missing:
+		_bring(body, summon, _out.size() % size, size)
+	_settle(null)
 
 
 func _on_defeated(who: StringName) -> void:

@@ -16,6 +16,11 @@ extends PowerMechanism
 ## - `untouchable`: nothing can hit them and no foe picks them as a target.
 ## - `moves_each`: each leaves once it has finished this many moves, so a summon can appear, do
 ##   one thing and go. 0 means no limit.
+## - `linked_hp` (C8.10f): of each hp point one of them loses, the user loses this share too
+##   (0.5: half). 0 links nothing.
+## - `saved` (C8.10f): how many are out is kept in `Flags` (`summon/<user>/<power>`), so after the
+##   area is left or a save is loaded that many come back beside the user. A leave for any other
+##   reason lowers the count.
 ## They all leave when the user falls, when the kit comes off, or when the area is left.
 ##
 ## IN A BATTLE: those already out in the field join the party as guests (C8.10d,
@@ -44,6 +49,10 @@ extends PowerMechanism
 @export var moves_each: int = 0
 ## In a battle, how many of the user's turns each stays. 0 means to the end of the battle.
 @export var turns: int = 0
+## Of each hp point one of them loses, the user loses this share too. 0 links nothing.
+@export var linked_hp: float = 0.0
+## How many are out is saved, and they come back after an area change or a load.
+@export var saved: bool = false
 
 
 func kind() -> StringName:
@@ -65,8 +74,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has %d fighters but %d brains" % [context, fighters.size(), brains.size()])
 	if fighters.has(null) or brains.has(null):
 		found.append("%s has an empty fighter or brain" % context)
-	if lifetime < 0.0 or cap < 0 or spread < 0.0 or moves_each < 0 or turns < 0:
-		found.append("%s has a negative lifetime, cap, spread, moves_each or turns" % context)
+	if lifetime < 0.0 or cap < 0 or spread < 0.0 or moves_each < 0 or turns < 0 or linked_hp < 0.0:
+		found.append("%s has a negative lifetime, cap, spread, moves_each, turns or linked_hp" % context)
 	if owner_status != null:
 		found.append_array(owner_status.problems())
 	return found
