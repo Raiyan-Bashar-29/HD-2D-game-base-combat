@@ -21,11 +21,12 @@
 			"specials": [{"state": 3050, "id": "owl_slash"}, {"state": 3100, "id": "owl_flower"},
 				{"state": 3150, "id": "owl_call"}]}
 	],
-	"passives": ["res://data/passives/reaper.tres", "res://data/passives/counter.tres"],
+	"passives": ["res://data/passives/reaper.tres", "res://data/passives/counter.tres",
+		"res://data/passives/reading.tres"],
 	"stats": {"attack": 12, "defence": 10, "max_hp": 60, "max_mp": 12},
 	"growth": {"attack": 2, "max_hp": 6},
 	"attack_tags": ["blade"],
-	"passive_budget": 4,
+	"passive_budget": 7,
 	"anims": {"2211": 2206},
 	"max_box": 8
 }

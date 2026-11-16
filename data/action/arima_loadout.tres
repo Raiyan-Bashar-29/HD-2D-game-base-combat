@@ -52,7 +52,7 @@ base_stats = Dictionary[StringName, float]({
 })
 attack_tags = Array[StringName]([&"blade"])
 power_kit = ExtResource("6_4jmx5")
-passive_budget = 4
+passive_budget = 7
 passive_budget_per_level = 1
 art = ExtResource("3_md8gw")
 level_curve = SubResource("Resource_nxdiq")

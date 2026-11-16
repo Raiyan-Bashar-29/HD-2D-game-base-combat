@@ -7,7 +7,8 @@ extends Area3D
 ## does. It refuses a hit from its own fighter, from an ally (by the faction table, as in a
 ## turn-based battle), or on a fighter already down. During i-frames it lets the hit pass and
 ## announces a dodge; inside the dodge's `perfect_window` it also announces a perfect dodge
-## (`Events.perfect_dodge`, C6.6c). Otherwise it resolves the hit:
+## (`Events.perfect_dodge`, C6.6c); the fighter's `perfect_window` stat widens that window
+## (ADD 0.5 = 1.5 times, C6.10b). Otherwise it resolves the hit:
 ## - a move wrapping a `Skill` goes through `SkillUse.apply`, exactly as in a turn-based battle;
 ## - a plain move hits `hits` times for its `power` and `element`, and each hit that lands chips
 ##   a matching weakness (`Weakness.strike`).
@@ -50,6 +51,8 @@ extends Area3D
 ## Every hurtbox in the tree joins this group, so a `LockOn` can find targets without
 ## asking the physics engine (C3.5).
 const GROUP: StringName = &"combat_hurtboxes"
+## The stat that widens this fighter's perfect-dodge window (C6.10b).
+const PERFECT_WINDOW: StringName = &"perfect_window"
 
 ## What became of a hit: every hit missed, at least one was blocked and none landed, or one landed.
 enum Outcome { MISSED, BLOCKED, LANDED }
@@ -115,7 +118,7 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 		return false
 	if timeline != null and timeline.invulnerable():
 		Events.attack_dodged.emit(target.combatant_id, attacker.combatant_id)
-		if timeline.perfectly():
+		if timeline.perfectly(target.sheet.value(PERFECT_WINDOW)):
 			Events.perfect_dodge.emit(target.combatant_id, attacker.combatant_id)
 		return true
 	var outcome: Outcome = _resolve(attacker, move, target, rng, boost)

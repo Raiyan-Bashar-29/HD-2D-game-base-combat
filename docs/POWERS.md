@@ -241,7 +241,7 @@ comes from `stat_bonuses`) and passives.
 | Narukami: Redirect | M3 `barrier` `absorb_elements [lightning]` into `store_pool charge`, then M2 `finisher` spending `charge` (power per point) | the stored charge |
 | Yukimura 1/3 | M5 `form` (group `ixa`): a fast 5-hit chain | free switch |
 | The Reaper (passive) | COUNTER reaction 25%, crit +25% against STAGGERED or broken foes (`TARGET_HAS_TAG staggered`) | — |
-| Reading (passive) | M7 `foresight`: the perfect-dodge window is ×1.5 (a `TimedWindow` widen) | — |
+| Reading (passive) | `passive/reading`: a `perfect_window` stat, ADD 0.5, so the perfect-dodge window is ×1.5 (C6.10b) | — |
 
 **As built (C9.9b), from the converter.** The table above is the design; this is what
 `data/powers/arima.tres` holds now. Every move number comes from the Arima Kisho JUS
@@ -261,7 +261,7 @@ copy numbers by state when tuning.
 
 - Each special costs 17 `focus` (500 of M.U.G.E.N's 3000 meter), has a 4 s cooldown and gives
   2 s of Resolve (defence ×1.2). `focus` starts empty: +4 per hit dealt, +2 per hit taken.
-- Passives: `passive/reaper` and `passive/counter`. Reading waits for M7 (C6.10).
+- Passives: `passive/reaper`, `passive/counter` and `passive/reading`.
 - Loadout: `data/action/arima_loadout.tres`, own chain 200 to 203. The dodge is the base's
   standard roll; the source has no roll with i-frames.
 - Art (C9.9c): `assets/fan/arima_kisho/`, unpacked by `tools/mugen_sprites.gd`; a move's

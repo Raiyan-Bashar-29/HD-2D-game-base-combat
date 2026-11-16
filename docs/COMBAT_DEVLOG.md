@@ -4824,3 +4824,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** reconverted Arima; unpacked 31 effect pictures and 6 missing sounds into `assets/fan/arima_kisho/`; rebuilt his kit and loadout. Added a `stance_id` choice to `MugenKit` so the rebuild keeps his stance power `power/arima_quinque` (the default name would have broken his slots and shown a missing string).
 - **Verified:** ladder green (4884 passed, stripped 4772); kit probe: all six specials land, shots `arima_550_shot16` and `arima_3150_shot3` strike; windowed capture shows his slot names.
 - **Gaps:** IXA Throw is a grab plus cutscene in the source, kept as a lunge; Owl call is strong (about 300 damage) because each of its hits adds the attacker's attack.
+
+## 2026-11-16 — C6.10b · Reading, a wider perfect dodge (combat 0.141.0)
+
+- **Did:** a `perfect_window` stat (`Hurtbox.PERFECT_WINDOW`) widens the perfect-dodge window through `MoveTimeline.perfectly(widen)`, capped at the first untouchable stretch. `data/passives/reading.tres` (ADD 0.5) is in Arima's kit. Also fixed the board: 0.139.0 and 0.140.0 were both bold, which failed `combat_record_test` after C8.16f.
+- **Why:** Arima's Reading (POWERS.md); a stat, not a new mechanism, so any fighter, gear or status can use it.
+- **Verified:** ladder (below); kit probe on Arima loads the kit with no problems.

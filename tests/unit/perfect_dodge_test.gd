@@ -19,7 +19,7 @@ var _pushes: Array[Vector3] = []
 
 
 func run() -> void:
-	plan(11)
+	plan(13)
 	SaveFixture.activate()
 	Flags.clear_all()
 	Events.attack_dodged.connect(_on_dodged)
@@ -28,6 +28,7 @@ func run() -> void:
 	_shapes()
 	_the_window()
 	_dodges_and_the_gauge()
+	_widened()
 	_knockback_taken()
 	_the_player_does_not_flinch()
 	Events.attack_dodged.disconnect(_on_dodged)
@@ -75,6 +76,23 @@ func _dodges_and_the_gauge() -> void:
 	hurtbox.timeline = _rolling(_roll(0.2), 0.5)
 	hurtbox.take(Combatant.of(striker), _swing(0.0), rng, Vector3.ZERO)
 	equal("a hit late in the i-frames is a plain dodge", [_dodged, _perfect, _focus(dodger)], [2, 1, 9])
+	hurtbox.timeline = null
+
+
+# A `perfect_window` stat stretches the window, never past the first i-frames (C6.10b).
+func _widened() -> void:
+	var late: MoveTimeline = _rolling(_roll(0.2), 0.25)
+	equal("a widen of 0.5 makes a hit at 1.25 times the window perfect; a huge widen stops at the i-frames' end",
+		[late.perfectly(), late.perfectly(0.5), _rolling(_roll(0.2), 0.95).perfectly(10.0),
+		_rolling(_roll(0.2), 1.05).perfectly(10.0), _rolling(_roll(0.0), 0.01).perfectly(10.0)],
+		[false, true, true, false, false])
+	var reader: Node3D = _actor(&"reader", &"side_a", {&"max_hp": 50.0, Hurtbox.PERFECT_WINDOW: 0.5})
+	var striker: Node3D = _actor(&"striker", &"side_b", {&"attack": 2.0})
+	var hurtbox: Hurtbox = _hurtbox(reader)
+	hurtbox.timeline = _rolling(_roll(0.2), 0.25)
+	_perfect = 0
+	hurtbox.take(Combatant.of(striker), _swing(0.0), RandomNumberGenerator.new(), Vector3.ZERO)
+	equal("a fighter with the stat dodges perfectly late in the window", _perfect, 1)
 	hurtbox.timeline = null
 
 

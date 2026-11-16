@@ -187,7 +187,8 @@ multiplies those (statuses' modifiers, scaling, passives' SCALE_HIT).
   lands.
 - **Dodge:** allowed when idle or in recovery (`can_dodge`), never in a wind-up or a live swing.
 - **i-frames:** `iframes_from`..`iframes_to` seconds after the move starts, the fighter cannot
-  be hit. `perfect_window` is the first part of that stretch. `iframes2_from/to` is a second
+  be hit. `perfect_window` is the first part of that stretch (a fighter's `perfect_window` stat
+  widens it: ADD 0.5 = 1.5 times). `iframes2_from/to` is a second
   stretch. `armour_from/to` is "hits land but do not push".
 - **One hit per target per swing:** `Hitbox` remembers whom this swing struck. `hits` > 1 on a
   plain move lands several times inside that one strike.

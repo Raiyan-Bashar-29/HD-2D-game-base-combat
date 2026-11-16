@@ -162,9 +162,11 @@ func speed() -> float:
 
 
 ## True while untouchable AND inside the move's `perfect_window` (C6.6c): a hit now is dodged
-## perfectly, because the dodge started only just before it.
-func perfectly() -> bool:
-	return move != null and _first_iframes() and elapsed < move.iframes_from + move.perfect_window
+## perfectly, because the dodge started only just before it. `widen` stretches the window
+## (0.5 = 1.5 times, C6.10b); it never reaches past the first untouchable stretch.
+func perfectly(widen: float = 0.0) -> bool:
+	return move != null and _first_iframes() \
+		and elapsed < move.iframes_from + move.perfect_window * maxf(0.0, 1.0 + widen)
 
 
 func _first_iframes() -> bool:
