@@ -35,6 +35,7 @@ const ONE_MORE_KEY: String = "ui.battle.log.one_more"
 const FOLLOW_UP_KEY: String = "ui.battle.log.follow_up"
 const SWAP_KEY: String = "ui.battle.log.swap"
 const REACTED_KEY: String = "ui.battle.log.reaction"
+const REINFORCED_KEY: String = "ui.battle.log.reinforcements"
 const ROW_BACK_KEY: String = "ui.battle.log.row_back"
 const ROW_FRONT_KEY: String = "ui.battle.log.row_front"
 const TEAM_KEY: String = "ui.battle.log.team"
@@ -74,6 +75,7 @@ func start() -> void:
 	Events.party_swapped.connect(_on_swapped)
 	Events.elements_reacted.connect(_on_reacted)
 	Events.row_changed.connect(_on_row)
+	Events.reinforcements_arrived.connect(_on_reinforced)
 	Events.team_attacked.connect(_on_team)
 	Events.combatant_defeated.connect(_on_defeated)
 	Events.status_applied.connect(_on_status)
@@ -91,7 +93,8 @@ func stop() -> void:
 			[Events.countered, _on_countered], [Events.skill_reflected, _on_reflected],
 			[Events.weakness_revealed, _on_weak], [Events.combatant_broken, _on_broken], [Events.extra_turn_earned, _on_one_more],
 			[Events.followed_up, _on_followed_up], [Events.party_swapped, _on_swapped],
-			[Events.elements_reacted, _on_reacted], [Events.row_changed, _on_row], [Events.team_attacked, _on_team],
+			[Events.elements_reacted, _on_reacted], [Events.row_changed, _on_row],
+			[Events.reinforcements_arrived, _on_reinforced], [Events.team_attacked, _on_team],
 			[Events.combatant_defeated, _on_defeated], [Events.status_applied, _on_status],
 			[Events.battlefield_raised, _on_field_raised], [Events.battlefield_lowered, _on_field_lowered],
 			[Events.battlefield_clashed, _on_field_clashed]]:
@@ -193,6 +196,13 @@ func _on_reacted(who: StringName, reaction_id: StringName) -> void:
 
 func _on_row(who: StringName, back: bool) -> void:
 	_add(ROW_BACK_KEY if back else ROW_FRONT_KEY, {"name": _name(who)})
+
+
+func _on_reinforced(who: Array[StringName]) -> void:
+	var names: PackedStringArray = []
+	for one: StringName in who:
+		names.append(_name(one))
+	_add(REINFORCED_KEY, {"names": ", ".join(names)})
 
 
 func _on_team(_who: StringName, members: Array[StringName]) -> void:

@@ -313,6 +313,7 @@ ui.battle.log.weak,,{name} is weak to {key}!,[~~{name} is weak to {key}!~~]
 ui.battle.log.one_more,,{name} hit a weakness: one more turn!,[~~{name} hit a weakness: one more turn!~~]
 ui.battle.log.follow_up,,{name} follows up!,[~~{name} follows up!~~]
 ui.battle.log.reaction,,{reaction} on {name}!,[~~{reaction} on {name}!~~]
+ui.battle.log.reinforcements,,"More foes arrive: {names}","[~~More foes arrive: {names}~~]"
 ui.battle.log.row_back,,{name} is knocked to the back row,[~~{name} is knocked to the back row~~]
 ui.battle.log.row_front,,{name} is pulled to the front row,[~~{name} is pulled to the front row~~]
 ui.battle.log.swap,,{in} takes {out}'s place,[~~{in} takes {out}'s place~~]

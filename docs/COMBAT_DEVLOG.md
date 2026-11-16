@@ -5028,3 +5028,13 @@ lowered a foe's hp draws follow-ups (shared `follow_ups`). `RoundScheduler.skip_
 **Verified.** Ladder: 0 warnings; 5032 passed, 0 failed; checkers silent; stripped 4920 passed.
 `team_attack_test` 10. **Gaps.** Field follow-ups (now in C8.22); the order preview does not
 yet show a skipped turn.
+
+## 2026-11-16 — C8.22a · The reserve steps in, foes come in waves
+
+**Did.** `BattleReserve.refill`, called once from `Battle._settle`: a fallen party member's slot
+goes to the first standing reserve member, then `BattleSetup.reinforce` brings the encounter's
+next `wave` of `reinforcements` when every foe is down. Reinforcements' loot is rolled on a win.
+`Events.reinforcements_arrived` and a log line.
+**Verified.** Ladder: 0 warnings; 5038 passed, 0 failed; checkers silent; stripped 4926 passed.
+`reinforcement_test` 5. **Gaps.** No experience for reinforcements beyond the encounter's own;
+no demo wave (C8.22b).

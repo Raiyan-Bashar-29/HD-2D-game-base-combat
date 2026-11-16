@@ -307,6 +307,8 @@ signal party_swapped(out: StringName, coming: StringName)
 signal elements_reacted(who: StringName, reaction_id: StringName)
 ## A hit moved `who` to the back row (`back`) or the front. Emitted by `Rows` (C8.5).
 signal row_changed(who: StringName, back: bool)
+## Held-back foes `who` joined the battle. Emitted by `BattleSetup.reinforce` (C8.22a).
+signal reinforcements_arrived(who: Array[StringName])
 ## `who` used a team tech, struck by every one of `members` (`who` first). Emitted by `TeamRun`
 ## (C8.2).
 signal team_attacked(who: StringName, members: Array[StringName])

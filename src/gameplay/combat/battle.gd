@@ -378,6 +378,8 @@ func _settle() -> void:
 		elif not down and not scheduler.has(fighter.combatant_id):
 			# Revived this turn (C2.13): they take turns again from the next ordering.
 			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
+	# The reserve steps in for the fallen, and held-back foes arrive (C8.22a).
+	BattleReserve.refill(self)
 	_check_outcome()
 
 

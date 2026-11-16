@@ -30,6 +30,9 @@ extends RefCounted
 ## guest when the user is in the party, one more foe otherwise. It starts full, keeps no gear
 ## and leaves no pool flags (group `SUMMONED`); `dismiss` takes it out of the battle again.
 ##
+## REINFORCEMENTS (C8.22a): `reinforce` brings the encounter's next `wave` of held-back foes in
+## when every foe is down; each is built fresh as `<id>_r<n>` in group `REINFORCED`.
+##
 ## THE RESERVE LINE (C8.3): `bench` members are built like the party into `Battle.reserve`, off
 ## the field until a SWAP brings one in; `release` stands them up and frees them like the party.
 ##
@@ -42,6 +45,8 @@ extends RefCounted
 
 
 ## Fighters brought into a running battle by a power: their pools are forgotten on `release`.
+## Foes that arrived as reinforcements (C8.22a).
+const REINFORCED: StringName = &"battle_reinforced"
 const SUMMONED: StringName = &"battle_summoned"
 
 
@@ -223,3 +228,32 @@ static func _foes(encounter: Encounter, holder: Node) -> Array[Combatant]:
 			id = StringName("%s_%d" % [id, counted[def.combatant_id]])
 		theirs.append(_fighter(def, id, holder, true))
 	return theirs
+
+
+## When every foe of `battle` is down, the encounter's next `wave` of `reinforcements` join it.
+## Returns how many arrived.
+static func reinforce(battle: Battle) -> int:
+	var encounter: Encounter = battle.encounter
+	if encounter == null or encounter.reinforcements.is_empty() or battle.enemies.is_empty():
+		return 0
+	var arrived: int = 0
+	for foe: Combatant in battle.enemies:
+		if not Vitals.of(foe.get_parent()).is_defeated():
+			return 0
+		if foe.is_in_group(REINFORCED):
+			arrived += 1
+	var holder: Node = battle.enemies[0].get_parent().get_parent()
+	var ids: Array[StringName] = []
+	while ids.size() < maxi(1, encounter.wave) and arrived + ids.size() < encounter.reinforcements.size():
+		var def: CombatantDef = encounter.reinforcements[arrived + ids.size()]
+		var id := StringName("%s_r%d" % [def.combatant_id, arrived + ids.size() + 1])
+		var foe: Combatant = _fighter(def, id, holder, true)
+		foe.add_to_group(REINFORCED)
+		battle.enemies.append(foe)
+		battle.defs[id] = def
+		battle.brains[id] = def.brain if def.brain != null else BattleBrain.new()
+		battle.admit(foe)
+		ids.append(id)
+	if not ids.is_empty():
+		Events.reinforcements_arrived.emit(ids)
+	return ids.size()
