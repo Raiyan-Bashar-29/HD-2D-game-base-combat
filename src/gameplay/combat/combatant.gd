@@ -237,6 +237,8 @@ func _land(result: DamageResult, from: StringName, vitals: Vitals) -> int:
 	if result.blocked:
 		Events.attack_blocked.emit(combatant_id, from)
 		return 0
+	# Two elements meeting on this fighter may react and grow the hit (C8.4).
+	ElementReactions.land(self, result)
 	# The overshield takes the hit first (C9.5a); the event below still tells the whole hit.
 	var soaked: int = HitGuard.soak(vitals, result)
 	# A hit that would fell this fighter may be survived (C9.2b).

@@ -74,7 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C8.4** (elemental reactions), then C8.5. C8.3 (the reserve line and SWAP, combat 0.164.0) is done. C8.2 (team attacks, combat 0.163.0) is done. C8.1 (one more turn for a weakness hit, combat 0.162.0) is done. C7.7 (gear screen on G) and C7.8 (craft screen, `CraftStation`, combat 0.161.0) are done. C8.19, C8.18 (combat 0.158.0), C8.17 (combat 0.157.0), C8.14, C8.13, C8.11 and C6.13 are done.
+- **Next: C8.5** (rows and positions). C8.4 (elemental reactions as data, combat 0.165.0) is done. C8.3 (the reserve line and SWAP, combat 0.164.0) is done. C8.2 (team attacks, combat 0.163.0) is done. C8.1 (one more turn for a weakness hit, combat 0.162.0) is done. C7.7 (gear screen on G) and C7.8 (craft screen, `CraftStation`, combat 0.161.0) are done. C8.19, C8.18 (combat 0.158.0), C8.17 (combat 0.157.0), C8.14, C8.13, C8.11 and C6.13 are done.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**

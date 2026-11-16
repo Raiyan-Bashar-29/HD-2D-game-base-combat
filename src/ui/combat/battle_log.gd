@@ -34,6 +34,7 @@ const BROKEN_KEY: String = "ui.battle.log.broken"
 const ONE_MORE_KEY: String = "ui.battle.log.one_more"
 const FOLLOW_UP_KEY: String = "ui.battle.log.follow_up"
 const SWAP_KEY: String = "ui.battle.log.swap"
+const REACTED_KEY: String = "ui.battle.log.reaction"
 const TEAM_KEY: String = "ui.battle.log.team"
 const DEFEATED_KEY: String = "ui.battle.log.defeated"
 const STATUS_KEY: String = "ui.battle.log.status"
@@ -69,6 +70,7 @@ func start() -> void:
 	Events.extra_turn_earned.connect(_on_one_more)
 	Events.followed_up.connect(_on_followed_up)
 	Events.party_swapped.connect(_on_swapped)
+	Events.elements_reacted.connect(_on_reacted)
 	Events.team_attacked.connect(_on_team)
 	Events.combatant_defeated.connect(_on_defeated)
 	Events.status_applied.connect(_on_status)
@@ -85,7 +87,8 @@ func stop() -> void:
 			[Events.status_resisted, _on_resisted], [Events.turn_skipped, _on_skipped],
 			[Events.countered, _on_countered], [Events.skill_reflected, _on_reflected],
 			[Events.weakness_revealed, _on_weak], [Events.combatant_broken, _on_broken], [Events.extra_turn_earned, _on_one_more],
-			[Events.followed_up, _on_followed_up], [Events.party_swapped, _on_swapped], [Events.team_attacked, _on_team],
+			[Events.followed_up, _on_followed_up], [Events.party_swapped, _on_swapped],
+			[Events.elements_reacted, _on_reacted], [Events.team_attacked, _on_team],
 			[Events.combatant_defeated, _on_defeated], [Events.status_applied, _on_status],
 			[Events.battlefield_raised, _on_field_raised], [Events.battlefield_lowered, _on_field_lowered],
 			[Events.battlefield_clashed, _on_field_clashed]]:
@@ -177,6 +180,12 @@ func _on_followed_up(who: StringName, _against: StringName) -> void:
 
 func _on_swapped(out: StringName, coming: StringName) -> void:
 	_add(SWAP_KEY, {"in": _name(coming), "out": _name(out)})
+
+
+func _on_reacted(who: StringName, reaction_id: StringName) -> void:
+	var reaction: ElementReaction = ReactionDb.of(reaction_id)
+	var shown: String = tr(reaction.name_key) if reaction != null else String(reaction_id).get_file()
+	_add(REACTED_KEY, {"name": _name(who), "reaction": shown})
 
 
 func _on_team(_who: StringName, members: Array[StringName]) -> void:

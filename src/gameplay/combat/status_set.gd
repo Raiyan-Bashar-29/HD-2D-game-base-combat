@@ -369,6 +369,8 @@ func _apply_save(data: Dictionary, _from_version: int) -> void:
 		if effect == null:
 			effect = Weakness.built_in(StringName(key))
 		if effect == null:
+			effect = ElementReactions.built_in(StringName(key))
+		if effect == null:
 			effect = PowerSet.passive_of(get_parent(), StringName(key))
 		if effect == null:
 			effect = PassiveSet.held_of(get_parent(), StringName(key))

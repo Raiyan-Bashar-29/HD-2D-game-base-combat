@@ -4981,3 +4981,14 @@ a log line. The screen offers Swap while a reserve stands (menu building moved i
 **Verified.** Ladder: 0 warnings; 5008 passed, 0 failed; checkers silent; stripped 4896 passed.
 `reserve_test` 7. **Gaps.** No enemy reinforcements beyond summons; losing the active line loses
 the fight; no free swap; the demo sets no reserve, so it is not seen in the game yet.
+
+## 2026-11-16 — C8.4 · Elemental reactions
+
+**Did.** `ElementReaction` (content) and `ReactionDb` (`data/reactions/`, id `reaction/<name>`);
+`ElementReactions` (gameplay): a landing hit whose element a reaction names marks the target;
+the paired element then reacts (`damage_bonus`, `status`, mark used up unless `keeps_mark`),
+announced by `Events.elements_reacted` and a battle-log line. Hooked once in `Combatant._land`,
+so battles, the field and the hybrid all react. Marks are built-in statuses a save reloads.
+**Verified.** Ladder: 0 warnings; 5015 passed, 0 failed; checkers silent; stripped 4903 passed.
+`element_reaction_test` 6. **Gaps.** The demo uses one element, so no reaction file ships; marks
+have no icon of their own; no spreading reactions.
