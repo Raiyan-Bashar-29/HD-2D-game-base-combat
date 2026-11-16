@@ -53,6 +53,8 @@ extends Node
 ##                        capture shows the power working (C8.10b: summons beside the hero).
 ##                        A token `battle:<encounter id>` in the list opens that turn-based
 ##                        battle at its turn: --press=1,2,battle:encounter/<id> (C8.10d).
+##   --party=<a,b>|<c,d>  set the active line-up and the reserve line AFTER the area lands, so a
+##                        battle capture shows the reserve and its Swap row (C8.3).
 ##   --new-game           start a game. Since WP-12 the boot goes to the main menu, not to an
 ##                        area, so without this there is no world to photograph.
 ##   --npc-settle=<n>     let NPCs walk for n physics frames, so a screenshot shows them AT
@@ -103,6 +105,8 @@ func _parse_arguments() -> void:
 			_stand_by(argument.trim_prefix("--stand-by="))
 		elif argument.begins_with("--flag="):
 			_force_flag(argument.trim_prefix("--flag="))
+		elif argument.begins_with("--party="):
+			_force_party(argument.trim_prefix("--party="))
 		elif argument.begins_with("--standing="):
 			_force_standing(argument.trim_prefix("--standing="))
 		elif argument.begins_with("--cycle="):
@@ -271,6 +275,21 @@ func _force_flag(value: String) -> void:
 	if _fresh_game:
 		await _wait_for_area()
 	Log.info("test", "--%s by command line" % DevCommands.set_flag(value))
+
+
+func _force_party(value: String) -> void:
+	await get_tree().process_frame
+	if _fresh_game:
+		await _wait_for_area()
+	var lines: PackedStringArray = value.split("|")
+	var active: Array[StringName] = []
+	var bench: Array[StringName] = []
+	for id: String in lines[0].split(",", false):
+		active.append(StringName(id))
+	for id: String in (lines[1] if lines.size() > 1 else "").split(",", false):
+		bench.append(StringName(id))
+	Party.arrange(active, bench)
+	Log.info("test", "--party %s | %s by command line" % [active, bench])
 
 
 func _force_standing(value: String) -> void:

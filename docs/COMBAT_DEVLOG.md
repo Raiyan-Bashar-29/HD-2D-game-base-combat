@@ -5010,3 +5010,12 @@ on `Crafting.dismantle`. The gear screen names them after the piece and counts t
 **Verified.** Ladder: 0 warnings; 5029 passed, 0 failed; checkers silent; stripped 4917 passed.
 `affix_test` 6. **Gaps.** Field drops added to the bag outside `Rewards.give` do not roll; no
 demo affix files.
+
+## 2026-11-16 — End of stage 3 (turn-battle rules)
+
+**Did.** Stage-end pass. Upstream: already merged (base 5.18.1, nothing new). Capture:
+`--new-game "--party=wanderer|keeper_ally" --press=battle:encounter/thorn_wisps`, windowed under
+xvfb; the battle screen draws, the Keeper waits off the field and the menu ends in **Swap**
+(new dev option `--party=<active>|<reserve>`, debug only). The stage's gaps are rows C8.21 and
+C8.22. Correction to the C7.2b entry: field kills go through `Rewards.give` too, so field drops
+roll affixes; only items added to a bag some other way do not.
