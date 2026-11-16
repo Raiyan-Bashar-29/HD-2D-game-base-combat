@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://src/core/boot/game_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://src/ui/hud/screen_fade.gd" id="2_fade"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://src/ui/combat/battle_host.gd" id="40_battle"]
 [ext_resource type="Script" path="res://src/gameplay/combat/action_host.gd" id="41_action"]
 [ext_resource type="Script" path="res://src/ui/combat/combat_hud.gd" id="42_hud"]
+[ext_resource type="Script" path="res://src/ui/combat/defence_cue.gd" id="43_cue"]
 [ext_resource type="Script" path="res://src/ui/combat/command_host.gd" id="43_command"]
 [ext_resource type="Script" path="res://src/ui/combat/loadout_host.gd" id="44_loadout"]
 [ext_resource type="Script" path="res://src/gameplay/combat/combat_save_guard.gd" id="44_guard"]
@@ -49,6 +50,9 @@ script = ExtResource("7_clock")
 
 [node name="CombatHud" type="Label" parent="UILayer"]
 script = ExtResource("42_hud")
+
+[node name="DefenceCue" type="Label" parent="UILayer"]
+script = ExtResource("43_cue")
 
 [node name="UiRoot" type="Control" parent="UILayer"]
 anchors_preset = 15

@@ -4830,3 +4830,9 @@ beaten, so the fight would need its owner down first (the owner falling sends th
 - **Did:** a `perfect_window` stat (`Hurtbox.PERFECT_WINDOW`) widens the perfect-dodge window through `MoveTimeline.perfectly(widen)`, capped at the first untouchable stretch. `data/passives/reading.tres` (ADD 0.5) is in Arima's kit. Also fixed the board: 0.139.0 and 0.140.0 were both bold, which failed `combat_record_test` after C8.16f.
 - **Why:** Arima's Reading (POWERS.md); a stat, not a new mechanism, so any fighter, gear or status can use it.
 - **Verified:** ladder (below); kit probe on Arima loads the kit with no problems.
+
+## 2026-11-16 — C8.20 · Defence prompts in the hybrid (combat 0.142.0)
+
+- **Did:** `DefenceWatch` (gameplay, on the player in the hybrid) and `DefenceCue` (UI) over a new `Events.defence_prompt`. A foe's swing winding up in reach, or a foe's shot under 0.5 s away, gives one prompt: BLOCK with a timed-block guard, else EVADE. C6.17 closed: both kits come from the converter.
+- **Verified:** `defence_watch_test` 6/6; in the lantern hall as Arima, two foes' swings each gave one EVADE 0.33 s ahead; ladder (below).
+- **Gaps:** no slow-down; blasts and plants not watched; passive statuses show their raw ids in the HUD line (seen in the capture, older than this).

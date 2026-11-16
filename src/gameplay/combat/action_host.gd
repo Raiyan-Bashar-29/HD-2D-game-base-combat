@@ -65,6 +65,9 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	if loadout.defeat_rule != null:
 		defeat.rule = loadout.defeat_rule
 	body.add_child(defeat)
+	# The hybrid's defence prompt (C8.20), for the player only.
+	if loadout.atb != null:
+		body.add_child(DefenceWatch.new())
 	return fighter
 
 

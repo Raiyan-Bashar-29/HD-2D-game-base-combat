@@ -311,6 +311,9 @@ signal attack_dodged(who: StringName, by: StringName)
 ## That dodge was perfect: the hit came in the first `perfect_window` seconds of `who`'s i-frames.
 ## Emitted by `Hurtbox.take` (C6.6c), just after `attack_dodged`.
 signal perfect_dodge(who: StringName, by: StringName)
+## The hybrid's defence prompt (C8.20): a foe's hit is about to land on the player. `kind` is
+## `&"evade"` or `&"block"`, `seconds` the time left; `&""` clears it. Emitted by `DefenceWatch`.
+signal defence_prompt(kind: StringName, seconds: float)
 ## A real-time hit asks for `who` to be pushed by `push`: the direction times the distance in
 ## metres, flat on the ground. Emitted by `Hurtbox.take` (C3.3); the fighter's body moves (C3.4).
 signal knockback_requested(who: StringName, push: Vector3)
