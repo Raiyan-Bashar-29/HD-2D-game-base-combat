@@ -19,7 +19,8 @@ extends Node
 ##    (`Combatant.field_moves`, C7.3b), unless a running power hands over others on top: a
 ##    form's own attack chain and dodge (`current_moves`, C6.5b).
 ## 3a. Holding a thing overhead (`Carried`, C8.18b), the attack button throws it instead.
-## 3b. HOLD TO ATTACK (C5.4c): with the flag `combat/hold_to_attack` on, a held attack button
+## 3b. HOLD TO ATTACK (C5.4c): with it on (the player's setting, C5.3d, or a save's flag
+##     `combat/hold_to_attack`, which wins until the setting changes), a held attack button
 ##     presses again every frame, so the chain plays on as long as it is held. A held press is
 ##     never a timed press (C8.8c), never throws a carried thing, and the hold after a throw
 ##     never swings (C8.27a).
@@ -98,7 +99,8 @@ func _physics_process(delta: float) -> void:
 	for slot: int in CombatActions.SLOTS.size():
 		if Input.is_action_just_pressed(CombatActions.SLOTS[slot]):
 			press_slot(slot)
-	var held: bool = Flags.get_bool(HOLD_FLAG) and Input.is_action_pressed(CombatActions.ATTACK)
+	var held: bool = CombatSettings.flag_or_setting(HOLD_FLAG, CombatSettings.HOLD_TO_ATTACK) \
+			and Input.is_action_pressed(CombatActions.ATTACK)
 	drive(delta, Input.is_action_just_pressed(CombatActions.ATTACK),
 		Input.is_action_just_pressed(CombatActions.DODGE), held)
 

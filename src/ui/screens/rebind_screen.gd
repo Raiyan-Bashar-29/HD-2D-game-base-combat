@@ -7,12 +7,13 @@ extends MenuScreen
 ## comment "in the order a rebinding screen should list them" and then had no reader for eleven
 ## packages. This is the reader; the order still lives with the actions, not here.
 ##
-## PRESS A ROW, THEN PRESS THE THING YOU WANT. The next key or pad button becomes the binding.
+## PRESS A ROW, THEN PRESS THE THING YOU WANT. The next key, pad button or trigger pushed past
+## half-way (T7.5) becomes the binding: `KeyBindings.bindable` decides.
 ## Escape aborts without changing anything, which is why capture happens in `_input`: it runs
 ## before `UiRoot._unhandled_input`, so the escape that cancels listening cannot also close the
 ## screen behind it.
 ##
-## A KEY AND A PAD BUTTON ARE SEPARATE HALVES. Rebinding one never touches the other, and
+## A KEY AND A PAD BUTTON ARE SEPARATE HALVES, and a trigger is a pad button here. Rebinding one never touches the other, and
 ## neither touches the analogue stick - see `KeyBindings`. So a player who reassigns the whole
 ## keyboard still has a working controller, which is the exit criterion this package is judged
 ## on.
@@ -32,6 +33,12 @@ const ACTION_PREFIX: String = "ui.action."
 
 ## The action waiting for a button, or &"" when nothing is listening.
 var _listening: StringName = &""
+## The trigger a row was just bound to, and that row's action (T7.8). The rest of the same pull is
+## still arriving, a motion event each time it moves, and every one is now that action's press:
+## Cancel bound to a trigger closed the menus one by one. They are swallowed here until the trigger
+## falls back under the action's deadzone.
+var _pulled: InputEventJoypadMotion = null
+var _pulled_action: StringName = &""
 ## One entry per row in draw order, empty for the reset row. Parallel array rather than metadata
 ## on the Button: `get_meta` returns a Variant, and an unsafe cast is an error here.
 var _actions: Array[StringName] = []
@@ -53,11 +60,11 @@ func _init() -> void:
 ## UiRoot sees the escape that closes the screen, or aborting a rebind would also dismiss the
 ## menu behind it.
 func _input(event: InputEvent) -> void:
+	if _swallowed(event):
+		return
 	if _listening == &"":
 		return
-	if not event.is_pressed() or event.is_echo():
-		return
-	if not (event is InputEventKey or event is InputEventJoypadButton):
+	if not KeyBindings.bindable(event):
 		return
 	get_viewport().set_input_as_handled()
 	var key: InputEventKey = event as InputEventKey
@@ -68,6 +75,8 @@ func _input(event: InputEvent) -> void:
 	_stop_listening()
 	if KeyBindings.rebind(action, event):
 		_redraw(action)
+		_pulled = event as InputEventJoypadMotion
+		_pulled_action = action
 
 
 func _fill() -> void:
@@ -113,6 +122,17 @@ func listen(action: StringName) -> void:
 	if previous != &"" and previous != action:
 		_redraw(previous)
 	_redraw(action)
+
+
+## True for an event of the trigger just bound, still in the same pull, which nothing else may see.
+func _swallowed(event: InputEvent) -> bool:
+	var motion: InputEventJoypadMotion = event as InputEventJoypadMotion
+	if _pulled == null or motion == null or motion.axis != _pulled.axis or motion.device != _pulled.device:
+		return false
+	get_viewport().set_input_as_handled()
+	if absf(motion.axis_value) < InputMap.action_get_deadzone(_pulled_action):
+		_pulled = null
+	return true
 
 
 func _stop_listening() -> void:

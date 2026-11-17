@@ -63,8 +63,12 @@ func _landed(attacker: Combatant, target: Combatant) -> Array:
 	return [landed.amount, before - Vitals.of(target.get_parent()).current(&"hp")]
 
 
-## C8.27a: the project default applies with no flag, and choosing none turns even it off.
+## C8.27a: the project default applies with no flag, and choosing none turns even it off. With
+## no player setting installed (C5.3b): a case that built an `ActionHost` installed them, and then
+## the setting, whose default the project's was at boot, decides instead.
 func _default_off() -> void:
+	var real: GameSettings = Settings.game
+	Settings.game = GameSettings.new(Settings.DEFAULTS)
 	var kept: Variant = ProjectSettings.get_setting(CombatDifficulty.SETTING, "")
 	ProjectSettings.set_setting(CombatDifficulty.SETTING, String(EASY))
 	Flags.erase_flag(CombatDifficulty.FLAG)
@@ -72,6 +76,7 @@ func _default_off() -> void:
 	CombatDifficulty.choose(&"")
 	var chose_none: Difficulty = CombatDifficulty.current()
 	ProjectSettings.set_setting(CombatDifficulty.SETTING, kept)
+	Settings.game = real
 	equal("with no flag the project default is on; choosing none turns it off",
 		[by_default != null and by_default.id == EASY, chose_none], [true, null])
 

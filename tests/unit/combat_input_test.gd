@@ -15,7 +15,7 @@ extends TestCase
 ## MUST NOT: leave a rebind behind; it ends with `Actions.reset_bindings()`.
 
 func run() -> void:
-	plan(27)
+	plan(28)
 	CombatActions.install()
 	_the_actions()
 	_the_layers()
@@ -43,6 +43,9 @@ func _the_actions() -> void:
 	CombatActions.install()
 	equal("installing twice adds nothing", InputMap.action_get_events(CombatActions.ATTACK).size(), before)
 	equal("a prompt can name the key", KeyBindings.text_for(CombatActions.ATTACK, false) != "", true)
+	equal("the controls screen names the triggers dodge and lock on sit on (C5.3c)",
+		[KeyBindings.text_for(CombatActions.DODGE, true), KeyBindings.text_for(CombatActions.LOCK_ON, true)],
+		[tr(KeyBindings.RIGHT_TRIGGER_KEY), tr(KeyBindings.LEFT_TRIGGER_KEY)])
 
 
 func _the_layers() -> void:

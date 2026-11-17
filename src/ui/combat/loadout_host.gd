@@ -21,8 +21,8 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	var gear: bool = event.is_action_pressed(CombatActions.GEAR)
-	if not gear and not event.is_action_pressed(CombatActions.LOADOUT):
+	var gear: bool = Actions.pressed_now(event, CombatActions.GEAR)
+	if not gear and not Actions.pressed_now(event, CombatActions.LOADOUT):
 		return
 	var stack: UiRoot = UiRoot.find(self)
 	if stack != null and toggle(stack, Director.player, gear):

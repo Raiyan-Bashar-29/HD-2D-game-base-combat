@@ -18,6 +18,151 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.22.1
+
+*2026-11-17 — T7.9: a game's setting row reads its value by its default's kind.*
+
+**A consuming game does: nothing.**
+
+**What changed.**
+- The settings screen reads a row's value as its default's kind before finding it among the
+  choices. `Settings.set_value` accepts an int for a float setting, and `Array.find` tells 1 from
+  1.0, so a float row holding 1 lost its label and a press set the same value again.
+- `Settings.game.add` refuses labels on a bool, which reads On and Off and has no choices to
+  name. They were accepted and then never shown.
+
+**Why.** Found by the same review as 5.22.0.
+
+---
+## 5.22.0
+
+*2026-11-17 — T7.8: one pull of a trigger is one press.*
+
+**A consuming game does:** read an action from an EVENT through `Actions.pressed_now(event, action)`
+rather than `event.is_action_pressed(action)`, wherever a player could bind a trigger to it. A
+game that reads its actions with `Input.is_action_just_pressed` already behaves.
+
+**What changed.**
+- New `Actions.pressed_now(event, action)`. A key or a pad button sends one press event, but a
+  trigger sends a motion event each time it moves, and every one past the deadzone reads as
+  pressed. Since 5.20.0 let a trigger be bound to any action, one pull of a trigger bound to the
+  inventory opened and closed it once per event, and a Cancel on a trigger closed every screen.
+  For a trigger, only the event that pressed the action in `Input` counts.
+- `ScreenKeys` (pause, inventory, journal, map), `UiRoot` (cancel, pause) and `DialogueScreen`
+  (cancel, interact) read through it.
+- The controls screen swallows the rest of the pull that binds a trigger, until the trigger falls
+  back under the action's deadzone. Binding Cancel to a trigger had closed the menus behind it.
+
+**Why.** Found by a review of 5.19.0 to 5.21.1 run from the combat fork.
+
+---
+## 5.21.1
+
+*2026-11-17 — T7.7: the debug `flag` verb keeps text as text.*
+
+**A consuming game does: nothing.** Only the development harness changed.
+
+**What changed.** `DevCommands.set_flag`, behind `flag key:value` in the console and `--flag=` on
+the command line, read every value that was not `true` or `false` as an integer, so
+`--flag=quest/target:area/hall` stored 0. A whole number is still an integer; anything else now
+stays text. Found by the combat fork, whose own copy had the fix (its C8.27a).
+
+---
+## 5.21.0
+
+*2026-11-17 — T7.6: a game's setting can name its choices.*
+
+**A consuming game does: nothing.** A setting added without labels reads as before.
+
+**What changed.**
+- `Settings.game.add(path, default, choices, labels)` takes an optional `labels`: one
+  localization key per choice, in the same order. It is refused when they are not one per choice.
+- `GameSettings.labels_of(path)` returns them.
+- `SettingsScreen` shows a labelled setting's value through its own key, whatever the kind, instead
+  of `value_key` or the number. `options_test` checks those keys exist.
+
+**How a game uses it.** For choices that come from data and already have names:
+
+```gdscript
+Settings.game.add("combat/level", "level/normal", ["level/easy", "level/normal"],
+		["level.easy.name", "level.normal.name"] as Array[String])
+```
+
+**Why.** The combat fork's difficulties are data files, each with its own `name_key`. Without
+labels the fork would have had to repeat every name under `ui.settings.*`.
+
+---
+## 5.20.0
+
+*2026-11-17 — T7.5: a pad trigger can be named and rebound.*
+
+**A consuming game does: nothing.** An action with no trigger behaves exactly as before. One
+that has a trigger in its defaults now shows it in the controls screen's pad column instead of
+"—". A game that prunes its CSV keeps the two new `ui.rebind.trigger_*` rows: they are `ui.` rows.
+
+**What changed.**
+- `KeyBindings` treats a trigger (`JOY_AXIS_TRIGGER_LEFT` or `_RIGHT`) as the pad half of a
+  binding, like a pad button:
+  - `text_for(action, true)` names it, through `ui.rebind.trigger_left` and `_right`;
+  - `rebind` accepts one, and a trigger and a pad button replace each other. A stick axis is
+    still never erased;
+  - it is stored in the pad field as `KeyBindings.TRIGGER_CODE` (200) plus its axis, and put
+    back at boot. A stored code past 200 that is not a trigger is ignored.
+- New `KeyBindings.event_for_trigger(axis)` and `KeyBindings.bindable(event)`. The second is what
+  the controls screen now asks before binding: a key, a pad button, or a trigger pushed past
+  half-way, not a release, an echo, a mouse button or a stick.
+- `code_of` returns `TRIGGER_CODE + axis` for a trigger pressed in its own direction.
+
+**Why.** The combat fork found it: its dodge and lock-on sit on the triggers, so their pad column
+read "—", and a trigger could not be chosen when rebinding.
+
+---
+## 5.19.0
+
+*2026-11-17 — T7.4: a game can add its own settings.*
+
+**A consuming game does: nothing.** With no setting added, `Settings`, the settings file and the
+settings screen behave exactly as before.
+
+**What changed.**
+- New `GameSettings` (`src/core/state/game_settings.gd`), held by `Settings.game`.
+  `Settings.game.add(path, default, choices)` adds one of the game's own settings:
+  - `default` is a bool, an int, a float or a String;
+  - `choices` are the values one press walks, in order. An int or a String must have them, and
+    the default must be one of them; a float without them steps from 0 to 1 by a tenth;
+  - from then on `Settings.get_*`, `set_value` (with its type check and its
+    `setting_changed` announcement) and `reset_to_defaults` treat it as a built-in;
+  - a value the player saved comes back with no restoring: the file is read whole at boot;
+  - it refuses (returns false, changing nothing) an empty or built-in path, a kind a settings file
+    cannot hold, an int or String with no choices, a choice of another kind, or a default that is
+    not among the choices.
+- `Settings.default_of(path)`: a built-in or added default, null for neither.
+- `GameSettings.every()`: every setting in drawing order. An added setting joins the end of the
+  built-in section its path names (`gameplay/...`), or opens its own section after them.
+- `SettingsScreen` draws `every()`. A game's row walks its choices; a String value reads through
+  `SettingsScreen.value_key(path, value)`, `ui.settings.<section>.<key>.<value>`, with a slash
+  read as a dot and `""` as `none`; an int reads as its number. A row's kind is its default's.
+- `options_test` counts the screen's rows and section headings from `every()`, and checks the
+  computed keys of every added setting too.
+
+**How a game uses it.** Once, at boot, from any node:
+
+```gdscript
+func _ready() -> void:
+	Settings.game.add("combat/assist", true)
+	Settings.game.add("combat/speed", "normal", ["slow", "normal", "fast"])
+```
+
+and CSV rows for its section heading and labels: `ui.settings.section.combat`,
+`ui.settings.combat.assist`, `ui.settings.combat.speed`, and one per String value,
+`ui.settings.combat.speed.slow` and so on. A game that prunes its CSV keeps them: they are `ui.`
+rows. Its systems read the value with `Settings.get_*` and listen to `Events.setting_changed`.
+
+**Why.** The combat fork found it. Its difficulty, aim assist and battle modes could only be
+project settings, because `Settings.DEFAULTS` is a constant a game cannot add to without editing
+this base.
+
+---
 ## 5.18.1
 
 *2026-10-31 — T7.3 follow-up: `game_actions_test` counted the controls screen wrongly in a game.*

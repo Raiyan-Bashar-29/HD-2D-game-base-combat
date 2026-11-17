@@ -64,10 +64,17 @@ static func for_fighter(fighter: Combatant, offered: Array[BattleCommand]) -> Co
 	return screen
 
 
-## How slow the fight runs while a menu is open: the project setting, never below 0.
+## How slow the fight runs while a menu is open: the project setting, never below 0. Once the
+## combat settings are installed, the player's wait mode (C5.3b) stops the fight instead, and with
+## it off a project set to 0 runs at `SLOW_DEFAULT`.
 static func slow() -> float:
 	var configured: float = ProjectSettings.get_setting(SLOW_SETTING, SLOW_DEFAULT)
-	return maxf(0.0, configured)
+	configured = maxf(0.0, configured)
+	if Settings.default_of(CombatSettings.WAIT_MODE) == null:
+		return configured
+	if CombatSettings.is_on(CombatSettings.WAIT_MODE):
+		return 0.0
+	return configured if configured > 0.0 else SLOW_DEFAULT
 
 
 ## The words for `reason`, or "" for `Reason.NONE`. The battle menu's keys where the meaning is

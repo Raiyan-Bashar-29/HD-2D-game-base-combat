@@ -50,16 +50,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	var stack: UiRoot = UiRoot.find(self)
 	if stack == null:
 		return
-	if event.is_action_pressed(Actions.PAUSE) and toggle_pause_menu(stack):
+	if Actions.pressed_now(event, Actions.PAUSE) and toggle_pause_menu(stack):
 		get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed(Actions.INVENTORY) and toggle_inventory(stack):
+	if Actions.pressed_now(event, Actions.INVENTORY) and toggle_inventory(stack):
 		get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed(Actions.JOURNAL) and toggle_journal(stack):
+	if Actions.pressed_now(event, Actions.JOURNAL) and toggle_journal(stack):
 		get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed(Actions.MAP) and toggle_map(stack):
+	if Actions.pressed_now(event, Actions.MAP) and toggle_map(stack):
 		get_viewport().set_input_as_handled()
 		return
 	if event.is_action_pressed(Actions.DEBUG_CONSOLE) and toggle_console(stack):

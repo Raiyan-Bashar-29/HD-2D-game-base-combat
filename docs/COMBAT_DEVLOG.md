@@ -5230,3 +5230,64 @@ uses it for the free swap of a waiting member, which before lost that member's t
 **Verified.** Ladder: 0 warnings; 5100 passed, 0 failed; checkers silent; stripped 4986 passed. A
 windowed capture of the thorn wisps with `combat/auto_battle` on shows "Auto: On" as the only row, focused.
 **Gaps.** None new.
+
+## 2026-11-17 — C5.3c · Triggers on the controls screen
+
+**Did.** Merged base 5.21.0. Its T7.5 (built upstream for this row) makes a pad trigger the pad
+half of a binding: `KeyBindings.text_for` names it, `rebind` accepts one, and it is saved as
+`TRIGGER_CODE` plus its axis. Dodge and lock on now read "Right Trigger" and "Left Trigger" in the
+controls screen's pad column, where they read "—". `combat_input_test` asserts it (28).
+**Why.** C5.3a's capture found the dashes; a trigger could not be chosen when rebinding either.
+**Verified.** Ladder: 0 warnings; 5192 passed, 0 failed; checkers silent; stripped 5078 passed. A windowed capture of the
+controls screen (`--open-menu=pause,controls`) shows both triggers named.
+**Gaps.** Pad buttons are still named in engine English ("Left Action"); only the triggers are
+localized (upstream's gap).
+
+## 2026-11-17 — C5.3b · Combat settings
+
+**Did.** New `CombatSettings`: `install()` (called by `ActionHost` beside `CombatActions.install`)
+adds `combat/difficulty` (none and every difficulty file, named by each file's `name_key`),
+`combat/auto_battle`, `combat/wait_mode` and `combat/lock_on_assist` through upstream's
+`Settings.game.add`. `CombatDifficulty.current`, `AutoBattle.on`, `CommandOverlay.slow` and
+`LockOn.refresh` read them; lock-on assist moves a lock whose target fell to the nearest other foe
+in reach (not one that only went out of reach). Changing the difficulty or auto-battle setting
+drops the save's own flag, which wins until then. Six CSV rows. `combat_settings_test` 25;
+`difficulty_test` checks the project-default path with no settings installed, since a case that
+builds an `ActionHost` now installs them.
+**Why.** The board row: these were project settings or save flags a player never saw. Upstream
+T7.4 (a game's own settings) and T7.6 (labels for its choices) were built for it.
+**Verified.** Red first: with `is_on` and `difficulty` stubbed, 7 of 25 failed. Ladder: 0 warnings;
+5217 passed, 0 failed; checkers silent; stripped 5103 passed. A windowed capture of the settings
+screen (`--open-menu=pause,settings`) shows the Combat section and its four rows.
+**Gaps.** Hold-to-attack is still only a flag. The settings screen does not say a save's own flag
+is overriding a setting; the next change of the setting clears it.
+
+## 2026-11-17 — C5.3d · Hold to attack as a setting
+
+**Did.** `accessibility/hold_to_attack`, added by `CombatSettings.install` into upstream's own
+Accessibility section (T7.4 places a game's row at the end of the built-in section it names).
+New `CombatSettings.flag_or_setting(flag, path)`: a save's flag when it has one, else the setting.
+`ActionFighter` reads hold-to-attack through it and `AutoBattle.on` now does too; changing the
+setting drops the flag. One CSV row. `combat_settings_test` 30.
+**Why.** C5.3b's recorded gap: hold to attack, an accessibility option, was still only a flag.
+**Verified.** Red first: with `flag_or_setting` reading only the flag, 5 failed (auto-battle's
+three and two of hold's). Ladder: 0 warnings; 5222 passed, 0 failed; checkers silent; stripped
+5108 passed.
+**Gaps.** None new.
+
+## 2026-11-17 — C5.3e · Review fixes: settings and triggers
+
+**Did.** A review of base T7.4 to T7.7 and C5.3b to C5.3d (three reviewers, each finding checked
+by a second agent) confirmed 8 of 21 findings. Four were the base's: a trigger bound to a screen
+key fired once per motion event, the pull that bound a trigger leaked into the menus, a float row
+holding an int lost its label, and bool labels were accepted and ignored. They are fixed upstream
+as T7.8 and T7.9 (base 5.22.0 and 5.22.1), merged here. In this fork, `CommandHost` and
+`LoadoutHost` read their actions through `Actions.pressed_now`. `CombatSettings.install(loadout,
+battles)` adds a row only where the game has its feature (a difficulty file; a party roster,
+`has_battles`; a field loadout; ATB rules for wait mode). `combat_settings_test` 35 checks those
+rows, the project's defaults seeding the settings (which the old test computed with the code's own
+logic), and every key the combat rows draw (`options_test` runs before any case installs them).
+**Verified.** Red first: with every row added and one CSV row deleted, 3 failed. Ladder: 0 warnings;
+5237 passed, 0 failed; checkers silent; stripped 5123 passed.
+**Gaps.** None new. Rejected findings (13) were refuted by the second agent, among them lock-on
+assist turning to a foe behind (it can, by design: `cycle` does too).

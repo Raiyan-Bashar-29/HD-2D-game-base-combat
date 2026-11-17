@@ -3,7 +3,8 @@ extends Node
 ## Where the action formula (C3) joins a running game. One lives under GameRoot.
 ##
 ## IN PLAIN WORDS: when the game starts it installs the combat actions (attack, dodge, lock on,
-## cycle the target), so they exist before any fighter asks for them. Then, each time the player
+## cycle the target), so they exist before any fighter asks for them, and the combat settings
+## (C5.3b), so the settings screen offers them from the main menu on. Then, each time the player
 ## spawns, it fits them out as a real-time fighter from the loadout `[combat] action/loadout`
 ## names (C3.4). A game whose setting is empty has no field combat, and its player is exactly
 ## what upstream built. `player.tscn` is never edited: the fighter's parts are added as
@@ -15,7 +16,7 @@ extends Node
 ## AND IT GRANTS A FIELD KILL'S REWARD (C3.8), when an `ActionEnemy` announces its defeat, and
 ## brings the loadout's companions along as followers (C4.7, `FieldParty`).
 ##
-## OWNS: installing the combat actions, fitting the player with a fighter, and field rewards.
+## OWNS: installing the combat actions and settings, fitting the player with a fighter, and field rewards.
 ## MUST NOT: read input itself, or run a fight. `ActionFighter` does that.
 
 const LOADOUT_SETTING: String = "combat/action/loadout"
@@ -23,6 +24,7 @@ const LOADOUT_SETTING: String = "combat/action/loadout"
 
 func _ready() -> void:
 	CombatActions.install()
+	CombatSettings.install(configured(), CombatSettings.has_battles())
 	Log.info("combat", "Action inputs ready: %d" % CombatActions.ALL.size())
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.field_enemy_defeated.connect(_on_field_enemy_defeated)
