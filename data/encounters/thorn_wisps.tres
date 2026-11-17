@@ -61,4 +61,5 @@ enemies = Array[ExtResource("2_def")]([SubResource("wisp"), SubResource("wisp")]
 reinforcements = Array[ExtResource("2_def")]([SubResource("wisp")])
 free_swaps = true
 experience = 30
+reinforcement_experience = 15
 loot = Array[StringName]([&"item/stone_chip"])

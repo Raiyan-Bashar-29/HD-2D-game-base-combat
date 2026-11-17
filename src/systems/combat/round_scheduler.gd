@@ -9,6 +9,7 @@ extends TurnScheduler
 ## from the next round, which is how most round-based games read; anyone who leaves is skipped.
 ##
 ## A SKIPPED TURN (C8.21): `skip_next` makes a fighter's next place in the order pass it by.
+## `preview` leaves that place out too (C8.23).
 ##
 ## OWNS: the order of the current round and the round count.
 ## MUST NOT: let anyone act twice in a round.
@@ -46,16 +47,21 @@ func preview(count: int) -> Array[StringName]:
 	var order: Array[StringName] = _ordered()
 	if order.is_empty():
 		return out
-	for id: StringName in _queue:
-		if out.size() >= count:
-			return out
-		if has(id):
-			out.append(id)
-	while out.size() < count:
-		for id: StringName in order:
-			if out.size() >= count:
-				break
-			out.append(id)
+	# A turn `skip_next` took away is left out here too, as `next` will leave it out (C8.23).
+	var skips: Dictionary[StringName, int] = _skips.duplicate()
+	var stream: Array[StringName] = _queue.duplicate()
+	var guard: int = 0
+	while out.size() < count and guard < 64 * (count + 1):
+		guard += 1
+		if stream.is_empty():
+			stream = order.duplicate()
+		var id: StringName = stream.pop_front()
+		if not has(id):
+			continue
+		if skips.get(id, 0) > 0:
+			skips[id] -= 1
+			continue
+		out.append(id)
 	return out
 
 

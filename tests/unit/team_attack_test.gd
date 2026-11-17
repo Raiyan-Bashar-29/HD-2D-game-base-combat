@@ -113,8 +113,9 @@ func _rounds_and_menu() -> void:
 	rounds.join(&"a", 10.0)
 	rounds.join(&"b", 5.0)
 	rounds.skip_next(&"b")
-	equal("in a round order a partner's next turn passes it by", [rounds.next(), rounds.next(), rounds.next()],
-		[&"a", &"a", &"b"])
+	var shown: Array[StringName] = rounds.preview(3)
+	equal("in a round order a partner's next turn passes it by, and the preview shows it (C8.23)",
+		[shown, rounds.next(), rounds.next(), rounds.next()], [[&"a", &"a", &"b"], &"a", &"a", &"b"])
 	var categories: Array[String] = []
 	for command: BattleCommand in PowerMenu.commands(_hero):
 		categories.append(command.category)

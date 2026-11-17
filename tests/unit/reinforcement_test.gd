@@ -18,12 +18,15 @@ var _swaps: Array = []
 
 
 func run() -> void:
-	plan(5)
+	plan(6)
+	SaveFixture.activate()
+	Flags.clear_all()
 	var holder := Node.new()
 	attach(holder)
 	_stepping_in(holder)
 	_waves(holder)
 	holder.free()
+	Flags.clear_all()
 
 
 func _stepping_in(holder: Node) -> void:
@@ -60,6 +63,8 @@ func _waves(holder: Node) -> void:
 	_spend_turn(battle)
 	Events.reinforcements_arrived.disconnect(_on_arrived)
 	equal("the fight is won when the last has fallen", battle.outcome(), Battle.Outcome.WON)
+	equal("each foe that arrived adds the encounter's reinforcement experience (C8.23)",
+		Rewards.grant(battle, battle.encounter, null).experience, 10 + 2 * 4)
 	BattleSetup.release(battle)
 
 
@@ -88,6 +93,8 @@ func _encounter(late: Array[CombatantDef]) -> Encounter:
 	encounter.id = &"encounter/fixture_waves"
 	encounter.enemies = [_def(FOE, &"side_b")]
 	encounter.reinforcements = late
+	encounter.experience = 10
+	encounter.reinforcement_experience = 4
 	return encounter
 
 

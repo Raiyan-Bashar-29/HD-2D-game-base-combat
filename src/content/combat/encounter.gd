@@ -33,6 +33,8 @@ enum TurnOrder { ROUNDS, CTB }
 @export_group("On win")
 ## Given to every party member standing at the end of a won battle.
 @export var experience: int = 0
+## Added to `experience` for each foe that arrived as a reinforcement (C8.23).
+@export var reinforcement_experience: int = 0
 ## Item ids added to the player's inventory on a win, one each. An item that does not fit is
 ## left behind and reported, `Inventory.add`'s all-or-nothing rule.
 @export var loot: Array[StringName] = []

@@ -5066,3 +5066,14 @@ field fighter with no `StatusSet` (an `action_enemy_test` body); `answer_all` no
 **Gaps.** A field follow-up lands at once, with no swing of its own. A free swap trades only the
 fighter whose turn it is. The order preview does not show a lost turn; reinforcements give no
 experience of their own (both C8.23).
+
+## 2026-11-17 — C8.23 · The preview shows a lost turn; reinforcements give experience
+
+**Did.** `RoundScheduler.preview` walks the queue, then whole orders, against a copy of the skip
+counts, so a partner's lost turn (C8.21) is left out of "Next:" as `next` leaves it out.
+`Encounter.reinforcement_experience`, added per arrived reinforcement in `Rewards.grant`; the
+thorn wisps' third wisp gives 15.
+**Verified.** Ladder: 0 warnings; 5050 passed, 0 failed; checkers silent; stripped 4937 passed.
+`team_attack_test` (the preview), `reinforcement_test` 6. No capture: the demo has no team tech
+to make a lost turn, and the readout's drawing is unchanged.
+**Gaps.** None new. Stage 3's recorded gaps are closed.

@@ -57,11 +57,13 @@ static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) ->
 	for enemy: CombatantDef in encounter.enemies:
 		if enemy != null:
 			tables.append(enemy.loot_table)
-	# Foes that arrived as reinforcements drop their own loot too (C8.22a).
+	# Foes that arrived as reinforcements drop their own loot (C8.22a) and add experience (C8.23).
+	var experience: int = encounter.experience
 	for foe: Combatant in battle.enemies:
 		if foe.is_in_group(BattleSetup.REINFORCED) and battle.defs.has(foe.combatant_id):
 			tables.append(battle.defs[foe.combatant_id].loot_table)
-	return give(encounter.experience, encounter.loot + spoils + LootRoll.all(tables, battle.rng),
+			experience += encounter.reinforcement_experience
+	return give(experience, encounter.loot + spoils + LootRoll.all(tables, battle.rng),
 		standing, inventory)
 
 
