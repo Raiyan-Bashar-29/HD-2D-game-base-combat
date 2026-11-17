@@ -23,7 +23,8 @@ extends MenuScreen
 ## AUTO-BATTLE (C5.4b). The first menu ends with an Auto row that turns `AutoBattle` on and off.
 ## While it is on, `advance` stops at each party member's turn as it would for the player, and
 ## `tick_auto` plays that turn by its brain once every `AUTO_DELAY` seconds, so the log can be
-## followed and the row pressed again in between. Each fighter's line is `BattleReadout`'s.
+## followed and the row pressed again in between; on such a turn the Auto row is the only row,
+## so it has the focus (C8.27b). Each fighter's line and each command's label are `BattleReadout`'s.
 ##
 ## CANCEL CANNOT LEAVE A BATTLE. `closes_on_cancel` is false: FLEE is the way out, when allowed.
 ## When it ends, the outcome is shown with one row that closes the screen, and closing releases
@@ -148,8 +149,7 @@ func tick_auto(delta: float) -> bool:
 		return false
 	_auto_wait = AUTO_DELAY
 	BattleAi.take_turn(battle, battle.brain_of(battle.current()))
-	_category = ""
-	_pending = null
+	_new_turn()
 	advance()
 	return true
 
@@ -163,7 +163,16 @@ func _free_pair(pair: Array) -> void:
 func _toggle_auto() -> void:
 	AutoBattle.toggle()
 	_auto_wait = AUTO_DELAY
+	_new_turn()
 	refresh()
+
+
+# A turn starts on the first menu, with no Boost level, nothing pending and no refusal shown.
+func _new_turn() -> void:
+	_boost = 0
+	_category = ""
+	_pending = null
+	_refused = false
 
 
 # Rebuilds the menu's rows from scratch. MenuScreen calls this on every refresh().
@@ -185,6 +194,10 @@ func _fill() -> void:
 	if _refused:
 		add_note(tr(REFUSED_KEY))
 	if battle.current() == null:
+		return
+	# Auto plays this turn: only its row, so it has the focus and one press stops it (C8.27b).
+	if AutoBattle.plays(battle, battle.current()):
+		add_row(tr(AUTO_ON_KEY), _toggle_auto)
 		return
 	# A command is waiting for a target: list the targets, plus Back.
 	if _pending != null:
@@ -244,7 +257,7 @@ func _menu() -> Array[BattleCommand]:
 # fighter cannot use it now. A greyed row has no action at all.
 func _command_row(command: BattleCommand) -> void:
 	var reason: String = BattleMenu.refusal(battle, command, _boost)
-	var text: String = _label(command)
+	var text: String = tr(BattleReadout.command_key(command))
 	var skill: Skill = command.skill
 	if skill != null and skill.toggle_status != null:
 		var on: bool = SkillUse.stance_on(battle.current(), skill)
@@ -279,23 +292,6 @@ func _open(category: String) -> void:
 	_category = category
 	_refused = false
 	refresh()
-
-
-func _label(command: BattleCommand) -> String:
-	if command.label_key != "":
-		return tr(command.label_key)
-	match command.kind:
-		BattleCommand.Kind.ATTACK:
-			return tr(ATTACK_KEY)
-		BattleCommand.Kind.DEFEND:
-			return tr(DEFEND_KEY)
-		BattleCommand.Kind.FLEE:
-			return tr(FLEE_KEY)
-		BattleCommand.Kind.SWAP:
-			return tr(SWAP_KEY)
-		BattleCommand.Kind.ROW:
-			return tr(ROW_KEY)
-	return tr(command.skill.name_key)
 
 
 # A one-target command asks for a target first; anything else acts immediately. A stance acts
@@ -335,9 +331,7 @@ func _act(command: BattleCommand, targets: Array[Combatant]) -> void:
 	# If the battle refused (e.g. not enough MP), show a line saying so and keep the menu.
 	_refused = not battle.act(command, targets, _boost)
 	if not _refused:
-		# The action happened: the next turn starts on the first menu with no Boost chosen.
-		_boost = 0
-		_category = ""
+		_new_turn()
 	advance()
 
 

@@ -1412,7 +1412,7 @@ several, so a demo battle shows them.
 | One more turn for a weakness hit | `Encounter` | `weakness_extra_turns` (0 is off; the most in a row) |
 | A waiting ally follows up an attack, in a battle and in the field | a `StatusEffect` the ally holds | `reactions = [FOLLOW_UP]`, `reaction_chance`, `counter_move` (empty: one plain hit) |
 | Dual, triple and all-out techs | a `Power` with a `TeamMechanism` | `partners` (empty: every ally), `needs_broken`, `power`, `hits`, `element`, `partner_delay`; listed under Team |
-| The reserve line | `Party.arrange(active, reserve)` | a SWAP brings a reserve member in; a fallen member's slot is filled at once; `Encounter.free_swaps` makes a SWAP keep the turn |
+| The reserve line | `Party.arrange(active, reserve)` | a SWAP brings a reserve member in; a fallen member's slot is filled at once; `Encounter.free_swaps` makes a SWAP keep the turn, or trade a waiting member, who keeps its place in the order |
 | Front and back rows | `CombatantDef` | `back_row`; a skill tagged `ranged` or `magic` is not softened; tags `knock_back` and `pull` move a fighter; Row steps between them |
 | Elemental reactions | `data/reactions/<name>.tres`, an `ElementReaction` | `first`, `second`, `damage_bonus`, `status`, `keeps_mark` |
 | Foes in waves | `Encounter` | `reinforcements`, `wave` (how many join at once), `reinforcement_experience` |

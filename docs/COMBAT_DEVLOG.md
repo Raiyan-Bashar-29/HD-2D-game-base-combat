@@ -5215,3 +5215,18 @@ keeps non-numbers as text (the documented `--flag=combat/difficulty:...` stored 
 **Verified.** Ladder: 0 warnings; 5094 passed, 0 failed; checkers silent; stripped 4980 passed.
 **Gaps.** The other four (auto-battle's Boost and focus, `below_any_target` aim, the free swap's
 turn order) are C8.27b. `set_flag` is an upstream file; the same fix belongs upstream.
+
+## 2026-11-17 — C8.27b · Review fixes: battles
+
+**Did.** The second review's other four defects. `BattleScreen._new_turn` clears the Boost level,
+category, pending command and refusal after an auto-played turn, a manual one and an Auto toggle;
+on a turn Auto plays, `_fill` draws only the Auto row, which takes the focus (a pad could hardly
+reach it before, the menu being rebuilt every 0.6 s). `BattleAi._aim` narrows a `below_any_target`
+entry's targets to those under the line (the Keeper healed a full 40/40 member over a 45/100 one).
+`TurnScheduler.hand_over`, overridden by `RoundScheduler` (queued slot; `_acted` keeps anyone from
+a second turn in a round) and `CtbScheduler` (remaining wait); `BattleReserve.swap(keep_place)`
+uses it for the free swap of a waiting member, which before lost that member's turn this round.
+`BattleScreen._label` moved to `BattleReadout.command_key` to stay in budget.
+**Verified.** Ladder: 0 warnings; 5100 passed, 0 failed; checkers silent; stripped 4986 passed. A
+windowed capture of the thorn wisps with `combat/auto_battle` on shows "Auto: On" as the only row, focused.
+**Gaps.** None new.

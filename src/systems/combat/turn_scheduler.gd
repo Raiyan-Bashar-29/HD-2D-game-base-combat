@@ -19,6 +19,9 @@ extends Resource
 ## `next()` asks `_take_owed()` first and its `preview()` starts from `_owed_preview()`. Extra
 ## turns in a row stop at `weakness_extra_turns`, and one turn earns at most one.
 ##
+## A HAND-OVER (C8.27b): `hand_over` puts a newcomer in a leaver's place in the order, so a free
+## swap costs the one coming in no turn. Each subclass also hands over its own queue or wait.
+##
 ## OWNS: who is in the queue, each one's speed, and the order they act in.
 ## MUST NOT: know what a turn does, read stats itself, or use the global random generator.
 
@@ -43,6 +46,18 @@ func join(id: StringName, speed: float) -> void:
 func leave(id: StringName) -> void:
 	_ids.erase(id)
 	_speeds.erase(id)
+
+
+## `in_id`, not in the battle yet, takes `out_id`'s place in the order with `speed`. False,
+## changing nothing, when `out_id` is not in or `in_id` already is.
+func hand_over(out_id: StringName, in_id: StringName, speed: float) -> bool:
+	var at: int = _ids.find(out_id)
+	if at < 0 or has(in_id):
+		return false
+	_ids[at] = in_id
+	_speeds.erase(out_id)
+	_speeds[in_id] = maxf(0.0, speed)
+	return true
 
 
 func has(id: StringName) -> bool:

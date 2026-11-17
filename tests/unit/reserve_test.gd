@@ -18,7 +18,7 @@ var _swaps: Array = []
 
 
 func run() -> void:
-	plan(12)
+	plan(13)
 	SaveFixture.activate()
 	Flags.clear_all()
 	var holder := Node.new()
@@ -116,6 +116,8 @@ func _waiting(stack: UiRoot, holder: Node, roster: Array[CombatantDef]) -> void:
 		[listed, traded, battle.party, battle.current(), battle.reserve.has(mate)], [true, true, [hero, bench], hero, true])
 	equal("only once a turn", [BattleReserve.free_swap(battle, bench, mate), BattleReserve.waiting_pairs(battle)],
 		[false, []])
+	battle.act(_command(BattleCommand.Kind.DEFEND), [])
+	equal("the one coming in acts in the waiting member's place this round (C8.27b)", battle.next_turn(), bench)
 	stack.close_all()
 	BattleSetup.release(battle)
 	Battle.running = null

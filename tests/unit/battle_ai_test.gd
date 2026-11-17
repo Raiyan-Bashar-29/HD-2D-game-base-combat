@@ -12,7 +12,7 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(12)
+	plan(13)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_content_problems()
@@ -159,6 +159,14 @@ func _a_target_condition_waits() -> void:
 	Vitals.of(battle.party[1].get_parent()).set_to(&"hp", 30)
 	BattleAi.take_turn(battle, _brain([finish, _entry(guard, 1.0)]))
 	equal("once one is under half it fires, at the most hurt", [_hp(battle.party[0]), _hp(battle.party[1])], [100, 25])
+	_free_all()
+	battle = _duel(true)
+	Vitals.of(battle.party[0].get_parent()).set_to(&"hp", 45)
+	battle.party[1].sheet.set_base(&"max_hp", 40.0)
+	Vitals.of(battle.party[1].get_parent()).set_to(&"hp", 40)
+	BattleAi.take_turn(battle, _brain([finish, _entry(guard, 1.0)]))
+	equal("it aims among those under the line, not at a lower hp that is not (C8.27b)",
+		[_hp(battle.party[0]), _hp(battle.party[1])], [40, 40])
 	_free_all()
 
 

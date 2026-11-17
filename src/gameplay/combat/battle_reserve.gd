@@ -13,7 +13,8 @@ extends RefCounted
 ## FREE SWAP (C8.22c): with the encounter's `free_swaps`, `Battle` hands the swapping fighter's
 ## turn to the one coming in, once a turn. That once-a-turn free swap may instead trade a party
 ## member WAITING for its turn (C8.26, `free_swap`, offered by `waiting_pairs`): nobody's turn is
-## spent, and the one whose turn it is acts on. `all_out` says whether a side has anyone left.
+## spent, the one coming in takes the waiting member's place in the order (C8.27b), and the one
+## whose turn it is acts on. `all_out` says whether a side has anyone left.
 ##
 ## OWNS: who may come in, the exchange itself, and whether a side has anyone left standing.
 ## MUST NOT: decide whose turn it is, or end the battle. `Battle` does both.
@@ -37,8 +38,10 @@ static func ready(battle: Battle) -> Array[Combatant]:
 
 
 ## `out` steps back for `targets[0]`, a standing reserve member. False, changing nothing, when
-## `out` is not a party member of its own, or there is not exactly one such target.
-static func swap(battle: Battle, out: Combatant, targets: Array[Combatant]) -> bool:
+## `out` is not a party member of its own, or there is not exactly one such target. With
+## `keep_place` the one coming in takes `out`'s place in the turn order; else it joins anew.
+static func swap(battle: Battle, out: Combatant, targets: Array[Combatant],
+		keep_place: bool = false) -> bool:
 	var slot: int = battle.party.find(out)
 	if slot < 0 or battle.guests.has(out.combatant_id) or targets.size() != 1:
 		return false
@@ -48,7 +51,9 @@ static func swap(battle: Battle, out: Combatant, targets: Array[Combatant]) -> b
 	battle.reserve.erase(coming)
 	battle.reserve.append(out)
 	battle.party[slot] = coming
-	battle.scheduler.leave(out.combatant_id)
+	if not (keep_place and battle.scheduler.hand_over(out.combatant_id, coming.combatant_id,
+			coming.sheet.value(&"speed"))):
+		battle.scheduler.leave(out.combatant_id)
 	battle.admit(coming)
 	Events.party_swapped.emit(out.combatant_id, coming.combatant_id)
 	return true
@@ -88,10 +93,11 @@ static func all_out(side: Array[Combatant], skip: Array[StringName] = []) -> boo
 
 
 ## A free swap for a waiting party member (C8.26): `out`, not the one whose turn it is, steps back
-## for `coming` and no turn is spent. False, changing nothing, unless the encounter's free swaps
-## are on, this turn's is unspent, and it is a party member's turn.
+## for `coming` and no turn is spent; `coming` takes `out`'s place in the turn order (C8.27b).
+## False, changing nothing, unless the encounter's free swaps are on, this turn's is unspent, and
+## it is a party member's turn.
 static func free_swap(battle: Battle, out: Combatant, coming: Combatant) -> bool:
-	if not waiting_pairs(battle).has([out, coming]) or not swap(battle, out, [coming]):
+	if not waiting_pairs(battle).has([out, coming]) or not swap(battle, out, [coming], true):
 		return false
 	battle.free_swap_used = true
 	return true

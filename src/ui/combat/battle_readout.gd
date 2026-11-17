@@ -6,7 +6,7 @@ extends RefCounted
 ## IN PLAIN WORDS: the fighter's name and hp, then every other pool it has, the weapon it wears,
 ## its statuses and the weaknesses the player has already found. Parts it has none of are left out.
 ##
-## Also the key of the line saying how the battle ended.
+## Also the key of the line saying how the battle ended, and of a command's row (C8.27b).
 ##
 ## OWNS: the line's parts and their order, and which outcome line is shown.
 ## MUST NOT: change the fight, or hold state.
@@ -52,3 +52,21 @@ static func outcome_key(battle: Battle) -> String:
 
 static func _tr(key: String) -> String:
 	return TranslationServer.translate(key)
+
+
+## The text key of `command`'s row: its own label, its kind's, or its skill's name.
+static func command_key(command: BattleCommand) -> String:
+	if command.label_key != "":
+		return command.label_key
+	match command.kind:
+		BattleCommand.Kind.ATTACK:
+			return BattleScreen.ATTACK_KEY
+		BattleCommand.Kind.DEFEND:
+			return BattleScreen.DEFEND_KEY
+		BattleCommand.Kind.FLEE:
+			return BattleScreen.FLEE_KEY
+		BattleCommand.Kind.SWAP:
+			return BattleScreen.SWAP_KEY
+		BattleCommand.Kind.ROW:
+			return BattleScreen.ROW_KEY
+	return command.skill.name_key

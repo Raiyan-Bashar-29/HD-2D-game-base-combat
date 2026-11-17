@@ -11,12 +11,16 @@ extends TurnScheduler
 ## A SKIPPED TURN (C8.21): `skip_next` makes a fighter's next place in the order pass it by.
 ## `preview` leaves that place out too (C8.23).
 ##
-## OWNS: the order of the current round and the round count.
+## A HAND-OVER (C8.27b) gives the newcomer the leaver's place in this round's queue, unless it
+## already acted this round, so it never acts twice in one.
+##
+## OWNS: the order of the current round, who has acted in it, and the round count.
 ## MUST NOT: let anyone act twice in a round.
 
 var _queue: Array[StringName] = []
 var _round: int = 0
 var _skips: Dictionary[StringName, int] = {}
+var _acted: Array[StringName] = []
 
 
 ## `id` loses its next turn in the order, as a team tech's partner does (C8.21).
@@ -35,8 +39,10 @@ func next() -> StringName:
 			if _queue.is_empty():
 				return &""
 			_round += 1
+			_acted.clear()
 		var id: StringName = _queue.pop_front()
 		if _skips.get(id, 0) <= 0:
+			_acted.append(id)
 			return id
 		_skips[id] -= 1
 	return &""
@@ -63,6 +69,17 @@ func preview(count: int) -> Array[StringName]:
 			continue
 		out.append(id)
 	return out
+
+
+func hand_over(out_id: StringName, in_id: StringName, speed: float) -> bool:
+	if not super(out_id, in_id, speed):
+		return false
+	var at: int = _queue.find(out_id)
+	if at >= 0 and _acted.has(in_id):
+		_queue.remove_at(at)
+	elif at >= 0:
+		_queue[at] = in_id
+	return true
 
 
 ## Which round the last `next()` belongs to: 1 for the first, 0 before anyone has acted.

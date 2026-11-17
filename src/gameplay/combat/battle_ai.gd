@@ -81,6 +81,13 @@ static func _aim(context: BrainContext, entry: BrainEntry) -> Array[Combatant]:
 		return legal
 	# A taunting foe must be the one picked (C8.6).
 	legal = Aggro.narrow(context.actor, legal)
+	# Allowed by the pool test on a target, the pick is among those under the line (C8.27b).
+	if entry.below_any_target and entry.below_fraction > 0.0:
+		var under: Array[Combatant] = []
+		for fighter: Combatant in legal:
+			if _under(fighter, entry):
+				under.append(fighter)
+		legal = under if not under.is_empty() else legal
 	match entry.target_rule:
 		BrainEntry.TargetRule.SELF:
 			aimed.append(context.actor)
@@ -108,8 +115,13 @@ static func _below(context: BrainContext, entry: BrainEntry) -> bool:
 	if entry.below_any_target:
 		asked = context.targets_for(entry.command)
 	for fighter: Combatant in asked:
-		var vitals: Vitals = Vitals.of(fighter.get_parent())
-		var ceiling: int = vitals.maximum(entry.below_pool) if vitals != null else 0
-		if ceiling > 0 and float(vitals.current(entry.below_pool)) < entry.below_fraction * ceiling:
+		if _under(fighter, entry):
 			return true
 	return false
+
+
+# True when `fighter`'s `below_pool` is under `below_fraction` of its maximum.
+static func _under(fighter: Combatant, entry: BrainEntry) -> bool:
+	var vitals: Vitals = Vitals.of(fighter.get_parent())
+	var ceiling: int = vitals.maximum(entry.below_pool) if vitals != null else 0
+	return ceiling > 0 and float(vitals.current(entry.below_pool)) < entry.below_fraction * ceiling
