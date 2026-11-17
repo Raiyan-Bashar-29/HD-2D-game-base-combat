@@ -25,9 +25,11 @@ extends TestCase
 ## screens draw.
 ## MUST NOT: assert what raises a menu or what a slot header says. menus_test.gd owns those.
 
-## Section headings plus the reset row: what the settings screen draws beyond one row per
-## setting. Five sections, because `locale` has no slash and lands under "general".
-const SETTINGS_EXTRA_ROWS: int = 6
+## The reset row: what the settings screen draws beyond one row per setting and one heading per
+## section. The sections are counted from `Settings.game.every()`, not written down, so a game that
+## added a section of its own (T7.4) still passes here; the built-ins alone give five, because
+## `locale` has no slash and lands under "general".
+const SETTINGS_EXTRA_ROWS: int = 1
 
 var _stack: UiRoot = null
 
@@ -51,8 +53,9 @@ func _settings_covers_every_row() -> void:
 	var screen := SettingsScreen.new()
 	equal("the settings screen opens", _stack.open(screen), true)
 	var rows: Array[String] = screen.row_texts()
-	equal("every setting has a row", rows.size(), Settings.DEFAULTS.size() + SETTINGS_EXTRA_ROWS)
-	for path: String in Settings.DEFAULTS:
+	var every: Array[String] = Settings.game.every()
+	equal("every setting has a row", rows.size(), every.size() + _sections(every) + SETTINGS_EXTRA_ROWS)
+	for path: String in every:
 		equal("a row for %s" % path, rows.has(screen.row_text(path)), true)
 	equal("the first line is a section heading", rows[0], tr("%svideo" % SettingsScreen.SECTION_PREFIX))
 	equal("the last is the reset row", rows[rows.size() - 1], tr(SettingsScreen.RESET_KEY))
@@ -165,10 +168,15 @@ func _rebinding_listens_one_row_at_a_time() -> void:
 ## text scan could ever find one. They are asserted mechanically instead, exactly as the prompt's
 ## verb keys and the inventory's category keys are.
 func _every_computed_key_exists() -> void:
-	for path: String in Settings.DEFAULTS:
+	for path: String in Settings.game.every():
 		_key_exists(SettingsScreen.label_key(path))
-		var head: String = path.get_slice("/", 0) if path.contains("/") else SettingsScreen.GENERAL
-		_key_exists("%s%s" % [SettingsScreen.SECTION_PREFIX, head])
+		_key_exists("%s%s" % [SettingsScreen.SECTION_PREFIX, GameSettings.section_of(path)])
+		var labels: Array[String] = Settings.game.labels_of(path)
+		for key: String in labels:
+			_key_exists(key)
+		for value: Variant in Settings.game.choices_of(path):
+			if value is String and labels.is_empty():
+				_key_exists(SettingsScreen.value_key(path, value as String))
 	for path: String in SettingsScreen.NAMED:
 		for value: Variant in DictRead.get_array(SettingsScreen.CHOICES, path):
 			_key_exists("%s.%d" % [SettingsScreen.label_key(path), DictRead.to_float(value) as int])
@@ -182,6 +190,19 @@ func _every_computed_key_exists() -> void:
 		RebindScreen.LISTENING_KEY, RebindScreen.NONE_KEY, RebindScreen.RESET_KEY,
 	]:
 		_key_exists(key)
+
+
+## How many headings the screen draws for `paths`: one each time the section changes, as `_fill`
+## does.
+func _sections(paths: Array[String]) -> int:
+	var count: int = 0
+	var section: String = ""
+	for path: String in paths:
+		var head: String = GameSettings.section_of(path)
+		if head != section:
+			section = head
+			count += 1
+	return count
 
 
 func _key_exists(key: String) -> void:

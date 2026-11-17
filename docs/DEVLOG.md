@@ -12076,3 +12076,83 @@ nothing else added, where the two counts agree.
 
 **Gaps.** None.
 
+
+## 2026-11-17 — T7.4 · A game can add its own settings
+
+**Did.** New `GameSettings` (`src/core/state/game_settings.gd`), held by `Settings.game`.
+`Settings.game.add(path, default, choices)` adds one of a game's own settings; `Settings`
+reads, writes, announces and resets it through the new `Settings.default_of(path)`, which answers
+for a built-in or an added path. `GameSettings.every()` lists every setting in drawing order, and
+`SettingsScreen` draws that list: a game's row walks its choices, a String value reads through
+`SettingsScreen.value_key`, and a row's kind is its default's. `options_test` counts rows and
+headings from `every()`. New `tests/unit/game_settings_test.gd`. Base `5.19.0`, a MINOR.
+
+**Why.** The combat fork (its C5.3b) wants difficulty, aim assist and battle modes as player
+settings. `Settings.DEFAULTS` is a constant, so a game could only add project settings, which a
+player never sees. The same shape as T7.3 for input actions.
+
+**Connects.** `Settings` (the file, the type check, `setting_changed`), `SettingsScreen` (rows,
+stepping, value text), `options_test` (row count and computed keys). `GameSettings` is handed
+the built-in list when made and does not name `Settings`, so the two files are not a cycle.
+`settings.gd` stays at 149 of its 150 code lines.
+
+**Verified.** Red first: with `default_of` and `every()` stubbed to ignore added settings, 28 of
+the new case's 54 assertions failed. Green: suite 2780 passed, 0 failed; boot 0 warnings, 0
+errors; all seven checkers exit 0; the stripped run 2703 passed, 0 failed. The case covers the refusals, the
+drawing order (a game's row at the end of a built-in section, a new section after them), a value
+written, announced and saved, a saved value surviving a boot (forget, then add again), a reset,
+and the screen stepping a bool, a String, an int (also one stored as a float) and two floats.
+
+**Unblocks.** The combat fork's C5.3b, its combat settings on the settings screen.
+
+**Gaps.** No capture: the base adds no setting of its own, so there is no new row to photograph;
+the fork's C5.3b captures one. A String value that is not among the choices (a value a game
+later dropped) reads through a key that does not exist; the game should treat an unknown value
+as its default.
+
+## 2026-11-17 — T7.5 · A pad trigger can be named and rebound
+
+**Did.** `KeyBindings` treats a trigger as the pad half of a binding: `text_for(action, true)`
+names it through `ui.rebind.trigger_left` and `ui.rebind.trigger_right`, `rebind` accepts one, a
+trigger and a pad button replace each other, and it is stored in the pad field as
+`TRIGGER_CODE` (200) plus its axis. New `KeyBindings.bindable(event)`, which `RebindScreen._input`
+now asks, and `event_for_trigger(axis)`. New `tests/unit/pad_trigger_test.gd`. Base `5.20.0`, a
+MINOR.
+
+**Why.** The combat fork's C5.3c: its dodge and lock-on are on the triggers, an axis to the
+engine, so the controls screen's pad column read "—" and a trigger could not be chosen there.
+
+**Connects.** `KeyBindings` (codes, the pad half, restoring), `RebindScreen` (what it listens
+for), the interact prompt and dialogue hints, which name a trigger now if an action has one. A
+stick axis is still never erased: `_pad_half` is a button or a trigger, never a stick.
+
+**Verified.** Red first: with `_trigger_axis` stubbed to answer -1, 11 of the new case's 21
+assertions failed. Green: suite 2803 passed, 0 failed; boot 0 warnings, 0 errors; all seven
+checkers exit 0; the stripped run 2726 passed, 0 failed. The case covers codes and `bindable`, a
+trigger replacing a pad button (named, saved, on the controls screen row), a saved trigger put
+back over the default as at boot, a button replacing the trigger, a stick surviving a trigger
+rebind, an action whose default is a trigger, and a stored code that is no trigger.
+
+**Unblocks.** The combat fork's C5.3c.
+
+**Gaps.** Pad buttons are still named in engine English ("Left Action"); only the triggers are
+localized. A trigger takes the action's own deadzone, so on a built-in action (0.25) it fires
+a little before half-way. No windowed probe of a real trigger press; there is no pad in the
+container.
+
+## 2026-11-17 — T7.6 · A game's setting can name its choices
+
+**Did.** `Settings.game.add(path, default, choices, labels)`: an optional localization key per
+choice, refused when they are not one per choice. `GameSettings.labels_of(path)`. The settings
+screen reads a labelled value through its own key, whatever the kind; `options_test` checks those
+keys. Nine more assertions in `game_settings_test`. Base `5.21.0`, a MINOR.
+
+**Why.** The combat fork's C5.3b lists its difficulty files as the choices of a setting, and each
+file names itself with a `name_key`. T7.4 read a String value only through a key computed from
+the value, which would have meant repeating every difficulty's name in the CSV.
+
+**Verified.** Red first: with `labels_of` stubbed empty, 4 of the 9 new assertions failed. Green:
+suite 2814 passed, 0 failed; boot 0 warnings, 0 errors; all seven checkers exit 0; the stripped run
+2737 passed, 0 failed.
+
+**Gaps.** None new.

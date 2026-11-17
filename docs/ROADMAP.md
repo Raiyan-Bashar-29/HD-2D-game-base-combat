@@ -1627,6 +1627,14 @@ phase that fixes what playing finds cannot list its rows in advance.*
     autosave skips.
   - The save screen says why.
   - Loading is never refused.
+- **T7.6 A game's setting can name its choices — DONE, 2026-11-17, `5.21.0`.** Found from the
+  combat fork. `Settings.game.add` takes one label key per choice, for choices that come from data.
+- **T7.5 A pad trigger can be named and rebound — DONE, 2026-11-17, `5.20.0`.** Found from the
+  combat fork. A trigger is the pad half of a binding: named on the controls screen, chosen when
+  rebinding a pad slot, saved and put back at boot.
+- **T7.4 A game can add its own settings — DONE, 2026-11-17, `5.19.0`.** Found from the combat
+  fork. `Settings.game.add(path, default, choices)` adds a setting that is read, saved, announced,
+  reset and drawn on the settings screen like a built-in one.
 - **T7.3 A game's own input actions can be rebound — DONE, 2026-10-31, `5.18.0`.** Found from
   the combat fork. `Actions.add_rebindable(action, events)` makes a game's action rebindable:
   listed on the controls screen, saved, put back by a reset, and given back the player's saved
