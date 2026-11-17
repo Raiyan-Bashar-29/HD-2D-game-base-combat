@@ -24,6 +24,8 @@ const SPEED: String = "game_settings_test/speed"
 ## In a built-in section, so its row must join that section rather than open a second one.
 const SHARE: String = "gameplay/game_settings_test_share"
 const MODES: Array = ["", "slow/low", "fast"]
+## Named through keys of its own (T7.6).
+const NAMED: String = "game_settings_test/named"
 
 var _real: GameSettings = null
 var _stack: UiRoot = null
@@ -31,7 +33,7 @@ var _heard: Array[Array] = []
 
 
 func run() -> void:
-	plan(55)
+	plan(64)
 	_real = Settings.game
 	Settings.game = GameSettings.new(Settings.DEFAULTS)
 	Settings.reset_to_defaults()
@@ -44,6 +46,7 @@ func run() -> void:
 	_a_saved_value_survives_a_boot()
 	_a_reset_puts_every_default_back()
 	_the_screen_draws_and_steps_them()
+	_labels_name_the_choices()
 	_tear_down()
 
 
@@ -156,6 +159,25 @@ func _the_screen_draws_and_steps_them() -> void:
 	screen.step(FLAG, 1)
 	equal("a bool toggles", Settings.get_bool(FLAG), true)
 	equal("the built-ins keep their own choices", screen.choices("video/vsync"), [0, 1, 2, 3])
+	equal("cleanup", _stack.close_top(), true)
+
+
+## Choices that come from data already have names, so a game hands one key per choice (T7.6).
+func _labels_name_the_choices() -> void:
+	var labels: Array[String] = [SettingsScreen.TITLE_KEY, SettingsScreen.HINT_KEY]
+	equal("labels must be one per choice", Settings.game.add(NAMED, "a", ["a", "b/c", "d"], labels), false)
+	equal("labels one per choice are taken", Settings.game.add(NAMED, "a", ["a", "b/c"], labels), true)
+	equal("and kept in order", Settings.game.labels_of(NAMED), labels)
+	equal("a setting added without them has none", Settings.game.labels_of(MODE).is_empty(), true)
+	var screen := SettingsScreen.new()
+	equal("the settings screen opens again", _stack.open(screen), true)
+	equal("a named choice reads through its own key", screen.value_text(NAMED), tr(SettingsScreen.TITLE_KEY))
+	screen.step(NAMED, 1)
+	equal("and the next one through its", screen.value_text(NAMED), tr(SettingsScreen.HINT_KEY))
+	var three: Array[String] = [SettingsScreen.ROW_KEY, SettingsScreen.TITLE_KEY, SettingsScreen.HINT_KEY]
+	Settings.game.add(LEVEL, 2, [1, 2, 3], three)
+	Settings.set_value(LEVEL, 3)
+	equal("an int can be named too", screen.value_text(LEVEL), tr(SettingsScreen.HINT_KEY))
 	equal("cleanup", _stack.close_top(), true)
 
 
