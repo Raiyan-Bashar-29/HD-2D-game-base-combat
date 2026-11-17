@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Difficulty" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/difficulty.gd" id="1_diff"]
+
+[resource]
+script = ExtResource("1_diff")
+id = &"difficulty/story"
+name_key = "combat.difficulty.story.name"
+desc_key = "combat.difficulty.story.desc"
+order = 0
+dealt = 0.5
+taken = -0.5

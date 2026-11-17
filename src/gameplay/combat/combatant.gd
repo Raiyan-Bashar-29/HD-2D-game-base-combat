@@ -27,6 +27,9 @@ extends Node
 ## EVERY COMBATANT IS IN THE GROUP `GROUP`, so `find` can turn an id from an event back into
 ## its fighter (C6.4b: a kit gauge asks whether the one who fell was an ally).
 ##
+## DIFFICULTY (C5.4a): a resolved hit between the player's side and another is scaled by the
+## difficulty on now (`CombatDifficulty.scale`) before it lands.
+##
 ## OWNS: the combatant id, the faction, the shared sheet, and applying a resolved hit.
 ## MUST NOT: choose targets, decide turns or timing, or decide what defeat means.
 
@@ -198,6 +201,8 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 	var result: DamageResult = resolving_formula().resolve(request, rng)
 	# Foresight may rewrite the hit: a miss struck again, a landing hit missed (C6.10).
 	result = Foresight.rewrite(self, target, request, result, rng)
+	# The difficulty on now scales a hit between the player's side and another (C5.4a).
+	CombatDifficulty.scale(self, target, result)
 	result.tags.assign(tags)
 	for flag: StringName in flags.tags:
 		if not result.tags.has(flag):

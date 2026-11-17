@@ -5092,3 +5092,17 @@ its battle. Headless runs of `--power-kit=none` and `--power-kit=nope` log the t
 refusal.
 **Gaps.** The roster's Wanderer (turn-based battles) has no kit, so the demo battle shows no
 Powers row. The verb's kit does not survive a new area.
+
+## 2026-11-17 — C5.4a · Difficulty
+
+**Did.** `Difficulty` (content: `side`, `dealt`, `taken`, `order`) and `DifficultyDb`
+(`data/difficulty/`). `CombatDifficulty` (gameplay): the flag `combat/difficulty`, else the project
+setting `combat/difficulty/default`; `choose` refuses an unknown id; `scale` multiplies a resolved
+hit between the player's side and another. `Combatant.hit` calls it after `Foresight.rewrite`. The
+board asked for a formula stage, but a stage sees only two stat sheets and cannot tell sides
+apart, so the scaling sits in `Combatant.hit` instead. Demo: Story, Balanced, Harsh. The first
+names, "normal" and "hard", failed `check_boundary` because those words appear in code; renamed.
+**Verified.** Ladder: 0 warnings; 5066 passed, 0 failed; checkers silent; stripped 4953 passed.
+`difficulty_test` 8 (the game's own files load clean). A headless probe lists the three in order
+with no problems. No capture: nothing shows on screen until a settings screen (C5.3b).
+**Gaps.** No player-facing choice yet (C5.3b, which waits on upstream T7.4).
