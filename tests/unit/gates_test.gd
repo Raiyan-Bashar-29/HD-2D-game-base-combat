@@ -71,7 +71,7 @@ func run() -> void:
 	## should not mean editing a number, and a number that has to be edited is a number that gets
 	## edited to whatever the run reported.
 	var on_disk: Array[String] = _checker_files()
-	plan(42 + JOBS.size() + LADDER.size() * 2 + on_disk.size())
+	plan(43 + JOBS.size() + LADDER.size() * 2 + on_disk.size())
 	_the_layer_of_a_path_comes_from_the_path()
 	_an_indirect_signal_reference_is_read_from_its_files_dispatch()
 	_a_whole_word_match_is_shared_by_both_gates()
@@ -130,6 +130,10 @@ func _a_whole_word_match_is_shared_by_both_gates() -> void:
 		layers.names_whole_word("var x: ThingBase = null", "Thing"), false)
 	equal("and agrees on a real match",
 		layers.names_whole_word("load(\"res://a/Thing.gd\")", "Thing"), true)
+	equal("a combat row names its content id; an engine or free-form one names none (C8.26)",
+		[boundary.combat_row_id("combat.power.fixture_dash.name"), boundary.combat_row_id("combat.gear.title"),
+			boundary.combat_row_id("combat.form.fixture.name"), boundary.combat_row_id("combat.kit")],
+		["power/fixture_dash", "", "", ""])
 
 
 ## THE ESCAPE HATCH IS A PHRASE IN THE DECLARATION'S OWN DOC BLOCK, not a list inside the tool,

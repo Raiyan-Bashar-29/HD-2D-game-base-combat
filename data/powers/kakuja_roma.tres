@@ -17,7 +17,7 @@
 [sub_resource type="Resource" id="swallow"]
 script = ExtResource("skill")
 id = &"skill/roma_swallow"
-name_key = "combat.power.roma_swallow.name"
+name_key = "combat.skill.roma_swallow.name"
 power = 14.0
 delay = 2.0
 

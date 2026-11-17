@@ -3,7 +3,7 @@ extends TestCase
 ## attacker standing near that foe and holding a FOLLOW_UP status strike it at once; one too far
 ## away, one asleep, or a hit that never landed gives none, and a follow-up never sets off another.
 ## C8.24: an ally behind a wall does not follow up, a hit on a thing in the arena draws none, and a
-## skill move that took no hp draws none.
+## skill move that took no hp draws none. C8.26: nor does an ally whose clock is stopped.
 ##
 ## OWNS: assertions about `FieldFollowUps` and the follow-up step of `Hurtbox.take`.
 ## MUST NOT: name a game's fighters or moves, or wait for frames.
@@ -19,7 +19,7 @@ var _followed: Array = []
 
 
 func run() -> void:
-	plan(8)
+	plan(9)
 	_world = Node3D.new()
 	attach(_world)
 	var hero: Combatant = _fighter(HERO, &"side_a", Vector3.ZERO)
@@ -37,12 +37,7 @@ func run() -> void:
 	equal("a landed hit lets the near ally follow up: not the far one, not one behind a wall, not the attacker",
 		[counted, _followed], [true, [[NEAR, FOE]]])
 	equal("the foe loses the hero's 15 and the follow-up's 10", before - _hp(foe), 25)
-	_followed.clear()
-	StatusSet.of(near.get_parent()).apply(_sleep())
-	equal("an asleep ally does not follow up", FieldFollowUps.after_hit(hero, foe, rng), 0)
-	StatusSet.of(near.get_parent()).cure(&"status/fixture_field_follow_sleep")
-	equal("a hit on an ally is refused, and nobody follows it up",
-		[_hurtbox(near).take(hero, _move(), rng, Vector3.ZERO), _followed], [false, []])
+	_refusals(hero, near, foe, rng)
 	_followed.clear()
 	var unhurt: bool = _hurtbox(foe).take(hero, _status_move(), rng, Vector3.ZERO)
 	equal("a skill move that took no hp draws no follow-up", [unhurt, _followed], [true, []])
@@ -57,6 +52,22 @@ func run() -> void:
 	Events.followed_up.disconnect(_on_followed)
 	_world.free()
 
+
+# Allies that do not follow up: asleep, with a stopped clock, or a hit on an ally to begin with.
+func _refusals(hero: Combatant, near: Combatant, foe: Combatant, rng: RandomNumberGenerator) -> void:
+	_followed.clear()
+	StatusSet.of(near.get_parent()).apply(_sleep())
+	equal("an asleep ally does not follow up", FieldFollowUps.after_hit(hero, foe, rng), 0)
+	StatusSet.of(near.get_parent()).cure(&"status/fixture_field_follow_sleep")
+	var stop := StatModifier.new()
+	stop.stat = FighterTime.STAT
+	stop.value = -1.0
+	stop.source = &"fixture_field_follow_stop"
+	near.sheet.add(stop)
+	equal("an ally whose clock is stopped does not follow up (C8.26)", FieldFollowUps.after_hit(hero, foe, rng), 0)
+	near.sheet.remove_from(&"fixture_field_follow_stop")
+	equal("a hit on an ally is refused, and nobody follows it up",
+		[_hurtbox(near).take(hero, _move(), rng, Vector3.ZERO), _followed], [false, []])
 
 func _on_followed(who: StringName, against: StringName) -> void:
 	_followed.append([who, against])

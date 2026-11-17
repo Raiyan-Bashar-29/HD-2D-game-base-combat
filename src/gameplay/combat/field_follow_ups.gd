@@ -10,7 +10,9 @@ extends RefCounted
 ## through `Combatant.hit`, never through a `Hurtbox`, so a follow-up never sets off another.
 ## An ally with a wall between it and the foe does not follow up (C9.12's rule, `CombatSight`),
 ## and a hit on a thing in the arena (`Unseen.INERT`: a crate, a barrel) draws no follow-up at all
-## (C8.24). `Hurtbox.take` calls this only when its hit really took hp, the battle's rule.
+## (C8.24). Nor does an ally that cannot move now: held by a grab, up in the air, or with its
+## clock stopped (C8.26). `Hurtbox.take` calls this only when its hit really took hp, the
+## battle's rule.
 ##
 ## OWNS: which field fighters are near enough to follow up.
 ## MUST NOT: decide what a hit does, or who follows up in a battle (`TeamAttacks` does both).
@@ -33,7 +35,8 @@ static func after_hit(attacker: Combatant, target: Combatant, rng: RandomNumberG
 		if body == null or ally == attacker or ally == target \
 				or not attacker.can_target(ally, FactionTable.Target.ALLY):
 			continue
-		if body.global_position.distance_to(spot.global_position) <= REACH and not _walled(body, spot):
+		if body.global_position.distance_to(spot.global_position) <= REACH and not _walled(body, spot) \
+				and not _stopped(body):
 			allies.append(ally)
 	return TeamAttacks.answer_all(allies, attacker, target, rng)
 
@@ -42,3 +45,8 @@ static func after_hit(attacker: Combatant, target: Combatant, rng: RandomNumberG
 static func _walled(body: Node3D, spot: Node3D) -> bool:
 	return CombatSight.wall_between(body, CombatSight.aim(body), CombatSight.aim(spot),
 			CombatSight.solids(spot)).is_finite()
+
+
+# True while `body` cannot move: held by a grab, up in the air, or its clock stopped (C8.26).
+static func _stopped(body: Node3D) -> bool:
+	return Grab.held(body) or Juggle.airborne(body) or FighterTime.rate(body) <= 0.0

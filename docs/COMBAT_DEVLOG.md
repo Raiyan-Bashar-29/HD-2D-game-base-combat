@@ -5184,3 +5184,19 @@ gaps are rows C8.26, C5.3b and C5.3c.
 capture of the thorn-wisp battle on auto: the second wave arrived, frost marks on the wisps and
 the Keeper's MP spent show its brain casting Rime, and the Wanderer's menu has a Powers row.
 **Gaps.** C8.26.
+
+## 2026-11-17 — C8.26 · Combat CSV orphans, a free swap for a waiting member
+
+**Did.** `check_boundary`: `COMBAT_ID_SPACES` and `combat_row_id`; ids read from every `id`,
+`kit_id`, `power_id` and `type_id` line under `data/` (sub-resources too); a `combat.*` row naming
+none fails. First run: two failures, `combat.power.amon_crush` and `roma_swallow`, whose files
+declare `skill/...` ids; renamed to `combat.skill.*`. `BattleReserve.free_swap` and
+`waiting_pairs`, offered by `BattleMenu.free_pairs` as rows in Swap's target list ("{in} for
+{out}"); `BattleScreen._outcome_key` moved to `BattleReadout.outcome_key` for room.
+`FieldFollowUps._stopped`: `Grab.held`, `Juggle.airborne`, `FighterTime.rate` 0.
+**Verified.** Ladder: 0 warnings; 5090 passed, 0 failed; checkers silent; stripped 4976 passed.
+`reserve_test` 12 (the pair row is listed, the trade keeps
+the turn, once a turn), `field_follow_up_test` 9, `gates_test` 66 (`combat_row_id`).
+**Gaps.** None new.
+A second review workflow (C6.23 to C5.5) ran out of the session's usage limit before any reviewer
+reported; its findings, if any, are still to come.

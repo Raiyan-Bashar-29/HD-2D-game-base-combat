@@ -16,7 +16,7 @@
 [sub_resource type="Resource" id="crush"]
 script = ExtResource("skill")
 id = &"skill/amon_crush"
-name_key = "combat.power.amon_crush.name"
+name_key = "combat.skill.amon_crush.name"
 power = 16.0
 delay = 2.0
 

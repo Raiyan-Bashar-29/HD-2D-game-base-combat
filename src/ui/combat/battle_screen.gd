@@ -45,6 +45,8 @@ const ATTACK_KEY: String = "ui.battle.attack"
 const DEFEND_KEY: String = "ui.battle.defend"
 const FLEE_KEY: String = "ui.battle.flee"
 const SWAP_KEY: String = "ui.battle.swap"
+## A free swap for a waiting member in the Swap target list (C8.26).
+const SWAP_PAIR_KEY: String = "ui.battle.swap_pair"
 const ROW_KEY: String = "ui.battle.row"
 const BACK_ROW_KEY: String = "ui.battle.back_row"
 const BACK_KEY: String = "ui.battle.back"
@@ -152,6 +154,12 @@ func tick_auto(delta: float) -> bool:
 	return true
 
 
+func _free_pair(pair: Array) -> void:
+	_pending = null
+	BattleReserve.free_swap(battle, pair[0] as Combatant, pair[1] as Combatant)
+	refresh()
+
+
 func _toggle_auto() -> void:
 	AutoBattle.toggle()
 	_auto_wait = AUTO_DELAY
@@ -166,7 +174,7 @@ func _fill() -> void:
 		add_note(BattleReadout.line(fighter, name_of(fighter), battle_log))
 	# Over: show the result, the rewards, and one Continue button.
 	if battle.outcome() != Battle.Outcome.ONGOING:
-		add_note(tr(_outcome_key()))
+		add_note(tr(BattleReadout.outcome_key(battle)))
 		_reward_notes()
 		add_row(tr(CONTINUE_KEY), request_close)
 		return
@@ -182,6 +190,10 @@ func _fill() -> void:
 	if _pending != null:
 		for target: Combatant in battle.targets_for(_pending):
 			add_row(name_of(target), _aim.bind(target))
+		# A free swap may trade a waiting member instead (C8.26): "Bench for Mate".
+		for pair: Array in BattleMenu.free_pairs(battle, _pending):
+			var names: Dictionary = {"in": name_of(pair[1] as Combatant), "out": name_of(pair[0] as Combatant)}
+			add_row(tr(SWAP_PAIR_KEY).format(names), _free_pair.bind(pair))
 		add_row(tr(BACK_KEY), _back)
 		return
 	# An open submenu: its commands, plus Back.
@@ -356,12 +368,3 @@ func _reward_notes() -> void:
 func _item_name(item_id: StringName) -> String:
 	var definition: ItemDefinition = ItemDb.definition(item_id)
 	return tr(definition.name_key) if definition != null else String(item_id)
-
-
-func _outcome_key() -> String:
-	match battle.outcome():
-		Battle.Outcome.WON:
-			return WON_KEY
-		Battle.Outcome.LOST:
-			return LOST_KEY
-	return FLED_KEY

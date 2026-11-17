@@ -11,7 +11,9 @@ extends RefCounted
 ## `refill` then lets the encounter's held-back foes arrive (`BattleSetup.reinforce`).
 ##
 ## FREE SWAP (C8.22c): with the encounter's `free_swaps`, `Battle` hands the swapping fighter's
-## turn to the one coming in, once a turn. `all_out` says whether a side has anyone left.
+## turn to the one coming in, once a turn. That once-a-turn free swap may instead trade a party
+## member WAITING for its turn (C8.26, `free_swap`, offered by `waiting_pairs`): nobody's turn is
+## spent, and the one whose turn it is acts on. `all_out` says whether a side has anyone left.
 ##
 ## OWNS: who may come in, the exchange itself, and whether a side has anyone left standing.
 ## MUST NOT: decide whose turn it is, or end the battle. `Battle` does both.
@@ -83,3 +85,27 @@ static func all_out(side: Array[Combatant], skip: Array[StringName] = []) -> boo
 				and (statuses.fallen() or statuses.obeyed() != &"")):
 			return false
 	return true
+
+
+## A free swap for a waiting party member (C8.26): `out`, not the one whose turn it is, steps back
+## for `coming` and no turn is spent. False, changing nothing, unless the encounter's free swaps
+## are on, this turn's is unspent, and it is a party member's turn.
+static func free_swap(battle: Battle, out: Combatant, coming: Combatant) -> bool:
+	if not waiting_pairs(battle).has([out, coming]) or not swap(battle, out, [coming]):
+		return false
+	battle.free_swap_used = true
+	return true
+
+
+## Every [waiting member, reserve member] pair a free swap could trade now.
+static func waiting_pairs(battle: Battle) -> Array[Array]:
+	var pairs: Array[Array] = []
+	var now: Combatant = battle.current()
+	if not battle.free_swaps or battle.free_swap_used or now == null or not battle.party.has(now):
+		return pairs
+	for member: Combatant in battle.party:
+		if member == now or battle.guests.has(member.combatant_id):
+			continue
+		for coming: Combatant in ready(battle):
+			pairs.append([member, coming])
+	return pairs

@@ -112,3 +112,11 @@ static func _plain(kind: BattleCommand.Kind) -> BattleCommand:
 	var command := BattleCommand.new()
 	command.kind = kind
 	return command
+
+
+## The free swaps for waiting members offered beside a Swap's targets (C8.26): none for any other
+## command.
+static func free_pairs(battle: Battle, command: BattleCommand) -> Array[Array]:
+	if command == null or command.kind != BattleCommand.Kind.SWAP:
+		return []
+	return BattleReserve.waiting_pairs(battle)

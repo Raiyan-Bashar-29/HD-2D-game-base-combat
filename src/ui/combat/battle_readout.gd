@@ -6,7 +6,9 @@ extends RefCounted
 ## IN PLAIN WORDS: the fighter's name and hp, then every other pool it has, the weapon it wears,
 ## its statuses and the weaknesses the player has already found. Parts it has none of are left out.
 ##
-## OWNS: the line's parts and their order.
+## Also the key of the line saying how the battle ended.
+##
+## OWNS: the line's parts and their order, and which outcome line is shown.
 ## MUST NOT: change the fight, or hold state.
 
 
@@ -36,6 +38,16 @@ static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
 	if not found.is_empty():
 		parts.append(_tr(BattleScreen.WEAK_KEY).format({"list": ", ".join(found)}))
 	return "   ".join(parts)
+
+
+## The key of the line that says how `battle` ended (moved from `BattleScreen`, C8.26).
+static func outcome_key(battle: Battle) -> String:
+	match battle.outcome():
+		Battle.Outcome.WON:
+			return BattleScreen.WON_KEY
+		Battle.Outcome.LOST:
+			return BattleScreen.LOST_KEY
+	return BattleScreen.FLED_KEY
 
 
 static func _tr(key: String) -> String:

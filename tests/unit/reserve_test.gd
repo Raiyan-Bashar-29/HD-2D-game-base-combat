@@ -18,7 +18,7 @@ var _swaps: Array = []
 
 
 func run() -> void:
-	plan(10)
+	plan(12)
 	SaveFixture.activate()
 	Flags.clear_all()
 	var holder := Node.new()
@@ -55,6 +55,7 @@ func run() -> void:
 	stack.close_all()
 	BattleSetup.release(battle)
 	equal("release stands the reserve up too", Vitals.of(spare.get_parent()).is_defeated(), false)
+	_waiting(stack, holder, roster)
 	_free_then_close(stack, holder, roster)
 	Flags.clear_all()
 
@@ -91,6 +92,41 @@ func _free_then_close(stack: UiRoot, holder: Node, roster: Array[CombatantDef]) 
 	Battle.running = null
 	holder.free()
 	stack.free()
+
+
+# C8.26: the free swap may trade a party member waiting for its turn, and no turn is spent.
+func _waiting(stack: UiRoot, holder: Node, roster: Array[CombatantDef]) -> void:
+	var encounter: Encounter = _encounter()
+	encounter.free_swaps = true
+	var battle: Battle = BattleSetup.build(encounter, [roster[0], _def(&"fixture_reserve_mate", 2.0)], holder,
+			RandomNumberGenerator.new(), [], [roster[1]])
+	battle.start()
+	var hero: Combatant = battle.party[0]
+	var mate: Combatant = battle.party[1]
+	var bench: Combatant = battle.reserve[0]
+	while battle.next_turn() != hero:
+		battle.act(_command(BattleCommand.Kind.DEFEND), [])
+	var screen := BattleScreen.for_battle(battle)
+	stack.open(screen)
+	_press(screen, tr(BattleMenu.FREE_SWAP_KEY))
+	var row: String = tr(BattleScreen.SWAP_PAIR_KEY).format({"in": screen.name_of(bench), "out": screen.name_of(mate)})
+	var listed: bool = screen.row_texts().has(row)
+	var traded: bool = BattleReserve.free_swap(battle, mate, bench)
+	equal("a waiting member is offered and traded, and the turn stays with the one whose it is",
+		[listed, traded, battle.party, battle.current(), battle.reserve.has(mate)], [true, true, [hero, bench], hero, true])
+	equal("only once a turn", [BattleReserve.free_swap(battle, bench, mate), BattleReserve.waiting_pairs(battle)],
+		[false, []])
+	stack.close_all()
+	BattleSetup.release(battle)
+	Battle.running = null
+
+
+func _press(screen: BattleScreen, text: String) -> void:
+	for child: Node in screen.rows.get_children():
+		var button: Button = child as Button
+		if button != null and not button.is_queued_for_deletion() and button.text == text:
+			button.pressed.emit()
+			return
 
 
 func _offered(stack: UiRoot, battle: Battle) -> bool:
