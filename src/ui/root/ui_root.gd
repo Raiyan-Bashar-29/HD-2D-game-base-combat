@@ -120,7 +120,7 @@ func announce_focus_lost() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _stack.is_empty():
 		return
-	if not event.is_action_pressed(Actions.CANCEL) and not event.is_action_pressed(Actions.PAUSE):
+	if not Actions.pressed_now(event, Actions.CANCEL) and not Actions.pressed_now(event, Actions.PAUSE):
 		return
 	if not _stack[-1].closes_on_cancel:
 		return

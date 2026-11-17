@@ -155,6 +155,17 @@ func reset_bindings() -> void:
 	Log.info("input", "Bindings reset to defaults")
 
 
+## True when `event` presses `action` NOW (T7.8). A key or a pad button sends one press event, but
+## a trigger sends a motion event every time it moves, and each one past the deadzone reads as
+## pressed: a screen toggled on `event.is_action_pressed` opened and closed once per event of a
+## single pull. Only the event that pressed it in `Input` counts for a trigger. Read an action from
+## an event through this, wherever a trigger could be bound to it.
+static func pressed_now(event: InputEvent, action: StringName) -> bool:
+	if not event.is_action_pressed(action):
+		return false
+	return not event is InputEventJoypadMotion or Input.is_action_just_pressed_by_event(action, event)
+
+
 ## Add one of the game's own actions, bound to `events` by default, and make it rebindable.
 ## Returns false, changing nothing, for an action that already exists and was not added here:
 ## a built-in, an engine `ui_*` action or a debug key is not a game's to redefine. Adding the

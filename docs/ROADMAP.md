@@ -1627,6 +1627,8 @@ phase that fixes what playing finds cannot list its rows in advance.*
     autosave skips.
   - The save screen says why.
   - Loading is never refused.
+- **T7.8 One pull of a trigger is one press — DONE, 2026-11-17, `5.22.0`.** A review found that
+  T7.5's triggers fired a screen key once per motion event. `Actions.pressed_now`.
 - **T7.7 The debug `flag` verb keeps text as text — DONE, 2026-11-17, `5.21.1`.** Found from the
   combat fork: `--flag=key:text` stored 0.
 - **T7.6 A game's setting can name its choices — DONE, 2026-11-17, `5.21.0`.** Found from the

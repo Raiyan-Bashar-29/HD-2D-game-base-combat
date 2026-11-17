@@ -199,11 +199,11 @@ func hold_seconds() -> float:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(Actions.CANCEL):
+	if Actions.pressed_now(event, Actions.CANCEL):
 		get_viewport().set_input_as_handled()
 		skip()
 		return
-	if not event.is_action_pressed(Actions.INTERACT):
+	if not Actions.pressed_now(event, Actions.INTERACT):
 		return
 	get_viewport().set_input_as_handled()
 	# First press completes the reveal, second advances. Skipping the reveal must never also

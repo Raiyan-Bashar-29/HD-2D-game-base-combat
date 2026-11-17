@@ -12171,3 +12171,24 @@ so the next merge brings the two back together.
 passed, 0 failed; boot 0 warnings, 0 errors; all seven checkers exit 0; stripped 2740 passed.
 
 **Gaps.** None.
+
+## 2026-11-17 — T7.8 · One pull of a trigger is one press
+
+**Did.** New `Actions.pressed_now(event, action)`: an event presses an action now if it reads as
+pressed and, for a trigger's motion event, `Input.is_action_just_pressed_by_event` agrees.
+`ScreenKeys`, `UiRoot._unhandled_input` and `DialogueScreen._unhandled_input` read through it.
+`RebindScreen` swallows the rest of the pull that bound a trigger, until it falls back under the
+action's deadzone. Six assertions in `pad_trigger_test`, which pulls a real trigger through `Input`
+(`parse_input_event`, then `flush_buffered_events`, which delivers synchronously). Base `5.22.0`.
+
+**Why.** A review of T7.4 to T7.7 found two defects in T7.5. A trigger sends a motion event each
+time it moves, and each past the deadzone reads as pressed, so with a trigger bound to the
+inventory, one pull opened and closed it once per event; on Cancel it emptied the stack. And the
+controls screen took only the event that bound a trigger, so the rest of that pull, now a Cancel,
+closed the menus behind it.
+
+**Verified.** Red first: with `pressed_now` as `is_action_pressed` and no swallow, 5 of the 6 new
+assertions failed. Green: suite 2825 passed, 0 failed; boot 0 warnings, 0 errors; all seven checkers
+exit 0; stripped 2748 passed.
+
+**Gaps.** The debug keys still read `event.is_action_pressed`; they cannot be rebound.

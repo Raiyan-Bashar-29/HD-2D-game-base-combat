@@ -10,6 +10,11 @@ extends TestCase
 ## THE BOOT ORDER IS ASSERTED as in `options_test`: the default is put back over the rebind, as a
 ## fresh boot does, and the override file must bring the trigger back.
 ##
+## A PULL IS ONE PRESS (T7.8). A trigger sends a motion event each time it moves, and every one
+## past the deadzone reads as pressed; a screen toggled on each closed the menus one by one. The
+## case pulls a real trigger through `Input` (parse, then flush, which delivers synchronously), so
+## `UiRoot` and the controls screen hear it exactly as they would in play, and puts the device back.
+##
 ## THIS CASE WRITES THE BINDINGS FILE, the run's scratch copy (T6.13), and resets it at the end.
 ##
 ## OWNS: assertions about triggers in `KeyBindings` and on the controls screen.
@@ -21,7 +26,7 @@ var _stack: UiRoot = null
 
 
 func run() -> void:
-	plan(21)
+	plan(27)
 	_stack = UiRoot.new()
 	attach(_stack)
 	_a_trigger_has_a_code()
@@ -30,6 +35,9 @@ func run() -> void:
 	_a_button_replaces_the_trigger()
 	_a_stick_survives_a_trigger()
 	_a_default_trigger_is_named()
+	_a_pull_presses_once()
+	_cancel_on_a_trigger_closes_one_screen()
+	_the_pull_that_binds_is_swallowed()
 	_tear_down()
 
 
@@ -94,6 +102,53 @@ func _a_default_trigger_is_named() -> void:
 	Actions.remove_rebindable(ACTION)
 
 
+func _a_pull_presses_once() -> void:
+	KeyBindings.rebind(Actions.INVENTORY, KeyBindings.event_for_trigger(JOY_AXIS_TRIGGER_RIGHT))
+	var counts: Array[int] = _pull(Actions.INVENTORY)
+	equal("a pull sends several events that each read as pressed", counts[0] > 1, true)
+	equal("but presses the action once (T7.8)", counts[1], 1)
+	equal("and the next pull once more", _pull(Actions.INVENTORY)[1], 1)
+
+
+func _cancel_on_a_trigger_closes_one_screen() -> void:
+	KeyBindings.rebind(Actions.CANCEL, KeyBindings.event_for_trigger(JOY_AXIS_TRIGGER_RIGHT))
+	var below := SettingsScreen.new()
+	_stack.open(below)
+	_stack.open(RebindScreen.new())
+	_pull(Actions.CANCEL)
+	equal("Cancel on a trigger closes one screen per pull", [_stack.depth(), _stack.top() == below], [1, true])
+	_stack.close_all()
+
+
+func _the_pull_that_binds_is_swallowed() -> void:
+	Actions.reset_bindings()
+	var below := SettingsScreen.new()
+	_stack.open(below)
+	var screen := RebindScreen.new()
+	_stack.open(screen)
+	screen.listen(Actions.CANCEL)
+	_pull(Actions.CANCEL)
+	equal("the pull that binds Cancel to a trigger closes nothing",
+		[KeyBindings.text_for(Actions.CANCEL, true), _stack.top() == screen],
+		[tr(KeyBindings.RIGHT_TRIGGER_KEY), true])
+	_pull(Actions.CANCEL)
+	equal("the next pull is a Cancel", _stack.top() == below, true)
+	_stack.close_all()
+
+
+## One pull of the right trigger through `Input`: how many events read as pressing `action`, and
+## how many pressed it now.
+func _pull(action: StringName) -> Array[int]:
+	var counts: Array[int] = [0, 0]
+	for value: float in [0.3, 0.6, 1.0, 0.6, 0.3, 0.0]:
+		var event: InputEventJoypadMotion = _motion(JOY_AXIS_TRIGGER_RIGHT, value)
+		Input.parse_input_event(event)
+		Input.flush_buffered_events()
+		counts[0] += 1 if event.is_action_pressed(action) else 0
+		counts[1] += 1 if Actions.pressed_now(event, action) else 0
+	return counts
+
+
 func _motion(axis: JoyAxis, value: float) -> InputEventJoypadMotion:
 	var event := InputEventJoypadMotion.new()
 	event.axis = axis
@@ -131,3 +186,7 @@ func _tear_down() -> void:
 		_stack = null
 	get_tree().paused = false
 	Actions.reset_bindings()
+	# The pulls made this a pad player; a key press makes them a keyboard one again.
+	var key: InputEventKey = KeyBindings.event_for_key(KEY_SHIFT)
+	key.pressed = true
+	Actions.observe(key)
