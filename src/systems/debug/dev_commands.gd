@@ -84,7 +84,8 @@ static func travel_to(area_id: String) -> String:
 
 
 ## Forge a plot flag. `true` and `false` are spelled, a whole number is an integer, which covers
-## the counter flags AT_LEAST and AT_MOST test, and anything else stays text, a flag naming an id. Deliberately the raw store and not a
+## the counter flags AT_LEAST and AT_MOST test, and anything else stays text, a flag naming an id
+## (T7.7: until then text was stored as 0). Deliberately the raw store and not a
 ## system: this is the development harness, and a flag is exactly what a harness should forge.
 static func set_flag(value: String) -> String:
 	var at: int = value.rfind(":")

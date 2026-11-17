@@ -83,6 +83,7 @@ func _the_verbs_are_the_command_lines_own() -> void:
 	equal("and reports what it wrote", said.contains("true"), true)
 	equal("a value that is not true or false is read as an integer",
 		_flag_int("flag %s:7" % FLAG_B), 7)
+	# Erased first: `Flags.set_flag` refuses to turn an int flag into text.
 	Flags.erase_flag(FLAG_B)
 	DevCommands.run("flag %s:fixture/text" % FLAG_B)
 	equal("and one that is not a number stays text", Flags.get_string(FLAG_B), "fixture/text")
