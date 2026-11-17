@@ -39,6 +39,29 @@ rm -f data/quests/*.tres data/areas/*.tres
 rm -rf scenes/areas/courtyard scenes/areas/lantern_hall
 ```
 
+## 1b. Choose your combat (combat fork only)
+
+**Pick how the player fights, then delete the demo's fighting.** Three shapes, all data:
+
+| Shape | What it needs | Settings in `project.godot` |
+|---|---|---|
+| Turn-based | a `PartyRoster`, `data/encounters/`, `EncounterPoint`s in your areas | `[combat] party/roster` |
+| Action, in the field | an `ActionLoadout` for the player, `ActionEnemy`s in your areas | `[combat] action/loadout` |
+| The hybrid | the action loadout with `atb` set, and its `commands` | both of the above, and `hybrid/slow` |
+
+**Delete with the rest of `data/`:** `data/encounters`, `data/party`, `data/action`, `data/powers`,
+`data/passives`, `data/skills`, `data/statuses`, `data/gear`, `data/gear_types`, `data/gems`,
+`data/rarities`, `data/affixes`, `data/recipes`, `data/reactions` and `data/difficulty`. The
+engine finds each by directory scan, so an empty folder is fine. Then point `party/roster` and
+`action/loadout` at your own files, or empty them (no battle starts, the player cannot fight), and
+leave `difficulty/default` empty or name one of yours.
+
+**Delete `assets/fan/` before any release.** It holds fan-made characters, approved for this
+repository only under their author's non-commercial notice. They are not the template's to give.
+
+**The CSV:** step 3's command below also removes the `combat.*` rows that translate demo content.
+Only `combat.craft.*`, `combat.gear.*`, `combat.loadout.*` and `combat.stat.*` are engine.
+
 ## 2. Keep, and never edit to start a game
 
 | Keep | What it is |
@@ -78,6 +101,8 @@ Everything else is engine and stays: `ui.*`, `verb.*`, `refusal.*`, `notify.*`, 
 ```bash
 awk '!/^(area|talk|action|object|quest)\./ && (!/^item\./ || /^item\.category\./)' \
   localization/strings.csv > /tmp/pruned.csv   # keeps 168 of 219 rows; review, then move it back
+# The combat fork: also drop the combat.* rows of demo content, keeping the engine's four.
+awk '!/^combat\./ || /^combat\.(craft|gear|loadout|stat)\./' /tmp/pruned.csv > /tmp/pruned2.csv
 ```
 
 **Three traps in this file:**

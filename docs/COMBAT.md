@@ -7,7 +7,7 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-11-17 · **C5.4c: hold to attack.** Combat `0.176.0`. Next: C5.5 (docs: the combat chapters and choosing a combat). C7.9 and C7.10 wait on the deferred hero kits and Arima's upload. The order is in `HANDOFF.md` § What is left.
+**Last updated:** 2026-11-17 · **C5.5: the combat docs.** Combat `0.176.1`. Next: the stage close (a capture pass, upstream, gaps to rows), then the PR. C7.9 and C7.10 wait on the deferred hero kits and Arima's upload. The order is in `HANDOFF.md` § What is left.
 full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, C2.6 builds a battle from an encounter, C2.7 draws it as a screen over the frozen field, C2.8 rewards a win and grows the party, and C2.9 puts a playable fight in the courtyard. **The turn-based formula is complete. The next row is C3.0, which plans the action formula.**
 
 ## How the two repositories relate
@@ -243,7 +243,8 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.176.0** — C5.4c. Hold to attack: with the flag `combat/hold_to_attack` on, a held attack button presses again every frame, so the field chain plays on while it is held (`ActionFighter.drive`'s `held`). A held press is never a timed press and never throws a carried thing. `action_fighter_test` 26.
+- **0.176.1** — C5.5. Docs only. `NEW_GAME.md` § 1b, Choose your combat: the three shapes and their settings, which `data/` folders are combat demo, `assets/fan/` to delete before any release, and the `combat.*` CSV prune (only `craft`, `gear`, `loadout` and `stat` are engine). `AUTHORING.md` § Turn-battle rules, one table of the C8 rules' fields. The CI strip job prunes the combat rows too.
+- 0.176.0 — C5.4c. Hold to attack: with the flag `combat/hold_to_attack` on, a held attack button presses again every frame, so the field chain plays on while it is held (`ActionFighter.drive`'s `held`). A held press is never a timed press and never throws a carried thing. `action_fighter_test` 26.
 - 0.175.0 — C5.4b. Auto-battle: the flag `combat/auto_battle` (saved per game) makes `Battle.brain_of` play each party member of its own by its definition's `brain`, or a plain one that attacks (`AutoBattle`). The battle screen ends its first menu with an "Auto: On/Off" row and plays those turns one every 0.6 s (`tick_auto`), so they can be followed and stopped. Each fighter's line moved to `BattleReadout` to keep the screen in budget. `auto_battle_test` 6.
 - 0.174.0 — C5.4a. Difficulty as data: `data/difficulty/<name>.tres` (`Difficulty`: `side`, `dealt`, `taken`, `order`; `DifficultyDb`). The flag `combat/difficulty` (saved per game) or the project setting `combat/difficulty/default` names the one on; `CombatDifficulty.scale`, called by `Combatant.hit` after the formula, multiplies a hit the player's side lands by 1 + `dealt` and one it takes by 1 + `taken`. Demo: Story, Balanced and Harsh. `difficulty_test` 8.
 - 0.173.0 — C6.23. A `power_kit <name>` verb in the debug console (`DevKit`, dispatched by `DevCommands`; alone it lists the kits, `none` takes the kit off) and `--power-kit=<name>` on the command line. The demo's Wanderer wears a default kit, `data/powers/wanderer.tres` (Thorn Volley, a barrage; Sidestep, a blink). `AUTHORING.md` § Hero powers, with "add a new character in five steps". `dev_kit_test` 6.
@@ -918,7 +919,7 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C5.4a | Accessibility: difficulty (C5.4 is split in three, a to c) | **DONE** (combat `0.174.0`: `Difficulty` files, the `combat/difficulty` flag, `CombatDifficulty.scale` in `Combatant.hit`; no new formula stage was needed. The settings screen waits for C5.3b) |
 | C5.4b | Accessibility: auto-battle | **DONE** (combat `0.175.0`: `AutoBattle`, the screen's Auto row, one paced turn every 0.6 s) |
 | C5.4c | Accessibility: hold to attack | **DONE** (combat `0.176.0`: the flag `combat/hold_to_attack`; a held press is never timed) |
-| C5.5 | Docs | TODO. `AUTHORING.md` combat chapters. `NEW_GAME.md` § Choose your combat, with the `combat.*` CSV prune |
+| C5.5 | Docs | **DONE** (combat `0.176.1`: `NEW_GAME.md` § 1b with the `combat.*` prune, also in CI's strip job; `AUTHORING.md` § Turn-battle rules) |
 | C5.6 | Playtest | TODO. `PLAYTEST.md`'s loop; each finding becomes a row |
 | C5.7 | Release 1.0.0 | TODO. Release notes and a final strip test |
 | C5.8 | A fall safety net | **DONE**, combat `0.120.0`. `FallNet` (`src/gameplay/combat/fall_net.gd`), the setting `combat/field/kill_height`, `ActionEnemy.returns_home`; `tests/unit/fall_net_test.gd`. Gaps: a party follower is not caught (it is moved to the player by its own follow rule); the height is one number for the whole game, not per area |

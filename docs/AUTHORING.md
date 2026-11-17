@@ -1402,6 +1402,22 @@ Win, and the screen lists the experience, each level gained and the loot; Contin
 field exactly where it was. `skill_test.gd` and `encounter_test.gd` fail on any authoring problem
 in `data/skills/`, `data/statuses/` or `data/encounters/`.
 
+### Turn-battle rules, all data (C8)
+
+Each rule below is off until a file asks for it. The thorn-wisp encounter and the roster use
+several, so a demo battle shows them.
+
+| Rule | Where | Fields |
+|---|---|---|
+| One more turn for a weakness hit | `Encounter` | `weakness_extra_turns` (0 is off; the most in a row) |
+| A waiting ally follows up an attack, in a battle and in the field | a `StatusEffect` the ally holds | `reactions = [FOLLOW_UP]`, `reaction_chance`, `counter_move` (empty: one plain hit) |
+| Dual, triple and all-out techs | a `Power` with a `TeamMechanism` | `partners` (empty: every ally), `needs_broken`, `power`, `hits`, `element`, `partner_delay`; listed under Team |
+| The reserve line | `Party.arrange(active, reserve)` | a SWAP brings a reserve member in; a fallen member's slot is filled at once; `Encounter.free_swaps` makes a SWAP keep the turn |
+| Front and back rows | `CombatantDef` | `back_row`; a skill tagged `ranged` or `magic` is not softened; tags `knock_back` and `pull` move a fighter; Row steps between them |
+| Elemental reactions | `data/reactions/<name>.tres`, an `ElementReaction` | `first`, `second`, `damage_bonus`, `status`, `keeps_mark` |
+| Foes in waves | `Encounter` | `reinforcements`, `wave` (how many join at once), `reinforcement_experience` |
+| Turn order | `Encounter` | `turn_order` ROUNDS or CTB; a skill's `delay` pushes its user back in CTB |
+
 ## Skills, statuses and combat depth (combat fork only)
 
 **Everything below is data.** The demo party in `data/party/roster.tres` uses every piece of it,

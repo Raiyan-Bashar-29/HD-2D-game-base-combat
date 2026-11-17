@@ -5135,3 +5135,17 @@ never throws a carried thing. `AUTHORING.md` names the three accessibility flags
 button starts and chains the attack, and its press is not timed). No capture: holding a key in a
 headless or captured run is not something the dev stage can stage.
 **Gaps.** The flags have no player-facing switch until C5.3b.
+
+## 2026-11-17 — C5.5 · The combat docs
+
+**Did.** `NEW_GAME.md` § 1b, Choose your combat: turn-based, action or hybrid and the settings
+each reads; the combat demo folders under `data/`; `assets/fan/` deleted before any release
+(non-commercial fan work); the `combat.*` prune. Measured from `src/`: of 316 `combat.*` rows, 67
+are engine (`craft`, `gear`, `loadout`, `stat`) and 249 translate content. `AUTHORING.md`
+§ Turn-battle rules: one table of the C8 rules and their fields. CI's strip job and the local
+ladder prune the combat rows too.
+**Verified.** Ladder: 0 warnings; 5075 passed, 0 failed; checkers silent; stripped 4962 passed,
+and in the stripped copy `check_boundary` (365 rows, 0 content namespace), `check_strings` and
+`check_content` pass.
+**Gaps.** `check_boundary` does not know the `combat.*` content namespaces, so an orphaned combat
+row is found by the prune, not by a gate.

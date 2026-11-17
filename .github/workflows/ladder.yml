@@ -389,7 +389,10 @@ jobs:
           set -euo pipefail
           awk '!/^(area|talk|action|object|quest)\./ && (!/^item\./ || /^item\.category\./)' \
             localization/strings.csv > pruned.csv
-          mv pruned.csv localization/strings.csv
+          # The combat fork (C5.5): the combat.* rows of demo content go too, NEW_GAME.md § 1b.
+          awk '!/^combat\./ || /^combat\.(craft|gear|loadout|stat)\./' pruned.csv > pruned2.csv
+          mv pruned2.csv localization/strings.csv
+          rm -f pruned.csv
           echo "rows kept: $(wc -l < localization/strings.csv)"
 
       - name: Rung 2 - import, zero SCRIPT ERROR / Parse Error
