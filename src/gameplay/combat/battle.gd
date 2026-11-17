@@ -83,7 +83,9 @@ var encounter: Encounter
 var guests: Array[StringName] = []
 ## Party members waiting off the field; a SWAP brings one in (`BattleReserve`, C8.3).
 var reserve: Array[Combatant] = []
-## True once this turn's free swap is spent (C8.22c, the turn order's `free_swaps`).
+## True makes a SWAP keep the turn for the one coming in, once a turn (C8.22c, from the
+## encounter). `free_swap_used` is true once this turn's is spent.
+var free_swaps: bool = false
 var free_swap_used: bool = false
 
 var _by_id: Dictionary[StringName, Combatant] = {}
@@ -299,7 +301,7 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 
 # A free swap (C8.22c): the one coming in takes this same turn, once a turn, so it is not spent.
 func _kept(command: BattleCommand, targets: Array[Combatant]) -> bool:
-	if command.kind != BattleCommand.Kind.SWAP or not scheduler.free_swaps or free_swap_used:
+	if command.kind != BattleCommand.Kind.SWAP or not free_swaps or free_swap_used:
 		return false
 	free_swap_used = true
 	_current = targets[0]

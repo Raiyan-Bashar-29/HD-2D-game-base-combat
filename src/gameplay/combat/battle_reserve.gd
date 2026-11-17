@@ -10,7 +10,7 @@ extends RefCounted
 ## slot at once (`refill`, after every action), so a fight is lost only when nobody is left.
 ## `refill` then lets the encounter's held-back foes arrive (`BattleSetup.reinforce`).
 ##
-## FREE SWAP (C8.22c): with the turn order's `free_swaps`, `Battle` hands the swapping fighter's
+## FREE SWAP (C8.22c): with the encounter's `free_swaps`, `Battle` hands the swapping fighter's
 ## turn to the one coming in, once a turn. `all_out` says whether a side has anyone left.
 ##
 ## OWNS: who may come in, the exchange itself, and whether a side has anyone left standing.

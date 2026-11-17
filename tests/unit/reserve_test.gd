@@ -3,8 +3,8 @@ extends TestCase
 ## turn order; a party member's SWAP aims only at standing reserve members, brings one into its
 ## slot and the turn order, sends itself to the reserve and spends the turn. A fallen member, a
 ## guest and a missing target are refused. The screen offers Swap only while a reserve stands,
-## and the log says who came in. `Party.reserve` reads the saved reserve. C8.22c: with the turn
-## order's `free_swaps`, Swap says it is free and the one coming in takes the same turn, once a turn.
+## and the log says who came in. `Party.reserve` reads the saved reserve. C8.22c: with the
+## encounter's `free_swaps`, Swap says it is free and the one coming in takes the same turn, once a turn.
 ##
 ## OWNS: assertions about `BattleReserve`, `Battle.reserve`, the SWAP command and `Party.reserve`.
 ## MUST NOT: name a game's fighters or encounters, or wait for frames.
@@ -18,7 +18,7 @@ var _swaps: Array = []
 
 
 func run() -> void:
-	plan(9)
+	plan(10)
 	SaveFixture.activate()
 	Flags.clear_all()
 	var holder := Node.new()
@@ -77,8 +77,15 @@ func _free_then_close(stack: UiRoot, holder: Node, roster: Array[CombatantDef]) 
 	var kept: bool = battle.act(swap, [bench])
 	equal("a free swap says so, and the one coming in takes the same turn",
 		[offered, kept, battle.current(), battle.party, battle.free_swap_used], [true, true, bench, [bench], true])
+	screen.refresh()
+	var spent_label: bool = screen.row_texts().has(tr(BattleScreen.SWAP_KEY))
 	var again: bool = battle.act(swap, [hero])
-	equal("a second swap in the same turn spends it", [again, battle.current(), battle.party], [true, null, [hero]])
+	equal("a second swap in the same turn spends it, and the menu said so",
+		[again, battle.current(), battle.party, spent_label], [true, null, [hero], true])
+	while battle.next_turn() != hero:
+		battle.act(_command(BattleCommand.Kind.DEFEND), [])
+	equal("the next turn has a free swap again", [battle.free_swap_used, battle.act(swap, [bench]), battle.current()],
+		[false, true, bench])
 	stack.close_all()
 	BattleSetup.release(battle)
 	Battle.running = null

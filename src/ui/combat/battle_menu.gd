@@ -102,7 +102,7 @@ static func commands(battle: Battle) -> Array[BattleCommand]:
 		if not BattleReserve.ready(battle).is_empty():
 			var swap: BattleCommand = _plain(BattleCommand.Kind.SWAP)
 			# A swap that keeps the turn says so (C8.22c).
-			if battle.scheduler.free_swaps and not battle.free_swap_used:
+			if battle.free_swaps and not battle.free_swap_used:
 				swap.label_key = FREE_SWAP_KEY
 			menu.append(swap)
 	return menu

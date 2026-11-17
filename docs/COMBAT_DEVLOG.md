@@ -5149,3 +5149,21 @@ and in the stripped copy `check_boundary` (365 rows, 0 content namespace), `chec
 `check_content` pass.
 **Gaps.** `check_boundary` does not know the `combat.*` content namespaces, so an orphaned combat
 row is found by the prune, not by a gate.
+
+## 2026-11-17 — C8.24 · Review fixes for C8.22c and C8.23
+
+**Did.** A review workflow (three reviewers on logic, engine pitfalls and tests/rules, then one
+adversarial verifier per finding; 14 agents) confirmed seven findings and rejected four. Fixed:
+`FieldFollowUps` leaves out an ally with a wall between it and the foe (`CombatSight`), and a hit
+on an `Unseen.INERT` thing draws no follow-up; `Hurtbox.take` reads the target's hp before
+resolving and asks for follow-ups only when it fell, because a skill move counts as landed even
+when it missed or bounced. Also taken, though rejected as "no behaviour change": `free_swaps`
+lives on `Battle` (set by `BattleSetup` from the encounter), not on `TurnScheduler`, whose header
+says it knows nothing of what a turn does; and the first follow-up assertion now checks the exact
+hp lost. Left: allies grabbed, airborne or time-stopped still follow up (rejected: no field
+fighter refuses a move in those states today).
+**Verified.** Ladder: 0 warnings; 5081 passed, 0 failed; checkers silent; stripped 4968 passed.
+`field_follow_up_test` 8 (a walled ally 4 m away is left
+out, a status-only skill move and an inert thing draw none, 25 hp lost exactly), `reserve_test` 10
+(the menu says plain Swap once the free one is spent, and the next turn has one again).
+**Gaps.** None new.

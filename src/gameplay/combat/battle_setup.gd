@@ -69,11 +69,11 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
 			else RoundScheduler.new()
 	turns.weakness_extra_turns = encounter.weakness_extra_turns
-	turns.free_swaps = encounter.free_swaps
 	var battle := Battle.new(ours + guests, theirs, turns, rng)
 	battle.encounter = encounter
 	battle.can_flee = encounter.can_flee
 	battle.flee_chance = encounter.flee_chance
+	battle.free_swaps = encounter.free_swaps
 	# Remember each fighter's definition (for names and menus) and each enemy's AI brain.
 	for i: int in party.size():
 		battle.defs[ours[i].combatant_id] = party[i]

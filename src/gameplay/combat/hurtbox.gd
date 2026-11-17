@@ -38,8 +38,8 @@ extends Area3D
 ## PROMPT (C8.8c): `boost` multiplies a plain move's power; the `Hitbox` passes what the
 ## attacker's timed press earned.
 ##
-## FOLLOW-UPS (C8.22c): a landed hit lets the attacker's allies near this fighter follow up
-## (`FieldFollowUps`), as a battle's plain attack does.
+## FOLLOW-UPS (C8.22c): a landed hit that took hp lets the attacker's allies near this fighter
+## follow up (`FieldFollowUps`), as a battle's attack or one-target skill does.
 ##
 ## `flinched` says whether the last hit moved the fighter at all: it landed, was not countered,
 ## and the fighter flinches. A grab (C8.8b) holds only a fighter that flinched.
@@ -124,13 +124,16 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 		if timeline.perfectly(target.sheet.value(PERFECT_WINDOW)):
 			Events.perfect_dodge.emit(target.combatant_id, attacker.combatant_id)
 		return true
+	var before: int = vitals.current(target.damage_pool)
 	var outcome: Outcome = _resolve(attacker, move, target, rng, boost)
 	var countered: bool = outcome != Outcome.MISSED and _counter(attacker, target, rng)
 	landed = outcome == Outcome.LANDED
 	if landed:
 		Weakness.wear(target, move.poise)
-		# Allies near the foe holding a follow-up stance strike it too (C8.22c).
-		FieldFollowUps.after_hit(attacker, target, rng)
+		# Allies near the foe holding a follow-up stance strike it too (C8.22c), when the hit really
+		# took hp: a skill move counts as landed even when it missed or bounced (C8.24).
+		if vitals.current(target.damage_pool) < before:
+			FieldFollowUps.after_hit(attacker, target, rng)
 		if not countered:
 			_interrupt(target, move)
 			_push(target, move, from)
