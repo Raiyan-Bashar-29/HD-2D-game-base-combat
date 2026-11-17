@@ -1,0 +1,42 @@
+class_name BattleReadout
+extends RefCounted
+## One fighter's line on the battle screen, moved out of `BattleScreen` (C5.4b) so the screen
+## stays in its budget. Its keys stay the screen's (`BattleScreen.POOLS_KEY` and the rest).
+##
+## IN PLAIN WORDS: the fighter's name and hp, then every other pool it has, the weapon it wears,
+## its statuses and the weaknesses the player has already found. Parts it has none of are left out.
+##
+## OWNS: the line's parts and their order.
+## MUST NOT: change the fight, or hold state.
+
+
+## The line for `fighter`, whose name the screen shows as `shown`; `log` names its statuses.
+static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
+	var vitals: Vitals = Vitals.of(fighter.get_parent())
+	var parts: Array[String] = [_tr(BattleScreen.POOLS_KEY).format({"name": shown,
+			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})]
+	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
+		var pool: StringName = StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
+		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
+			parts.append(_tr(BattleScreen.POOL_KEY).format({"pool": String(pool).to_upper(),
+					"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	var weapon: String = WeaponLine.text(fighter.get_parent())
+	if weapon != "":
+		parts.append(weapon)
+	var names: Array[String] = []
+	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
+	for effect: StatusEffect in statuses.held() if statuses != null else []:
+		names.append(log.status_name(fighter.combatant_id, effect.id) if log != null else String(effect.id))
+	if not names.is_empty():
+		parts.append(_tr(BattleScreen.STATUSES_KEY).format({"list": ", ".join(names)}))
+	var found: Array[String] = []
+	for key: StringName in fighter.weak_to:
+		if Weakness.revealed(fighter, key):
+			found.append(_tr(String(key)))
+	if not found.is_empty():
+		parts.append(_tr(BattleScreen.WEAK_KEY).format({"list": ", ".join(found)}))
+	return "   ".join(parts)
+
+
+static func _tr(key: String) -> String:
+	return TranslationServer.translate(key)

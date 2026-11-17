@@ -20,6 +20,11 @@ extends MenuScreen
 ## it has (MP, BP, a limit gauge, its shield), its statuses by name, and the weaknesses already
 ## revealed. Under the turn order, `battle_log` shows the newest few things that happened.
 ##
+## AUTO-BATTLE (C5.4b). The first menu ends with an Auto row that turns `AutoBattle` on and off.
+## While it is on, `advance` stops at each party member's turn as it would for the player, and
+## `tick_auto` plays that turn by its brain once every `AUTO_DELAY` seconds, so the log can be
+## followed and the row pressed again in between. Each fighter's line is `BattleReadout`'s.
+##
 ## CANCEL CANNOT LEAVE A BATTLE. `closes_on_cancel` is false: FLEE is the way out, when allowed.
 ## When it ends, the outcome is shown with one row that closes the screen, and closing releases
 ## the fighters (`BattleSetup.release`), which erases every enemy flag.
@@ -64,6 +69,10 @@ const BOOST_KEY: String = "ui.battle.boost"
 const POOL_KEY: String = "ui.battle.pool"
 const STATUSES_KEY: String = "ui.battle.statuses"
 const WEAK_KEY: String = "ui.battle.weak"
+const AUTO_ON_KEY: String = "ui.battle.auto_on"
+const AUTO_OFF_KEY: String = "ui.battle.auto_off"
+## Seconds between two turns auto-battle plays.
+const AUTO_DELAY: float = 0.6
 ## How many upcoming turns the order line shows.
 const ORDER_LENGTH: int = 5
 
@@ -79,6 +88,7 @@ var _boost: int = 0
 var rewards: Rewards
 ## The running commentary, listening on the bus while the screen is open (C2.19).
 var battle_log: BattleLog
+var _auto_wait: float = AUTO_DELAY
 
 
 func _init() -> void:
@@ -113,7 +123,7 @@ func advance() -> void:
 		var actor: Combatant = battle.current()
 		if actor == null:
 			actor = battle.next_turn()
-		if actor == null or battle.brain_of(actor) == null:
+		if actor == null or battle.brain_of(actor) == null or AutoBattle.plays(battle, actor):
 			break
 		BattleAi.take_turn(battle, battle.brain_of(actor))
 	# The fight just ended: hand out rewards exactly once (Rewards only gives on a win).
@@ -122,12 +132,38 @@ func advance() -> void:
 	refresh()
 
 
+func _process(delta: float) -> void:
+	tick_auto(delta)
+
+
+## With auto-battle on and a party member's turn up, counts `delta` seconds down and, once
+## `AUTO_DELAY` has passed, plays that turn by its brain. True when a turn was played.
+func tick_auto(delta: float) -> bool:
+	if battle == null or battle.current() == null or not AutoBattle.plays(battle, battle.current()):
+		return false
+	_auto_wait -= delta
+	if _auto_wait > 0.0:
+		return false
+	_auto_wait = AUTO_DELAY
+	BattleAi.take_turn(battle, battle.brain_of(battle.current()))
+	_category = ""
+	_pending = null
+	advance()
+	return true
+
+
+func _toggle_auto() -> void:
+	AutoBattle.toggle()
+	_auto_wait = AUTO_DELAY
+	refresh()
+
+
 # Rebuilds the menu's rows from scratch. MenuScreen calls this on every refresh().
 func _fill() -> void:
 	if battle == null:
 		return
 	for fighter: Combatant in battle.party + battle.enemies:
-		add_note(_pools_line(fighter))
+		add_note(BattleReadout.line(fighter, name_of(fighter), battle_log))
 	# Over: show the result, the rewards, and one Continue button.
 	if battle.outcome() != Battle.Outcome.ONGOING:
 		add_note(tr(_outcome_key()))
@@ -161,6 +197,7 @@ func _fill() -> void:
 			_command_row(entry as BattleCommand)
 		else:
 			add_row(tr(entry as String), _open.bind(entry as String))
+	add_row(tr(AUTO_ON_KEY if AutoBattle.on() else AUTO_OFF_KEY), _toggle_auto)
 
 
 # Leaving the screen frees the fighter nodes and forgets the enemies' HP.
@@ -290,35 +327,6 @@ func _act(command: BattleCommand, targets: Array[Combatant]) -> void:
 		_boost = 0
 		_category = ""
 	advance()
-
-
-# One fighter's line: hp, then every other pool it has, its statuses, and the weaknesses the
-# player has already found. Parts it has none of are left out.
-func _pools_line(fighter: Combatant) -> String:
-	var vitals: Vitals = Vitals.of(fighter.get_parent())
-	var parts: Array[String] = [tr(POOLS_KEY).format({"name": name_of(fighter),
-			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})]
-	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
-		var pool: StringName = StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
-		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
-			parts.append(tr(POOL_KEY).format({"pool": String(pool).to_upper(),
-					"current": vitals.current(pool), "max": vitals.maximum(pool)}))
-	var weapon: String = WeaponLine.text(fighter.get_parent())
-	if weapon != "":
-		parts.append(weapon)
-	var names: Array[String] = []
-	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
-	for effect: StatusEffect in statuses.held() if statuses != null else []:
-		names.append(battle_log.status_name(fighter.combatant_id, effect.id) if battle_log != null else String(effect.id))
-	if not names.is_empty():
-		parts.append(tr(STATUSES_KEY).format({"list": ", ".join(names)}))
-	var found: Array[String] = []
-	for key: StringName in fighter.weak_to:
-		if Weakness.revealed(fighter, key):
-			found.append(tr(String(key)))
-	if not found.is_empty():
-		parts.append(tr(WEAK_KEY).format({"list": ", ".join(found)}))
-	return "   ".join(parts)
 
 
 func _upcoming() -> Array[String]:

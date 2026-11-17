@@ -5106,3 +5106,20 @@ names, "normal" and "hard", failed `check_boundary` because those words appear i
 `difficulty_test` 8 (the game's own files load clean). A headless probe lists the three in order
 with no problems. No capture: nothing shows on screen until a settings screen (C5.3b).
 **Gaps.** No player-facing choice yet (C5.3b, which waits on upstream T7.4).
+
+## 2026-11-17 — C5.4b · Auto-battle
+
+**Did.** `AutoBattle` (gameplay): the flag `combat/auto_battle`, `toggle`, `plays` and
+`brain_for` (the definition's `brain`, else an empty one whose fallback attacks). `Battle.brain_of`
+asks it where it used to return null. `BattleScreen`: `advance` stops at an auto-played party
+turn, `tick_auto` (from `_process`) plays it after `AUTO_DELAY`, and an Auto row ends the first
+menu. `_pools_line` moved to `BattleReadout.line`. Also fixed: C5.4a's commit failed
+`combat_record_test`, because its devlog heading "C5.4a" needs the word C5.4 on the board and
+the ladder ran before the docs were written; the C5.4a row now names C5.4.
+**Verified.** Ladder: 0 warnings; 5073 passed, 0 failed; checkers silent; stripped 4960 passed.
+`auto_battle_test` 6 (a whole fight plays itself to a win). Windowed capture of the thorn-wisp
+battle with `--flag=combat/auto_battle:true`: "Auto: On" ends the menu, and the log shows the
+party's turns played.
+**Gaps.** The plain brain only attacks: it never heals, so the demo party can lose on auto. A
+member needs its own `brain` on the roster for anything smarter. The settings screen (C5.3b)
+will offer the flag too.

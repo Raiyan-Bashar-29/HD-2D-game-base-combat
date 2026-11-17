@@ -175,13 +175,14 @@ func current() -> Combatant:
 
 
 ## The brain that plays `fighter`, or null for one the player controls. A status that takes
-## its holder over (berserk, C9.5c) plays it first, a party member too.
+## its holder over (berserk, C9.5c) plays it first, a party member too; with auto-battle on, a
+## party member of its own is played too (`AutoBattle`, C5.4b).
 func brain_of(fighter: Combatant) -> BattleBrain:
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent()) if fighter != null else null
 	if statuses != null and statuses.takeover() != null:
 		return statuses.takeover()
 	if fighter == null or not brains.has(fighter.combatant_id):
-		return null
+		return AutoBattle.brain_for(self, fighter)
 	return brains[fighter.combatant_id]
 
 
