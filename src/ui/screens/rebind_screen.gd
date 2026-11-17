@@ -33,6 +33,12 @@ const ACTION_PREFIX: String = "ui.action."
 
 ## The action waiting for a button, or &"" when nothing is listening.
 var _listening: StringName = &""
+## The trigger a row was just bound to, and that row's action (T7.8). The rest of the same pull is
+## still arriving, a motion event each time it moves, and every one is now that action's press:
+## Cancel bound to a trigger closed the menus one by one. They are swallowed here until the trigger
+## falls back under the action's deadzone.
+var _pulled: InputEventJoypadMotion = null
+var _pulled_action: StringName = &""
 ## One entry per row in draw order, empty for the reset row. Parallel array rather than metadata
 ## on the Button: `get_meta` returns a Variant, and an unsafe cast is an error here.
 var _actions: Array[StringName] = []
@@ -54,6 +60,8 @@ func _init() -> void:
 ## UiRoot sees the escape that closes the screen, or aborting a rebind would also dismiss the
 ## menu behind it.
 func _input(event: InputEvent) -> void:
+	if _swallowed(event):
+		return
 	if _listening == &"":
 		return
 	if not KeyBindings.bindable(event):
@@ -67,6 +75,8 @@ func _input(event: InputEvent) -> void:
 	_stop_listening()
 	if KeyBindings.rebind(action, event):
 		_redraw(action)
+		_pulled = event as InputEventJoypadMotion
+		_pulled_action = action
 
 
 func _fill() -> void:
@@ -112,6 +122,17 @@ func listen(action: StringName) -> void:
 	if previous != &"" and previous != action:
 		_redraw(previous)
 	_redraw(action)
+
+
+## True for an event of the trigger just bound, still in the same pull, which nothing else may see.
+func _swallowed(event: InputEvent) -> bool:
+	var motion: InputEventJoypadMotion = event as InputEventJoypadMotion
+	if _pulled == null or motion == null or motion.axis != _pulled.axis or motion.device != _pulled.device:
+		return false
+	get_viewport().set_input_as_handled()
+	if absf(motion.axis_value) < InputMap.action_get_deadzone(_pulled_action):
+		_pulled = null
+	return true
 
 
 func _stop_listening() -> void:
