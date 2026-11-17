@@ -18,6 +18,22 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.22.1
+
+*2026-11-17 — T7.9: a game's setting row reads its value by its default's kind.*
+
+**A consuming game does: nothing.**
+
+**What changed.**
+- The settings screen reads a row's value as its default's kind before finding it among the
+  choices. `Settings.set_value` accepts an int for a float setting, and `Array.find` tells 1 from
+  1.0, so a float row holding 1 lost its label and a press set the same value again.
+- `Settings.game.add` refuses labels on a bool, which reads On and Off and has no choices to
+  name. They were accepted and then never shown.
+
+**Why.** Found by the same review as 5.22.0.
+
+---
 ## 5.22.0
 
 *2026-11-17 — T7.8: one pull of a trigger is one press.*

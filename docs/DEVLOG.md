@@ -12192,3 +12192,20 @@ assertions failed. Green: suite 2825 passed, 0 failed; boot 0 warnings, 0 errors
 exit 0; stripped 2748 passed.
 
 **Gaps.** The debug keys still read `event.is_action_pressed`; they cannot be rebound.
+
+## 2026-11-17 — T7.9 · A game's setting row reads its value by its default's kind
+
+**Did.** `SettingsScreen._current(path)` reads a row's value as its default's kind (`get_int`,
+`get_float`, else the value), and `_next_choice` and `_label` find that among the choices.
+`Settings.game.add` refuses labels on a bool. Three assertions in `game_settings_test`. Base
+`5.22.1`, a PATCH.
+
+**Why.** The T7.8 review: an int written into a float row (which `set_value` allows) was not found
+among float choices, so the label was lost and a press repeated the value; bool labels were
+accepted and never drawn.
+
+**Verified.** Red first: with `_current` reading floats as stored and bool labels allowed, 3 of 3
+failed. Green: suite 2830 passed, 0 failed; boot 0 warnings, 0 errors; all seven checkers exit 0;
+stripped 2753 passed.
+
+**Gaps.** None.

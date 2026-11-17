@@ -183,7 +183,7 @@ func value_text(path: String) -> String:
 		return tr(ON_KEY) if Settings.get_bool(path) else tr(OFF_KEY)
 	if path == Settings.LOCALE:
 		return Settings.get_string(path)
-	var named: String = _label(path, default)
+	var named: String = _label(path)
 	if named != "":
 		return tr(named)
 	if default is String:
@@ -222,12 +222,8 @@ func _float_text(path: String) -> String:
 	return tr(MULTIPLIER_KEY).format({"value": "%.2f" % current})
 
 
-## An int row is found by `get_int`, so a value hand-edited into the file as 2.0 still finds 2.
 func _next_choice(path: String, options: Array, direction: int) -> Variant:
-	var current: Variant = Settings.get_value(path)
-	if current is float and options[0] is int:
-		current = Settings.get_int(path)
-	var at: int = maxi(0, options.find(current))
+	var at: int = maxi(0, options.find(_current(path)))
 	return options[wrapi(at + direction, 0, options.size())]
 
 
@@ -254,11 +250,21 @@ func _next_locale(direction: int) -> String:
 
 
 ## The key a game named for the row's current value (T7.6), or "" when it named none.
-func _label(path: String, default: Variant) -> String:
+func _label(path: String) -> String:
 	var labels: Array[String] = Settings.game.labels_of(path)
-	var current: Variant = Settings.get_int(path) if default is int else Settings.get_value(path)
-	var at: int = Settings.game.choices_of(path).find(current)
+	var at: int = Settings.game.choices_of(path).find(_current(path))
 	return labels[at] if at >= 0 and at < labels.size() else ""
+
+
+## The row's value read as its default's kind (T7.9), so it is found among the choices: a number
+## written as 1 into a float row, or hand-edited as 2.0 into an int row, `Array.find` would miss.
+func _current(path: String) -> Variant:
+	var default: Variant = Settings.default_of(path)
+	if default is int:
+		return Settings.get_int(path)
+	if default is float:
+		return Settings.get_float(path)
+	return Settings.get_value(path)
 
 
 ## A game's float with choices is a percentage while its largest choice is at most 1.0.
