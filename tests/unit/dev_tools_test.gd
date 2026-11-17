@@ -48,7 +48,7 @@ const GATE_SITES: Array[Array] = [
 
 
 func run() -> void:
-	plan(63)
+	plan(64)
 	_the_verbs_are_the_command_lines_own()
 	_a_malformed_argument_is_refused_whole()
 	_the_console_runs_a_line_and_keeps_a_transcript()
@@ -82,6 +82,11 @@ func _the_verbs_are_the_command_lines_own() -> void:
 	equal("and reports what it wrote", said.contains("true"), true)
 	equal("a value that is not true or false is read as an integer",
 		_flag_int("flag %s:7" % FLAG_B), 7)
+	# Erased first: `Flags.set_flag` refuses to turn an int flag into text.
+	Flags.erase_flag(FLAG_B)
+	DevCommands.run("flag %s:fixture/text" % FLAG_B)
+	equal("and one that is not a number stays text", Flags.get_string(FLAG_B), "fixture/text")
+	Flags.erase_flag(FLAG_B)
 
 	var day: int = Clock.day
 	var hour: int = Clock.hour

@@ -12156,3 +12156,18 @@ suite 2814 passed, 0 failed; boot 0 warnings, 0 errors; all seven checkers exit 
 2737 passed, 0 failed.
 
 **Gaps.** None new.
+
+## 2026-11-17 — T7.7 · The debug `flag` verb keeps text as text
+
+**Did.** `DevCommands.set_flag` keeps a value that is neither `true`/`false` nor a whole number as
+text; it stored `to_int()` of it, which is 0. One assertion in `dev_tools_test` (64). Base `5.21.1`,
+a PATCH.
+
+**Why.** The combat fork's `--flag=combat/difficulty:difficulty/story`, documented in its
+`AUTHORING.md`, stored 0. The fork fixed its own copy (C8.27a); an upstream file's fix belongs here,
+so the next merge brings the two back together.
+
+**Verified.** Red first: with the old parse, the new assertion failed (got ""). Green: suite 2817
+passed, 0 failed; boot 0 warnings, 0 errors; all seven checkers exit 0; stripped 2740 passed.
+
+**Gaps.** None.
