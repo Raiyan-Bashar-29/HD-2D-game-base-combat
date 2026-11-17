@@ -11,6 +11,7 @@
 [ext_resource type="Resource" path="res://data/skills/ember.tres" id="8_ember"]
 [ext_resource type="Resource" path="res://data/skills/salve.tres" id="9_salve"]
 [ext_resource type="Resource" path="res://data/action/keeper_loadout.tres" id="10_keeper"]
+[ext_resource type="Resource" path="res://data/powers/wanderer.tres" id="12_kit"]
 
 [sub_resource type="Resource" id="Resource_fovq0"]
 script = ExtResource("2_8bigs")
@@ -34,6 +35,7 @@ attack_tags = Array[StringName]([&"blade"])
 level_curve = SubResource("Resource_fovq0")
 passive_budget = 4
 passive_budget_per_level = 1
+power_kit = ExtResource("12_kit")
 
 [sub_resource type="Resource" id="Resource_oykhv"]
 script = ExtResource("4_vtpru")

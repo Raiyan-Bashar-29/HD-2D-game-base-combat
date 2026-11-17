@@ -55,6 +55,8 @@ extends Node
 ##                        battle at its turn: --press=1,2,battle:encounter/<id> (C8.10d).
 ##   --party=<a,b>|<c,d>  set the active line-up and the reserve line AFTER the area lands, so a
 ##                        battle capture shows the reserve and its Swap row (C8.3).
+##   --power-kit=<name>   put the hero-power kit `kit/<name>` on the player after the area lands,
+##                        as the console's `power_kit` verb does (C6.23); `none` takes it off.
 ##   --new-game           start a game. Since WP-12 the boot goes to the main menu, not to an
 ##                        area, so without this there is no world to photograph.
 ##   --npc-settle=<n>     let NPCs walk for n physics frames, so a screenshot shows them AT
@@ -115,6 +117,8 @@ func _parse_arguments() -> void:
 			_press_interact(maxi(1, argument.trim_prefix("--interact=").to_int()))
 		elif argument.begins_with("--press="):
 			_press_slots(argument.trim_prefix("--press="))
+		elif argument.begins_with("--power-kit="):
+			_power_kit(argument.trim_prefix("--power-kit="))
 		elif argument == "--new-game":
 			_fresh_game = true
 			_new_game()
@@ -171,6 +175,16 @@ func _give(list: String) -> void:
 	Log.info("test", "--%s" % DevCommands.give(list))
 
 
+
+
+## Put a hero-power kit on the player after the area lands (C6.23): the console's `power_kit`
+## verb, so `--power-kit=wanderer` and typing `power_kit wanderer` do the same thing.
+func _power_kit(wanted: String) -> void:
+	await get_tree().process_frame
+	if _fresh_game:
+		await _wait_for_area()
+		await get_tree().process_frame
+	Log.info("test", "--%s" % DevKit.power_kit(wanted))
 
 
 ## Put items in hand for a capture. AFTER the area lands, for gotcha 32's reason: equipment is a

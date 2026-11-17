@@ -67,7 +67,8 @@ func _the_verbs_are_the_command_lines_own() -> void:
 	# A COUNT, and deliberately a number somebody has to edit: a verb added without a thought
 	# about testing it should fail here exactly once. T5.1 added `save` and `load`, and this
 	# is where that showed up - which is the assertion doing its job, not being in the way.
-	equal("the vocabulary is six verbs", DevCommands.VERBS.size(), 6)
+	# The combat fork's C6.23 adds a seventh, `power_kit`.
+	equal("the vocabulary is seven verbs", DevCommands.VERBS.size(), 7)
 	# THE PART THAT CANNOT ROT. A count says how many there are; this says every one of them
 	# is wired, which is what a seventh verb declared in VERBS and forgotten in `run` breaks.
 	equal("every verb in the vocabulary dispatches", _every_verb_dispatches(), true)

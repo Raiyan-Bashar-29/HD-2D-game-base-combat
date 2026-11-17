@@ -783,7 +783,7 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | C6.24 | Kit: Isliid (C6.0b): three forms, the sword cycle, `arts`, `true_arts` and `super_arts` | C6.4, C6.5, C6.6, C6.8, C6.11, C6.12 |
 | C6.25 | Kit: Roland (C6.0b): three forms, Charisma, Trance, Glorious Finale; `PowerScaling.Source.ALLIES_STANDING` | C6.4, C6.5, C6.8, C6.9, C6.12 |
 
-### Adding a character later, in five steps (C6.23 writes the full how-to)
+### Adding a character later, in five steps (the full how-to is `AUTHORING.md` § Hero powers)
 
 1. Read the mechanism table. Most powers are a `Skill` plus one of M1–M14.
 2. Write `data/powers/<kit>.tres` with its powers, passives, gauges and stat bonuses.

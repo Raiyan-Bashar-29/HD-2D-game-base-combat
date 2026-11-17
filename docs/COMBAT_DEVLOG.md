@@ -5077,3 +5077,18 @@ thorn wisps' third wisp gives 15.
 `team_attack_test` (the preview), `reinforcement_test` 6. No capture: the demo has no team tech
 to make a lost turn, and the readout's drawing is unchanged.
 **Gaps.** None new. Stage 3's recorded gaps are closed.
+
+## 2026-11-17 — C6.23 · Choosing a kit, and authoring
+
+**Did.** `DevKit.power_kit` (in `src/systems/debug/`): equips `kit/<name>` from `PowerKitDb` on
+`Director.player`, adding a `PowerSet` when missing; `none` takes it off; alone it lists the kits.
+`DevCommands` dispatches it as a seventh verb, and `dev_stage` takes `--power-kit=` after the area
+lands. The demo Wanderer's loadout wears `data/powers/wanderer.tres` (Thorn Volley, Sidestep).
+`AUTHORING.md` § Hero powers: what a kit is, where it shows, trying one, and five steps.
+**Verified.** Ladder: 0 warnings; 5057 passed, 0 failed; checkers silent; stripped 4944 passed.
+`dev_kit_test` 6; `dev_tools_test` counts seven verbs. Windowed capture with `--press=1`: the HUD
+reads "[1] Thorn Volley (ready in 4s) [2] Sidestep", and the volley's hit on a thorn wisp opened
+its battle. Headless runs of `--power-kit=none` and `--power-kit=nope` log the take-off and the
+refusal.
+**Gaps.** The roster's Wanderer (turn-based battles) has no kit, so the demo battle shows no
+Powers row. The verb's kit does not survive a new area.

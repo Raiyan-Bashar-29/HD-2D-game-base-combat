@@ -1,0 +1,55 @@
+[gd_resource type="Resource" script_class="PowerKit" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="kit"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="power"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/barrage_mechanism.gd" id="barrage"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/blink_mechanism.gd" id="blink"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
+
+[sub_resource type="Resource" id="thorn"]
+script = ExtResource("move")
+startup = 0.0
+active = 1.2
+recovery = 0.0
+power = 3.0
+hitbox_size = Vector3(0.4, 0.4, 0.4)
+hitbox_offset = Vector3(0, 0, 0)
+
+[sub_resource type="Resource" id="volley_mech"]
+script = ExtResource("barrage")
+pattern = 0
+count = 3
+interval = 0.1
+speed = 14.0
+turn_rate = 0.0
+radius = 1.0
+shots = Array[ExtResource("move")]([SubResource("thorn")])
+
+[sub_resource type="Resource" id="volley"]
+script = ExtResource("power")
+power_id = &"power/wanderer_thorn_volley"
+name_key = "combat.power.wanderer_thorn_volley.name"
+desc_key = "combat.power.wanderer_thorn_volley.desc"
+mechanism = SubResource("volley_mech")
+cooldown = 4.0
+
+[sub_resource type="Resource" id="step_mech"]
+script = ExtResource("blink")
+to = 2
+distance = 4.0
+cancels_recovery = true
+
+[sub_resource type="Resource" id="step"]
+script = ExtResource("power")
+power_id = &"power/wanderer_sidestep"
+name_key = "combat.power.wanderer_sidestep.name"
+desc_key = "combat.power.wanderer_sidestep.desc"
+mechanism = SubResource("step_mech")
+cooldown = 3.0
+
+[resource]
+script = ExtResource("kit")
+kit_id = &"kit/wanderer"
+name_key = "combat.kit.wanderer.name"
+desc_key = "combat.kit.wanderer.desc"
+powers = Array[ExtResource("power")]([SubResource("volley"), SubResource("step")])

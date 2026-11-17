@@ -1841,6 +1841,45 @@ Three well-known styles come from parts that already exist.
   power by it; `problems()` flags a window that closes before it opens, a negative bonus, or a
   centre wider than the window.
 
+## Hero powers: give a character a kit (C6.23, combat fork only)
+
+A **kit** (`PowerKit`) is everything a character can do beyond attacking: its powers, the
+passives and gauges it brings, and its stat bonuses. It is one file,
+`data/powers/<name>.tres`, with the id `kit/<name>`. Each `Power` in it is a `Skill`, a
+**mechanism** (a barrage, a blink, a form, a summon, ...), or both. `docs/MECHANICS_GUIDE.md` §§ 1 and
+10 list every mechanism with the hook it uses; `docs/POWER_COOKBOOK.md` has a recipe for each. The worked
+example is the demo's own kit, `data/powers/wanderer.tres`: Thorn Volley (a barrage of three
+shots) and Sidestep (a blink four metres forward).
+
+**Where it shows.** In the field, the kit's powers sit on the quick slots (keys 1 to 4; the HUD
+line reads `[1] Thorn Volley [2] Sidestep`, with a cooldown or the reason a power is refused). In a
+turn-based battle they sit under one Powers row of the command menu.
+
+**Trying one.** Open the debug console and type `power_kit <name>` (`power_kit` alone lists the
+kits, `power_kit none` takes the kit off), or launch with `--power-kit=<name>`. That kit stays on
+until the player's body is next built. Nothing is saved.
+
+**Add a new character in five steps:**
+
+1. **Choose the mechanisms.** Read `MECHANICS_GUIDE.md` § 1 and § 10. Most powers are a `Skill`
+   plus one mechanism. Only if none fits, add one: a content class, an executor and one line in
+   `PowerMechanisms.BUILT_IN`, as its own board row, test first.
+2. **Write the kit.** `data/powers/<name>.tres`: `kit_id = &"kit/<name>"`, its `powers` (each with
+   a `power_id`, `name_key`, `desc_key`, `cooldown` or cost), and any `passives`, gauges and stat
+   bonuses. `PowerKitDb` loads every kit file, so `check_content` reports a mistake even before
+   anyone wears it.
+3. **Name it.** Add the `combat.kit.<name>.*` and `combat.power.<id>.*` rows to
+   `localization/strings.csv` (quote a value with a comma). `check_strings` fails on a missing key.
+4. **Equip it.** Set `power_kit` on the character's `CombatantDef`: the loadout's `fighter` for
+   the field (`data/action/<name>_loadout.tres`), the roster member for a turn-based battle. Gear
+   can lend a kit too (`GearDefinition.kit`, `GEAR.md`).
+5. **See it.** `power_kit <name>` in the console, or `--new-game --power-kit=<name> --press=1`
+   with a `--shot`, and look at the quick-slot line and the power at work.
+
+A fan-made character converted from M.U.G.E.N files goes through `tools/mugen_convert.gd` and
+`tools/mugen_build.gd` instead, which write the kit for you (`POWERS.md` § From a M.U.G.E.N
+character to a playable fighter).
+
 ## Mixing formulas (C5.1, combat fork only)
 
 **Which formula a fight uses is decided by what the area places.** There is no mode setting.

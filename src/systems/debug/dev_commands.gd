@@ -22,7 +22,7 @@ extends RefCounted
 ## `src/ui/screens/debug_console_screen.gd`.
 ##
 ## OWNS: what `goto`, `flag`, `time`, `give`, `save` and `load` do, and the one-line report
-##   each returns.
+##   each returns. The combat fork's `power_kit` is dispatched here and done by `DevKit`.
 ## MUST NOT: wait for a frame, read the command line, draw anything, or be depended upon by
 ## gameplay. Deleting this file must break only the harness and the console.
 
@@ -32,10 +32,12 @@ const TIME: StringName = &"time"
 const GIVE: StringName = &"give"
 const SAVE: StringName = &"save"
 const LOAD: StringName = &"load"
+## The combat fork's verb (C6.23): its body is `DevKit`'s.
+const POWER_KIT: StringName = DevKit.VERB
 
 ## The vocabulary, in the order the console offers it. A caller listing the verbs reads this
 ## rather than repeating the names, so another verb is one edit.
-const VERBS: Array[StringName] = [GOTO, FLAG, TIME, GIVE, SAVE, LOAD]
+const VERBS: Array[StringName] = [GOTO, FLAG, TIME, GIVE, SAVE, LOAD, POWER_KIT]
 
 
 ## Run one typed line: a verb, a space, and the SAME argument the matching `--verb=` takes.
@@ -59,6 +61,8 @@ static func run(line: String) -> String:
 		return save_to(argument)
 	if verb == LOAD:
 		return load_from(argument)
+	if verb == POWER_KIT:
+		return DevKit.power_kit(argument)
 	return "no such command '%s'. %s" % [verb, usage()]
 
 
