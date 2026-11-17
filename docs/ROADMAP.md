@@ -1627,6 +1627,8 @@ phase that fixes what playing finds cannot list its rows in advance.*
     autosave skips.
   - The save screen says why.
   - Loading is never refused.
+- **T7.7 The debug `flag` verb keeps text as text — DONE, 2026-11-17, `5.21.1`.** Found from the
+  combat fork: `--flag=key:text` stored 0.
 - **T7.6 A game's setting can name its choices — DONE, 2026-11-17, `5.21.0`.** Found from the
   combat fork. `Settings.game.add` takes one label key per choice, for choices that come from data.
 - **T7.5 A pad trigger can be named and rebound — DONE, 2026-11-17, `5.20.0`.** Found from the

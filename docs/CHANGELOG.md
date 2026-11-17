@@ -18,6 +18,18 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.21.1
+
+*2026-11-17 — T7.7: the debug `flag` verb keeps text as text.*
+
+**A consuming game does: nothing.** Only the development harness changed.
+
+**What changed.** `DevCommands.set_flag`, behind `flag key:value` in the console and `--flag=` on
+the command line, read every value that was not `true` or `false` as an integer, so
+`--flag=quest/target:area/hall` stored 0. A whole number is still an integer; anything else now
+stays text. Found by the combat fork, whose own copy had the fix (its C8.27a).
+
+---
 ## 5.21.0
 
 *2026-11-17 — T7.6: a game's setting can name its choices.*
