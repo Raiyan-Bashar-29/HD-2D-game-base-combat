@@ -18,6 +18,8 @@ extends Resource
 @export var powers: Array[Power] = []
 ## Statuses held while the kit is equipped. Give them duration 0 so they never run out.
 @export var passives: Array[StatusEffect] = []
+## Passives (C9.3) the fighter holds while the kit is on: `PassiveSkill` files, with triggers.
+@export var passive_skills: Array[PassiveSkill] = []
 ## Stat changes held while the kit is equipped. Their `source` should be the kit id, so taking
 ## the kit off removes exactly them.
 @export var stat_bonuses: Array[StatModifier] = []

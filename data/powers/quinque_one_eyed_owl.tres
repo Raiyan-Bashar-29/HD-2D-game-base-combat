@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="PowerKit" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="kit"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="power"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/form_mechanism.gd" id="form"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/barrage_mechanism.gd" id="barrage"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/look_def.gd" id="look"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="pskill"]
+
+[sub_resource type="Resource" id="shot"]
+script = ExtResource("move")
+startup = 0.0
+active = 1.5
+recovery = 0.0
+power = 4.0
+hitbox_size = Vector3(0.4, 0.4, 0.4)
+hitbox_offset = Vector3(0, 0, 0)
+
+[sub_resource type="Resource" id="b_mech"]
+script = ExtResource("barrage")
+pattern = 2
+count = 6
+interval = 0.08
+speed = 18.0
+turn_rate = 0.0
+radius = 3.0
+shots = Array[ExtResource("move")]([SubResource("shot")])
+
+[sub_resource type="Resource" id="b"]
+script = ExtResource("power")
+power_id = &"power/quinque_one_eyed_owl_storm"
+name_key = "combat.power.quinque_one_eyed_owl_storm.name"
+desc_key = "combat.power.quinque_one_eyed_owl_storm.desc"
+mechanism = SubResource("b_mech")
+cooldown = 4.0
+
+[resource]
+script = ExtResource("kit")
+kit_id = &"kit/quinque_one_eyed_owl"
+name_key = "combat.kit.quinque_one_eyed_owl.name"
+desc_key = "combat.kit.quinque_one_eyed_owl.desc"
+powers = Array[ExtResource("power")]([SubResource("b")])

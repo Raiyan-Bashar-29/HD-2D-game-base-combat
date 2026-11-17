@@ -12,7 +12,7 @@ var _holder: Node
 
 
 func run() -> void:
-	plan(15)
+	plan(16)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_stack = UiRoot.new()
@@ -22,6 +22,7 @@ func run() -> void:
 	var screen: BattleScreen = _open_screen()
 	_categories_and_costs(screen)
 	_stance_and_boost(screen)
+	_auto_drops_boost(screen)
 	_greyed_by_rules(screen)
 	_stack.close_top()
 	_holder.free()
@@ -137,6 +138,20 @@ func _stance_and_boost(screen: BattleScreen) -> void:
 	equal("the next action spends the chosen level", Vitals.of(battle.party[0].get_parent()).current(&"bp"), 2)
 	equal("and the selector starts again at zero", _row(screen, boost_prefix).text,
 		tr(BattleScreen.BOOST_KEY).format({"level": 0, "max": 3}))
+
+
+## C8.27b: while Auto plays a turn only its row is drawn, and a Boost level chosen before it is
+## dropped, so it never greys out a later member's commands.
+func _auto_drops_boost(screen: BattleScreen) -> void:
+	var boost_prefix: String = tr(BattleScreen.BOOST_KEY).get_slice("{", 0)
+	_press(screen, boost_prefix)
+	_press(screen, tr(BattleScreen.AUTO_OFF_KEY))
+	var while_on: Array[String] = screen.row_texts()
+	_press(screen, tr(BattleScreen.AUTO_ON_KEY))
+	equal("while Auto plays only its row is drawn; off again, the Boost level is back at zero",
+		[while_on.has(tr(BattleScreen.AUTO_ON_KEY)), while_on.has(tr(BattleScreen.ATTACK_KEY)),
+			_row(screen, boost_prefix).text],
+		[true, false, tr(BattleScreen.BOOST_KEY).format({"level": 0, "max": 3})])
 
 
 func _greyed_by_rules(screen: BattleScreen) -> void:

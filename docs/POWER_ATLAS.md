@@ -49,7 +49,7 @@ The pack describes the services a power engine needs. Most exist here under anot
 | `TransformStateMachine` | `FormMechanism` + `FormRun` | Built; the look is C6.5d |
 | `EventBus` (before and after a hit) | `Events`; the one guard hook in `Combatant.receive` (`PowerGuard.incoming`) | Built |
 | `EffectTransaction` (pay once, never twice) | `PowerUse.use` refuses before it pays; single-player, so no network retries | Built |
-| `OwnedEntityRegistry` (summons that know their owner) | Nothing yet | **New, C8.10** |
+| `OwnedEntityRegistry` (summons that know their owner) | `SummonRun` keeps each power's list; `OwnedFighter.owner_body`, `power_id` | Built in the field, C8.10a; saved roster and battle side C8.10c |
 | `TemporalBuffer` (a record of the past) | Nothing yet | **New, C8.11** |
 
 **The pack's test list is this fork's test rule for every mechanism row:** a fighter that does
@@ -146,12 +146,12 @@ fight). "Powers" is how many of the 3,306 the family holds.
 
 | Family | Powers | In plain words | What runs it here | State | Examples |
 |---|---|---|---|---|---|
-| `temporal_rate` | 31 | Speed up or slow down | `time_rate` per fighter; `speed` in a battle | NEW C8.11 | Epitaph; Shinra — Adolla-Linked Speed; Flawless |
+| `temporal_rate` | 31 | Speed up or slow down | `time_rate` per fighter; `speed` in a battle | DONE C8.11a | Epitaph; Shinra — Adolla-Linked Speed; Flawless |
 | `temporal_loop` | 14 | Replay a stretch of the story | A save and reload is the game's own loop | OUT (story, not combat) | Return by Death; The Flash — Speed Force; Cosmic Treadmill |
 | `temporal_stop` | 7 | Stop time for others | `CombatClock` at 0 with the user exempt | NEW C8.11 | Star Platinum — Time Stop; Homura — Time Stop; Time Stop |
-| `temporal_rewind` | 6 | Put things back as they were | A time record: positions, hp and statuses each tick, restored on demand | NEW C8.11 | Rewind; Time Magic |
+| `temporal_rewind` | 6 | Put things back as they were | A time record: positions, hp and statuses each tick, restored on demand | DONE C8.11b (`rewind`) | Rewind; Time Magic |
 | `temporal_skip` | 3 | Skip a slice of time | The user acts while others' clocks jump | NEW C8.11 | Time-Skip |
-| `personal_state_rewind` | 2 | Put yourself back a few seconds | The time record, one fighter | NEW C8.11 | Ekko: Chronobreak; Tracer: Recall |
+| `personal_state_rewind` | 2 | Put yourself back a few seconds | The time record, one fighter | DONE C8.11b (`rewind`) | Ekko: Chronobreak; Tracer: Recall |
 | `personal_time_stop` | 1 | Stop chosen fighters only | A per-fighter `time_rate` stat read beside `CombatClock` | NEW C8.11 | The World — Time Stop |
 | `time_erasure` | 1 | See what is coming, then erase that slice | M7 `foresight` DODGE plus a skip | PLANNED C6.10, NEW C8.11 | King Crimson — Time Erasure |
 | `object_motion_rewind` | 1 | Run an object's path backwards | The time record on a placed thing or projectile | NEW C8.11 | Recall |
@@ -162,7 +162,7 @@ fight). "Powers" is how many of the 3,306 the family holds.
 | Family | Powers | In plain words | What runs it here | State | Examples |
 |---|---|---|---|---|---|
 | `summon_entities` | 107 | Call fighters that fight for you | An owned-fighter list: each summon knows its owner and power, and leaves with it | NEW C8.10 (field); battle side C8.3 | Ten Shadows Technique; Divine General Mahoraga — Adaptation; Dragon of the Darkness Flame |
-| `clone_actor` | 15 | A double of yourself | M10 `clone` | PLANNED C6.13 | Shadow Clone Technique; Fusion Dance; Potara Fusion |
+| `clone_actor` | 15 | A double of yourself | M10 `clone` | DONE C6.13a/b (`CloneMechanism`) | Shadow Clone Technique; Fusion Dance; Potara Fusion |
 | `autonomous_support` | 8 | A helper that reacts on its own | An owned fighter with an `ActionBrain`/`BattleBrain` | NEW C8.10 | Raphael, Lord of Wisdom; Ciel; Gambits |
 | `animal_control` | 4 | Tame or command beasts | M8 `command` OBEY limited by tag | PLANNED C6.11 | Puff!; Bend Will; Animalism |
 | `copy_previous_action` | 2 | Repeat the last move used | M10 `clone` battle reading (act twice); the last command remembered | PLANNED C6.13 | Mimic; Mimic (Gogo) |

@@ -109,8 +109,9 @@ func _physics_process(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, target_velocity.x, rate * delta)
 	velocity.z = move_toward(velocity.z, target_velocity.z, rate * delta)
 
+	# On the floor nothing falls, but an upward push is kept: a launch throws the body up.
 	if is_on_floor():
-		velocity.y = 0.0
+		velocity.y = maxf(velocity.y, 0.0)
 	else:
 		velocity.y -= _gravity * delta
 

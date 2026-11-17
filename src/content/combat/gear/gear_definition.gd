@@ -41,6 +41,13 @@ extends ContentEntry
 ## SOCKETS (C7.4c): `sockets` is how many gems the piece holds, and its rarity's `sockets` adds
 ## to it (`socket_count`). Which gems are in it is play state, kept by `GearSockets`.
 ##
+## UPGRADING (C7.5): `upgrade` is the piece's `UpgradeTrack`, and `upgrade_cap` how high it goes:
+## the track's length, lowered by `max_upgrade`, else by its rarity's `max_upgrade`. The level a
+## piece has reached is play state, kept by `GearUpgrades`.
+##
+## TEACHING (C9.4): `teaches` lists passives the wearer LEARNS by winning fights with the piece
+## on. A learned passive stays learned when the piece comes off. `PassiveLoadout` counts.
+##
 ## OWNS: the data of one piece, and checking its own fields.
 ## MUST NOT: know who wears it or whether it is worn. `GearSet` does. It also must not touch an
 ## autoload, as `ItemDefinition`'s header explains.
@@ -73,6 +80,10 @@ extends ContentEntry
 @export var rarity: StringName = &""
 ## Hero powers the wearer has while this is worn (C7.3). Null means none.
 @export var kit: PowerKit
+## Passives (C9.3) the wearer holds while the piece is worn.
+@export var passives: Array[PassiveSkill] = []
+## Passives the wearer learns from won fights while this is worn (C9.4).
+@export var teaches: Array[PassiveLesson] = []
 ## The field chain (and dodge, if it has one) the wearer plays while this is worn (C7.3b). Null
 ## means the type's, if it has one.
 @export var moves: MoveSet
@@ -80,6 +91,10 @@ extends ContentEntry
 @export var set_bonus: GearSetBonus
 ## How many gems it holds (C7.4c), before its rarity's extra sockets.
 @export var sockets: int = 0
+## The piece's upgrade track (C7.5). Null means it is not upgraded.
+@export var upgrade: UpgradeTrack
+## The highest upgrade level (C7.5). 0 means the rarity's cap, else the whole track.
+@export var max_upgrade: int = 0
 
 
 ## The slots this piece may be worn in, in the order to try them.
@@ -137,6 +152,16 @@ func socket_count() -> int:
 	return sockets + (tier.sockets if tier != null else 0)
 
 
+## How high this piece can be upgraded (C7.5): the track's length, lowered by `max_upgrade`, or
+## when that is 0 by its rarity's `max_upgrade`. 0 when it has no track.
+func upgrade_cap() -> int:
+	if upgrade == null:
+		return 0
+	var tier: Rarity = RarityDb.of(rarity)
+	var limit: int = max_upgrade if max_upgrade > 0 else (tier.max_upgrade if tier != null else 0)
+	return mini(upgrade.levels.size(), limit) if limit > 0 else upgrade.levels.size()
+
+
 ## True when wearing this piece can lend a kit: its own, or one of its set's tiers.
 func lends_kit() -> bool:
 	return kit != null or (set_bonus != null and set_bonus.has_kit())
@@ -170,8 +195,11 @@ func problems() -> PackedStringArray:
 		found.append_array(moves.problems(where + " moves"))
 	if set_bonus != null:
 		found.append_array(set_bonus.problems(where))
-	if sockets < 0:
-		found.append("%s has fewer than zero sockets" % where)
+	if sockets < 0 or max_upgrade < 0:
+		found.append("%s has fewer than zero sockets or upgrade levels" % where)
+	if upgrade != null:
+		found.append_array(upgrade.problems(where))
+	found.append_array(_lesson_problems(where))
 	if needs_level < 0:
 		found.append("%s needs a level below zero" % where)
 	if needs_stats.has(&""):
@@ -183,6 +211,16 @@ func problems() -> PackedStringArray:
 			found.append("%s blocks an unnamed slot" % where)
 		elif slots().has(blocked):
 			found.append("%s blocks %s, a slot it is worn in" % [where, blocked])
+	return found
+
+
+func _lesson_problems(where: String) -> PackedStringArray:
+	var found: PackedStringArray = PackedStringArray()
+	for lesson: PassiveLesson in teaches:
+		if lesson == null:
+			found.append("%s lists an empty lesson" % where)
+		else:
+			found.append_array(lesson.problems(where))
 	return found
 
 

@@ -39,6 +39,8 @@ extends RefCounted
 ##   standing foe.
 ## - Power cooldowns count in the holder's own turns, at the START of each, beside its statuses,
 ##   asleep or not. So "cooldown 3" means used on one turn, usable again three turns later.
+## - SWAP trades the actor for a standing member of `reserve` (`BattleReserve`, C8.3); ROW steps it
+##   between the front and back rows (`Rows`, C8.22b).
 ## - A defeated combatant leaves the scheduler. No enemy standing is WON, no party member LOST.
 ##
 ## IN PLAIN WORDS: this is the referee of a turn-based fight. Hand it two lists of fighters,
@@ -53,12 +55,14 @@ enum Outcome { ONGOING, WON, LOST, FLED }
 var party: Array[Combatant] = []
 var enemies: Array[Combatant] = []
 var scheduler: TurnScheduler
+## The battle started last and not yet over, for a power that moves the turn order (C6.12a).
+static var running: Battle
 var rng: RandomNumberGenerator
 ## Where ITEM commands spend from. Null refuses every ITEM.
 var inventory: Inventory
 var can_flee: bool = true
 var flee_chance: float = 1.0
-var defend_status: StatusEffect = _default_defend()
+var defend_status: StatusEffect = BattleSetup.default_defend()
 ## BOOST (C2.16): the pool Boost levels are spent from, the most levels one action may spend,
 ## and how many extra hits each level gives a plain ATTACK. A skill's own `boost_power` and
 ## `boost_hits` say what boosting it does. A fighter with no `max_bp` simply cannot boost.
@@ -73,6 +77,16 @@ var brains: Dictionary[StringName, BattleBrain] = {}
 var defs: Dictionary[StringName, CombatantDef] = {}
 ## The encounter this battle was built from, for its rewards. Null for one built by hand.
 var encounter: Encounter
+## Party-side fighters who only joined this fight, by combatant id: helpers a power brought out
+## in the field (C8.10d). They play themselves, earn nothing, are not stood back up afterwards,
+## and the party loses when everyone else is down, however many of them still stand.
+var guests: Array[StringName] = []
+## Party members waiting off the field; a SWAP brings one in (`BattleReserve`, C8.3).
+var reserve: Array[Combatant] = []
+## True makes a SWAP keep the turn for the one coming in, once a turn (C8.22c, from the
+## encounter). `free_swap_used` is true once this turn's is spent.
+var free_swaps: bool = false
+var free_swap_used: bool = false
 
 var _by_id: Dictionary[StringName, Combatant] = {}
 var _current: Combatant
@@ -91,22 +105,30 @@ func _init(our_side: Array[Combatant], their_side: Array[Combatant], turns: Turn
 func start() -> void:
 	var enemy_ids: Array[StringName] = []
 	for fighter: Combatant in party + enemies:
-		# Remember every fighter by id, so the scheduler's ids can be turned back into nodes.
-		_by_id[fighter.combatant_id] = fighter
-		# Only fighters still standing get a place in the turn order.
-		if not _vitals(fighter).is_defeated():
-			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
+		admit(fighter)
 	for fighter: Combatant in enemies:
 		enemy_ids.append(fighter.combatant_id)
+	running = self
 	Events.battle_started.emit(enemy_ids)
 	# A side that starts with nobody standing ends the fight at once.
 	_check_outcome()
+
+
+## Takes `fighter` into the battle: known by id, its passives on, and a place in the turn order
+## if it stands. `start` admits both sides; a summon used mid-battle is admitted after it is put
+## on a side (`BattleSetup.summon`, C8.10e).
+func admit(fighter: Combatant) -> void:
+	_by_id[fighter.combatant_id] = fighter
+	PassiveSet.join(fighter.get_parent(), rng)
+	if not _vitals(fighter).is_defeated():
+		scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
 
 
 ## Begins the next turn and returns whose it is: null once the battle is over. The actor's
 ## statuses tick first, and one that falls to a tick is skipped.
 func next_turn() -> Combatant:
 	_current = null
+	free_swap_used = false
 	# A cap on lost turns in a row, so a whole field asleep can never loop forever.
 	var skips_left: int = 64 * maxi(1, party.size() + enemies.size())
 	# Loop because a fighter may fall to poison at the start of their turn; then try the next one.
@@ -126,11 +148,14 @@ func next_turn() -> Combatant:
 		var powers: PowerSet = PowerSet.of(actor.get_parent())
 		if powers != null:
 			powers.tick_turn()
+		PassiveSet.turn(actor.get_parent())
 		# A break that just wore off gives the shield back (C2.17).
 		Weakness.recover(actor)
 		# Each `regen_<pool>` stat refills (or drains) its pool once a turn, asleep or not
 		# (C2.16). It runs before the defeat check, so a drain that empties hp counts too.
 		Meters.regen_turn(actor)
+		# The mercy time runs down and an overshield left alone refills (C9.5a).
+		HitGuard.pass_time(actor, 1.0)
 		if _vitals(actor).is_defeated():
 			# The tick or the drain knocked them out: take them out of the queue and look for
 			# the next actor.
@@ -151,10 +176,15 @@ func current() -> Combatant:
 	return _current
 
 
-## The brain that plays `fighter`, or null for one the player controls.
+## The brain that plays `fighter`, or null for one the player controls. A status that takes
+## its holder over (berserk, C9.5c) plays it first, a party member too; with auto-battle on, a
+## party member of its own is played too (`AutoBattle`, C5.4b).
 func brain_of(fighter: Combatant) -> BattleBrain:
+	var statuses: StatusSet = StatusSet.of(fighter.get_parent()) if fighter != null else null
+	if statuses != null and statuses.takeover() != null:
+		return statuses.takeover()
 	if fighter == null or not brains.has(fighter.combatant_id):
-		return null
+		return AutoBattle.brain_for(self, fighter)
 	return brains[fighter.combatant_id]
 
 
@@ -178,14 +208,18 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 				return out
 			if command.skill != null:
 				filter = command.skill.target
-		# DEFEND and FLEE aim at nobody.
-		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE:
+		# DEFEND and FLEE aim at nobody; SWAP aims at the standing reserve (C8.3).
+		BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE, BattleCommand.Kind.ROW:
 			return out
+		BattleCommand.Kind.SWAP:
+			return BattleReserve.ready(self)
 	# A reviving skill aims only at the fallen; everything else only at those still standing.
 	var reviving: bool = command.skill != null and command.skill.revives() \
 			and command.kind != BattleCommand.Kind.ATTACK
+	# A foe that is unseen is left out, unless the skill hits everyone (C8.12).
+	var wide: Skill = null if command.kind == BattleCommand.Kind.ATTACK else command.skill
 	for fighter: Combatant in party + enemies:
-		if _vitals(fighter).is_defeated() == reviving and _current.can_target(fighter, filter):
+		if _vitals(fighter).is_defeated() == reviving and Unseen.open(_current, fighter, filter, wide):
 			out.append(fighter)
 	return out
 
@@ -236,14 +270,17 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 					# Each landed swing counts against a weakness to what the attack carries.
 					Weakness.strike(targets[0], keys)
 			# Only a plain attack is countered, once however many swings landed; a skill is
-			# answered by REFLECT instead (C2.15).
-			SkillUse.counter(actor, targets[0], landed, rng)
+			# answered by REFLECT instead (C2.15). Then waiting allies may follow up (C8.2).
+			TeamAttacks.after_attack(actor, targets[0], landed, rng)
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM:
 			if not _use(actor, command, targets, boost):
 				return false
-		BattleCommand.Kind.POWER:
-			if not _power(actor, command, targets):
-				return false
+		BattleCommand.Kind.POWER, BattleCommand.Kind.SWAP, BattleCommand.Kind.ROW:
+			var done: bool = _power(actor, command, targets) if command.kind == BattleCommand.Kind.POWER \
+					else BattleReserve.move(self, actor, command.kind, targets)
+			# A free swap keeps the turn for the one coming in (C8.22c).
+			if not done or _kept(command, targets):
+				return done
 		# Guard: a one-turn defence bonus that wears off when this fighter's next turn starts.
 		BattleCommand.Kind.DEFEND:
 			StatusSet.of(actor.get_parent()).apply(defend_status)
@@ -259,6 +296,15 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 	# The turn is spent: clear it, then remove the fallen and check for a winner.
 	_current = null
 	_settle()
+	return true
+
+
+# A free swap (C8.22c): the one coming in takes this same turn, once a turn, so it is not spent.
+func _kept(command: BattleCommand, targets: Array[Combatant]) -> bool:
+	if command.kind != BattleCommand.Kind.SWAP or not free_swaps or free_swap_used:
+		return false
+	free_swap_used = true
+	_current = targets[0]
 	return true
 
 
@@ -288,8 +334,9 @@ func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant], b
 			return false
 	SkillUse.pay(actor, skill)
 	# One-target skills hit the chosen target; ALL skills hit everyone they are allowed to.
-	# What the skill then does is `SkillUse`'s, shared with the field and the hybrid (C2.13).
-	SkillUse.apply(actor, skill, targets if single else targets_for(command), rng, boost)
+	# What the skill then does is `SkillUse`'s, shared with the field and the hybrid (C2.13);
+	# a one-target skill that hurt a foe may draw follow-ups (`TeamAttacks`, C8.21).
+	TeamAttacks.use_skill(actor, skill, targets if single else targets_for(command), rng, boost)
 	# Heavy skills push the user back in a CTB queue; in round-based battles this does nothing.
 	if skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
@@ -349,23 +396,18 @@ func _settle() -> void:
 		elif not down and not scheduler.has(fighter.combatant_id):
 			# Revived this turn (C2.13): they take turns again from the next ordering.
 			scheduler.join(fighter.combatant_id, fighter.sheet.value(&"speed"))
+	# The reserve steps in for the fallen, and held-back foes arrive (C8.22a).
+	BattleReserve.refill(self)
 	_check_outcome()
 
 
 func _check_outcome() -> void:
 	if _outcome != Outcome.ONGOING:
 		return
-	if _all_down(enemies):
+	if BattleReserve.all_out(enemies):
 		_end(Outcome.WON)
-	elif _all_down(party):
+	elif BattleReserve.all_out(party, guests):
 		_end(Outcome.LOST)
-
-
-func _all_down(side: Array[Combatant]) -> bool:
-	for fighter: Combatant in side:
-		if not _vitals(fighter).is_defeated():
-			return false
-	return true
 
 
 func _end(how: Outcome) -> void:
@@ -373,17 +415,11 @@ func _end(how: Outcome) -> void:
 		return
 	_outcome = how
 	_current = null
+	if running == self:
+		running = null
 	Events.battle_ended.emit(how)
 
 
 func _vitals(fighter: Combatant) -> Vitals:
 	return Vitals.of(fighter.get_parent())
 
-
-static func _default_defend() -> StatusEffect:
-	var guard := StatusEffect.new()
-	guard.id = &"status/defend"
-	guard.name_key = "ui.battle.status.defend"
-	guard.duration = 1.0
-	guard.modifiers = [StatModifier.of(&"defence", StatModifier.Op.ADD, 100.0, &"")]
-	return guard

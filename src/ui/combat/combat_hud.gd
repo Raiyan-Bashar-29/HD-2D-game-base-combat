@@ -105,6 +105,10 @@ func _fighter_line(fighter: Combatant) -> String:
 	var held: String = _statuses_text(fighter)
 	if held != "":
 		parts.append(held)
+	# The worn weapon and its mode (C7.7b).
+	var weapon: String = WeaponLine.text(fighter.get_parent())
+	if weapon != "":
+		parts.append(weapon)
 	# The form held now leads the line (C6.5d).
 	var form: String = LookSwap.form_name_key(fighter.get_parent())
 	if form != "":

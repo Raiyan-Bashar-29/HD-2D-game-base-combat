@@ -46,7 +46,7 @@ func _exit_tree() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	watch(CombatClock.scaled(delta))
+	watch(CombatClock.scaled(delta) * FighterTime.of_attacker(attacker))
 
 
 ## Readies the plant to play `eruption` when it goes off, and shapes its box. Call before adding.
@@ -101,6 +101,11 @@ func watch(dt: float) -> void:
 			_erupt()
 	elif trigger == PlantMechanism.Trigger.PROXIMITY and _foe_near(null):
 		_erupt()
+
+
+# A blast hits from where it stands, not from its planter (C9.12: not through walls).
+func _eye() -> Vector3:
+	return CombatSight.aim(self)
 
 
 # Starts the eruption at once.

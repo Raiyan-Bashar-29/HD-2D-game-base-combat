@@ -23,6 +23,9 @@ extends RefCounted
 ## COUNTER and REFLECT reactions.
 ## MUST NOT: choose targets, check timing or turns, or draw anything.
 
+## The stat that cuts a SLAY effect's chance: 0 none, 1 immune (C8.7a).
+const DEATH_RESIST: StringName = &"resist_death"
+
 
 ## What `skill` really costs `user`: its `cost`, changed by the user's `cost_mult_<pool>` stat
 ## (C6.1a). The stat is added to 1, the way `poise_taken` is, so -0.5 halves the cost, -1 makes
@@ -70,8 +73,10 @@ static func stance_on(user: Combatant, skill: Skill) -> bool:
 ## (a battlefield's growing tick, C6.9b); 1 leaves it as written.
 static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
 		rng: RandomNumberGenerator, boost: int = 0, strength: float = 1.0) -> void:
+	PassiveMoments.skill(user, skill.tags)
 	if skill.toggle_status != null:
 		_toggle(user, skill)
+		PassiveMoments.skill(user, skill.tags, true)
 		return
 	var scale: float = (1.0 + skill.boost_power * boost) * maxf(0.0, strength)
 	var hits: int = maxi(1, skill.hits) + skill.boost_hits * boost
@@ -86,7 +91,8 @@ static func apply(user: Combatant, skill: Skill, targets: Array[Combatant],
 			continue
 		for status: StatusEffect in skill.statuses:
 			if rng.randf() < skill.status_chance:
-				statuses.apply(status, rng)
+				statuses.apply(status, rng, user.combatant_id)
+	PassiveMoments.skill(user, skill.tags, true)
 
 
 ## `defender` strikes back at `attacker` when the attack `landed` (a miss is not answered) and
@@ -172,7 +178,7 @@ static func _strike(user: Combatant, skill: Skill, target: Combatant,
 		_hit(user, skill, target, skill.power * scale, rng)
 	elif skill.power < 0.0:
 		# Negative power is the original way to write a heal: straight to the pool, no defence.
-		_vitals(target).change(target.damage_pool, roundi(-skill.power * scale))
+		Delayed.heal(target, roundi(-skill.power * scale))
 	for effect: SkillEffect in skill.effects:
 		if effect != null:
 			_effect(user, skill, target, effect, rng, scale)
@@ -186,7 +192,7 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 		SkillEffect.Kind.DAMAGE:
 			_hit(user, skill, target, effect.amount * scale, rng)
 		SkillEffect.Kind.HEAL:
-			vitals.change(target.damage_pool, roundi(effect.amount * scale))
+			Delayed.heal(target, roundi(effect.amount * scale))
 		SkillEffect.Kind.RESTORE:
 			vitals.change(effect.pool, roundi(effect.amount * scale))
 		SkillEffect.Kind.DRAIN:
@@ -207,13 +213,36 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 			# Only the fallen are revived; a standing target is left alone (revive refuses).
 			var back: int = roundi(vitals.maximum(target.damage_pool) * effect.amount)
 			vitals.revive(maxi(1, back))
+		SkillEffect.Kind.SLAY:
+			_slay(target, effect.amount, rng)
+		SkillEffect.Kind.STEAL:
+			Pilfer.steal(user, target, effect.amount, rng)
+		SkillEffect.Kind.SCAN:
+			Weakness.reveal_all(target)
+		SkillEffect.Kind.CAPTURE:
+			Pilfer.capture(user, target, effect.amount, rng)
+
+
+## Instant death (C8.7a): `target` falls at once on a roll under `chance`, cut by its
+## `resist_death` stat. A fighter holding an invincible status is never taken.
+static func _slay(target: Combatant, chance: float, rng: RandomNumberGenerator) -> void:
+	var vitals: Vitals = _vitals(target)
+	var statuses: StatusSet = StatusSet.of(target.get_parent())
+	if statuses != null:
+		for held: StatusEffect in statuses.held():
+			if held.invincible:
+				return
+	if rng.randf() < chance * (1.0 - target.sheet.value(DEATH_RESIST)):
+		vitals.set_to(vitals.defeat_pool, 0)
 
 
 ## One damaging hit of `skill`: resolved through the user's formula, then, if it landed, checked
 ## against the target's weaknesses (C2.17).
 static func _hit(user: Combatant, skill: Skill, target: Combatant, power: float,
 		rng: RandomNumberGenerator) -> void:
+	Foresight.striking = skill.id
 	var result: DamageResult = user.hit(target, power, skill.element, rng, skill.sure_hit, skill.tags)
+	Foresight.striking = &""
 	# A hit a barrier stopped whole touched nothing, so it finds no weakness either (C6.6a).
 	if result != null and not result.missed and not result.blocked:
 		Weakness.strike(target, Weakness.keys_of(skill))

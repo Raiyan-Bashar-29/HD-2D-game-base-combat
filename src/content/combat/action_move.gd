@@ -19,6 +19,11 @@ extends Resource
 ## A PERFECT DODGE (C6.6c) is a hit dodged in the first `perfect_window` seconds of those
 ## i-frames: the dodge was started just before the hit. 0 means this move has no perfect dodge.
 ##
+## A SECOND untouchable stretch (`iframes2_from/to`, C8.16) works the same way, for a move that
+## is untouchable twice; it has no perfect dodge. An ARMOUR stretch (`armour_from/to`) is
+## different: hits still land and hurt, but they do not push, so the move is not interrupted.
+## `events` are things that happen at set times inside the move (see `MoveEvent`).
+##
 ## It is authored inline inside a `MoveSet`'s `.tres`, or as a file of its own when several
 ## move sets share it.
 ##
@@ -40,12 +45,34 @@ extends Resource
 @export var iframes_to: float = 0.0
 ## Seconds from the start of the i-frames in which a dodged hit counts as a perfect dodge.
 @export var perfect_window: float = 0.0
+## A second untouchable stretch, and a stretch in which hits land but do not push (C8.16).
+@export var iframes2_from: float = 0.0
+@export var iframes2_to: float = 0.0
+@export var armour_from: float = 0.0
+@export var armour_to: float = 0.0
+## Timed events, in time order.
+@export var events: Array[MoveEvent] = []
 @export_group("Hit")
 @export var power: float = 0.0
 @export var element: StringName = &""
 @export var hits: int = 1
 @export var poise: int = 0
 @export var knockback: float = 0.0
+## Seconds a landed hit holds its victim in the air, unable to act (a launcher, C8.8a). Hits on
+## a victim already in the air keep it there a little longer each time (`Juggle`).
+@export var launch: float = 0.0
+## Once this move has landed a hit, the next move of the chain may start at once (C8.8a).
+@export var cancel_on_hit: bool = false
+## A GRAB (C8.8b): when this move lands and its victim flinches, the victim is held in place
+## and the user plays this follow-up at once, the throw. The throw always lands on the victim.
+@export var throw_move: ActionMove
+## A PROMPT (C8.8c): a timed press. The first attack press while this move plays is measured
+## against this window, in seconds since the move started, and multiplies the move's `power`.
+## Only the first press counts, so mashing misses it. Null means the move has no prompt.
+@export var prompt: TimedWindow
+## An INTERRUPT (C8.8c): a landed hit of this move stops its victim's move while that move is
+## still winding up, or inside its armour stretch, and stuns the victim as a push does.
+@export var interrupts: bool = false
 ## A skill to resolve the hit through instead of `power` and `element`.
 @export var skill: Skill
 @export_group("Shape")
@@ -72,10 +99,30 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has a negative phase time" % context)
 	elif length() <= 0.0:
 		found.append("%s takes no time at all" % context)
+	if throw_move != null and (not throw_move.strikes() or throw_move.throw_move != null):
+		found.append("%s has a throw that does not strike, or that grabs again" % context)
+	if prompt != null:
+		found.append_array(prompt.problems("%s prompt" % context))
+		if prompt.opens > length():
+			found.append("%s has a prompt that opens after the move ends" % context)
+	if launch < 0.0:
+		found.append("%s has a negative launch time" % context)
 	if chain_after < 0.0 or chain_after > recovery:
 		found.append("%s has a chain_after outside its recovery" % context)
 	if iframes_to < iframes_from:
 		found.append("%s has i-frames that end before they start" % context)
+	if iframes2_to < iframes2_from or armour_to < armour_from:
+		found.append("%s has a second i-frame or armour stretch that ends before it starts" % context)
+	var last: float = 0.0
+	for index: int in events.size():
+		var event: MoveEvent = events[index]
+		if event == null:
+			found.append("%s has an empty event" % context)
+			continue
+		found.append_array(event.problems("%s event %d" % [context, index]))
+		if event.at < last or event.at > length():
+			found.append("%s event %d is out of order or after the move ends" % [context, index])
+		last = maxf(last, event.at)
 	if perfect_window < 0.0 or perfect_window > iframes_to - iframes_from:
 		found.append("%s has a perfect window outside its i-frames" % context)
 	if strikes() and (active <= 0.0 or hits < 1 or hitbox_size.length() <= 0.0):

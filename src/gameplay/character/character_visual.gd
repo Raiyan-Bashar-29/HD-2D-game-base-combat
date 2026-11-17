@@ -244,6 +244,23 @@ func face_direction(direction: Vector2) -> void:
 	_apply_frame()
 
 
+## Draw with another sheet from now on, keeping the way the character faces. For a body whose
+## character changes while it stands there (a party switch, a costume). A null `sheet` keeps
+## the texture already on the sprite.
+func use_sheet(sheet: Texture2D, cut: SpriteSheetLayout, pixel: float, lift: float) -> void:
+	texture = sheet
+	layout = cut
+	pixel_size = pixel
+	ground_offset = lift
+	_layout = _resolved_layout()
+	_frame = 0
+	_frame_time = 0.0
+	_column = _layout.column_for_angle(float(_facing) * TAU / float(GameEnums.Facing.size()))
+	if sprite != null:
+		sprite.frame = 0
+		_configure_sprite()
+
+
 func facing() -> GameEnums.Facing:
 	return _facing
 

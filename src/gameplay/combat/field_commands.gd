@@ -8,6 +8,7 @@ extends RefCounted
 ## - `targets`: who it would land on. An enemy skill goes to the locked target, or the nearest
 ##   foe in reach; "all enemies" to every foe in reach; a self or ally skill to the user.
 ##   `candidates` is everyone it could land on, from which a thinking ally picks (C4.8).
+##   Nobody behind a wall is a candidate (C9.12, `CombatSight`).
 ## - `refusal`: why it cannot be used now, as a `Reason`: no ATB, a status forbids it, the mp is
 ##   short, the item has run out, or there is nobody to aim at. `Reason.NONE` means it can. The
 ##   menu (C4.4, in `ui`) turns a reason into words; this file is gameplay and names no text.
@@ -55,14 +56,15 @@ static func candidates(user: Combatant, command: BattleCommand) -> Array[Combata
 	var here: Vector3 = (user.get_parent() as Node3D).global_position
 	for node: Node in user.get_tree().get_nodes_in_group(Hurtbox.GROUP):
 		var fighter: Combatant = (node as Hurtbox).fighter() if node is Hurtbox else null
-		if fighter == null or found.has(fighter) or not user.can_target(fighter, skill.target):
+		if fighter == null or found.has(fighter) or not Unseen.open(user, fighter, skill.target, skill):
 			continue
 		var body: Node3D = fighter.get_parent() as Node3D
 		var vitals: Vitals = Vitals.of(body)
 		# A reviving skill aims only at the fallen; everything else only at those standing.
 		if vitals == null or vitals.is_defeated() != skill.revives():
 			continue
-		if body != null and here.distance_to(body.global_position) <= REACH:
+		if body != null and here.distance_to(body.global_position) <= REACH \
+				and _in_sight(user.get_parent() as Node3D, body):
 			found.append(fighter)
 	found.sort_custom(func(a: Combatant, b: Combatant) -> bool:
 		return _distance(here, a) < _distance(here, b))
@@ -71,6 +73,10 @@ static func candidates(user: Combatant, command: BattleCommand) -> Array[Combata
 
 ## Why `user` cannot use `command` now; `Reason.NONE` when it can.
 static func refusal(user: Combatant, command: BattleCommand) -> Reason:
+	# A status that plays its holder (berserk, C9.5c) takes every command away.
+	var held: StatusSet = StatusSet.of(user.get_parent()) if user != null else null
+	if held != null and held.takeover() != null:
+		return Reason.BLOCKED
 	if user != null and command != null and command.kind == BattleCommand.Kind.POWER:
 		return _power_refusal(user, command)
 	if user == null or command == null or command.skill == null:
@@ -132,6 +138,11 @@ static func _power_refusal(user: Combatant, command: BattleCommand) -> Reason:
 
 
 ## The fighter `user`'s lock-on holds, or null.
+# True when no wall stands between the two bodies (C9.12): a spell is not cast through a wall.
+static func _in_sight(from: Node3D, to: Node3D) -> bool:
+	return not CombatSight.wall_between(from, CombatSight.aim(from), CombatSight.aim(to)).is_finite()
+
+
 static func _locked(user: Combatant) -> Combatant:
 	for child: Node in user.get_parent().get_children():
 		var lock: LockOn = child as LockOn

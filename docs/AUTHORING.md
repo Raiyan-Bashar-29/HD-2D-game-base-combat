@@ -1315,6 +1315,12 @@ example: `data/encounters/thorn_wisps.tres`, the roster `data/party/roster.tres`
      `gem/<name>`, its `item_id`, and `modifiers` and/or an `element`. Give pieces `sockets`
      (a rarity's `sockets` add more). To make taking a gem out cost something, name a remover
      item in the project setting `combat/gear/gem_remover`; left empty, it is free.
+   - An upgrade track (C7.5): give the piece an `upgrade`, an `UpgradeTrack` whose `levels`
+     each have a cost in `items` (never empty) and a gain: `stat_bonus` (0.1 is +10% of the
+     piece's added amounts), `modifiers` or `sockets`. Cap it lower with the piece's
+     `max_upgrade` or its rarity's. To make a power wait for a level, set the power's
+     `requires_upgrade`. To let the capped piece awaken, set the track's `awaken_into` (the
+     new item) and `awaken_items` (the cost).
    - A power used once per fight (C6.5f): tick `once_per_battle` on the `Power`. After one use
      it is refused ("once per battle") until the next battle, or in the field until the next
      area. It may also have a cooldown; a passive power must not set it.
@@ -1396,6 +1402,22 @@ Win, and the screen lists the experience, each level gained and the loot; Contin
 field exactly where it was. `skill_test.gd` and `encounter_test.gd` fail on any authoring problem
 in `data/skills/`, `data/statuses/` or `data/encounters/`.
 
+### Turn-battle rules, all data (C8)
+
+Each rule below is off until a file asks for it. The thorn-wisp encounter and the roster use
+several, so a demo battle shows them.
+
+| Rule | Where | Fields |
+|---|---|---|
+| One more turn for a weakness hit | `Encounter` | `weakness_extra_turns` (0 is off; the most in a row) |
+| A waiting ally follows up an attack, in a battle and in the field | a `StatusEffect` the ally holds | `reactions = [FOLLOW_UP]`, `reaction_chance`, `counter_move` (empty: one plain hit) |
+| Dual, triple and all-out techs | a `Power` with a `TeamMechanism` | `partners` (empty: every ally), `needs_broken`, `power`, `hits`, `element`, `partner_delay`; listed under Team |
+| The reserve line | `Party.arrange(active, reserve)` | a SWAP brings a reserve member in; a fallen member's slot is filled at once; `Encounter.free_swaps` makes a SWAP keep the turn, or trade a waiting member, who keeps its place in the order |
+| Front and back rows | `CombatantDef` | `back_row`; a skill tagged `ranged` or `magic` is not softened; tags `knock_back` and `pull` move a fighter; Row steps between them |
+| Elemental reactions | `data/reactions/<name>.tres`, an `ElementReaction` | `first`, `second`, `damage_bonus`, `status`, `keeps_mark` |
+| Foes in waves | `Encounter` | `reinforcements`, `wave` (how many join at once), `reinforcement_experience` |
+| Turn order | `Encounter` | `turn_order` ROUNDS or CTB; a skill's `delay` pushes its user back in CTB |
+
 ## Skills, statuses and combat depth (combat fork only)
 
 **Everything below is data.** The demo party in `data/party/roster.tres` uses every piece of it,
@@ -1428,6 +1450,10 @@ section above:
 | `reactions`, `reaction_chance`, `reflect_tag` | COUNTER strikes back at a plain attack that landed; REFLECT bounces a skill with `reflect_tag` back to its user. |
 | `counter_move` | COUNTER only (C6.6d, a counter stance): the `ActionMove` that answers. In the field the holder swings it at once, on its own clock, and is not pushed by the hit it answers; in a battle the counter strikes with its numbers (its skill, or `hits` × `power`). Empty is one plain hit. Put the status on a form, or on a timed-block barrier for a parry. |
 
+**A fighter's art** (C9.9d): set `art` on its `CombatantDef` to a `MemberArt` (a walking sheet
+with its layout, and per move id a `MoveArt`: strip, frames, feet, seconds). A move's sounds are SOUND
+events on the move itself (`ActionMove.events`). `ArtSwap` shows it in the field. See `docs/POWERS.md` § Showing a member's art in play.
+
 **A fighter** (`CombatantDef`) gets its depth from stats and three lists:
 - **Pools** are any `max_<pool>` stat: `max_mp`, `max_bp`, `max_limit`, `max_shield`. Each starts
   full, unless `start_<pool>` gives a fraction: a limit gauge has `start_limit` 0.
@@ -1446,6 +1472,184 @@ section above:
 Cleanse, Rekindle and Bulwark. The wisps are weak to fire and to blades, one may sing the party
 to sleep, and two Embers break a wisp. `combat_content_test.gd` fails on a missing string or an
 unsound skill or status.
+
+### A recipe (C7.6)
+
+Add `data/recipes/<name>.tres` (a `Recipe`) with the id `recipe/<name>` and a `name_key` in the
+CSV. Set `kind`: CRAFT or TRANSMUTE (`inputs` become `outputs`), UPGRADE (`piece` goes up one
+level at its track's cost; list no items), AWAKEN (`piece` at its cap, plus `inputs`, becomes
+`outputs`) or DISMANTLE (`piece` becomes `outputs`). `station` limits where; `needs_flag` hides
+it until a flag is set. A piece with no DISMANTLE recipe gives back a share of the CRAFT recipe
+that makes it: its rarity's `salvage` (0 means never). Code calls `Crafting.make(recipe, bag,
+station)`; the screen is C7.8.
+
+### A passive (C9.1)
+
+A passive is one file, `data/passives/<name>.tres`, a `PassiveSkill` with id `passive/<name>`.
+Give it to a fighter by adding it to the fighter's `passives` list (a party member in the
+roster, or an enemy in an encounter or on an `ActionEnemy`). The design is in
+[`PASSIVES.md`](PASSIVES.md).
+
+| Field | What it does |
+|---|---|
+| `held` | A status the fighter has for as long as it holds the passive: a stat boost, a regen, a drain, a counter. Give that status duration 0. |
+| `triggers` | A list of `PassiveTrigger`s. Each has an `event` (FIGHT_START, FIGHT_WON, TURN_START, HIT_DEALT, HIT_TAKEN, KILL, ALLY_DEFEATED), a `chance`, a `cooldown` (turns in a battle, seconds in the field), a `limit` per battle, and its `effects`. |
+| an effect | A `PassiveEffect`: `kind` POOL_FLAT (points), POOL_SHARE (a share of the pool's maximum), POOL_FROM_DAMAGE (a share of the hit's damage), GIVE_STATUS or CURE; and a `target`: SELF, OTHER (the other fighter in the event), ALLIES or FOES. A negative `amount` is a cost or a drain. |
+| `cost`, `tags` | The skill cost for the loadout (C9.4), and labels for screens. |
+
+**The loadout (C9.4).** Give a party member a budget: `passive_budget` and
+`passive_budget_per_level` on its `CombatantDef`. To make a piece of gear teach a passive, add
+a `PassiveLesson` to the piece's `teaches` (the passive file, and the won fights needed). A
+quest can teach one outright with `PassiveLoadout.teach(who, passive_id)`. The player's choice
+is made with `PassiveLoadout.choose` and `drop`; the screen comes in C9.7.
+
+**Defences that need no power (C9.5a).** All are stats or one status mark, so a passive's held
+status, a worn piece or a form can give them. `invincible` on a status: no hit touches the
+holder (list hit tags in `pierced_by` to let some through). `mercy_time`: after a hit, hits do
+nothing for that many seconds (field) or turns (battle). `max_overshield`: a second health
+layer; add `overshield_regen` (points a second or a turn) and `overshield_delay` (how long
+after a hit it waits). `healing_taken`: -1 means the holder cannot be healed.
+
+**Launch and cancel on hit (C8.8a).** On an `ActionMove`, `launch` is the seconds a landed hit
+holds its victim in the air, unable to act. Hits on a victim already in the air keep it up
+longer, each worth 0.7 of the one before (a launcher adds its `launch` again, any other move
+0.25 s). `cancel_on_hit` lets the next move of the chain start the moment this one lands. A
+fighter with `knockback_taken` -1, or inside an armour stretch, is not launched.
+
+**A grab (C8.8b).** Give an `ActionMove` a `throw_move` (another `ActionMove` that strikes).
+When the first move lands on a fighter that flinches, the victim is held where it is, unable to
+act, and the attacker plays the throw at once. The throw always lands the moment it is live;
+its `knockback` and `launch` then carry the victim away. If the attacker is hit before that,
+the victim is let go unharmed.
+
+**A prompt and an interrupt (C8.8c).** Give an `ActionMove` a `prompt` (a `TimedWindow`, in
+seconds since the move started): the player's first attack press while the move plays is timed
+against it and multiplies the move's `power` by the window's bonus. Only the first press
+counts. Set `interrupts` on a move to make its landed hit stop the victim's move while that
+move is winding up or in its armour stretch; the victim is stunned as by a push.
+
+**Rarer ailments (C8.7a).** Doom: a status with `fatal` on and a duration; its holder falls
+when it runs out unless it is cured first. Petrify: a status with `counts_as_fallen` on and
+the SKIP_TURN block; it may have no duration, and a side whose standing members are all
+petrified has lost. Instant death: a `SkillEffect` of kind SLAY whose `amount` is the chance.
+Give a boss the stat `resist_death` 1 (it also refuses any status tagged `death`).
+
+**Steal, scan and capture (C8.7b).** Three more `SkillEffect` kinds. STEAL: `amount` is the
+chance; give the foe's `CombatantDef` a `steal_table` (a `LootTable`). SCAN: reveals every
+entry of the foe's `weak_to`. CAPTURE: `amount` times the share of hp the foe has lost is the
+chance; give the foe a `capture_item` (an item id), or leave it empty so it can never be
+caught. The flag `captured/<combatant id>` counts the catches.
+
+**A blink (C6.12a).** Give a `Power` a `BlinkMechanism`: pick `to`, a `distance` or a
+`height`, and optionally `cancels_recovery`, an `arrival` status (invincible, half a second, for
+i-frames), a `path_strike` move, and `sooner` CTB ticks for a battle.
+
+**Sacrifice and refresh (C6.12b).** A `SacrificeMechanism` takes a `fraction` of each
+near ally's HP (and their buffs with `take_buffs`) for the user, then puts `gain` on it. A
+`RefreshMechanism` cuts cooldowns by `fraction` (SELF or ALLIES), adds `pool_gain` to `pool`,
+and puts `speed` on each fighter refreshed: give that status a `cooldown_rate` ADD modifier.
+
+**Foresight (C6.10).** Give a `Power` a `ForesightMechanism`; it works while the kit is worn,
+inside the power's `active_hours`. Set `rewrites` with `dodge` and/or `force`, a field
+`rewrite_gap`, and switch on `observe` or `reveal` as wanted.
+
+**Command and grant (C6.11).** A `CommandMechanism` gives one foe an `order`: OBEY needs a
+`status` with `obeys` on, STOP one that skips turns; FORGET and FALL need none. Give the power
+a cost-only skill aimed at one foe so a battle lets the player choose. Set `once_flag` for
+"once per foe" (saved), `immune_tag` (such as `boss`), `canceller_tag`, and the field's
+`reach` and `sight`. A `GrantMechanism` gives `gifts` (or one with `pick_one`) and lends a
+`kit` for `lasts` to the aimed ally, or to the whole side with `to_all`.
+
+**A thing in the arena (C8.9).** Instance `scenes/objects/arena_thing.tscn` in an area, name
+it, and set `hp`. Give it a `burst` move to make it explode when broken, or a `thrown` move
+to make it fly at the striker's foes when hit.
+
+**Spreading, punishing and filtering (C8.15b).** On a `StatusEffect`, `spread_reach` passes
+the status to the holder's side when it runs out, and `punish_status` lands on a foe that
+hits at the holder. On a `Skill`, `filter` with `filter_stat` and `filter_value` keeps only
+the targets whose stat fits (BELOW, ABOVE, MULTIPLE_OF).
+
+**A delayed hit and a ledger (C8.15a).** On a `StatusEffect`, `late_power` (with a duration)
+makes the caster's hit land when the status runs out; a cure stops it. `ledger` holds every
+hit and heal on the holder and applies the sum once when the status ends.
+
+**An unseen status (C8.12).** Turn on `unseen` on a `StatusEffect` and give it a duration and
+a tag. Foes cannot aim at or lock on to its holder; a skill with scope ALL still reaches it.
+It ends when the holder hits a foe or is hit. A DISPEL effect naming its tag is the reveal.
+
+**The fall safety net (C5.8).** Set `combat/field/kill_height` in the project settings to a
+height below every floor. A foe that falls past it is defeated; turn on `returns_home` on an
+`ActionEnemy` that must stay alive. The player is put back on the last floor and defeated.
+
+**Aggro and taunt (C8.6).** A field foe keeps a threat table: each hit it takes adds the damage
+times 1 plus the attacker's `threat` stat, and it fades by the foe's `ActionBrain.threat_fade`
+points a second. Give a tank `threat` 1 or more on gear, a passive or a status; give a sneak
+-1 to make none. To taunt, put the tag `taunt` on a status: while a fighter holds it, every
+foe within its `give_up_radius` (or, in a turn battle, every foe's brain) must pick that
+fighter. The pick order is taunt, most threat, nearest.
+
+**A piece that breaks, and an armour that adapts (C9.5b).** Put a passive on the piece whose
+trigger ends in the effect `BREAK_PIECE`: with `LETHAL_HIT` and `SURVIVE` before it, the piece
+saves its wearer once and is gone; with `SKILL_DONE` and a `tag`, the piece breaks after the
+skill carrying that tag has landed. For adapting, give a `HIT_TAKEN` trigger a `GIVE_STATUS`
+effect and fill `per_element`: one resist status for each element it can learn.
+
+**Berserk (C9.5c).** Give a status a `takeover` brain. While the status is held the brain
+plays the holder: list the commands it may pick as `BrainEntry` rows, or leave the brain empty
+for plain attacks. Give the status a duration, or a way to cure it, so the player gets the
+fighter back.
+
+**A form that lends passives (C9.6a).** On a power's `FormMechanism`, list `passive_skills`.
+The fighter holds them for as long as it is in the form, and loses them when the form ends.
+In a cycle, a stage with its own list lends that; a stage with none lends the cycle's.
+
+**A power only in a form (C9.6c).** Give the power `requires_statuses` with the form's status id (`data/powers/kakuja_owl.tres`). A piece of gear lends a ranged power by pointing its `kit` at a kit file (`data/gear/quinque_owl.tres`).
+
+**Moves from a M.U.G.E.N character (C9.9a).** `godot --headless --script tools/mugen_convert.gd -- <character.def> <output folder> --prefix=<name>` writes one `ActionMove` file per attack and dodge, and a `report.md` listing each with its button, its meter cost and what was not converted. Copy the moves you keep into a `MoveSet`. Only use a character the owner has said is usable.
+
+**A power with a move (C9.9b).** Give a `Power` a `move` and a quick-slot press plays it on the fighter: its wind-up, hitbox, travel and i-frames. The power's `skill` is what the press pays and does at once (a self-aimed skill with a cost and a short status is enough); the move does the hitting. `data/powers/arima.tres` is the example.
+
+**A kit file is checked (C9.6b).** Put a kit at `data/powers/<name>.tres` with `kit_id`
+`kit/<name>`. `tools/check_content.gd` loads every one, and fails a form whose `drain_pool`
+the kit does not give with a `max_<pool>` stat bonus. Give a form's power `requires_pool` and
+a small `requires_fraction`, or it can be entered on an empty pool. `data/powers/kakuja_arata.tres`
+is a plain form to copy and `kakuja_centipede.tres` a two-stage cycle; the matching armours
+are in `data/gear/`.
+
+**A level won by fights (C9.5d).** On an `UpgradeLevel`, set `fights` and leave `items` empty.
+The piece reaches that level after that many won fights while it is worn (a battle or a field
+kill), and the player cannot buy it. One track can hold bought levels and won levels.
+
+Examples: life steal is HIT_DEALT with POOL_FROM_DAMAGE `hp` 0.2. An opening buff is
+FIGHT_START with GIVE_STATUS. A wave-end heal is FIGHT_WON with POOL_SHARE `hp` 0.3. A drain
+that pays for a strong `held` status is TURN_START with POOL_SHARE `hp` -0.05.
+
+**Conditions and more events (C9.2a).** A trigger's `conditions` must all hold or it stays
+asleep. Each is a `PassiveCondition`: POOL_SHARE (`pool`, `low`, `high`), HOLDS_TAG,
+TARGET_HOLDS_TAG, TARGET_TRAIT (the target's `CombatantDef.traits`, for a "killer"), WEARING,
+ALONE, ALLIES_STANDING (`count`), IN_FIELD, HOUR; `negate` flips one. More events: CRIT_DEALT,
+DODGE, GUARD, HP_BELOW and HP_ABOVE (set `threshold`), STATUS_GAINED (set `tag`). Give two sizes
+of one passive the same `group` and different `rank`s, and only the larger counts.
+
+**Hit effects (C9.2b).** SCALE_HIT (`amount` 1.5 or 0.5) on a HIT_DEALT, CRIT_DEALT or HIT_TAKEN
+trigger changes the hit before it lands. SURVIVE on a LETHAL_HIT trigger leaves the holder at
+`leave` HP; add `limit` 1 for once per battle. EXTRA_HIT lands `skill` at `amount` of its power
+(target OTHER for a pursuit or a counter). The conditions HIT_TAG and HIT_ELEMENT (name in `tag`)
+ask about the hit itself.
+
+**Samples (C9.3b).** `data/passives/` has one working file per family (a stat boost, a guard,
+a killer, guts and so on). Copy the nearest one, change its id, keys and numbers, and add
+`combat.passive.<name>.name` and `.desc` to the CSV; `check_content` fails without them.
+
+**Who gives a passive (C9.3a).** List `PassiveSkill` files in `PowerKit.passive_skills`, or in
+`passives` on a piece of gear, a gear-set tier, a gem or an upgrade level. The fighter holds
+them while the kit is on, the piece is worn, the tier or the level is reached, or the gem sits
+in a worn piece.
+
+**Skill and form events (C9.2c).** A SKILL_USED trigger wakes once each time the holder uses a
+skill or a power; set `tag` to wake only for skills carrying it. FORM_ENTERED and FORM_LEFT
+wake as a transformation starts and ends. The effect COOLDOWN_CUT shortens every power
+cooldown: `share` 0.5 halves what is left, `amount` takes off turns (or seconds in the field).
 
 ## Action combat: fighting in real time in the field (combat fork only)
 
@@ -1485,6 +1689,9 @@ or `options_test` fails.
    | `chain_after` | Seconds into recovery after which the next attack press continues the chain. A press before that is buffered for `MoveTimeline.buffer_window`. Must not exceed `recovery`. |
    | `iframes_from`, `iframes_to` | Seconds from the start of the move during which the mover cannot be hit. A dodge needs some, or `MoveSet.problems()` complains. |
    | `perfect_window` | Seconds from the start of the i-frames in which a dodged hit is a **perfect dodge** (C6.6c): `Events.perfect_dodge` is sent and a gauge's `on_perfect_dodge` pays. 0 means none; it must fit inside the i-frames. |
+   | `iframes2_from`, `iframes2_to` | A second untouchable stretch (C8.16). No perfect dodge in it. |
+   | `armour_from`, `armour_to` | Seconds during which a hit still hurts the mover but does not push it, so the move is not interrupted (C8.16). |
+   | `events` | A list of `MoveEvent`, in time order (C8.16). Each has `at` (seconds) and a `kind`: SOUND (`sound`), EFFECT (`picture`, `seconds`, `offset`), SHOT (`shot` move, `amount` = metres a second, `offset`), SPEED (`amount` = new travel speed), SHAKE (`amount` 0 to 1, `seconds`), PAUSE (`seconds` the fight stops). |
    | `power`, `element`, `hits` | The hit, through the same damage formula as turn-based combat. |
    | `poise` | Shield points it takes from a fighter with `max_shield`, whether or not the hit matches a weakness. Breaking works as in turn-based combat. |
    | `knockback` | How far a hit pushes its target back, times 1 plus the target's `knockback_taken` stat (C6.6c). A fighter with `knockback_taken` −1 is not pushed and does not flinch (super armor). |
@@ -1649,6 +1856,61 @@ Three well-known styles come from parts that already exist.
   tighter centre worth `perfect_bonus` (2.0). Call `multiplier(pressed_at)` and multiply the hit's
   power by it; `problems()` flags a window that closes before it opens, a negative bonus, or a
   centre wider than the window.
+
+## Hero powers: give a character a kit (C6.23, combat fork only)
+
+A **kit** (`PowerKit`) is everything a character can do beyond attacking: its powers, the
+passives and gauges it brings, and its stat bonuses. It is one file,
+`data/powers/<name>.tres`, with the id `kit/<name>`. Each `Power` in it is a `Skill`, a
+**mechanism** (a barrage, a blink, a form, a summon, ...), or both. `docs/MECHANICS_GUIDE.md` §§ 1 and
+10 list every mechanism with the hook it uses; `docs/POWER_COOKBOOK.md` has a recipe for each. The worked
+example is the demo's own kit, `data/powers/wanderer.tres`: Thorn Volley (a barrage of three
+shots) and Sidestep (a blink four metres forward).
+
+**Where it shows.** In the field, the kit's powers sit on the quick slots (keys 1 to 4; the HUD
+line reads `[1] Thorn Volley [2] Sidestep`, with a cooldown or the reason a power is refused). In a
+turn-based battle they sit under one Powers row of the command menu.
+
+**Trying one.** Open the debug console and type `power_kit <name>` (`power_kit` alone lists the
+kits, `power_kit none` takes the kit off), or launch with `--power-kit=<name>`. That kit stays on
+until the player's body is next built. Nothing is saved.
+
+**Add a new character in five steps:**
+
+1. **Choose the mechanisms.** Read `MECHANICS_GUIDE.md` § 1 and § 10. Most powers are a `Skill`
+   plus one mechanism. Only if none fits, add one: a content class, an executor and one line in
+   `PowerMechanisms.BUILT_IN`, as its own board row, test first.
+2. **Write the kit.** `data/powers/<name>.tres`: `kit_id = &"kit/<name>"`, its `powers` (each with
+   a `power_id`, `name_key`, `desc_key`, `cooldown` or cost), and any `passives`, gauges and stat
+   bonuses. `PowerKitDb` loads every kit file, so `check_content` reports a mistake even before
+   anyone wears it.
+3. **Name it.** Add the `combat.kit.<name>.*` and `combat.power.<id>.*` rows to
+   `localization/strings.csv` (quote a value with a comma). `check_strings` fails on a missing key.
+4. **Equip it.** Set `power_kit` on the character's `CombatantDef`: the loadout's `fighter` for
+   the field (`data/action/<name>_loadout.tres`), the roster member for a turn-based battle. Gear
+   can lend a kit too (`GearDefinition.kit`, `GEAR.md`).
+5. **See it.** `power_kit <name>` in the console, or `--new-game --power-kit=<name> --press=1`
+   with a `--shot`, and look at the quick-slot line and the power at work.
+
+A fan-made character converted from M.U.G.E.N files goes through `tools/mugen_convert.gd` and
+`tools/mugen_build.gd` instead, which write the kit for you (`POWERS.md` § From a M.U.G.E.N
+character to a playable fighter).
+
+## Difficulty and the accessibility flags (C5.4, combat fork only)
+
+A difficulty is `data/difficulty/<name>.tres` (`Difficulty`, id `difficulty/<name>`): `dealt` and
+`taken` are shares added to every hit the `side` (the player's faction) lands on a foe and takes
+from one, so `dealt = 0.5, taken = -0.5` is an easy mode. `order` is where a settings screen lists
+it. The flag `combat/difficulty` names the one on and is saved with the game; with no flag,
+`[combat] difficulty/default` in `project.godot` does; with neither, hits are what the formula
+makes them. An empty flag (`CombatDifficulty.choose(&"")`) turns even the default off. Try one with
+`--flag=combat/difficulty:difficulty/story`. The demo ships Story,
+Balanced and Harsh.
+
+Two more flags, saved with the game like the difficulty, until a settings screen offers them
+(C5.3b): `combat/auto_battle` makes the party play its own turns in a turn-based battle (the
+battle screen's Auto row turns it on and off; each member plays by its definition's `brain`, or
+attacks), and `combat/hold_to_attack` lets a held attack button keep the field chain going.
 
 ## Mixing formulas (C5.1, combat fork only)
 

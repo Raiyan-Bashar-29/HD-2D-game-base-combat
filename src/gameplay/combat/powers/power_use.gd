@@ -34,6 +34,10 @@ enum Reason {
 	COST,  ## The user cannot pay its skill's cost.
 	GEAR,  ## The piece or kind of gear it needs is not worn (C7.3).
 	ONCE,  ## A once-per-battle power already used in this battle, or in this area (C6.5f).
+	UPGRADE,  ## The piece that carries it is not upgraded far enough (C7.5).
+	FORBIDDEN,  ## A status it forbids is held (`forbids_statuses`, C8.10a).
+	SEALED,  ## A held status seals it, by its id or one of its tags (`StatusEffect.seals`, C8.13a).
+	TEAM,  ## A team tech whose partners or broken foes are not there (`TeamAttacks.ready`, C8.2).
 }
 
 
@@ -55,10 +59,19 @@ static func refusal(user: Combatant, power: Power, hour: float = -1.0) -> Reason
 		return Reason.HOURS
 	if power.requires_gear != &"" and not GearSet.wearing(body, power.requires_gear):
 		return Reason.GEAR
+	if not GearUpgrades.unlocks(body, power):
+		return Reason.UPGRADE
 	var statuses: StatusSet = StatusSet.of(body)
 	for status_id: StringName in power.requires_statuses:
 		if statuses == null or statuses.stacks(status_id) == 0:
 			return Reason.STATUS
+	for status_id: StringName in power.forbids_statuses:
+		if statuses != null and statuses.stacks(status_id) > 0:
+			return Reason.FORBIDDEN
+	if statuses != null and _sealed(statuses, power):
+		return Reason.SEALED
+	if power.mechanism is TeamMechanism and not TeamAttacks.ready(user, power.mechanism as TeamMechanism):
+		return Reason.TEAM
 	if power.requires_fraction > 0.0 and _fraction(user, power.requires_pool) < power.requires_fraction:
 		return Reason.POOL
 	if statuses != null and statuses.blocker(StatusEffect.Block.NO_SKILLS) != &"":
@@ -92,6 +105,8 @@ static func use(user: Combatant, power: Power, aimed: Array[Combatant],
 	if skill != null:
 		SkillUse.pay(user, skill)
 		SkillUse.apply(user, scaled_skill(user, power, aimed, hour), aimed, rng)
+	else:
+		PassiveMoments.skill(user, [])
 	var powers: PowerSet = PowerSet.of(body)
 	var running: PowerExecutor = powers.executor(power.power_id)
 	if running != null:
@@ -100,6 +115,11 @@ static func use(user: Combatant, power: Power, aimed: Array[Combatant],
 	if power.once_per_battle:
 		powers.once.spend(power.power_id)
 	powers.used(power)
+	var landed: Array[StringName] = []
+	for one: Combatant in aimed:
+		if one != null:
+			landed.append(one.combatant_id)
+	Events.power_used.emit(user.combatant_id, power, landed)
 	var statuses: StatusSet = StatusSet.of(body)
 	if statuses != null:
 		for status_id: StringName in power.consumes_statuses:
@@ -201,3 +221,12 @@ static func _hour(hour: float) -> float:
 	if hour >= 0.0:
 		return hour
 	return Clock.minutes_today() / 60.0
+
+
+# True when a held status seals `power` by its id or one of its tags (C8.13a).
+static func _sealed(statuses: StatusSet, power: Power) -> bool:
+	for effect: StatusEffect in statuses.held():
+		for seal: StringName in effect.seals:
+			if seal == power.power_id or power.tags.has(seal):
+				return true
+	return false

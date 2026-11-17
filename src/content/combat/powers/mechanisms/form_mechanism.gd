@@ -41,6 +41,10 @@ extends PowerMechanism
 ##   it is a switch, not an end, and a cure, a new game, a load or the kit coming off is no end
 ##   either, so none of those gives it. The cycle's own counts, never a stage's.
 ##
+## `passive_skills` (C9.6a) are the passives the fighter holds for as long as the form is held, on
+## top of its own: a transformation's armour, its regrowth, its frenzy. They go when the form
+## ends, however it ends. A cycle stage with none of its own lends the cycle's (`passives_at`).
+##
 ## OWNS: the shape of a form.
 ## MUST NOT: hold running state. `FormRun` (gameplay) runs it.
 
@@ -69,6 +73,8 @@ extends PowerMechanism
 @export var replaces_attack: Skill
 ## Put on when the form ends by its own rules (C6.5e), the price of a form. Null: none.
 @export var aftermath: StatusEffect
+## The passives held while in the form (C9.6a). Empty: none.
+@export var passive_skills: Array[PassiveSkill] = []
 
 
 func kind() -> StringName:
@@ -135,6 +141,13 @@ func attack_at(stage: int) -> Skill:
 	return held.replaces_attack if held != null and held.replaces_attack != null else replaces_attack
 
 
+## The passives lent at `stage`: the stage's own, else the cycle's. A plain form's are its own.
+func passives_at(stage: int) -> Array[PassiveSkill]:
+	var held: FormMechanism = _stage(stage)
+	return held.passive_skills if held != null and not held.passive_skills.is_empty() \
+		else passive_skills
+
+
 # The cycle stage at `index`, or null for a plain form or an index out of range.
 func _stage(index: int) -> FormMechanism:
 	return cycle[index] if index >= 0 and index < cycle.size() else null
@@ -162,6 +175,11 @@ func problems(context: String) -> PackedStringArray:
 			found.append("%s has an empty command %d" % [context, i])
 		else:
 			found.append_array(commands[i].problems("%s command %d" % [context, i]))
+	for i: int in passive_skills.size():
+		if passive_skills[i] == null:
+			found.append("%s has an empty passive %d" % [context, i])
+		else:
+			found.append_array(passive_skills[i].problems())
 	if not advance_after.is_empty() and cycle.is_empty():
 		found.append("%s advances after a power but is not a cycle" % context)
 	if drain_pool == &"" and (drain_per_second != 0.0 or drain_per_turn != 0.0 \

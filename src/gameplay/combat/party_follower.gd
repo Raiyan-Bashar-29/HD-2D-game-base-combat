@@ -120,6 +120,7 @@ func follow(delta: float) -> void:
 	var me: Combatant = Combatant.of(self)
 	if me != null:
 		Weakness.recover(me)
+		HitGuard.pass_time(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	var vitals: Vitals = Vitals.of(self)
 	var fallen: bool = vitals != null and vitals.is_defeated()
@@ -156,7 +157,7 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 		timeline.cancel()
 	if decider == null:
 		return Vector3.INF
-	var target: Hurtbox = Hurtbox.nearest_hostile(self)
+	var target: Hurtbox = Aggro.pick(self)
 	var to_target: Vector3 = _flat(target.global_position - global_position) if target != null else Vector3.INF
 	var vitals: Vitals = Vitals.of(self)
 	var hp: float = float(vitals.current(&"hp")) / maxf(1.0, float(vitals.maximum(&"hp"))) if vitals != null else 1.0
@@ -170,8 +171,8 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 			_face(to_target)
 			_swing()
 			wish = Vector3.ZERO
-			if timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.move.travel_speed > 0.0:
-				wish = facing * timeline.move.travel_speed
+			if timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.speed() > 0.0:
+				wish = facing * timeline.speed()
 		ActionDecider.State.CHASE:
 			_face(to_target)
 			# Walk in to just inside reach, then stand and wait out the cooldown.
@@ -242,7 +243,10 @@ func think() -> bool:
 	var context := FieldBrainContext.new(me, rng)
 	if not context.fighting():
 		return false
-	return BattleAi.decide(context, loadout.fighter.brain)
+	# A status that plays its holder (berserk, C9.5c) thinks in the member's place.
+	var statuses: StatusSet = StatusSet.of(self)
+	var taken: BattleBrain = statuses.takeover() if statuses != null else null
+	return BattleAi.decide(context, taken if taken != null else loadout.fighter.brain)
 
 
 ## Where it should stand: on the line from the leader towards itself, `spacing * slot` metres

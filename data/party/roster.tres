@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="PartyRoster" load_steps=26 format=3]
+[gd_resource type="Resource" script_class="PartyRoster" load_steps=28 format=3]
 
 [ext_resource type="Script" path="res://src/content/combat/party_roster.gd" id="1_roster"]
 [ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="2_def"]
@@ -13,6 +13,10 @@
 [ext_resource type="Resource" path="res://data/skills/cleanse.tres" id="11_cleanse"]
 [ext_resource type="Resource" path="res://data/skills/rekindle.tres" id="12_raise"]
 [ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="13_bulwark"]
+[ext_resource type="Resource" path="res://data/skills/rime.tres" id="14_rime"]
+[ext_resource type="Resource" path="res://data/powers/wanderer.tres" id="15_kit"]
+[ext_resource type="Script" path="res://src/content/combat/battle_brain.gd" id="16_brain"]
+[ext_resource type="Script" path="res://src/content/combat/brain_entry.gd" id="17_entry"]
 
 [sub_resource type="Resource" id="attack"]
 script = ExtResource("3_cmd")
@@ -70,6 +74,12 @@ kind = 1
 skill = ExtResource("13_bulwark")
 category = "combat.category.magic"
 
+[sub_resource type="Resource" id="rime"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("14_rime")
+category = "combat.category.magic"
+
 [sub_resource type="Resource" id="defend"]
 script = ExtResource("3_cmd")
 kind = 3
@@ -77,6 +87,30 @@ kind = 3
 [sub_resource type="Resource" id="flee"]
 script = ExtResource("3_cmd")
 kind = 4
+
+[sub_resource type="Resource" id="mend_low"]
+script = ExtResource("17_entry")
+command = SubResource("salve")
+weight = 4.0
+target_rule = 2
+below_fraction = 0.5
+below_any_target = true
+
+[sub_resource type="Resource" id="frost_foe"]
+script = ExtResource("17_entry")
+command = SubResource("rime")
+weight = 1.0
+target_rule = 2
+
+[sub_resource type="Resource" id="strike_foe"]
+script = ExtResource("17_entry")
+command = SubResource("attack")
+weight = 1.0
+target_rule = 2
+
+[sub_resource type="Resource" id="keeper_brain"]
+script = ExtResource("16_brain")
+entries = Array[ExtResource("17_entry")]([SubResource("mend_low"), SubResource("frost_foe"), SubResource("strike_foe")])
 
 [sub_resource type="Resource" id="curve"]
 script = ExtResource("4_curve")
@@ -106,6 +140,9 @@ base_stats = Dictionary[StringName, float]({
 attack_tags = Array[StringName]([&"blade"])
 commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("ember"), SubResource("lull"), SubResource("hex"), SubResource("skyfall"), SubResource("keen_edge"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
+passive_budget = 4
+passive_budget_per_level = 1
+power_kit = ExtResource("15_kit")
 
 [sub_resource type="Resource" id="keeper"]
 script = ExtResource("2_def")
@@ -120,8 +157,12 @@ base_stats = Dictionary[StringName, float]({
 &"regen_mp": 1.0,
 &"speed": 5.0
 })
-commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("salve"), SubResource("cleanse"), SubResource("raise"), SubResource("bulwark"), SubResource("defend"), SubResource("flee")])
+back_row = true
+brain = SubResource("keeper_brain")
+commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("rime"), SubResource("salve"), SubResource("cleanse"), SubResource("raise"), SubResource("bulwark"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
+passive_budget = 4
+passive_budget_per_level = 1
 
 [resource]
 script = ExtResource("1_roster")

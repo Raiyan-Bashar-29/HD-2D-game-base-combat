@@ -30,6 +30,17 @@ static func active(roster: Array[CombatantDef]) -> Array[CombatantDef]:
 	return out
 
 
+## The reserve line, in order: members of `roster` waiting off the field (C8.3). Empty when
+## nothing has been set.
+static func reserve(roster: Array[CombatantDef]) -> Array[CombatantDef]:
+	var out: Array[CombatantDef] = []
+	for id: Variant in Flags.get_array(RESERVE_FLAG):
+		for def: CombatantDef in roster:
+			if String(def.combatant_id) == str(id):
+				out.append(def)
+	return out
+
+
 ## Sets the active line-up and the reserve together, so a member is never in both.
 static func arrange(active_ids: Array[StringName], reserve_ids: Array[StringName]) -> void:
 	var on: Array[String] = []

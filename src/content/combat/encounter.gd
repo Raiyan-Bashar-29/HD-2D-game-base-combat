@@ -15,6 +15,15 @@ enum TurnOrder { ROUNDS, CTB }
 
 @export var enemies: Array[CombatantDef] = []
 @export var turn_order: TurnOrder = TurnOrder.ROUNDS
+## Above 0, hitting a foe's weakness earns one more turn, up to this many in a row (C8.1).
+@export var weakness_extra_turns: int = 0
+## True makes a SWAP free: the one coming in takes the swapping fighter's turn at once, once a
+## turn (C8.22c). False spends the turn, and the one coming in waits for its own.
+@export var free_swaps: bool = false
+## Foes held back (C8.22a): when every foe on the field is down, the next `wave` of these join,
+## until none are left. The battle is won only when the last of them falls.
+@export var reinforcements: Array[CombatantDef] = []
+@export var wave: int = 1
 @export var can_flee: bool = true
 @export_range(0.0, 1.0, 0.01) var flee_chance: float = 1.0
 ## The music for the fight, played when it opens; the area's own music comes back when it
@@ -24,6 +33,8 @@ enum TurnOrder { ROUNDS, CTB }
 @export_group("On win")
 ## Given to every party member standing at the end of a won battle.
 @export var experience: int = 0
+## Added to `experience` for each foe that arrived as a reinforcement (C8.23).
+@export var reinforcement_experience: int = 0
 ## Item ids added to the player's inventory on a win, one each. An item that does not fit is
 ## left behind and reported, `Inventory.add`'s all-or-nothing rule.
 @export var loot: Array[StringName] = []

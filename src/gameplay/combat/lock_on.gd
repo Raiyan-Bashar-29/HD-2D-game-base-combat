@@ -122,7 +122,9 @@ func _fighter() -> ActionFighter:
 
 static func _standing(hurtbox: Hurtbox) -> bool:
 	var vitals: Vitals = Vitals.of(hurtbox.get_parent())
-	return hurtbox.fighter() != null and (vitals == null or not vitals.is_defeated())
+	# An unseen fighter cannot be locked on to, and a lock on it is dropped (C8.12).
+	return hurtbox.fighter() != null and (vitals == null or not vitals.is_defeated()) \
+			and not Unseen.hides(hurtbox.fighter())
 
 
 static func _flat(v: Vector3) -> Vector3:

@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="PowerKit" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="kit"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="power"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/form_mechanism.gd" id="form"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/look_def.gd" id="look"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="pskill"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_shell.tres" id="kakuja_shell"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_regen.tres" id="kakuja_regen"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_hunger.tres" id="kakuja_hunger"]
+
+[sub_resource type="Resource" id="a_m0"]
+script = ExtResource("mod")
+stat = &"defence"
+op = 1
+value = 1.5
+
+[sub_resource type="Resource" id="a_status"]
+script = ExtResource("status")
+id = &"status/form_arata"
+name_key = "combat.form.arata.name"
+duration = 0.0
+modifiers = Array[ExtResource("mod")]([SubResource("a_m0")])
+tags = Array[StringName]([&"form"])
+
+[sub_resource type="Resource" id="a_look"]
+script = ExtResource("look")
+look_id = &"look/arata"
+tint = Color(0.35, 0.35, 0.45, 1)
+scale = 1.1
+label_key = "combat.form.arata.name"
+
+[sub_resource type="Resource" id="a_form"]
+script = ExtResource("form")
+status = SubResource("a_status")
+exclusive_group = &"kakuja"
+drain_pool = &"rc"
+drain_per_second = 2.0
+drain_per_turn = 10.0
+look = SubResource("a_look")
+name_key = "combat.form.arata.name"
+passive_skills = Array[ExtResource("pskill")]([ExtResource("kakuja_shell"), ExtResource("kakuja_regen"), ExtResource("kakuja_hunger")])
+
+[sub_resource type="Resource" id="p"]
+script = ExtResource("power")
+power_id = &"power/kakuja_arata"
+name_key = "combat.power.kakuja_arata.name"
+desc_key = "combat.power.kakuja_arata.desc"
+mechanism = SubResource("a_form")
+requires_pool = &"rc"
+requires_fraction = 0.1
+
+[sub_resource type="Resource" id="rc"]
+script = ExtResource("mod")
+stat = &"max_rc"
+op = 0
+value = 100.0
+source = &"kit/kakuja_arata"
+
+[resource]
+script = ExtResource("kit")
+kit_id = &"kit/kakuja_arata"
+name_key = "combat.kit.kakuja_arata.name"
+desc_key = "combat.kit.kakuja_arata.desc"
+powers = Array[ExtResource("power")]([SubResource("p")])
+stat_bonuses = Array[ExtResource("mod")]([SubResource("rc")])

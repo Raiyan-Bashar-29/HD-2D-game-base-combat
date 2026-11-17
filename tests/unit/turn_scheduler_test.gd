@@ -1,19 +1,20 @@
 extends TestCase
 ## `RoundScheduler`, the default `TurnScheduler`: speed order, ties, leaving and joining mid-round,
-## and a preview that agrees with what `next()` then answers.
+## a preview that agrees with what `next()` then answers, and a hand-over (C8.27b).
 ##
 ## OWNS: assertions about turn order.
 ## MUST NOT: name a game's combatants. Every id here is made up for the case.
 
 
 func run() -> void:
-	plan(12)
+	plan(14)
 	_fastest_first()
 	_ties_go_to_the_first_to_join()
 	_leaving_mid_round_is_skipped()
 	_joining_waits_for_the_next_round()
 	_preview_agrees_with_next()
 	_an_empty_battle_has_no_turn()
+	_a_hand_over_keeps_the_place()
 
 
 func _three() -> RoundScheduler:
@@ -75,3 +76,20 @@ func _preview_agrees_with_next() -> void:
 func _an_empty_battle_has_no_turn() -> void:
 	var turns := RoundScheduler.new()
 	equal("nobody in the battle means no turn", turns.next() == &"" and turns.preview(3).is_empty(), true)
+
+
+# C8.27b: the newcomer takes the leaver's place this round, never a second turn in one.
+func _a_hand_over_keeps_the_place() -> void:
+	var turns := _three()
+	turns.next()
+	var refused: Array[bool] = [turns.hand_over(&"nobody", &"bench", 1.0), turns.hand_over(&"slow", &"middle", 1.0)]
+	var handed: bool = turns.hand_over(&"middle", &"bench", 1.0)
+	equal("a hand-over takes the leaver's place this round, then goes by its own speed",
+		[refused, handed, _take(turns, 2), _take(turns, 3)],
+		[[false, false], true, [&"bench", &"slow"], [&"fast", &"slow", &"bench"]])
+	turns = _three()
+	turns.next()
+	turns.leave(&"fast")
+	turns.hand_over(&"middle", &"fast", 9.0)
+	equal("one who already acted this round gets no second turn in it", _take(turns, 3),
+		[&"slow", &"fast", &"slow"])

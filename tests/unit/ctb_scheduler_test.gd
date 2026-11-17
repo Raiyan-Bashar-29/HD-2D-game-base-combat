@@ -8,10 +8,11 @@ extends TestCase
 
 
 func run() -> void:
-	plan(15)
+	plan(16)
 	_twice_as_fast_acts_twice()
 	_delay_by_pushes_back()
 	_speed_zero_never_acts()
+	_a_hand_over_keeps_the_wait()
 	for turns: TurnScheduler in [RoundScheduler.new(), CtbScheduler.new()]:
 		_the_contract(turns)
 
@@ -47,6 +48,18 @@ func _speed_zero_never_acts() -> void:
 	turns.join(&"frozen", 0.0)
 	turns.join(&"moving", 1.0)
 	equal("speed 0 never acts", _take(turns, 3), [&"moving", &"moving", &"moving"])
+
+
+# C8.27b: the newcomer takes over the leaver's remaining wait.
+func _a_hand_over_keeps_the_wait() -> void:
+	var turns := CtbScheduler.new()
+	turns.join(&"one", 10.0)
+	turns.join(&"two", 5.0)
+	turns.next()
+	var left: float = turns.wait_of(&"two")
+	turns.hand_over(&"two", &"bench", 1.0)
+	equal("a CTB hand-over gives the newcomer the leaver's remaining wait",
+		[turns.has(&"two"), turns.wait_of(&"bench"), left > 0.0], [false, left, true])
 
 
 func _the_contract(turns: TurnScheduler) -> void:

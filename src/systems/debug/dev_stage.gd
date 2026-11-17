@@ -48,6 +48,15 @@ extends Node
 ##   --interact=<n>       press the interact key n times, so a capture shows the OUTCOME of an
 ##                        action rather than only its prompt. A refusal, a failure and a
 ##                        success look identical until the button is pressed.
+##   --press=<slots>      press power quick-slot keys after the area lands, one every 40 physics
+##                        frames: --press=1,2 enters a style then uses its first power, so a
+##                        capture shows the power working (C8.10b: summons beside the hero).
+##                        A token `battle:<encounter id>` in the list opens that turn-based
+##                        battle at its turn: --press=1,2,battle:encounter/<id> (C8.10d).
+##   --party=<a,b>|<c,d>  set the active line-up and the reserve line AFTER the area lands, so a
+##                        battle capture shows the reserve and its Swap row (C8.3).
+##   --power-kit=<name>   put the hero-power kit `kit/<name>` on the player after the area lands,
+##                        as the console's `power_kit` verb does (C6.23); `none` takes it off.
 ##   --new-game           start a game. Since WP-12 the boot goes to the main menu, not to an
 ##                        area, so without this there is no world to photograph.
 ##   --npc-settle=<n>     let NPCs walk for n physics frames, so a screenshot shows them AT
@@ -98,12 +107,18 @@ func _parse_arguments() -> void:
 			_stand_by(argument.trim_prefix("--stand-by="))
 		elif argument.begins_with("--flag="):
 			_force_flag(argument.trim_prefix("--flag="))
+		elif argument.begins_with("--party="):
+			_force_party(argument.trim_prefix("--party="))
 		elif argument.begins_with("--standing="):
 			_force_standing(argument.trim_prefix("--standing="))
 		elif argument.begins_with("--cycle="):
 			_cycle_target(maxi(1, argument.trim_prefix("--cycle=").to_int()))
 		elif argument.begins_with("--interact="):
 			_press_interact(maxi(1, argument.trim_prefix("--interact=").to_int()))
+		elif argument.begins_with("--press="):
+			_press_slots(argument.trim_prefix("--press="))
+		elif argument.begins_with("--power-kit="):
+			_power_kit(argument.trim_prefix("--power-kit="))
 		elif argument == "--new-game":
 			_fresh_game = true
 			_new_game()
@@ -160,6 +175,16 @@ func _give(list: String) -> void:
 	Log.info("test", "--%s" % DevCommands.give(list))
 
 
+
+
+## Put a hero-power kit on the player after the area lands (C6.23): the console's `power_kit`
+## verb, so `--power-kit=wanderer` and typing `power_kit wanderer` do the same thing.
+func _power_kit(wanted: String) -> void:
+	await get_tree().process_frame
+	if _fresh_game:
+		await _wait_for_area()
+		await get_tree().process_frame
+	Log.info("test", "--%s" % DevKit.power_kit(wanted))
 
 
 ## Put items in hand for a capture. AFTER the area lands, for gotcha 32's reason: equipment is a
@@ -266,6 +291,21 @@ func _force_flag(value: String) -> void:
 	Log.info("test", "--%s by command line" % DevCommands.set_flag(value))
 
 
+func _force_party(value: String) -> void:
+	await get_tree().process_frame
+	if _fresh_game:
+		await _wait_for_area()
+	var lines: PackedStringArray = value.split("|")
+	var active: Array[StringName] = []
+	var bench: Array[StringName] = []
+	for id: String in lines[0].split(",", false):
+		active.append(StringName(id))
+	for id: String in (lines[1] if lines.size() > 1 else "").split(",", false):
+		bench.append(StringName(id))
+	Party.arrange(active, bench)
+	Log.info("test", "--party %s | %s by command line" % [active, bench])
+
+
 func _force_standing(value: String) -> void:
 	var parts: PackedStringArray = value.split(":")
 	if parts.size() != 2:
@@ -361,3 +401,24 @@ func _new_game() -> void:
 	await get_tree().process_frame
 	Director.start_new_game()
 	Log.info("test", "--new-game requested '%s'" % GameConfig.first_area())
+
+
+## The quick-slot keys, through the input map like a player's hand, after the area lands.
+func _press_slots(list: String) -> void:
+	await _wait_for_area()
+	for slot: String in list.split(",", false):
+		for _i: int in 40:
+			await get_tree().physics_frame
+		if slot.begins_with("battle:"):
+			Events.encounter_requested.emit(StringName(slot.trim_prefix("battle:")))
+			continue
+		var key: int = clampi(slot.to_int(), 1, CombatActions.SLOTS.size()) - 1
+		# "gear" presses the gear screen's key (C7.7a) instead of a slot.
+		var action: StringName = CombatActions.GEAR if slot == "gear" else CombatActions.SLOTS[key]
+		Log.info("test", "--press %s" % action)
+		for down: bool in [true, false]:
+			var press := InputEventAction.new()
+			press.action = action
+			press.pressed = down
+			Input.parse_input_event(press)
+			await get_tree().physics_frame

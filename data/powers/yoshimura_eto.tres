@@ -1,0 +1,2501 @@
+[gd_resource type="Resource" script_class="PowerKit" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/powers/gauge_rule.gd" id="1_yll7g"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="2_141n3"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="3_gnlgh"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_regen.tres" id="4_rtmfa"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_hunger.tres" id="5_iifdc"]
+[ext_resource type="Resource" path="res://data/passives/night_owl.tres" id="6_mcew8"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="7_j667m"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="8_mqf1m"]
+[ext_resource type="Script" path="res://src/content/combat/battle_command.gd" id="9_rpnhp"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/form_mechanism.gd" id="10_2f7op"]
+[ext_resource type="Script" path="res://src/content/combat/move_event.gd" id="11_3kb23"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1053.png" id="12_g24bs"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1052.png" id="13_3l77j"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1042.png" id="14_s5ywl"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1018.png" id="15_mav3e"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/20_25.wav" id="16_nwapy"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_22.wav" id="17_nbkf1"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1030.png" id="18_el68n"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1026.png" id="19_7blhl"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1020.png" id="20_oxump"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/20_20.wav" id="21_j61sn"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_23.wav" id="22_7ubbu"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_18.wav" id="23_eqwkh"]
+[ext_resource type="Script" path="res://src/content/combat/look_def.gd" id="24_ghdo7"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="25_7x0bp"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/400_45.wav" id="26_nxy1l"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_6.wav" id="27_2bj3v"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/20_1.wav" id="28_1uvcg"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/400_3.wav" id="29_snnly"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_3015.png" id="30_1ht0e"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_10.wav" id="31_guhjd"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/300_20.wav" id="32_yhhtv"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1035.png" id="33_bsrds"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1038.png" id="34_erd13"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1039.png" id="35_5080d"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/1_8.wav" id="36_jeb12"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power_scaling.gd" id="37_vgtwr"]
+[ext_resource type="Script" path="res://src/content/combat/action_brain.gd" id="38_0qnet"]
+[ext_resource type="Script" path="res://src/content/combat/action_brain_entry.gd" id="39_qn2u1"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_413.png" id="40_eqqn7"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_1046.png" id="41_g3oow"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi/sounds/400_23.wav" id="42_3kkyi"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_1030.png" id="43_78y3b"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi/sounds/400_20.wav" id="44_h86gu"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_1047.png" id="45_denp8"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_1018.png" id="46_jbasg"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_416.png" id="47_g5cjn"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi/sounds/400_21.wav" id="48_irrlc"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_1078.png" id="49_hkl1h"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_418.png" id="50_b0tj5"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_417.png" id="51_gnehk"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_415.png" id="52_pmrj0"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi/sounds/200_17.wav" id="53_uw62s"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_412.png" id="54_1apur"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_421.png" id="55_orn6w"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_422.png" id="56_356vl"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_411.png" id="57_bvs7b"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/effects/anim_1001.png" id="58_cdxag"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/effects/anim_1030.png" id="59_i8unu"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/effects/anim_1024.png" id="60_nu4fx"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara/sounds/20_11.wav" id="61_fy0tb"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/effects/anim_1046.png" id="62_t1y43"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara/sounds/400_20.wav" id="63_hl0dn"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/effects/anim_1047.png" id="64_m20w4"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara/sounds/400_23.wav" id="65_yc3yr"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/effects/anim_1018.png" id="66_q1xcv"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/effects/anim_413.png" id="67_nc6ov"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/effects/anim_1057.png" id="68_dq13e"]
+[ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="69_m8wab"]
+[ext_resource type="Resource" path="res://assets/fan/yoshimura_eto/noroi/sheet_layout.tres" id="70_ici4y"]
+[ext_resource type="Script" path="res://src/content/combat/move_art.gd" id="71_w1w4o"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/strips/anim_406.png" id="72_t4r0m"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/strips/anim_407.png" id="73_er0h7"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/strips/anim_419.png" id="74_sa7p8"]
+[ext_resource type="Script" path="res://src/content/combat/member_art.gd" id="75_1ai58"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi/sheet.png" id="76_q7mqk"]
+[ext_resource type="Resource" path="res://assets/fan/yoshimura_eto/tatara/sheet_layout.tres" id="77_4qdse"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/strips/anim_460.png" id="78_ndyvv"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/strips/anim_462.png" id="79_boah8"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/strips/anim_465.png" id="80_3du0k"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara/sheet.png" id="81_luyd4"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/summon_mechanism.gd" id="82_bj44l"]
+[ext_resource type="Script" path="res://src/content/combat/skill_effect.gd" id="83_dnout"]
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="84_5p0oo"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_7400.png" id="85_8bp18"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/950_1.wav" id="86_ysx18"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/20_13.wav" id="87_hmtiu"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_519.png" id="88_v5ji8"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/200_17.wav" id="89_66ebf"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/200_24.wav" id="90_vyavd"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1078.png" id="91_r7esw"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_1079.png" id="92_ckrke"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/400_58.wav" id="93_xyr5t"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/400_43.wav" id="94_htfxc"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_417.png" id="95_x8o45"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/effects/anim_418.png" id="96_wk7g7"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/400_48.wav" id="97_plchc"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/sounds/400_59.wav" id="98_dndud"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/effects/anim_8001.png" id="99_kx07u"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/effects/anim_413.png" id="100_6bt4q"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sounds/400_56.wav" id="101_27j7x"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sounds/20_20.wav" id="102_1gupw"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sounds/200_15.wav" id="103_cf8l1"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/effects/anim_1032.png" id="104_t7eac"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sounds/400_3.wav" id="105_ukski"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/effects/anim_1020.png" id="106_qv8np"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/effects/anim_1039.png" id="107_sv2gi"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sounds/20_16.wav" id="108_a6qbl"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sounds/400_7.wav" id="109_c4whv"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sounds/400_58.wav" id="110_lheh8"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/effects/anim_421.png" id="111_yu13u"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/effects/anim_422.png" id="112_anq6m"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/effects/anim_1028.png" id="113_xqfq3"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/effects/anim_1030.png" id="114_o4v6q"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/400_45.wav" id="115_oir7f"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/400_46.wav" id="116_bw2q2"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/400_40.wav" id="117_ek1ud"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/400_43.wav" id="118_ttt05"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/200_2.wav" id="119_km0i8"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/effects/anim_2467.png" id="120_tqyxi"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/400_30.wav" id="121_xawk3"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/effects/anim_2468.png" id="122_feiog"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/400_15.wav" id="123_n13gb"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/effects/anim_2469.png" id="124_ws6c4"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/400_16.wav" id="125_ur2fu"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/effects/anim_2463.png" id="126_xnvb3"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/effects/anim_418.png" id="127_aiyx2"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/300_1.wav" id="128_5i0l5"]
+[ext_resource type="AudioStream" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sounds/300_2.wav" id="129_rnm2a"]
+[ext_resource type="Resource" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sheet_layout.tres" id="130_6nfxv"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/strips/anim_2405.png" id="131_a3gbu"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/strips/anim_2402.png" id="132_y2rmq"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/strips/anim_2406.png" id="133_wpten"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/noroi_kakuja/sheet.png" id="134_5geib"]
+[ext_resource type="Resource" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sheet_layout.tres" id="135_q03sh"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/strips/anim_2460.png" id="136_asa5b"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/strips/anim_2461.png" id="137_vned4"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/strips/anim_2471.png" id="138_qt6tg"]
+[ext_resource type="Texture2D" path="res://assets/fan/yoshimura_eto/tatara_kakuja/sheet.png" id="139_ceqex"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="140_5qkba"]
+
+[sub_resource type="Resource" id="Resource_j61yb"]
+script = ExtResource("1_yll7g")
+pool = &"kagune"
+on_hit_dealt = 4.0
+on_hit_taken = 3.0
+
+[sub_resource type="Resource" id="Resource_r34n0"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("12_g24bs")
+amount = 0.0303571428571429
+seconds = 0.2
+offset = Vector3(0, 0.7589286, 0)
+
+[sub_resource type="Resource" id="Resource_ve1n4"]
+script = ExtResource("11_3kb23")
+at = 0.067
+kind = 1
+picture = ExtResource("13_3l77j")
+amount = 0.0303571428571429
+seconds = 0.2
+offset = Vector3(0, 0.94107145, 0.12142857)
+
+[sub_resource type="Resource" id="Resource_emu2s"]
+script = ExtResource("11_3kb23")
+at = 0.067
+kind = 1
+picture = ExtResource("14_s5ywl")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 1.0928571, -0.33392859)
+
+[sub_resource type="Resource" id="Resource_3yj0g"]
+script = ExtResource("11_3kb23")
+at = 0.067
+kind = 1
+picture = ExtResource("15_mav3e")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.060714286, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_mbnlw"]
+script = ExtResource("11_3kb23")
+at = 0.067
+sound = ExtResource("16_nwapy")
+
+[sub_resource type="Resource" id="Resource_qpynk"]
+script = ExtResource("11_3kb23")
+at = 0.067
+sound = ExtResource("17_nbkf1")
+
+[sub_resource type="Resource" id="Resource_q52kp"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_200"
+startup = 0.133333333333333
+recovery = 0.166666666666667
+chain_after = 0.0166666666666667
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_r34n0"), SubResource("Resource_ve1n4"), SubResource("Resource_emu2s"), SubResource("Resource_3yj0g"), SubResource("Resource_mbnlw"), SubResource("Resource_qpynk")])
+power = 12.0
+poise = 1
+hitbox_size = Vector3(1, 1.0321429, 1.5178572)
+hitbox_offset = Vector3(0, 0.51607144, -0.45535713)
+travel_speed = 1.82142857142857
+
+[sub_resource type="Resource" id="Resource_5lm8c"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("18_el68n")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.7589286, -0.060714286)
+
+[sub_resource type="Resource" id="Resource_xg1t6"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_2jil3"]
+script = ExtResource("11_3kb23")
+at = 0.033
+kind = 1
+picture = ExtResource("19_7blhl")
+amount = 0.0303571428571429
+seconds = 0.217
+offset = Vector3(0, 0.91071427, -0.30357143)
+
+[sub_resource type="Resource" id="Resource_4rrmi"]
+script = ExtResource("11_3kb23")
+at = 0.033
+kind = 1
+picture = ExtResource("20_oxump")
+amount = 0.0303571428571429
+seconds = 0.7000000000000001
+offset = Vector3(0, -0.060714286, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_w08xk"]
+script = ExtResource("11_3kb23")
+at = 0.033
+sound = ExtResource("16_nwapy")
+
+[sub_resource type="Resource" id="Resource_texb3"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_205"
+startup = 0.0666666666666667
+recovery = 0.25
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_5lm8c"), SubResource("Resource_xg1t6"), SubResource("Resource_2jil3"), SubResource("Resource_4rrmi"), SubResource("Resource_w08xk")])
+power = 12.0
+poise = 1
+knockback = 0.4
+hitbox_size = Vector3(1, 0.3642857, 1.3660715)
+hitbox_offset = Vector3(0, 0.18214285, -0.6223214)
+travel_speed = 1.82142857142857
+
+[sub_resource type="Resource" id="Resource_bliqi"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("18_el68n")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.7589286, -0.060714286)
+
+[sub_resource type="Resource" id="Resource_b7akg"]
+script = ExtResource("11_3kb23")
+at = 0.05
+kind = 1
+picture = ExtResource("19_7blhl")
+amount = 0.0303571428571429
+seconds = 0.217
+offset = Vector3(0, 0.88035715, -0.12142857)
+
+[sub_resource type="Resource" id="Resource_6fdnj"]
+script = ExtResource("11_3kb23")
+at = 0.05
+kind = 1
+picture = ExtResource("15_mav3e")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.060714286, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_iujx1"]
+script = ExtResource("11_3kb23")
+at = 0.05
+sound = ExtResource("16_nwapy")
+
+[sub_resource type="Resource" id="Resource_mcef5"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_215"
+active = 0.05
+recovery = 0.316666666666667
+chain_after = 0.1
+iframes_from = 0.3
+iframes_to = 0.383333333333333
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_bliqi"), SubResource("Resource_b7akg"), SubResource("Resource_6fdnj"), SubResource("Resource_iujx1")])
+power = 12.0
+poise = 1
+hitbox_size = Vector3(1, 0.39464286, 0.85)
+hitbox_offset = Vector3(0, 0.19732143, -0.33392859)
+travel_speed = 1.82142857142857
+
+[sub_resource type="Resource" id="Resource_woafo"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("18_el68n")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.7589286, 0)
+
+[sub_resource type="Resource" id="Resource_7t0ep"]
+script = ExtResource("11_3kb23")
+at = 0.05
+sound = ExtResource("16_nwapy")
+
+[sub_resource type="Resource" id="Resource_0ehue"]
+script = ExtResource("11_3kb23")
+at = 0.1
+kind = 1
+picture = ExtResource("19_7blhl")
+amount = 0.0303571428571429
+seconds = 0.217
+offset = Vector3(0, 0.81964284, -0.3642857)
+
+[sub_resource type="Resource" id="Resource_feuwq"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_219"
+active = 0.05
+recovery = 0.4
+chain_after = 0.0666666666666667
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_woafo"), SubResource("Resource_7t0ep"), SubResource("Resource_0ehue")])
+power = 10.0
+poise = 1
+knockback = 0.2
+hitbox_size = Vector3(1, 0.7285714, 1.0321429)
+hitbox_offset = Vector3(0, 0.3642857, -0.33392859)
+travel_speed = 2.73214285714286
+
+[sub_resource type="Resource" id="Resource_1e0lo"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("18_el68n")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.60714287, 0)
+
+[sub_resource type="Resource" id="Resource_qmt35"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_3d200"]
+script = ExtResource("11_3kb23")
+at = 0.083
+sound = ExtResource("21_j61sn")
+
+[sub_resource type="Resource" id="Resource_ma7vo"]
+script = ExtResource("11_3kb23")
+at = 0.15
+kind = 1
+picture = ExtResource("19_7blhl")
+amount = 0.0303571428571429
+seconds = 0.217
+offset = Vector3(0, 0.51607144, -0.30357143)
+
+[sub_resource type="Resource" id="Resource_7l221"]
+script = ExtResource("11_3kb23")
+at = 0.15
+sound = ExtResource("22_7ubbu")
+
+[sub_resource type="Resource" id="Resource_6svng"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_216"
+startup = 0.15
+active = 0.233333333333333
+recovery = 0.333333333333333
+chain_after = 0.0833333333333333
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_1e0lo"), SubResource("Resource_qmt35"), SubResource("Resource_3d200"), SubResource("Resource_ma7vo"), SubResource("Resource_7l221")])
+power = 12.0
+poise = 1
+knockback = 0.61
+hitbox_size = Vector3(1, 1.3357143, 1.0017858)
+hitbox_offset = Vector3(0, 0.66785717, -0.74375)
+travel_speed = 6.375
+
+[sub_resource type="Resource" id="Resource_iub5l"]
+script = ExtResource("11_3kb23")
+at = 0.05
+sound = ExtResource("23_eqwkh")
+
+[sub_resource type="Resource" id="Resource_y0asj"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_217"
+startup = 0.05
+active = 0.05
+recovery = 0.0
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_iub5l")])
+power = 18.0
+poise = 1
+hitbox_size = Vector3(1, 2.580357, 2.9142857)
+hitbox_offset = Vector3(0, 1.0169643, -0.4857143)
+travel_speed = 20.0357142857143
+
+[sub_resource type="Resource" id="Resource_gaw5x"]
+script = ExtResource("24_ghdo7")
+look_id = &"look/yoshimura_eto_human"
+label_key = "combat.form.yoshimura_eto_human.name"
+
+[sub_resource type="Resource" id="Resource_yjohb"]
+script = ExtResource("2_141n3")
+name_key = "combat.form.yoshimura_eto_human.name"
+duration = 0.0
+tags = Array[StringName]([&"form"])
+id = &"status/form_yoshimura_eto_human"
+
+[sub_resource type="Resource" id="Resource_5d3hs"]
+script = ExtResource("10_2f7op")
+status = SubResource("Resource_yjohb")
+attack_chain = Array[ExtResource("8_mqf1m")]([SubResource("Resource_q52kp"), SubResource("Resource_texb3"), SubResource("Resource_mcef5"), SubResource("Resource_feuwq"), SubResource("Resource_6svng"), SubResource("Resource_y0asj")])
+look = SubResource("Resource_gaw5x")
+name_key = "combat.form.yoshimura_eto_human.name"
+
+[sub_resource type="Resource" id="Resource_68r2m"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("18_el68n")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.85, 0)
+
+[sub_resource type="Resource" id="Resource_eutd8"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.25
+seconds = 0.133
+
+[sub_resource type="Resource" id="Resource_wfesp"]
+script = ExtResource("11_3kb23")
+at = 0.133
+kind = 1
+picture = ExtResource("15_mav3e")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.15178572, -0.91071427)
+
+[sub_resource type="Resource" id="Resource_a27g5"]
+script = ExtResource("11_3kb23")
+at = 0.133
+sound = ExtResource("26_nxy1l")
+
+[sub_resource type="Resource" id="Resource_xa18c"]
+script = ExtResource("11_3kb23")
+at = 0.133
+sound = ExtResource("27_2bj3v")
+
+[sub_resource type="Resource" id="Resource_ufpq1"]
+script = ExtResource("11_3kb23")
+at = 0.133
+kind = 4
+amount = 0.25
+seconds = 0.133
+
+[sub_resource type="Resource" id="Resource_icq66"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_330"
+startup = 0.133333333333333
+active = 0.0333333333333333
+recovery = 0.533333333333333
+chain_after = 0.233333333333333
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_68r2m"), SubResource("Resource_eutd8"), SubResource("Resource_wfesp"), SubResource("Resource_a27g5"), SubResource("Resource_xa18c"), SubResource("Resource_ufpq1")])
+power = 20.0
+poise = 1
+knockback = 1.21
+hitbox_size = Vector3(1, 2.4589286, 2.7928572)
+hitbox_offset = Vector3(0, 1.2294643, -1.8517857)
+
+[sub_resource type="Resource" id="Resource_pdf0o"]
+script = ExtResource("11_3kb23")
+at = 0.133
+sound = ExtResource("21_j61sn")
+
+[sub_resource type="Resource" id="Resource_m4k2u"]
+script = ExtResource("11_3kb23")
+at = 0.617
+sound = ExtResource("28_1uvcg")
+
+[sub_resource type="Resource" id="Resource_2hwch"]
+script = ExtResource("11_3kb23")
+at = 0.617
+sound = ExtResource("29_snnly")
+
+[sub_resource type="Resource" id="Resource_f0hx6"]
+script = ExtResource("11_3kb23")
+at = 0.617
+kind = 4
+amount = 0.3
+seconds = 0.167
+
+[sub_resource type="Resource" id="Resource_tbjhf"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_331"
+startup = 0.616666666666667
+active = 0.0666666666666667
+recovery = 0.5
+chain_after = 0.0666666666666667
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_pdf0o"), SubResource("Resource_m4k2u"), SubResource("Resource_2hwch"), SubResource("Resource_f0hx6")])
+power = 18.0
+poise = 1
+knockback = 1.01
+hitbox_size = Vector3(1, 3.3392856, 3.5517857)
+hitbox_offset = Vector3(0, 1.6089286, -1.6848215)
+travel_speed = 9.10714285714286
+
+[sub_resource type="Resource" id="Resource_oyfmw"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("30_1ht0e")
+amount = 0.0303571428571429
+seconds = 0.15
+offset = Vector3(0, 0.85, 0)
+
+[sub_resource type="Resource" id="Resource_k7rwb"]
+script = ExtResource("11_3kb23")
+at = 0.2
+sound = ExtResource("31_guhjd")
+
+[sub_resource type="Resource" id="Resource_kbhej"]
+script = ExtResource("11_3kb23")
+at = 0.433
+kind = 4
+amount = 0.2
+seconds = 0.067
+
+[sub_resource type="Resource" id="Resource_7g6pe"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_332"
+startup = 0.0
+active = 1.91666666666667
+recovery = 0.0
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_oyfmw"), SubResource("Resource_k7rwb"), SubResource("Resource_kbhej")])
+power = 1.6
+hits = 29
+poise = 1
+knockback = 0.4
+
+[sub_resource type="Resource" id="Resource_t6w5e"]
+script = ExtResource("11_3kb23")
+at = 0.433
+sound = ExtResource("32_yhhtv")
+
+[sub_resource type="Resource" id="Resource_2v5sc"]
+script = ExtResource("11_3kb23")
+at = 0.483
+kind = 1
+picture = ExtResource("33_bsrds")
+amount = 0.0303571428571429
+seconds = 0.233
+offset = Vector3(0, 1.6696428, -0.57678574)
+
+[sub_resource type="Resource" id="Resource_2w0t2"]
+script = ExtResource("11_3kb23")
+at = 0.483
+kind = 1
+picture = ExtResource("34_erd13")
+amount = 0.0303571428571429
+seconds = 0.533
+offset = Vector3(0, -0.12142857, -0.7285714)
+
+[sub_resource type="Resource" id="Resource_ho7lx"]
+script = ExtResource("11_3kb23")
+at = 0.483
+kind = 1
+picture = ExtResource("35_5080d")
+amount = 0.0303571428571429
+seconds = 0.667
+offset = Vector3(0, -0.12142857, -0.7285714)
+
+[sub_resource type="Resource" id="Resource_qsjcn"]
+script = ExtResource("11_3kb23")
+at = 0.483
+sound = ExtResource("36_jeb12")
+
+[sub_resource type="Resource" id="Resource_3efkr"]
+script = ExtResource("11_3kb23")
+at = 0.483
+kind = 4
+amount = 0.5
+seconds = 0.067
+
+[sub_resource type="Resource" id="Resource_avbks"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_334"
+startup = 0.483333333333333
+active = 0.15
+recovery = 0.9
+chain_after = 0.9
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_t6w5e"), SubResource("Resource_2v5sc"), SubResource("Resource_2w0t2"), SubResource("Resource_ho7lx"), SubResource("Resource_qsjcn"), SubResource("Resource_3efkr")])
+power = 20.0
+poise = 1
+knockback = 1.21
+hitbox_size = Vector3(1, 3.1875, 6.0410714)
+hitbox_offset = Vector3(0, 1.5633929, -0.68303573)
+
+[sub_resource type="Resource" id="Resource_dbi1m"]
+script = ExtResource("24_ghdo7")
+look_id = &"look/yoshimura_eto_kakuja"
+tint = Color(0.75, 0.6, 0.55, 1)
+label_key = "combat.form.yoshimura_eto_kakuja.name"
+
+[sub_resource type="Resource" id="Resource_glgqj"]
+script = ExtResource("25_7x0bp")
+stat = &"attack"
+op = 1
+value = 1.2
+
+[sub_resource type="Resource" id="Resource_mton6"]
+script = ExtResource("2_141n3")
+name_key = "combat.form.yoshimura_eto_kakuja.name"
+duration = 0.0
+modifiers = Array[ExtResource("25_7x0bp")]([SubResource("Resource_glgqj")])
+tags = Array[StringName]([&"form"])
+id = &"status/form_yoshimura_eto_kakuja"
+
+[sub_resource type="Resource" id="Resource_ekkun"]
+script = ExtResource("10_2f7op")
+status = SubResource("Resource_mton6")
+attack_chain = Array[ExtResource("8_mqf1m")]([SubResource("Resource_icq66"), SubResource("Resource_tbjhf"), SubResource("Resource_7g6pe"), SubResource("Resource_avbks")])
+look = SubResource("Resource_dbi1m")
+name_key = "combat.form.yoshimura_eto_kakuja.name"
+
+[sub_resource type="Resource" id="Resource_a081f"]
+script = ExtResource("10_2f7op")
+exclusive_group = &"yoshimura_eto_stance"
+cycle = Array[ExtResource("10_2f7op")]([SubResource("Resource_5d3hs"), SubResource("Resource_ekkun")])
+
+[sub_resource type="Resource" id="Resource_s5ywx"]
+script = ExtResource("7_j667m")
+power_id = &"power/yoshimura_eto_stance"
+name_key = "combat.power.yoshimura_eto_stance.name"
+desc_key = "combat.power.yoshimura_eto_stance.desc"
+mechanism = SubResource("Resource_a081f")
+cooldown = 1.0
+
+[sub_resource type="Resource" id="Resource_hlakm"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("40_eqqn7")
+amount = 0.0303571428571429
+seconds = 0.267
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_qi4ya"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("41_g3oow")
+amount = 0.0303571428571429
+seconds = 0.367
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_mg1sn"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("42_3kkyi")
+
+[sub_resource type="Resource" id="Resource_w04tq"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("43_78y3b")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_mw542"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("44_h86gu")
+
+[sub_resource type="Resource" id="Resource_ox71y"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_2qjwp"]
+script = ExtResource("11_3kb23")
+at = 0.067
+kind = 1
+picture = ExtResource("45_denp8")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, 0.91071427, 0.39464286)
+
+[sub_resource type="Resource" id="Resource_6ceyk"]
+script = ExtResource("11_3kb23")
+at = 0.067
+kind = 1
+picture = ExtResource("45_denp8")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, 1.1535715, -0.4857143)
+
+[sub_resource type="Resource" id="Resource_bvkyn"]
+script = ExtResource("11_3kb23")
+at = 0.533
+kind = 1
+picture = ExtResource("46_jbasg")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.060714286, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_etitd"]
+script = ExtResource("11_3kb23")
+at = 0.533
+kind = 1
+picture = ExtResource("47_g5cjn")
+amount = 0.0303571428571429
+seconds = 0.617
+offset = Vector3(0, -0.15178572, -2.2767856)
+
+[sub_resource type="Resource" id="Resource_wiwkf"]
+script = ExtResource("11_3kb23")
+at = 0.533
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_vpvg4"]
+script = ExtResource("11_3kb23")
+at = 0.733
+kind = 1
+picture = ExtResource("46_jbasg")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.030357143, -0.060714286)
+
+[sub_resource type="Resource" id="Resource_jn5tp"]
+script = ExtResource("11_3kb23")
+at = 1.167
+sound = ExtResource("42_3kkyi")
+
+[sub_resource type="Resource" id="Resource_4b7tv"]
+script = ExtResource("11_3kb23")
+at = 1.2670000000000001
+kind = 1
+picture = ExtResource("45_denp8")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, 1.1535715, 0.425)
+
+[sub_resource type="Resource" id="Resource_krjfh"]
+script = ExtResource("11_3kb23")
+at = 1.5170000000000001
+kind = 1
+picture = ExtResource("46_jbasg")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.060714286, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_xyuto"]
+script = ExtResource("11_3kb23")
+at = 1.567
+sound = ExtResource("48_irrlc")
+
+[sub_resource type="Resource" id="Resource_ugw0q"]
+script = ExtResource("11_3kb23")
+at = 1.617
+kind = 4
+amount = 0.3
+seconds = 0.133
+
+[sub_resource type="Resource" id="Resource_ea2gr"]
+script = ExtResource("11_3kb23")
+at = 1.667
+kind = 1
+picture = ExtResource("49_hkl1h")
+amount = 0.0303571428571429
+seconds = 0.867
+offset = Vector3(0, -0.09107143, -7.285714)
+
+[sub_resource type="Resource" id="Resource_k6ghj"]
+script = ExtResource("11_3kb23")
+at = 1.667
+kind = 1
+picture = ExtResource("50_b0tj5")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.15178572, -7.285714)
+
+[sub_resource type="Resource" id="Resource_lkli5"]
+script = ExtResource("11_3kb23")
+at = 1.667
+kind = 1
+picture = ExtResource("51_gnehk")
+amount = 0.0303571428571429
+seconds = 0.5
+offset = Vector3(0, -0.15178572, -5.919643)
+
+[sub_resource type="Resource" id="Resource_mmx22"]
+script = ExtResource("11_3kb23")
+at = 1.667
+kind = 1
+picture = ExtResource("47_g5cjn")
+amount = 0.0303571428571429
+seconds = 0.617
+offset = Vector3(0, -0.15178572, -6.830357)
+
+[sub_resource type="Resource" id="Resource_3lai7"]
+script = ExtResource("11_3kb23")
+at = 1.667
+kind = 1
+picture = ExtResource("52_pmrj0")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, -0.15178572, -6.071429)
+
+[sub_resource type="Resource" id="Resource_sht1m"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_406"
+startup = 0.533333333333333
+active = 1.13333333333333
+recovery = 0.666666666666667
+chain_after = 0.666666666666667
+iframes_from = 0.133333333333333
+iframes_to = 2.33333333333333
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_hlakm"), SubResource("Resource_qi4ya"), SubResource("Resource_mg1sn"), SubResource("Resource_w04tq"), SubResource("Resource_mw542"), SubResource("Resource_ox71y"), SubResource("Resource_2qjwp"), SubResource("Resource_6ceyk"), SubResource("Resource_bvkyn"), SubResource("Resource_etitd"), SubResource("Resource_wiwkf"), SubResource("Resource_vpvg4"), SubResource("Resource_jn5tp"), SubResource("Resource_4b7tv"), SubResource("Resource_krjfh"), SubResource("Resource_xyuto"), SubResource("Resource_ugw0q"), SubResource("Resource_ea2gr"), SubResource("Resource_k6ghj"), SubResource("Resource_lkli5"), SubResource("Resource_mmx22"), SubResource("Resource_3lai7")])
+power = 23.0
+hits = 2
+poise = 1
+knockback = 1.01
+hitbox_size = Vector3(1, 3.0964286, 6.8)
+hitbox_offset = Vector3(0, 1.5482143, -3.2482142)
+
+[sub_resource type="Resource" id="Resource_8f7m3"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_sht1m")
+weight = 5.0
+
+[sub_resource type="Resource" id="Resource_8jeig"]
+script = ExtResource("11_3kb23")
+at = 0.133
+kind = 1
+picture = ExtResource("45_denp8")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, 1.0321429, 0.3642857)
+
+[sub_resource type="Resource" id="Resource_wenmy"]
+script = ExtResource("11_3kb23")
+at = 0.133
+kind = 1
+picture = ExtResource("45_denp8")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, 1.0321429, -0.4857143)
+
+[sub_resource type="Resource" id="Resource_6oqwk"]
+script = ExtResource("11_3kb23")
+at = 0.55
+sound = ExtResource("53_uw62s")
+
+[sub_resource type="Resource" id="Resource_oaqvw"]
+script = ExtResource("11_3kb23")
+at = 0.583
+kind = 1
+picture = ExtResource("51_gnehk")
+amount = 0.0303571428571429
+seconds = 0.5
+offset = Vector3(0, -0.24285714, 0.81964284)
+
+[sub_resource type="Resource" id="Resource_4vsel"]
+script = ExtResource("11_3kb23")
+at = 0.583
+kind = 1
+picture = ExtResource("50_b0tj5")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.24285714, -0.85)
+
+[sub_resource type="Resource" id="Resource_qys73"]
+script = ExtResource("11_3kb23")
+at = 0.583
+kind = 4
+amount = 0.2
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_jnj1r"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("54_1apur")
+amount = 0.0303571428571429
+seconds = 0.25
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_pk705"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("55_orn6w")
+amount = 0.0303571428571429
+seconds = 1.333
+offset = Vector3(0, 0.33392859, 0.45535713)
+
+[sub_resource type="Resource" id="Resource_4ltd3"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("56_356vl")
+amount = 0.0303571428571429
+seconds = 1.333
+offset = Vector3(0, 0.33392859, -0.7589286)
+
+[sub_resource type="Resource" id="Resource_u4hs4"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.15
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_hksmx"]
+script = ExtResource("11_3kb23")
+at = 0.033
+kind = 4
+amount = 0.2
+seconds = 0.1
+
+[sub_resource type="Resource" id="Resource_wj0wo"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_407_shot6"
+startup = 0.0666666666666667
+active = 1.2
+recovery = 0.0666666666666667
+chain_after = 0.0666666666666667
+iframes_to = 1.33333333333333
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_jnj1r"), SubResource("Resource_pk705"), SubResource("Resource_4ltd3"), SubResource("Resource_u4hs4"), SubResource("Resource_hksmx")])
+power = 16.0
+poise = 1
+hitbox_size = Vector3(1, 3.3392856, 1.6696428)
+hitbox_offset = Vector3(0, 1.1839286, -0.10625)
+
+[sub_resource type="Resource" id="Resource_1b3su"]
+script = ExtResource("11_3kb23")
+at = 0.667
+kind = 2
+shot = SubResource("Resource_wj0wo")
+offset = Vector3(0, 0.30357143, -0.060714286)
+at_foe = true
+pierce = true
+
+[sub_resource type="Resource" id="Resource_ht3x0"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("54_1apur")
+amount = 0.0303571428571429
+seconds = 0.25
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_dg8e2"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.2
+seconds = 0.1
+
+[sub_resource type="Resource" id="Resource_m2n1d"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.15
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_ko17x"]
+script = ExtResource("11_3kb23")
+at = 0.017
+kind = 1
+picture = ExtResource("57_bvs7b")
+amount = 0.0303571428571429
+seconds = 0.917
+offset = Vector3(0, -0.12142857, 0)
+
+[sub_resource type="Resource" id="Resource_i31na"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_407_shot7"
+startup = 0.316666666666667
+active = 0.05
+recovery = 0.383333333333333
+chain_after = 0.383333333333333
+iframes_to = 0.75
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_ht3x0"), SubResource("Resource_dg8e2"), SubResource("Resource_m2n1d"), SubResource("Resource_ko17x")])
+power = 16.0
+poise = 1
+knockback = 0.4
+hitbox_size = Vector3(1, 3.9767857, 1.8821429)
+hitbox_offset = Vector3(0, 1.9580357, 0.030357143)
+
+[sub_resource type="Resource" id="Resource_jwjg3"]
+script = ExtResource("11_3kb23")
+at = 1.333
+kind = 2
+shot = SubResource("Resource_i31na")
+offset = Vector3(0, -0.060714286, 0)
+at_foe = true
+pierce = true
+
+[sub_resource type="Resource" id="Resource_3w1a5"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_407"
+startup = 0.0
+active = 2.28333333333333
+recovery = 0.0
+iframes_from = 0.2
+iframes_to = 2.08333333333333
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_8jeig"), SubResource("Resource_wenmy"), SubResource("Resource_6oqwk"), SubResource("Resource_oaqvw"), SubResource("Resource_4vsel"), SubResource("Resource_qys73"), SubResource("Resource_1b3su"), SubResource("Resource_jwjg3")])
+
+[sub_resource type="Resource" id="Resource_74idk"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_3w1a5")
+weight = 2.0
+
+[sub_resource type="Resource" id="Resource_ev2jr"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("40_eqqn7")
+amount = 0.0303571428571429
+seconds = 0.267
+offset = Vector3(0, 0.45535713, 0)
+
+[sub_resource type="Resource" id="Resource_fxrc1"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("41_g3oow")
+amount = 0.0303571428571429
+seconds = 0.367
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_maxnn"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("42_3kkyi")
+
+[sub_resource type="Resource" id="Resource_gttu7"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_7qq24"]
+script = ExtResource("11_3kb23")
+at = 0.117
+kind = 1
+picture = ExtResource("45_denp8")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, 1.1535715, 0.425)
+
+[sub_resource type="Resource" id="Resource_0d8to"]
+script = ExtResource("11_3kb23")
+at = 0.617
+sound = ExtResource("48_irrlc")
+
+[sub_resource type="Resource" id="Resource_iu4hi"]
+script = ExtResource("11_3kb23")
+at = 1.667
+kind = 1
+picture = ExtResource("58_cdxag")
+amount = 0.0303571428571429
+seconds = 1.067
+offset = Vector3(0, -0.2125, 2.1857142)
+
+[sub_resource type="Resource" id="Resource_apaia"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_419"
+startup = 0.0
+active = 3.15
+recovery = 0.0166666666666667
+chain_after = 0.0166666666666667
+iframes_to = 1.8
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_ev2jr"), SubResource("Resource_fxrc1"), SubResource("Resource_maxnn"), SubResource("Resource_gttu7"), SubResource("Resource_7qq24"), SubResource("Resource_0d8to"), SubResource("Resource_iu4hi")])
+power = 0.8
+hits = 48
+poise = 1
+
+[sub_resource type="Resource" id="Resource_ma216"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_apaia")
+weight = 5.0
+
+[sub_resource type="Resource" id="Resource_t06ex"]
+script = ExtResource("38_0qnet")
+aggro_radius = 8.0
+give_up_radius = 12.0
+attack_range = 2.5
+attack_cooldown = 1.5
+move_speed = 2.0
+wander_radius = 0.0
+moves = Array[ExtResource("39_qn2u1")]([SubResource("Resource_8f7m3"), SubResource("Resource_74idk"), SubResource("Resource_ma216")])
+
+[sub_resource type="Resource" id="Resource_taxp8"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("59_i8unu")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_nydyy"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_ho6xb"]
+script = ExtResource("11_3kb23")
+at = 0.2
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_3x4jf"]
+script = ExtResource("11_3kb23")
+at = 0.25
+kind = 1
+picture = ExtResource("60_nu4fx")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, -0.030357143, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_iwdqg"]
+script = ExtResource("11_3kb23")
+at = 0.25
+sound = ExtResource("61_fy0tb")
+
+[sub_resource type="Resource" id="Resource_qjoiy"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_460"
+startup = 0.2
+active = 0.0166666666666667
+recovery = 0.333333333333333
+chain_after = 0.333333333333333
+iframes_to = 0.55
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_taxp8"), SubResource("Resource_nydyy"), SubResource("Resource_ho6xb"), SubResource("Resource_3x4jf"), SubResource("Resource_iwdqg")])
+power = 20.0
+poise = 1
+knockback = 1.01
+
+[sub_resource type="Resource" id="Resource_xpxb6"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_qjoiy")
+weight = 2.0
+
+[sub_resource type="Resource" id="Resource_we1l4"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("62_t1y43")
+amount = 0.0303571428571429
+seconds = 0.367
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_c32gp"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("63_hl0dn")
+
+[sub_resource type="Resource" id="Resource_8whcp"]
+script = ExtResource("11_3kb23")
+at = 0.067
+kind = 1
+picture = ExtResource("64_m20w4")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, 0.91071427, 0.15178572)
+
+[sub_resource type="Resource" id="Resource_ss7w5"]
+script = ExtResource("11_3kb23")
+at = 0.067
+sound = ExtResource("65_yc3yr")
+
+[sub_resource type="Resource" id="Resource_0dmx8"]
+script = ExtResource("11_3kb23")
+at = 0.133
+kind = 1
+picture = ExtResource("66_q1xcv")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.060714286, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_hblkj"]
+script = ExtResource("11_3kb23")
+at = 0.2
+kind = 4
+amount = 0.2
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_jqyth"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_462"
+startup = 0.2
+active = 0.25
+recovery = 0.25
+chain_after = 0.25
+iframes_to = 0.7
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_we1l4"), SubResource("Resource_c32gp"), SubResource("Resource_8whcp"), SubResource("Resource_ss7w5"), SubResource("Resource_0dmx8"), SubResource("Resource_hblkj")])
+power = 28.0
+poise = 1
+knockback = 1.01
+hitbox_size = Vector3(1, 1.6089286, 4.7357144)
+hitbox_offset = Vector3(0, 0.8044643, -2.3678572)
+
+[sub_resource type="Resource" id="Resource_dtqeo"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_jqyth")
+
+[sub_resource type="Resource" id="Resource_y2rqe"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("67_nc6ov")
+amount = 0.0303571428571429
+seconds = 0.267
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_syt1k"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("62_t1y43")
+amount = 0.0303571428571429
+seconds = 0.367
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_3ms2h"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("63_hl0dn")
+
+[sub_resource type="Resource" id="Resource_xspi3"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_4t2hw"]
+script = ExtResource("11_3kb23")
+at = 0.067
+sound = ExtResource("65_yc3yr")
+
+[sub_resource type="Resource" id="Resource_5niyr"]
+script = ExtResource("11_3kb23")
+at = 0.15
+kind = 1
+picture = ExtResource("64_m20w4")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, 0.91071427, 0.15178572)
+
+[sub_resource type="Resource" id="Resource_jbrts"]
+script = ExtResource("11_3kb23")
+at = 0.467
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_0h8ru"]
+script = ExtResource("11_3kb23")
+at = 0.533
+kind = 1
+picture = ExtResource("68_dq13e")
+amount = 0.0303571428571429
+seconds = 0.35000000000000003
+offset = Vector3(0, -0.060714286, 0)
+
+[sub_resource type="Resource" id="Resource_by3av"]
+script = ExtResource("11_3kb23")
+at = 0.667
+kind = 1
+picture = ExtResource("66_q1xcv")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.060714286, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_vq3kr"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_465"
+startup = 0.533333333333333
+active = 0.0666666666666667
+recovery = 0.483333333333333
+chain_after = 0.483333333333333
+iframes_to = 1.08333333333333
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_y2rqe"), SubResource("Resource_syt1k"), SubResource("Resource_3ms2h"), SubResource("Resource_xspi3"), SubResource("Resource_4t2hw"), SubResource("Resource_5niyr"), SubResource("Resource_jbrts"), SubResource("Resource_0h8ru"), SubResource("Resource_by3av")])
+power = 20.0
+poise = 1
+knockback = 1.01
+hitbox_size = Vector3(1, 2.125, 5.1)
+hitbox_offset = Vector3(0, 1.0321429, -1.7910714)
+
+[sub_resource type="Resource" id="Resource_4b222"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_vq3kr")
+
+[sub_resource type="Resource" id="Resource_nqrsi"]
+script = ExtResource("38_0qnet")
+aggro_radius = 8.0
+give_up_radius = 12.0
+attack_range = 2.0
+move_speed = 3.0
+wander_radius = 0.0
+moves = Array[ExtResource("39_qn2u1")]([SubResource("Resource_xpxb6"), SubResource("Resource_dtqeo"), SubResource("Resource_4b222")])
+
+[sub_resource type="Resource" id="Resource_uyaf4"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("72_t4r0m")
+frames = 29
+feet = Vector2i(268, 132)
+seconds = 2.33333333333333
+
+[sub_resource type="Resource" id="Resource_b6inv"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("73_er0h7")
+frames = 17
+feet = Vector2i(77, 94)
+seconds = 2.28333333333333
+
+[sub_resource type="Resource" id="Resource_feujr"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("74_sa7p8")
+frames = 17
+feet = Vector2i(233, 156)
+seconds = 1.8
+
+[sub_resource type="Resource" id="Resource_aty48"]
+script = ExtResource("75_1ai58")
+sheet = ExtResource("76_q7mqk")
+layout = ExtResource("70_ici4y")
+pixel_size = 0.0303571428571429
+ground_offset = -0.0303571428571429
+moves = Dictionary[StringName, ExtResource("71_w1w4o")]({
+&"move/yoshimura_eto_406": SubResource("Resource_uyaf4"),
+&"move/yoshimura_eto_407": SubResource("Resource_b6inv"),
+&"move/yoshimura_eto_419": SubResource("Resource_feujr")
+})
+
+[sub_resource type="Resource" id="Resource_onw21"]
+script = ExtResource("69_m8wab")
+combatant_id = &"yoshimura_eto_noroi"
+name_key = "combat.member.yoshimura_eto_noroi.name"
+base_stats = Dictionary[StringName, float]({
+&"attack": 9.0,
+&"defence": 6.0,
+&"max_hp": 40.0
+})
+attack_tags = Array[StringName]([&"kagune"])
+art = SubResource("Resource_aty48")
+
+[sub_resource type="Resource" id="Resource_4qxej"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("78_ndyvv")
+frames = 8
+feet = Vector2i(28, 57)
+seconds = 0.55
+
+[sub_resource type="Resource" id="Resource_kusw8"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("79_boah8")
+frames = 11
+feet = Vector2i(146, 73)
+seconds = 0.7
+
+[sub_resource type="Resource" id="Resource_t7lj4"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("80_3du0k")
+frames = 16
+feet = Vector2i(156, 59)
+seconds = 1.08333333333333
+
+[sub_resource type="Resource" id="Resource_uxs6x"]
+script = ExtResource("75_1ai58")
+sheet = ExtResource("81_luyd4")
+layout = ExtResource("77_4qdse")
+pixel_size = 0.0303571428571429
+ground_offset = -0.0303571428571429
+moves = Dictionary[StringName, ExtResource("71_w1w4o")]({
+&"move/yoshimura_eto_460": SubResource("Resource_4qxej"),
+&"move/yoshimura_eto_462": SubResource("Resource_kusw8"),
+&"move/yoshimura_eto_465": SubResource("Resource_t7lj4")
+})
+
+[sub_resource type="Resource" id="Resource_8y5jt"]
+script = ExtResource("69_m8wab")
+combatant_id = &"yoshimura_eto_tatara"
+name_key = "combat.member.yoshimura_eto_tatara.name"
+base_stats = Dictionary[StringName, float]({
+&"attack": 8.0,
+&"defence": 4.0,
+&"max_hp": 30.0
+})
+attack_tags = Array[StringName]([&"kagune"])
+art = SubResource("Resource_uxs6x")
+
+[sub_resource type="Resource" id="Resource_rp01d"]
+script = ExtResource("2_141n3")
+name_key = "combat.status.yoshimura_eto_helpers_out.name"
+unit = 1
+duration = 9999.0
+id = &"status/yoshimura_eto_helpers_out"
+
+[sub_resource type="Resource" id="Resource_6xp24"]
+script = ExtResource("82_bj44l")
+fighters = Array[ExtResource("69_m8wab")]([SubResource("Resource_onw21"), SubResource("Resource_8y5jt")])
+brains = Array[ExtResource("38_0qnet")]([SubResource("Resource_t06ex"), SubResource("Resource_nqrsi")])
+lifetime = 20.0
+cap = 2
+owner_status = SubResource("Resource_rp01d")
+turns = 3
+
+[sub_resource type="Resource" id="Resource_63rd8"]
+script = ExtResource("25_7x0bp")
+stat = &"defence"
+op = 1
+value = 1.2
+
+[sub_resource type="Resource" id="Resource_iw6e5"]
+script = ExtResource("2_141n3")
+name_key = "combat.status.yoshimura_eto_resolve.name"
+unit = 1
+duration = 2.0
+modifiers = Array[ExtResource("25_7x0bp")]([SubResource("Resource_63rd8")])
+id = &"status/yoshimura_eto_resolve"
+
+[sub_resource type="Resource" id="Resource_5ajj6"]
+script = ExtResource("84_5p0oo")
+name_key = "combat.power.yoshimura_eto_noroi_tatara.name"
+cost_pool = &"kagune"
+cost = 8
+target = 0
+statuses = Array[ExtResource("2_141n3")]([SubResource("Resource_iw6e5")])
+id = &"skill/yoshimura_eto_noroi_tatara"
+
+[sub_resource type="Resource" id="Resource_ohj50"]
+script = ExtResource("7_j667m")
+power_id = &"power/yoshimura_eto_noroi_tatara"
+name_key = "combat.power.yoshimura_eto_noroi_tatara.name"
+desc_key = "combat.power.yoshimura_eto_noroi_tatara.desc"
+skill = SubResource("Resource_5ajj6")
+mechanism = SubResource("Resource_6xp24")
+cooldown = 12.0
+requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_human"])
+
+[sub_resource type="Resource" id="Resource_pcvd1"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("85_8bp18")
+amount = 0.0303571428571429
+seconds = 0.9
+offset = Vector3(0, 0.7589286, -0.030357143)
+
+[sub_resource type="Resource" id="Resource_0u4o4"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("86_ysx18")
+
+[sub_resource type="Resource" id="Resource_fhusr"]
+script = ExtResource("11_3kb23")
+at = 0.25
+kind = 1
+picture = ExtResource("20_oxump")
+amount = 0.0303571428571429
+seconds = 0.7000000000000001
+offset = Vector3(0, -0.060714286, 0.15178572)
+
+[sub_resource type="Resource" id="Resource_aknie"]
+script = ExtResource("11_3kb23")
+at = 0.25
+sound = ExtResource("87_hmtiu")
+
+[sub_resource type="Resource" id="Resource_jsmqc"]
+script = ExtResource("11_3kb23")
+at = 0.25
+sound = ExtResource("21_j61sn")
+
+[sub_resource type="Resource" id="Resource_u4vh2"]
+script = ExtResource("11_3kb23")
+at = 0.25
+sound = ExtResource("22_7ubbu")
+
+[sub_resource type="Resource" id="Resource_4pt3w"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_500"
+startup = 0.283333333333333
+active = 0.116666666666667
+recovery = 0.283333333333333
+chain_after = 0.283333333333333
+iframes_from = 0.483333333333333
+iframes_to = 0.683333333333333
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_pcvd1"), SubResource("Resource_0u4o4"), SubResource("Resource_fhusr"), SubResource("Resource_aknie"), SubResource("Resource_jsmqc"), SubResource("Resource_u4vh2")])
+power = 40.0
+poise = 3
+knockback = 0.4
+launch = 0.23
+hitbox_size = Vector3(1, 1.9428571, 3.0660715)
+hitbox_offset = Vector3(0, 0.7285714, -0.13660714)
+travel_speed = 36.4285714285714
+
+[sub_resource type="Resource" id="Resource_w5gf2"]
+script = ExtResource("84_5p0oo")
+name_key = "combat.power.yoshimura_eto_air_strike.name"
+cost_pool = &"kagune"
+cost = 17
+target = 0
+statuses = Array[ExtResource("2_141n3")]([SubResource("Resource_iw6e5")])
+id = &"skill/yoshimura_eto_air_strike"
+
+[sub_resource type="Resource" id="Resource_0783s"]
+script = ExtResource("7_j667m")
+power_id = &"power/yoshimura_eto_air_strike"
+name_key = "combat.power.yoshimura_eto_air_strike.name"
+desc_key = "combat.power.yoshimura_eto_air_strike.desc"
+skill = SubResource("Resource_w5gf2")
+move = SubResource("Resource_4pt3w")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_human"])
+
+[sub_resource type="Resource" id="Resource_vlarp"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("85_8bp18")
+amount = 0.0303571428571429
+seconds = 0.9
+offset = Vector3(0, 1.2142857, -0.030357143)
+
+[sub_resource type="Resource" id="Resource_g3mvy"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("86_ysx18")
+
+[sub_resource type="Resource" id="Resource_so32w"]
+script = ExtResource("11_3kb23")
+kind = 5
+seconds = 0.5
+
+[sub_resource type="Resource" id="Resource_vyobd"]
+script = ExtResource("11_3kb23")
+at = 0.8170000000000001
+kind = 1
+picture = ExtResource("88_v5ji8")
+amount = 0.0303571428571429
+seconds = 0.35000000000000003
+offset = Vector3(0, 1.3660715, -0.51607144)
+
+[sub_resource type="Resource" id="Resource_6lhwj"]
+script = ExtResource("11_3kb23")
+at = 0.8170000000000001
+kind = 1
+picture = ExtResource("34_erd13")
+amount = 0.0303571428571429
+seconds = 0.533
+offset = Vector3(0, -0.12142857, -0.91071427)
+
+[sub_resource type="Resource" id="Resource_a04ue"]
+script = ExtResource("11_3kb23")
+at = 0.8170000000000001
+kind = 1
+picture = ExtResource("35_5080d")
+amount = 0.0303571428571429
+seconds = 0.667
+offset = Vector3(0, -0.12142857, -0.91071427)
+
+[sub_resource type="Resource" id="Resource_wia8a"]
+script = ExtResource("11_3kb23")
+at = 0.8170000000000001
+sound = ExtResource("23_eqwkh")
+
+[sub_resource type="Resource" id="Resource_c7jt4"]
+script = ExtResource("11_3kb23")
+at = 0.8170000000000001
+sound = ExtResource("21_j61sn")
+
+[sub_resource type="Resource" id="Resource_16ncs"]
+script = ExtResource("11_3kb23")
+at = 0.8170000000000001
+sound = ExtResource("89_66ebf")
+
+[sub_resource type="Resource" id="Resource_sv3s5"]
+script = ExtResource("11_3kb23")
+at = 0.8170000000000001
+kind = 4
+amount = 0.3
+seconds = 0.167
+
+[sub_resource type="Resource" id="Resource_fcwbf"]
+script = ExtResource("11_3kb23")
+at = 0.867
+sound = ExtResource("90_vyavd")
+
+[sub_resource type="Resource" id="Resource_l4fp2"]
+script = ExtResource("11_3kb23")
+at = 0.867
+sound = ExtResource("32_yhhtv")
+
+[sub_resource type="Resource" id="Resource_lnm4c"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_510"
+startup = 0.866666666666667
+active = 0.05
+recovery = 0.616666666666667
+chain_after = 0.616666666666667
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_vlarp"), SubResource("Resource_g3mvy"), SubResource("Resource_so32w"), SubResource("Resource_vyobd"), SubResource("Resource_6lhwj"), SubResource("Resource_a04ue"), SubResource("Resource_wia8a"), SubResource("Resource_c7jt4"), SubResource("Resource_16ncs"), SubResource("Resource_sv3s5"), SubResource("Resource_fcwbf"), SubResource("Resource_l4fp2")])
+power = 16.0
+poise = 1
+knockback = 1.01
+hitbox_size = Vector3(1, 2.9142857, 3.4607143)
+hitbox_offset = Vector3(0, 1.4571428, -0.60714287)
+travel_speed = 3.64285714285714
+
+[sub_resource type="Resource" id="Resource_qji5u"]
+script = ExtResource("84_5p0oo")
+name_key = "combat.power.yoshimura_eto_bronze_tree.name"
+cost_pool = &"kagune"
+cost = 17
+target = 0
+statuses = Array[ExtResource("2_141n3")]([SubResource("Resource_iw6e5")])
+id = &"skill/yoshimura_eto_bronze_tree"
+
+[sub_resource type="Resource" id="Resource_cq3e7"]
+script = ExtResource("7_j667m")
+power_id = &"power/yoshimura_eto_bronze_tree"
+name_key = "combat.power.yoshimura_eto_bronze_tree.name"
+desc_key = "combat.power.yoshimura_eto_bronze_tree.desc"
+skill = SubResource("Resource_qji5u")
+move = SubResource("Resource_lnm4c")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_human"])
+forbids_statuses = Array[StringName]([&"status/yoshimura_eto_helpers_out"])
+
+[sub_resource type="Resource" id="Resource_ytp33"]
+script = ExtResource("11_3kb23")
+at = 0.017
+kind = 1
+picture = ExtResource("91_r7esw")
+amount = 0.0303571428571429
+seconds = 0.867
+offset = Vector3(0, -0.060714286, -1.5178572)
+
+[sub_resource type="Resource" id="Resource_01iwh"]
+script = ExtResource("11_3kb23")
+at = 0.017
+kind = 1
+picture = ExtResource("92_ckrke")
+amount = 0.0303571428571429
+seconds = 0.6
+offset = Vector3(0, -0.09107143, -0.7285714)
+
+[sub_resource type="Resource" id="Resource_m2y0x"]
+script = ExtResource("11_3kb23")
+at = 0.017
+sound = ExtResource("93_xyr5t")
+
+[sub_resource type="Resource" id="Resource_trlxk"]
+script = ExtResource("11_3kb23")
+at = 0.017
+sound = ExtResource("94_htfxc")
+
+[sub_resource type="Resource" id="Resource_hpm1y"]
+script = ExtResource("11_3kb23")
+at = 0.05
+kind = 1
+picture = ExtResource("92_ckrke")
+amount = 0.0303571428571429
+seconds = 0.6
+offset = Vector3(0, -0.030357143, -1.3964286)
+
+[sub_resource type="Resource" id="Resource_qqas4"]
+script = ExtResource("11_3kb23")
+at = 0.083
+kind = 4
+amount = 0.2
+seconds = 0.167
+
+[sub_resource type="Resource" id="Resource_t5tvl"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2502"
+startup = 0.0
+active = 0.0833333333333333
+recovery = 0.616666666666667
+chain_after = 0.616666666666667
+iframes_to = 0.7
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_ytp33"), SubResource("Resource_01iwh"), SubResource("Resource_m2y0x"), SubResource("Resource_trlxk"), SubResource("Resource_hpm1y"), SubResource("Resource_qqas4")])
+power = 120.0
+poise = 1
+knockback = 1.01
+launch = 0.38
+hitbox_size = Vector3(1, 3.369643, 4.1285715)
+hitbox_offset = Vector3(0, 0.95625, -1.2446429)
+
+[sub_resource type="Resource" id="Resource_qsvtv"]
+script = ExtResource("84_5p0oo")
+name_key = "combat.power.yoshimura_eto_air_fall.name"
+cost_pool = &"kagune"
+cost = 25
+target = 0
+statuses = Array[ExtResource("2_141n3")]([SubResource("Resource_iw6e5")])
+id = &"skill/yoshimura_eto_air_fall"
+
+[sub_resource type="Resource" id="Resource_tbgvs"]
+script = ExtResource("7_j667m")
+power_id = &"power/yoshimura_eto_air_fall"
+name_key = "combat.power.yoshimura_eto_air_fall.name"
+desc_key = "combat.power.yoshimura_eto_air_fall.desc"
+skill = SubResource("Resource_qsvtv")
+move = SubResource("Resource_t5tvl")
+cooldown = 8.0
+requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_kakuja"])
+
+[sub_resource type="Resource" id="Resource_hcypq"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("85_8bp18")
+amount = 0.0303571428571429
+seconds = 0.9
+offset = Vector3(0, 1.2142857, -0.030357143)
+
+[sub_resource type="Resource" id="Resource_yabl6"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("86_ysx18")
+
+[sub_resource type="Resource" id="Resource_pbhk1"]
+script = ExtResource("11_3kb23")
+kind = 5
+seconds = 0.5
+
+[sub_resource type="Resource" id="Resource_ectgt"]
+script = ExtResource("11_3kb23")
+at = 0.083
+sound = ExtResource("27_2bj3v")
+
+[sub_resource type="Resource" id="Resource_jrnv2"]
+script = ExtResource("11_3kb23")
+at = 1.167
+kind = 1
+picture = ExtResource("95_x8o45")
+amount = 0.0303571428571429
+seconds = 0.5
+offset = Vector3(0, -0.060714286, 0.54642856)
+
+[sub_resource type="Resource" id="Resource_6x40s"]
+script = ExtResource("11_3kb23")
+at = 1.167
+kind = 1
+picture = ExtResource("96_wk7g7")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.07589286, -0.91071427)
+
+[sub_resource type="Resource" id="Resource_an1xq"]
+script = ExtResource("11_3kb23")
+at = 1.167
+kind = 1
+picture = ExtResource("91_r7esw")
+amount = 0.0303571428571429
+seconds = 0.867
+offset = Vector3(0, -0.060714286, -1.6696428)
+
+[sub_resource type="Resource" id="Resource_xtbud"]
+script = ExtResource("11_3kb23")
+at = 1.167
+sound = ExtResource("97_plchc")
+
+[sub_resource type="Resource" id="Resource_0v5ei"]
+script = ExtResource("11_3kb23")
+at = 1.167
+sound = ExtResource("93_xyr5t")
+
+[sub_resource type="Resource" id="Resource_dn3y1"]
+script = ExtResource("11_3kb23")
+at = 1.167
+sound = ExtResource("98_dndud")
+
+[sub_resource type="Resource" id="Resource_xpx0k"]
+script = ExtResource("11_3kb23")
+at = 1.167
+kind = 4
+amount = 0.4
+seconds = 0.333
+
+[sub_resource type="Resource" id="Resource_urvsl"]
+script = ExtResource("11_3kb23")
+at = 1.183
+kind = 1
+picture = ExtResource("92_ckrke")
+amount = 0.0303571428571429
+seconds = 0.6
+offset = Vector3(0, -0.09107143, -0.91071427)
+
+[sub_resource type="Resource" id="Resource_o0tuj"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2600"
+startup = 1.25
+active = 0.333333333333333
+recovery = 0.166666666666667
+chain_after = 0.166666666666667
+iframes_to = 1.75
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_hcypq"), SubResource("Resource_yabl6"), SubResource("Resource_pbhk1"), SubResource("Resource_ectgt"), SubResource("Resource_jrnv2"), SubResource("Resource_6x40s"), SubResource("Resource_an1xq"), SubResource("Resource_xtbud"), SubResource("Resource_0v5ei"), SubResource("Resource_dn3y1"), SubResource("Resource_xpx0k"), SubResource("Resource_urvsl")])
+power = 16.0
+poise = 1
+hitbox_size = Vector3(1, 8, 8)
+hitbox_offset = Vector3(0, 4, 0.19732143)
+
+[sub_resource type="Resource" id="Resource_ku34s"]
+script = ExtResource("84_5p0oo")
+name_key = "combat.power.yoshimura_eto_one_eyed_owl.name"
+cost_pool = &"kagune"
+cost = 7
+target = 0
+statuses = Array[ExtResource("2_141n3")]([SubResource("Resource_iw6e5")])
+id = &"skill/yoshimura_eto_one_eyed_owl"
+
+[sub_resource type="Resource" id="Resource_v006t"]
+script = ExtResource("7_j667m")
+power_id = &"power/yoshimura_eto_one_eyed_owl"
+name_key = "combat.power.yoshimura_eto_one_eyed_owl.name"
+desc_key = "combat.power.yoshimura_eto_one_eyed_owl.desc"
+skill = SubResource("Resource_ku34s")
+move = SubResource("Resource_o0tuj")
+cooldown = 4.0
+requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_kakuja"])
+
+[sub_resource type="Resource" id="Resource_10p4j"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("99_kx07u")
+amount = 0.0303571428571429
+seconds = 0.367
+offset = Vector3(0, 0.7589286, -0.060714286)
+
+[sub_resource type="Resource" id="Resource_x7fcl"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("100_6bt4q")
+amount = 0.0303571428571429
+seconds = 0.267
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_43jh5"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("101_27j7x")
+
+[sub_resource type="Resource" id="Resource_ve2k3"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_mi4wj"]
+script = ExtResource("11_3kb23")
+at = 0.217
+sound = ExtResource("102_1gupw")
+
+[sub_resource type="Resource" id="Resource_ovmsi"]
+script = ExtResource("11_3kb23")
+at = 0.217
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_halne"]
+script = ExtResource("11_3kb23")
+at = 0.75
+sound = ExtResource("103_cf8l1")
+
+[sub_resource type="Resource" id="Resource_hnoss"]
+script = ExtResource("11_3kb23")
+at = 0.833
+kind = 1
+picture = ExtResource("104_t7eac")
+amount = 0.0303571428571429
+seconds = 0.483
+offset = Vector3(0, -0.060714286, -3.1875)
+
+[sub_resource type="Resource" id="Resource_10iyv"]
+script = ExtResource("11_3kb23")
+at = 0.833
+sound = ExtResource("105_ukski")
+
+[sub_resource type="Resource" id="Resource_qo6ye"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2405"
+startup = 0.216666666666667
+active = 0.7
+chain_after = 0.3
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_10p4j"), SubResource("Resource_x7fcl"), SubResource("Resource_43jh5"), SubResource("Resource_ve2k3"), SubResource("Resource_mi4wj"), SubResource("Resource_ovmsi"), SubResource("Resource_halne"), SubResource("Resource_hnoss"), SubResource("Resource_10iyv")])
+power = 26.0
+hits = 2
+poise = 1
+knockback = 1.01
+hitbox_size = Vector3(1, 1.7, 5.3732142)
+hitbox_offset = Vector3(0, 0.81964284, -3.9919643)
+
+[sub_resource type="Resource" id="Resource_ehfvx"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_qo6ye")
+weight = 33.0
+
+[sub_resource type="Resource" id="Resource_e8ary"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("99_kx07u")
+amount = 0.0303571428571429
+seconds = 0.367
+offset = Vector3(0, 0.7589286, -0.060714286)
+
+[sub_resource type="Resource" id="Resource_ellc8"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("106_qv8np")
+amount = 0.0303571428571429
+seconds = 0.7000000000000001
+offset = Vector3(0, -0.12142857, -0.45535713)
+
+[sub_resource type="Resource" id="Resource_1pyrc"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("106_qv8np")
+amount = 0.0303571428571429
+seconds = 0.7000000000000001
+offset = Vector3(0, -0.060714286, -1.6696428)
+
+[sub_resource type="Resource" id="Resource_gxw5m"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("107_sv2gi")
+amount = 0.0303571428571429
+seconds = 0.667
+offset = Vector3(0, -0.12142857, -0.15178572)
+
+[sub_resource type="Resource" id="Resource_d4fpg"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("105_ukski")
+
+[sub_resource type="Resource" id="Resource_blm2e"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("108_a6qbl")
+
+[sub_resource type="Resource" id="Resource_i2ybs"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.2
+seconds = 0.067
+
+[sub_resource type="Resource" id="Resource_m7dfb"]
+script = ExtResource("11_3kb23")
+at = 0.133
+sound = ExtResource("109_c4whv")
+
+[sub_resource type="Resource" id="Resource_vcbjq"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2402"
+startup = 0.0
+active = 0.6
+recovery = 0.0
+armour_to = 0.6
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_e8ary"), SubResource("Resource_ellc8"), SubResource("Resource_1pyrc"), SubResource("Resource_gxw5m"), SubResource("Resource_d4fpg"), SubResource("Resource_blm2e"), SubResource("Resource_i2ybs"), SubResource("Resource_m7dfb")])
+power = 4.0
+hits = 2
+poise = 1
+knockback = 2.02
+hitbox_size = Vector3(1, 2.8232143, 3.9464285)
+hitbox_offset = Vector3(0, 1.1991072, -0.060714286)
+travel_speed = 5.46428571428571
+
+[sub_resource type="Resource" id="Resource_ysjgw"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_vcbjq")
+weight = 50.0
+
+[sub_resource type="Resource" id="Resource_0lw6h"]
+script = ExtResource("11_3kb23")
+at = 0.167
+sound = ExtResource("110_lheh8")
+
+[sub_resource type="Resource" id="Resource_jpp2j"]
+script = ExtResource("11_3kb23")
+at = 0.167
+kind = 4
+amount = 0.4
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_t8s2y"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("100_6bt4q")
+amount = 0.0303571428571429
+seconds = 0.267
+offset = Vector3(0, 0.91071427, 0)
+
+[sub_resource type="Resource" id="Resource_07g1w"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("111_yu13u")
+amount = 0.0303571428571429
+seconds = 1.333
+offset = Vector3(0, 0.33392859, 0.45535713)
+
+[sub_resource type="Resource" id="Resource_a3kas"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("112_anq6m")
+amount = 0.0303571428571429
+seconds = 1.333
+offset = Vector3(0, 0.33392859, -0.7589286)
+
+[sub_resource type="Resource" id="Resource_alipv"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("109_c4whv")
+
+[sub_resource type="Resource" id="Resource_o3a1l"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.15
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_yeduj"]
+script = ExtResource("11_3kb23")
+at = 0.033
+kind = 4
+amount = 0.2
+seconds = 0.1
+
+[sub_resource type="Resource" id="Resource_iebiq"]
+script = ExtResource("11_3kb23")
+at = 0.05
+kind = 1
+picture = ExtResource("113_xqfq3")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, -0.060714286, 0)
+
+[sub_resource type="Resource" id="Resource_e1i8h"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2406_shot2"
+startup = 0.0
+active = 0.583333333333333
+recovery = 0.566666666666667
+chain_after = 0.566666666666667
+iframes_to = 1.15
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_t8s2y"), SubResource("Resource_07g1w"), SubResource("Resource_a3kas"), SubResource("Resource_alipv"), SubResource("Resource_o3a1l"), SubResource("Resource_yeduj"), SubResource("Resource_iebiq")])
+power = 8.0
+hits = 2
+poise = 1
+hitbox_size = Vector3(1, 2.1553571, 1.1535715)
+hitbox_offset = Vector3(0, 1.0473214, -0.09107143)
+
+[sub_resource type="Resource" id="Resource_j2h2u"]
+script = ExtResource("11_3kb23")
+at = 0.333
+kind = 2
+shot = SubResource("Resource_e1i8h")
+offset = Vector3(0, -0.060714286, -0.060714286)
+at_foe = true
+pierce = true
+
+[sub_resource type="Resource" id="Resource_jrdye"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2406"
+startup = 0.0
+active = 2.0
+recovery = 0.0
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_0lw6h"), SubResource("Resource_jpp2j"), SubResource("Resource_j2h2u")])
+
+[sub_resource type="Resource" id="Resource_dxa60"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_jrdye")
+weight = 33.0
+
+[sub_resource type="Resource" id="Resource_yph71"]
+script = ExtResource("38_0qnet")
+aggro_radius = 10.0
+give_up_radius = 14.0
+leash_radius = 16.0
+attack_range = 3.0
+attack_cooldown = 1.2
+move_speed = 2.0
+wander_radius = 0.0
+moves = Array[ExtResource("39_qn2u1")]([SubResource("Resource_ehfvx"), SubResource("Resource_ysjgw"), SubResource("Resource_dxa60")])
+
+[sub_resource type="Resource" id="Resource_3u6a0"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("114_o4v6q")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.7589286, -0.060714286)
+
+[sub_resource type="Resource" id="Resource_ku02o"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("114_o4v6q")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.91071427, 0.15178572)
+
+[sub_resource type="Resource" id="Resource_gff3y"]
+script = ExtResource("11_3kb23")
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_2jy8u"]
+script = ExtResource("11_3kb23")
+at = 0.35000000000000003
+sound = ExtResource("115_oir7f")
+
+[sub_resource type="Resource" id="Resource_0erlc"]
+script = ExtResource("11_3kb23")
+at = 0.35000000000000003
+kind = 4
+amount = 0.1
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_5ibtk"]
+script = ExtResource("11_3kb23")
+at = 1.117
+sound = ExtResource("116_bw2q2")
+
+[sub_resource type="Resource" id="Resource_dr5gr"]
+script = ExtResource("11_3kb23")
+at = 1.2670000000000001
+kind = 4
+amount = 0.4
+seconds = 0.133
+
+[sub_resource type="Resource" id="Resource_7owto"]
+script = ExtResource("11_3kb23")
+at = 1.367
+sound = ExtResource("117_ek1ud")
+
+[sub_resource type="Resource" id="Resource_tp374"]
+script = ExtResource("11_3kb23")
+at = 1.367
+sound = ExtResource("118_ttt05")
+
+[sub_resource type="Resource" id="Resource_420om"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2460"
+startup = 0.45
+active = 0.916666666666667
+recovery = 0.55
+chain_after = 0.55
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_3u6a0"), SubResource("Resource_ku02o"), SubResource("Resource_gff3y"), SubResource("Resource_2jy8u"), SubResource("Resource_0erlc"), SubResource("Resource_5ibtk"), SubResource("Resource_dr5gr"), SubResource("Resource_7owto"), SubResource("Resource_tp374")])
+power = 26.0
+hits = 2
+poise = 1
+knockback = 1.01
+hitbox_size = Vector3(1, 2.6107142, 3.4910715)
+hitbox_offset = Vector3(0, 1.3053571, -0.92589283)
+
+[sub_resource type="Resource" id="Resource_3fvve"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_420om")
+
+[sub_resource type="Resource" id="Resource_mq4r7"]
+script = ExtResource("11_3kb23")
+sound = ExtResource("119_km0i8")
+
+[sub_resource type="Resource" id="Resource_rkji5"]
+script = ExtResource("11_3kb23")
+at = 0.25
+kind = 4
+amount = 0.4
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_8bv8k"]
+script = ExtResource("11_3kb23")
+at = 0.333
+kind = 1
+picture = ExtResource("120_tqyxi")
+amount = 0.0303571428571429
+seconds = 0.733
+
+[sub_resource type="Resource" id="Resource_ta6x5"]
+script = ExtResource("11_3kb23")
+at = 0.333
+sound = ExtResource("121_xawk3")
+
+[sub_resource type="Resource" id="Resource_vsxlh"]
+script = ExtResource("11_3kb23")
+at = 0.333
+sound = ExtResource("118_ttt05")
+
+[sub_resource type="Resource" id="Resource_f11de"]
+script = ExtResource("11_3kb23")
+at = 0.417
+kind = 1
+picture = ExtResource("122_feiog")
+amount = 0.0303571428571429
+seconds = 0.85
+offset = Vector3(0, 1.7607143, -0.45535713)
+
+[sub_resource type="Resource" id="Resource_6yvbt"]
+script = ExtResource("11_3kb23")
+at = 1.5
+sound = ExtResource("123_n13gb")
+
+[sub_resource type="Resource" id="Resource_ry0ti"]
+script = ExtResource("11_3kb23")
+at = 1.5170000000000001
+kind = 1
+picture = ExtResource("124_ws6c4")
+amount = 0.0303571428571429
+seconds = 0.8
+offset = Vector3(0, -0.060714286, 0.060714286)
+
+[sub_resource type="Resource" id="Resource_a4vvs"]
+script = ExtResource("11_3kb23")
+at = 1.5170000000000001
+sound = ExtResource("125_ur2fu")
+
+[sub_resource type="Resource" id="Resource_37umw"]
+script = ExtResource("11_3kb23")
+at = 1.583
+kind = 1
+picture = ExtResource("122_feiog")
+amount = 0.0303571428571429
+seconds = 0.85
+offset = Vector3(0, 1.6696428, -0.45535713)
+
+[sub_resource type="Resource" id="Resource_7bb6g"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("126_xnvb3")
+amount = 0.0303571428571429
+seconds = 0.4
+
+[sub_resource type="Resource" id="Resource_pt7ml"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("114_o4v6q")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 1.0625, 0.15178572)
+
+[sub_resource type="Resource" id="Resource_on6rj"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2461_shot10"
+startup = 0.0
+active = 1.75
+recovery = 0.0833333333333333
+chain_after = 0.0833333333333333
+iframes_to = 0.4
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_7bb6g"), SubResource("Resource_pt7ml")])
+power = 2.1
+hits = 15
+poise = 2
+knockback = 0.4
+hitbox_size = Vector3(1, 4.3107142, 8)
+hitbox_offset = Vector3(0, 0, -4.9633927)
+
+[sub_resource type="Resource" id="Resource_77uj5"]
+script = ExtResource("11_3kb23")
+at = 1.667
+kind = 2
+shot = SubResource("Resource_on6rj")
+offset = Vector3(0, 1.4875, -0.51607144)
+pierce = true
+
+[sub_resource type="Resource" id="Resource_pkiqr"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2461"
+startup = 0.25
+active = 0.0833333333333333
+recovery = 3.26666666666667
+chain_after = 3.26666666666667
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_mq4r7"), SubResource("Resource_rkji5"), SubResource("Resource_8bv8k"), SubResource("Resource_ta6x5"), SubResource("Resource_vsxlh"), SubResource("Resource_f11de"), SubResource("Resource_6yvbt"), SubResource("Resource_ry0ti"), SubResource("Resource_a4vvs"), SubResource("Resource_37umw"), SubResource("Resource_77uj5")])
+power = 10.0
+poise = 1
+knockback = 1.01
+hitbox_size = Vector3(1, 1.9125, 2.5196428)
+hitbox_offset = Vector3(0, 0.8651786, -1.2901785)
+
+[sub_resource type="Resource" id="Resource_kb7p4"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_pkiqr")
+
+[sub_resource type="Resource" id="Resource_xhe4g"]
+script = ExtResource("11_3kb23")
+kind = 1
+picture = ExtResource("114_o4v6q")
+amount = 0.0303571428571429
+seconds = 0.3
+offset = Vector3(0, 0.7589286, -0.060714286)
+
+[sub_resource type="Resource" id="Resource_sdckl"]
+script = ExtResource("11_3kb23")
+at = 0.267
+sound = ExtResource("118_ttt05")
+
+[sub_resource type="Resource" id="Resource_75828"]
+script = ExtResource("11_3kb23")
+at = 0.333
+kind = 1
+picture = ExtResource("127_aiyx2")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.12142857, -0.54642856)
+
+[sub_resource type="Resource" id="Resource_hg35m"]
+script = ExtResource("11_3kb23")
+at = 0.333
+sound = ExtResource("128_5i0l5")
+
+[sub_resource type="Resource" id="Resource_tpmns"]
+script = ExtResource("11_3kb23")
+at = 0.333
+kind = 4
+amount = 0.2
+seconds = 0.083
+
+[sub_resource type="Resource" id="Resource_vx73h"]
+script = ExtResource("11_3kb23")
+at = 0.55
+kind = 1
+picture = ExtResource("127_aiyx2")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.060714286, -0.91071427)
+
+[sub_resource type="Resource" id="Resource_8nvsd"]
+script = ExtResource("11_3kb23")
+at = 1.433
+kind = 1
+picture = ExtResource("127_aiyx2")
+amount = 0.0303571428571429
+seconds = 0.467
+offset = Vector3(0, -0.060714286, -1.2142857)
+
+[sub_resource type="Resource" id="Resource_yj023"]
+script = ExtResource("11_3kb23")
+at = 1.433
+sound = ExtResource("129_rnm2a")
+
+[sub_resource type="Resource" id="Resource_wf1c5"]
+script = ExtResource("11_3kb23")
+at = 1.433
+kind = 4
+amount = 0.4
+seconds = 0.167
+
+[sub_resource type="Resource" id="Resource_d6lcs"]
+script = ExtResource("8_mqf1m")
+id = &"move/yoshimura_eto_2471"
+startup = 0.333333333333333
+active = 1.16666666666667
+recovery = 0.516666666666667
+chain_after = 0.516666666666667
+iframes_to = 2.01666666666667
+events = Array[ExtResource("11_3kb23")]([SubResource("Resource_xhe4g"), SubResource("Resource_sdckl"), SubResource("Resource_75828"), SubResource("Resource_hg35m"), SubResource("Resource_tpmns"), SubResource("Resource_vx73h"), SubResource("Resource_8nvsd"), SubResource("Resource_yj023"), SubResource("Resource_wf1c5")])
+power = 8.0
+hits = 2
+poise = 1
+knockback = 0.2
+hitbox_size = Vector3(1, 1.5178572, 1.9125)
+hitbox_offset = Vector3(0, 0.7285714, -1.2294643)
+
+[sub_resource type="Resource" id="Resource_de5u4"]
+script = ExtResource("39_qn2u1")
+move = SubResource("Resource_d6lcs")
+
+[sub_resource type="Resource" id="Resource_lfvo0"]
+script = ExtResource("38_0qnet")
+aggro_radius = 10.0
+give_up_radius = 14.0
+leash_radius = 16.0
+attack_range = 2.5
+move_speed = 3.0
+wander_radius = 0.0
+moves = Array[ExtResource("39_qn2u1")]([SubResource("Resource_3fvve"), SubResource("Resource_kb7p4"), SubResource("Resource_de5u4")])
+
+[sub_resource type="Resource" id="Resource_00u12"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("131_a3gbu")
+frames = 15
+feet = Vector2i(234, 122)
+seconds = 1.21666666666667
+
+[sub_resource type="Resource" id="Resource_qltwr"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("132_y2rmq")
+frames = 9
+feet = Vector2i(139, 105)
+seconds = 0.6
+
+[sub_resource type="Resource" id="Resource_55pe7"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("133_wpten")
+frames = 3
+feet = Vector2i(152, 102)
+seconds = 1.5
+
+[sub_resource type="Resource" id="Resource_atfbl"]
+script = ExtResource("75_1ai58")
+sheet = ExtResource("134_5geib")
+layout = ExtResource("130_6nfxv")
+pixel_size = 0.0303571428571429
+ground_offset = -0.607142857142857
+moves = Dictionary[StringName, ExtResource("71_w1w4o")]({
+&"move/yoshimura_eto_2402": SubResource("Resource_qltwr"),
+&"move/yoshimura_eto_2405": SubResource("Resource_00u12"),
+&"move/yoshimura_eto_2406": SubResource("Resource_55pe7")
+})
+
+[sub_resource type="Resource" id="Resource_6p1ms"]
+script = ExtResource("69_m8wab")
+combatant_id = &"yoshimura_eto_noroi_kakuja"
+name_key = "combat.member.yoshimura_eto_noroi_kakuja.name"
+base_stats = Dictionary[StringName, float]({
+&"attack": 13.0,
+&"defence": 8.0,
+&"max_hp": 60.0
+})
+attack_tags = Array[StringName]([&"kagune"])
+art = SubResource("Resource_atfbl")
+
+[sub_resource type="Resource" id="Resource_gi46x"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("136_asa5b")
+frames = 16
+feet = Vector2i(48, 95)
+seconds = 1.91666666666667
+
+[sub_resource type="Resource" id="Resource_48vaq"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("137_vned4")
+frames = 11
+feet = Vector2i(40, 71)
+seconds = 1.71666666666667
+
+[sub_resource type="Resource" id="Resource_j5trp"]
+script = ExtResource("71_w1w4o")
+strip = ExtResource("138_qt6tg")
+frames = 26
+feet = Vector2i(59, 69)
+seconds = 2.01666666666667
+
+[sub_resource type="Resource" id="Resource_53wmh"]
+script = ExtResource("75_1ai58")
+sheet = ExtResource("139_ceqex")
+layout = ExtResource("135_q03sh")
+pixel_size = 0.0303571428571429
+ground_offset = -0.0303571428571429
+moves = Dictionary[StringName, ExtResource("71_w1w4o")]({
+&"move/yoshimura_eto_2460": SubResource("Resource_gi46x"),
+&"move/yoshimura_eto_2461": SubResource("Resource_48vaq"),
+&"move/yoshimura_eto_2471": SubResource("Resource_j5trp")
+})
+
+[sub_resource type="Resource" id="Resource_gbmh8"]
+script = ExtResource("69_m8wab")
+combatant_id = &"yoshimura_eto_tatara_kakuja"
+name_key = "combat.member.yoshimura_eto_tatara_kakuja.name"
+base_stats = Dictionary[StringName, float]({
+&"attack": 12.0,
+&"defence": 6.0,
+&"max_hp": 50.0
+})
+attack_tags = Array[StringName]([&"kagune"])
+art = SubResource("Resource_53wmh")
+
+[sub_resource type="Resource" id="Resource_stgwy"]
+script = ExtResource("82_bj44l")
+fighters = Array[ExtResource("69_m8wab")]([SubResource("Resource_6p1ms"), SubResource("Resource_gbmh8")])
+brains = Array[ExtResource("38_0qnet")]([SubResource("Resource_yph71"), SubResource("Resource_lfvo0")])
+lifetime = 15.0
+cap = 2
+owner_status = SubResource("Resource_rp01d")
+untouchable = true
+turns = 2
+
+[sub_resource type="Resource" id="Resource_rosu3"]
+script = ExtResource("84_5p0oo")
+name_key = "combat.power.yoshimura_eto_kakuja_noroi_tatara.name"
+cost_pool = &"kagune"
+cost = 17
+target = 0
+statuses = Array[ExtResource("2_141n3")]([SubResource("Resource_iw6e5")])
+id = &"skill/yoshimura_eto_kakuja_noroi_tatara"
+
+[sub_resource type="Resource" id="Resource_t8apk"]
+script = ExtResource("7_j667m")
+power_id = &"power/yoshimura_eto_kakuja_noroi_tatara"
+name_key = "combat.power.yoshimura_eto_kakuja_noroi_tatara.name"
+desc_key = "combat.power.yoshimura_eto_kakuja_noroi_tatara.desc"
+skill = SubResource("Resource_rosu3")
+mechanism = SubResource("Resource_stgwy")
+cooldown = 20.0
+requires_statuses = Array[StringName]([&"status/form_yoshimura_eto_kakuja"])
+
+[sub_resource type="Resource" id="Resource_a4g77"]
+script = ExtResource("25_7x0bp")
+stat = &"max_kagune"
+value = 100.0
+source = &"kit/yoshimura_eto"
+
+[sub_resource type="Resource" id="Resource_2xqi7"]
+script = ExtResource("25_7x0bp")
+stat = &"start_kagune"
+source = &"kit/yoshimura_eto"
+
+[resource]
+script = ExtResource("140_5qkba")
+kit_id = &"kit/yoshimura_eto"
+name_key = "combat.kit.yoshimura_eto.name"
+desc_key = "combat.kit.yoshimura_eto.desc"
+powers = Array[ExtResource("7_j667m")]([SubResource("Resource_s5ywx"), SubResource("Resource_ohj50"), SubResource("Resource_0783s"), SubResource("Resource_cq3e7"), SubResource("Resource_tbgvs"), SubResource("Resource_v006t"), SubResource("Resource_t8apk")])
+passive_skills = Array[ExtResource("3_gnlgh")]([ExtResource("4_rtmfa"), ExtResource("5_iifdc"), ExtResource("6_mcew8")])
+stat_bonuses = Array[ExtResource("25_7x0bp")]([SubResource("Resource_a4g77"), SubResource("Resource_2xqi7")])
+gauges = Array[ExtResource("1_yll7g")]([SubResource("Resource_j61yb")])

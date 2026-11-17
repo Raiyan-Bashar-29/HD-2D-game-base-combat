@@ -16,3 +16,5 @@ extends Resource
 @export var modifiers: Array[StatModifier] = []
 ## Hero powers, passives and gauges while the step is reached. Null means none.
 @export var kit: PowerKit
+## Passives (C9.3) the wearer holds while the step is reached.
+@export var passives: Array[PassiveSkill] = []

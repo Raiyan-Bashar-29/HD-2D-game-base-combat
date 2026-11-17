@@ -1,0 +1,399 @@
+{
+	"author": "刃下心",
+	"name": "Yoshimura Eto",
+	"pixel_size": 0.0303571428571429,
+	"problems": [],
+	"sheet": {
+		"actions": [
+			0,
+			20,
+			100
+		],
+		"cell": [
+			62,
+			55
+		],
+		"feet": [
+			31,
+			53
+		],
+		"file": "sheet.png",
+		"frames": 8,
+		"ground_offset": -0.0607142857142857,
+		"layout": "sheet_layout.tres"
+	},
+	"sounds": [
+		"sounds/1_6.wav",
+		"sounds/1_8.wav",
+		"sounds/1_10.wav",
+		"sounds/1_18.wav",
+		"sounds/1_22.wav",
+		"sounds/1_23.wav",
+		"sounds/20_1.wav",
+		"sounds/20_13.wav",
+		"sounds/20_20.wav",
+		"sounds/20_25.wav",
+		"sounds/200_17.wav",
+		"sounds/200_24.wav",
+		"sounds/300_20.wav",
+		"sounds/400_3.wav",
+		"sounds/400_43.wav",
+		"sounds/400_45.wav",
+		"sounds/400_48.wav",
+		"sounds/400_58.wav",
+		"sounds/400_59.wav",
+		"sounds/950_1.wav"
+	],
+	"strips": {
+		"200": {
+			"cell": [
+				48,
+				54
+			],
+			"feet": [
+				24,
+				52
+			],
+			"file": "strips/anim_200.png",
+			"frames": 5,
+			"seconds": 0.4,
+			"ticks": [
+				4,
+				4,
+				6,
+				5,
+				5
+			]
+		},
+		"205": {
+			"cell": [
+				52,
+				48
+			],
+			"feet": [
+				26,
+				47
+			],
+			"file": "strips/anim_205.png",
+			"frames": 8,
+			"seconds": 0.416666666666667,
+			"ticks": [
+				2,
+				2,
+				6,
+				3,
+				3,
+				3,
+				3,
+				3
+			]
+		},
+		"215": {
+			"cell": [
+				32,
+				52
+			],
+			"feet": [
+				16,
+				51
+			],
+			"file": "strips/anim_215.png",
+			"frames": 7,
+			"seconds": 0.466666666666667,
+			"ticks": [
+				3,
+				3,
+				3,
+				3,
+				6,
+				5,
+				5
+			]
+		},
+		"216": {
+			"cell": [
+				58,
+				55
+			],
+			"feet": [
+				29,
+				51
+			],
+			"file": "strips/anim_216.png",
+			"frames": 8,
+			"seconds": 0.716666666666667,
+			"ticks": [
+				3,
+				2,
+				2,
+				2,
+				2,
+				12,
+				10,
+				10
+			]
+		},
+		"217": {
+			"cell": [
+				48,
+				64
+			],
+			"feet": [
+				24,
+				62
+			],
+			"file": "strips/anim_217.png",
+			"frames": 2,
+			"seconds": 0.55,
+			"ticks": [
+				3,
+				30
+			]
+		},
+		"219": {
+			"cell": [
+				76,
+				52
+			],
+			"feet": [
+				38,
+				51
+			],
+			"file": "strips/anim_219.png",
+			"frames": 9,
+			"seconds": 0.55,
+			"ticks": [
+				3,
+				3,
+				3,
+				3,
+				3,
+				3,
+				5,
+				5,
+				5
+			]
+		},
+		"2502": {
+			"cell": [
+				202,
+				202
+			],
+			"feet": [
+				101,
+				166
+			],
+			"file": "strips/anim_2502.png",
+			"frames": 7,
+			"seconds": 0.7,
+			"ticks": [
+				5,
+				5,
+				5,
+				8,
+				7,
+				6,
+				6
+			]
+		},
+		"2600": {
+			"cell": [
+				292,
+				170
+			],
+			"feet": [
+				146,
+				162
+			],
+			"file": "strips/anim_2600.png",
+			"frames": 14,
+			"seconds": 1.75,
+			"ticks": [
+				5,
+				25,
+				4,
+				4,
+				4,
+				4,
+				4,
+				4,
+				4,
+				12,
+				5,
+				20,
+				5,
+				5
+			]
+		},
+		"330": {
+			"cell": [
+				204,
+				109
+			],
+			"feet": [
+				102,
+				103
+			],
+			"file": "strips/anim_330.png",
+			"frames": 10,
+			"seconds": 0.7,
+			"ticks": [
+				3,
+				2,
+				3,
+				2,
+				12,
+				4,
+				4,
+				4,
+				4,
+				4
+			]
+		},
+		"331": {
+			"cell": [
+				366,
+				176
+			],
+			"feet": [
+				183,
+				170
+			],
+			"file": "strips/anim_331.png",
+			"frames": 15,
+			"seconds": 1.18333333333333,
+			"ticks": [
+				4,
+				4,
+				6,
+				4,
+				6,
+				5,
+				3,
+				5,
+				4,
+				5,
+				5,
+				5,
+				5,
+				5,
+				5
+			]
+		},
+		"332": {
+			"cell": [
+				366,
+				121
+			],
+			"feet": [
+				183,
+				115
+			],
+			"file": "strips/anim_332.png",
+			"frames": 17,
+			"seconds": 1.91666666666667,
+			"ticks": [
+				6,
+				6,
+				6,
+				6,
+				7,
+				7,
+				7,
+				7,
+				7,
+				7,
+				7,
+				7,
+				7,
+				7,
+				7,
+				7,
+				7
+			]
+		},
+		"334": {
+			"cell": [
+				214,
+				115
+			],
+			"feet": [
+				107,
+				109
+			],
+			"file": "strips/anim_334.png",
+			"frames": 15,
+			"seconds": 1.53333333333333,
+			"ticks": [
+				2,
+				4,
+				4,
+				4,
+				6,
+				6,
+				3,
+				9,
+				24,
+				5,
+				5,
+				5,
+				5,
+				5,
+				5
+			]
+		},
+		"500": {
+			"cell": [
+				60,
+				60
+			],
+			"feet": [
+				30,
+				48
+			],
+			"file": "strips/anim_500.png",
+			"frames": 8,
+			"seconds": 0.683333333333333,
+			"ticks": [
+				13,
+				2,
+				2,
+				7,
+				5,
+				4,
+				4,
+				4
+			]
+		},
+		"510": {
+			"cell": [
+				114,
+				87
+			],
+			"feet": [
+				57,
+				75
+			],
+			"file": "strips/anim_510.png",
+			"frames": 15,
+			"seconds": 1.53333333333333,
+			"ticks": [
+				25,
+				3,
+				3,
+				5,
+				6,
+				7,
+				3,
+				3,
+				5,
+				6,
+				6,
+				5,
+				5,
+				5,
+				5
+			]
+		}
+	}
+}

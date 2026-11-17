@@ -10,7 +10,9 @@ extends Node
 ## A BARRIER STEPS IN BEFORE THE HIT LANDS (C6.6a). `receive` hands the resolved hit to
 ## `PowerGuard.incoming`, the one hook the hero powers have in the damage path: a barrier may bring
 ## it to nothing, make it smaller, or drink its element. A hit stopped whole is announced as
-## `attack_blocked` and changes nothing (C6.6b).
+## `attack_blocked` and changes nothing (C6.6b). `HitGuard` stands before it (C9.5a): an
+## invincible fighter, or one in its mercy time, is not touched, and an overshield takes the hit
+## before the damage pool does.
 ##
 ## THE ATTACKER'S FORMULA RESOLVES THE HIT. `hit` builds the request from both sheets, resolves it
 ## through this combatant's `formula` with the caller's seeded `rng`, and hands the RESULT to the
@@ -24,6 +26,9 @@ extends Node
 ##
 ## EVERY COMBATANT IS IN THE GROUP `GROUP`, so `find` can turn an id from an event back into
 ## its fighter (C6.4b: a kit gauge asks whether the one who fell was an ally).
+##
+## DIFFICULTY (C5.4a): a resolved hit between the player's side and another is scaled by the
+## difficulty on now (`CombatDifficulty.scale`) before it lands.
 ##
 ## OWNS: the combatant id, the faction, the shared sheet, and applying a resolved hit.
 ## MUST NOT: choose targets, decide turns or timing, or decide what defeat means.
@@ -51,11 +56,23 @@ const GROUP: StringName = &"combatants"
 ## Which kind of fighter this is, shared by every copy (two wisps are both `wisp`), so a
 ## revealed weakness shows on all of them. Empty means the combatant id.
 @export var kind: StringName = &""
+## What kind of creature this is (dragon, undead), copied from its definition (C9.2a).
+@export var traits: Array[StringName] = []
+## What a STEAL takes and what a CAPTURE gives, copied from its definition (C8.7b, `Pilfer`).
+@export var steal_table: LootTable
+@export var capture_item: StringName = &""
+## Items this fighter took with no bag to put them in (a party member in a battle). The
+## battle's rewards hand them over.
+var spoils: Array[StringName] = []
 
 ## True when this fighter lives in real time, so its statuses count in seconds (C4.6). Set by
 ## whoever builds a field fighter (`ActionHost.equip`, `ActionEnemy`); a battle builds fresh
 ## combatants, which stay false. `Weakness` reads it to choose a break in turns or in seconds.
 var real_time: bool = false
+## In a battle, true while this fighter stands in the back row (C8.5, `Rows`).
+var back_row: bool = false
+## The member's art (C9.9d), copied from its definition; `ArtSwap` shows it. Null means none.
+var art: MemberArt
 ## The element worn gear gives this fighter's plain attack. Written by `GearSet`.
 var lent_element: StringName = &""
 ## The weakness tags worn gear adds to this fighter's plain attack. Written by `GearSet`.
@@ -63,6 +80,11 @@ var lent_tags: Array[StringName] = []
 ## The field moves worn gear gives this fighter, or null. Written by `GearSet` (C7.3b).
 var lent_moves: MoveSet
 var sheet: StatSheet = StatSheet.new()
+## `HitGuard`'s clocks (C9.5a): the mercy time left, how long the overshield still waits before
+## it refills, and the part of a point it has refilled. Seconds in the field, turns in a battle.
+var mercy_left: float = 0.0
+var shield_wait: float = 0.0
+var shield_carry: float = 0.0
 # The last `field_moves` built, and what it was built from.
 var _merged: MoveSet
 var _merged_own: MoveSet
@@ -113,7 +135,18 @@ func can_target(other: Combatant, filter: FactionTable.Target) -> bool:
 	if other == null:
 		return false
 	var table: FactionTable = factions if factions != null else FactionTable.new()
-	return table.allows(filter, combatant_id, faction, other.combatant_id, other.faction)
+	return table.allows(filter, combatant_id, side(), other.combatant_id, other.side())
+
+
+## The faction this fighter fights for now: its own, or, while it obeys someone (C6.11, a
+## status that `obeys`), the faction of whoever it obeys.
+func side() -> StringName:
+	var statuses: StatusSet = StatusSet.of(get_parent()) if get_parent() != null else null
+	var lord_id: StringName = statuses.obeyed() if statuses != null else &""
+	if lord_id == &"" or lord_id == combatant_id or not is_inside_tree():
+		return faction
+	var lord: Combatant = Combatant.find(get_tree(), lord_id)
+	return lord.faction if lord != null else faction
 
 
 ## The formula this combatant's hits resolve through: its own, or the standard one.
@@ -158,24 +191,34 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 		sure_hit: bool = false, tags: Array[StringName] = []) -> DamageResult:
 	if target == null:
 		return null
+	Unseen.struck(self, target)
+	Contagion.aimed(self, target)
 	# A battlefield this attacker stands in may make its hits sure, and tag them (C6.9c).
 	var flags := HitFlags.of(self)
 	var sure: bool = sure_hit or flags.sure_against(target)
 	var request := DamageRequest.of(sheet, target.sheet, power, element)
 	request.sure_hit = sure
 	var result: DamageResult = resolving_formula().resolve(request, rng)
+	# Foresight may rewrite the hit: a miss struck again, a landing hit missed (C6.10).
+	result = Foresight.rewrite(self, target, request, result, rng)
+	# The difficulty on now scales a hit between the player's side and another (C5.4a).
+	CombatDifficulty.scale(self, target, result)
 	result.tags.assign(tags)
 	for flag: StringName in flags.tags:
 		if not result.tags.has(flag):
 			result.tags.append(flag)
 	if sure:
 		result.tags.append(&"sure_hit")
+	# In a battle, a close blow from or onto the back row is softened (C8.5).
+	Rows.soften(self, target, result)
 	target.receive(result, combatant_id)
+	Rows.shift(target, result)
 	return result
 
 
 ## Applies a resolved hit and announces it. A defeated combatant takes nothing and says nothing;
-## a negative total heals (an absorbed element). Returns the pool's change.
+## a negative total heals (an absorbed element). Returns the pool's change. While it lands the
+## hit is `PassiveHits.now`, for the passives that ask about it or change it (C9.2b).
 func receive(result: DamageResult, from: StringName) -> int:
 	var vitals: Vitals = Vitals.of(get_parent())
 	if result == null or vitals == null or vitals.is_defeated():
@@ -184,11 +227,34 @@ func receive(result: DamageResult, from: StringName) -> int:
 	if result.missed:
 		Events.attack_missed.emit(combatant_id, from)
 		return 0
-	# A barrier of this fighter's kit, or of an ally's, may stop or soften the hit first (C6.6a).
-	PowerGuard.incoming(self, result, from)
+	var outer: DamageResult = PassiveHits.now
+	PassiveHits.now = result
+	var change: int = _land(result, from, vitals)
+	PassiveHits.now = outer
+	return change
+
+
+func _land(result: DamageResult, from: StringName, vitals: Vitals) -> int:
+	# Passives of the attacker, then of this fighter, may scale the hit first (C9.2b).
+	PassiveHits.scale(self, result, from)
+	# An invincible fighter is not touched (C9.5a). Otherwise a barrier of this fighter's kit,
+	# or of an ally's, may stop or soften the hit (C6.6a).
+	if HitGuard.stops(self, result):
+		result.blocked = true
+	else:
+		PowerGuard.incoming(self, result, from)
 	# A hit stopped whole is announced as blocked, not as 0 damage (C6.6b).
 	if result.blocked:
 		Events.attack_blocked.emit(combatant_id, from)
+		return 0
+	# Two elements meeting on this fighter may react and grow the hit (C8.4).
+	ElementReactions.land(self, result)
+	# The overshield takes the hit first (C9.5a); the event below still tells the whole hit.
+	var soaked: int = HitGuard.soak(vitals, result)
+	# A hit that would fell this fighter may be survived (C9.2b).
+	PassiveHits.lethal(self, result, from)
+	# A ledger status holds the hit until it ends (C8.15a).
+	if Delayed.bank(self, -result.total()):
 		return 0
 	var before: int = vitals.current(damage_pool)
 	var after: int = vitals.change(damage_pool, -result.total())
@@ -198,5 +264,6 @@ func receive(result: DamageResult, from: StringName) -> int:
 		statuses.wake()
 	# Damage taken feeds any `fill_on_hit_<pool>` meter, such as a limit gauge (C2.16).
 	Meters.fill_on_hit(self, before - after)
-	Events.combatant_damaged.emit(combatant_id, from, result.total(), result.critical)
+	HitGuard.hurt(self, before - after + soaked)
+	Events.combatant_damaged.emit(combatant_id, from, result.total() + soaked, result.critical)
 	return after - before

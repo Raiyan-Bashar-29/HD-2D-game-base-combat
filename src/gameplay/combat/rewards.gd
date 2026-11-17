@@ -13,6 +13,12 @@ extends RefCounted
 ## encounter's `loot_table` and each enemy's own, with the battle's random numbers. A field
 ## enemy rolls its own table when it falls and hands the result in as part of `loot`.
 ##
+## LESSONS (C9.4): each rewarded member's worn gear moves one step towards the passives it
+## teaches (`PassiveLoadout.practise`), and `learned` lists what was learned just now.
+##
+## WON LEVELS (C9.5d): each rewarded member's worn gear counts the fight towards a level that
+## is won by fights (`GearUpgrades.practise`), and `upgraded` lists the pieces that went up.
+##
 ## OWNS: the template's reward rule, and the summary of one grant.
 ## MUST NOT: choose the encounter, draw anything, or decide what losing means.
 
@@ -23,21 +29,42 @@ var levelled: Array[StringName] = []
 ## Item ids added, and those that did not fit.
 var items: Array[StringName] = []
 var left_behind: Array[StringName] = []
+## Passives learned from worn gear by this win: member id -> passive ids. Members who learned
+## nothing are not listed.
+var learned: Dictionary[StringName, Array] = {}
+## Worn pieces that went up a level by this win: member id -> piece item ids.
+var upgraded: Dictionary[StringName, Array] = {}
 
 
 static func grant(battle: Battle, encounter: Encounter, inventory: Inventory) -> Rewards:
-	if battle.outcome() != Battle.Outcome.WON or encounter == null:
+	var fled: bool = battle.outcome() == Battle.Outcome.FLED
+	if (battle.outcome() != Battle.Outcome.WON and not fled) or encounter == null:
 		return Rewards.new()
 	var standing: Array[CombatantDef] = []
+	# What the party stole or captured in the fight comes home with the loot (C8.7b).
+	var spoils: Array[StringName] = []
 	for fighter: Combatant in battle.party:
+		spoils.append_array(fighter.spoils)
+		fighter.spoils.clear()
 		var def: CombatantDef = battle.defs.get(fighter.combatant_id, null)
-		if def != null and not Vitals.of(fighter.get_parent()).is_defeated():
+		var guest: bool = battle.guests.has(fighter.combatant_id)
+		if def != null and not guest and not Vitals.of(fighter.get_parent()).is_defeated():
 			standing.append(def)
+	# A flight keeps what was stolen or captured, and nothing else (C8.19).
+	if fled:
+		return give(0, spoils, [], inventory)
 	var tables: Array[LootTable] = [encounter.loot_table]
 	for enemy: CombatantDef in encounter.enemies:
 		if enemy != null:
 			tables.append(enemy.loot_table)
-	return give(encounter.experience, encounter.loot + LootRoll.all(tables, battle.rng), standing, inventory)
+	# Foes that arrived as reinforcements drop their own loot (C8.22a) and add experience (C8.23).
+	var experience: int = encounter.experience
+	for foe: Combatant in battle.enemies:
+		if foe.is_in_group(BattleSetup.REINFORCED) and battle.defs.has(foe.combatant_id):
+			tables.append(battle.defs[foe.combatant_id].loot_table)
+			experience += encounter.reinforcement_experience
+	return give(experience, encounter.loot + spoils + LootRoll.all(tables, battle.rng),
+		standing, inventory)
 
 
 ## The reward itself, with no battle (C3.8): `experience` to each of `members` (the caller
@@ -49,9 +76,17 @@ static func give(experience: int, loot: Array[StringName], members: Array[Combat
 	for def: CombatantDef in members:
 		if Party.gain(def, experience) > 0:
 			given.levelled.append(def.combatant_id)
+		var lessons: Array[StringName] = PassiveLoadout.practise(def.combatant_id)
+		if not lessons.is_empty():
+			given.learned[def.combatant_id] = lessons
+		var raised: Array[StringName] = GearUpgrades.practise(def.combatant_id)
+		if not raised.is_empty():
+			given.upgraded[def.combatant_id] = raised
 	for item_id: StringName in loot:
 		if inventory != null and inventory.add(item_id, 1):
 			given.items.append(item_id)
+			# A unique piece of gear rolls its affixes as it is given (C7.2b).
+			GearAffixes.roll(item_id)
 		else:
 			given.left_behind.append(item_id)
 	return given

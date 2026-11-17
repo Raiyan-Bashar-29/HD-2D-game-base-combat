@@ -43,7 +43,8 @@ content it needs from `tests/framework/fixtures.gd`, and the suite passes with t
 `template` remote, keeps no combat as a rule, and its fixes arrive by `git merge template/main`.
 **Combat code never goes upstream.** This repository's state, phases and board are in
 **[`docs/COMBAT.md`](docs/COMBAT.md)**, and its log is `docs/COMBAT_DEVLOG.md`. The hero powers (phase C6) are designed in
-**[`docs/POWERS.md`](docs/POWERS.md)**. **New here, or picking up from another account or tool? Start with
+**[`docs/POWERS.md`](docs/POWERS.md)**, and the passive library, armours and kakujas (phase C9) in
+**[`docs/PASSIVES.md`](docs/PASSIVES.md)**. **New here, or picking up from another account or tool? Start with
 [`docs/HANDOFF.md`](docs/HANDOFF.md)**, the plain-words map and the current state. Read those before
 upstream's `CONTEXT.md`. Every rule below still applies.
 

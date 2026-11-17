@@ -7,7 +7,8 @@ extends Area3D
 ## does. It refuses a hit from its own fighter, from an ally (by the faction table, as in a
 ## turn-based battle), or on a fighter already down. During i-frames it lets the hit pass and
 ## announces a dodge; inside the dodge's `perfect_window` it also announces a perfect dodge
-## (`Events.perfect_dodge`, C6.6c). Otherwise it resolves the hit:
+## (`Events.perfect_dodge`, C6.6c); the fighter's `perfect_window` stat widens that window
+## (ADD 0.5 = 1.5 times, C6.10b). Otherwise it resolves the hit:
 ## - a move wrapping a `Skill` goes through `SkillUse.apply`, exactly as in a turn-based battle;
 ## - a plain move hits `hits` times for its `power` and `element`, and each hit that lands chips
 ##   a matching weakness (`Weakness.strike`).
@@ -28,6 +29,21 @@ extends Area3D
 ## again. `Events.countered` is announced either way. A parry is a timed block whose status
 ## counters: the perfect press stops the hit, and the counter answers it.
 ##
+## LAUNCH (C8.8a): a landed hit whose move has a `launch` time, or any landed hit on a fighter
+## already in the air, lifts the fighter (`Juggle.lift`) and drops its swing, unless the hit was
+## countered, the fighter is in an armour stretch, or it does not flinch at all.
+##
+## INTERRUPT (C8.8c): a landed hit of a move that `interrupts` stops this fighter's own move
+## while it is winding up or in its armour stretch, and stuns it as a push does.
+## PROMPT (C8.8c): `boost` multiplies a plain move's power; the `Hitbox` passes what the
+## attacker's timed press earned.
+##
+## FOLLOW-UPS (C8.22c): a landed hit that took hp lets the attacker's allies near this fighter
+## follow up (`FieldFollowUps`), as a battle's attack or one-target skill does.
+##
+## `flinched` says whether the last hit moved the fighter at all: it landed, was not countered,
+## and the fighter flinches. A grab (C8.8b) holds only a fighter that flinched.
+##
 ## `timeline` is set by whoever runs this fighter's moves (C3.4's fighter, C3.7's enemy), so a
 ## dodge's i-frames are read from the same clock that plays the dodge.
 ##
@@ -38,12 +54,20 @@ extends Area3D
 ## Every hurtbox in the tree joins this group, so a `LockOn` can find targets without
 ## asking the physics engine (C3.5).
 const GROUP: StringName = &"combat_hurtboxes"
+## The stat that widens this fighter's perfect-dodge window (C6.10b).
+const PERFECT_WINDOW: StringName = &"perfect_window"
 
 ## What became of a hit: every hit missed, at least one was blocked and none landed, or one landed.
 enum Outcome { MISSED, BLOCKED, LANDED }
 
 ## The clock of this fighter's own moves; null means it never has i-frames.
 var timeline: MoveTimeline
+## True when the last hit `take` resolved landed (not missed, blocked, dodged or refused).
+var landed: bool = false
+## True when that hit also made the fighter flinch: not countered, no armour, not unflinching.
+var flinched: bool = false
+## True when that hit stopped this fighter's move as an interrupt (C8.8c).
+var interrupted: bool = false
 
 
 func _ready() -> void:
@@ -71,7 +95,7 @@ static func nearest_hostile(body: Node3D) -> Hurtbox:
 	var best_distance: float = INF
 	for node: Node in body.get_tree().get_nodes_in_group(GROUP):
 		var hurtbox: Hurtbox = node as Hurtbox
-		if hurtbox == null or not me.can_target(hurtbox.fighter(), FactionTable.Target.ENEMY):
+		if hurtbox == null or not Unseen.open(me, hurtbox.fighter(), FactionTable.Target.ENEMY):
 			continue
 		var vitals: Vitals = Vitals.of(hurtbox.get_parent())
 		var distance: float = body.global_position.distance_to(hurtbox.global_position)
@@ -83,8 +107,12 @@ static func nearest_hostile(body: Node3D) -> Hurtbox:
 
 ## `attacker` struck this with `move`, from the point `from`. True when the hit counted:
 ## resolved on this fighter, whether or not it then missed. False when refused or dodged.
-func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, from: Vector3) -> bool:
+func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, from: Vector3,
+		boost: float = 1.0) -> bool:
 	var target: Combatant = fighter()
+	landed = false
+	flinched = false
+	interrupted = false
 	if attacker == null or move == null or target == null or target == attacker:
 		return false
 	var filter: FactionTable.Target = move.skill.target if move.skill != null else FactionTable.Target.ENEMY
@@ -93,16 +121,51 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 		return false
 	if timeline != null and timeline.invulnerable():
 		Events.attack_dodged.emit(target.combatant_id, attacker.combatant_id)
-		if timeline.perfectly():
+		if timeline.perfectly(target.sheet.value(PERFECT_WINDOW)):
 			Events.perfect_dodge.emit(target.combatant_id, attacker.combatant_id)
 		return true
-	var outcome: Outcome = _resolve(attacker, move, target, rng)
+	var before: int = vitals.current(target.damage_pool)
+	var outcome: Outcome = _resolve(attacker, move, target, rng, boost)
 	var countered: bool = outcome != Outcome.MISSED and _counter(attacker, target, rng)
-	if outcome == Outcome.LANDED:
+	landed = outcome == Outcome.LANDED
+	if landed:
 		Weakness.wear(target, move.poise)
+		# Allies near the foe holding a follow-up stance strike it too (C8.22c), when the hit really
+		# took hp: a skill move counts as landed even when it missed or bounced (C8.24).
+		if vitals.current(target.damage_pool) < before:
+			FieldFollowUps.after_hit(attacker, target, rng)
 		if not countered:
+			_interrupt(target, move)
 			_push(target, move, from)
+			flinched = target.sheet.value(&"knockback_taken") > -1.0 \
+				and not (timeline != null and timeline.armoured())
+			_launch(move)
 	return true
+
+
+# A move that interrupts stops this fighter's wind-up or armoured move, and stuns it (C8.8c).
+func _interrupt(target: Combatant, move: ActionMove) -> void:
+	if not move.interrupts or timeline == null or not timeline.busy():
+		return
+	if timeline.phase != MoveTimeline.Phase.STARTUP and not timeline.armoured():
+		return
+	if target.sheet.value(&"knockback_taken") <= -1.0:
+		return
+	timeline.cancel()
+	interrupted = true
+	# A move with no push of its own still stuns: a push of no length.
+	if move.knockback <= 0.0:
+		Events.knockback_requested.emit(target.combatant_id, Vector3.ZERO)
+
+
+# Lifts the fighter off its feet (C8.8a) when the move launches or it is already in the air.
+func _launch(move: ActionMove) -> void:
+	var body: Node = get_parent()
+	if not flinched or (move.launch <= 0.0 and not Juggle.airborne(body)):
+		return
+	Juggle.lift(body, move)
+	if timeline != null:
+		timeline.cancel()
 
 
 ## `target` answers `attacker` when it holds a counter stance that fires (C6.6d). True when it did.
@@ -125,7 +188,7 @@ func _counter(attacker: Combatant, target: Combatant, rng: RandomNumberGenerator
 
 ## Resolves the hit itself, and says what became of it.
 func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
-		rng: RandomNumberGenerator) -> Outcome:
+		rng: RandomNumberGenerator, boost: float) -> Outcome:
 	if move.skill != null:
 		# A skill lands the way it does in a battle: power, effects, statuses, reflect and all.
 		# It does not report misses one by one, so poise and knockback treat it as landed.
@@ -138,7 +201,10 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 	keys.append_array(attacker.strike_tags())
 	var outcome: Outcome = Outcome.MISSED
 	for i: int in maxi(1, move.hits):
-		var result: DamageResult = attacker.hit(target, move.power, element, rng)
+		# Foresight's observe knows a move by its key (C6.10).
+		Foresight.striking = StringName("move_%d" % move.get_instance_id())
+		var result: DamageResult = attacker.hit(target, move.power * boost, element, rng)
+		Foresight.striking = &""
 		if result == null or result.missed:
 			continue
 		# A hit a barrier stopped whole did not land: no shield chip, no poise, no push (C6.6a).
@@ -156,7 +222,8 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 ## 1 plus the target's `knockback_taken`. Nothing at all when that comes to 0 or less.
 func _push(target: Combatant, move: ActionMove, from: Vector3) -> void:
 	var distance: float = move.knockback * (1.0 + target.sheet.value(&"knockback_taken"))
-	if distance <= 0.0:
+	# Inside its own move's armour stretch (C8.16) the fighter takes the hit and is not pushed.
+	if distance <= 0.0 or (timeline != null and timeline.armoured()):
 		return
 	var away: Vector3 = global_position - from
 	away.y = 0.0

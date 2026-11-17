@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="GearDefinition" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/gear/gear_definition.gd" id="gear"]
+[ext_resource type="Resource" path="res://data/gear_types/quinque_armour.tres" id="type"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="pskill"]
+[ext_resource type="Resource" path="res://data/powers/quinque_owl.tres" id="kit"]
+[ext_resource type="Resource" path="res://data/passives/quinque_feed.tres" id="quinque_feed"]
+
+[sub_resource type="Resource" id="m0"]
+script = ExtResource("mod")
+stat = &"damage_taken"
+op = 0
+value = -0.1
+
+[sub_resource type="Resource" id="m1"]
+script = ExtResource("mod")
+stat = &"defence"
+op = 1
+value = 1.1
+
+[resource]
+script = ExtResource("gear")
+id = &"gear/quinque_owl"
+item_id = &"item/quinque_owl"
+type = ExtResource("type")
+modifiers = Array[ExtResource("mod")]([SubResource("m0"), SubResource("m1")])
+kit = ExtResource("kit")
+passives = Array[ExtResource("pskill")]([ExtResource("quinque_feed")])

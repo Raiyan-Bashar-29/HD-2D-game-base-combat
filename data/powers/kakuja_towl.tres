@@ -1,0 +1,104 @@
+[gd_resource type="Resource" script_class="PowerKit" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/powers/power_kit.gd" id="kit"]
+[ext_resource type="Script" path="res://src/content/combat/powers/power.gd" id="power"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/form_mechanism.gd" id="form"]
+[ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/barrage_mechanism.gd" id="barrage"]
+[ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
+[ext_resource type="Script" path="res://src/content/combat/skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/status_effect.gd" id="status"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/look_def.gd" id="look"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="pskill"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_regen.tres" id="kakuja_regen"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_hunger.tres" id="kakuja_hunger"]
+
+[sub_resource type="Resource" id="m0"]
+script = ExtResource("mod")
+stat = &"attack"
+op = 1
+value = 1.3
+
+[sub_resource type="Resource" id="m1"]
+script = ExtResource("mod")
+stat = &"speed"
+op = 0
+value = 3.0
+
+[sub_resource type="Resource" id="f_status"]
+script = ExtResource("status")
+id = &"status/form_towl"
+name_key = "combat.form.towl.name"
+duration = 0.0
+modifiers = Array[ExtResource("mod")]([SubResource("m0"), SubResource("m1")])
+tags = Array[StringName]([&"form"])
+
+[sub_resource type="Resource" id="f_look"]
+script = ExtResource("look")
+look_id = &"look/towl"
+tint = Color(0.8, 0.8, 0.85, 1)
+scale = 1.1
+label_key = "combat.form.towl.name"
+
+[sub_resource type="Resource" id="f_form"]
+script = ExtResource("form")
+status = SubResource("f_status")
+exclusive_group = &"kakuja"
+drain_pool = &"rc"
+drain_per_second = 2.0
+drain_per_turn = 10.0
+look = SubResource("f_look")
+name_key = "combat.form.towl.name"
+passive_skills = Array[ExtResource("pskill")]([ExtResource("kakuja_regen"), ExtResource("kakuja_hunger")])
+
+[sub_resource type="Resource" id="p"]
+script = ExtResource("power")
+power_id = &"power/kakuja_towl"
+name_key = "combat.power.kakuja_towl.name"
+desc_key = "combat.power.kakuja_towl.desc"
+mechanism = SubResource("f_form")
+requires_pool = &"rc"
+requires_fraction = 0.1
+
+[sub_resource type="Resource" id="shot"]
+script = ExtResource("move")
+startup = 0.0
+active = 1.5
+recovery = 0.0
+power = 7.0
+hitbox_size = Vector3(0.6, 0.6, 0.6)
+hitbox_offset = Vector3(0, 0, 0)
+
+[sub_resource type="Resource" id="b_mech"]
+script = ExtResource("barrage")
+pattern = 3
+count = 3
+interval = 0.08
+speed = 20.0
+turn_rate = 2.0
+radius = 1.5
+shots = Array[ExtResource("move")]([SubResource("shot")])
+
+[sub_resource type="Resource" id="b"]
+script = ExtResource("power")
+power_id = &"power/towl_blast"
+name_key = "combat.power.towl_blast.name"
+desc_key = "combat.power.towl_blast.desc"
+mechanism = SubResource("b_mech")
+cooldown = 2.0
+requires_statuses = Array[StringName]([&"status/form_towl"])
+
+[sub_resource type="Resource" id="rc"]
+script = ExtResource("mod")
+stat = &"max_rc"
+op = 0
+value = 100.0
+source = &"kit/kakuja_towl"
+
+[resource]
+script = ExtResource("kit")
+kit_id = &"kit/kakuja_towl"
+name_key = "combat.kit.kakuja_towl.name"
+desc_key = "combat.kit.kakuja_towl.desc"
+powers = Array[ExtResource("power")]([SubResource("p"), SubResource("b")])
+stat_bonuses = Array[ExtResource("mod")]([SubResource("rc")])

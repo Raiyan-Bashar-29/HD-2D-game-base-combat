@@ -1,0 +1,149 @@
+[gd_resource type="Resource" script_class="MemberArt" format=3]
+
+[ext_resource type="Resource" path="res://assets/fan/arima_kisho/sheet_layout.tres" id="1_kgplq"]
+[ext_resource type="Script" path="res://src/content/combat/move_art.gd" id="2_7tnya"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_200.png" id="3_o0dcx"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_201.png" id="4_62f1s"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_202.png" id="5_l51fs"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_203.png" id="6_8p1tx"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_350.png" id="7_3nry8"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_550.png" id="8_wu8pd"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_560.png" id="9_al4y4"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2200.png" id="10_du1hd"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2201.png" id="11_agswj"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2202.png" id="12_ndkho"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2203.png" id="13_p1n1j"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_2206.png" id="14_jl86l"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_3050.png" id="15_lqw60"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_3100.png" id="16_epvhm"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/strips/anim_3150.png" id="17_deqtu"]
+[ext_resource type="Script" path="res://src/content/combat/member_art.gd" id="18_c1noo"]
+[ext_resource type="Texture2D" path="res://assets/fan/arima_kisho/sheet.png" id="19_dug01"]
+
+[sub_resource type="Resource" id="Resource_34386"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("3_o0dcx")
+frames = 8
+feet = Vector2i(41, 53)
+seconds = 0.466666666666667
+
+[sub_resource type="Resource" id="Resource_t4j5j"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("4_62f1s")
+frames = 6
+feet = Vector2i(59, 52)
+seconds = 0.433333333333333
+
+[sub_resource type="Resource" id="Resource_6pn6v"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("5_l51fs")
+frames = 8
+feet = Vector2i(54, 70)
+seconds = 0.683333333333333
+
+[sub_resource type="Resource" id="Resource_fo6nv"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("6_8p1tx")
+frames = 8
+feet = Vector2i(84, 50)
+seconds = 0.4
+
+[sub_resource type="Resource" id="Resource_c7coa"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("7_3nry8")
+frames = 4
+feet = Vector2i(76, 52)
+seconds = 0.766666666666667
+
+[sub_resource type="Resource" id="Resource_60kub"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("8_wu8pd")
+frames = 21
+feet = Vector2i(52, 54)
+seconds = 2.7
+
+[sub_resource type="Resource" id="Resource_4emyc"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("9_al4y4")
+frames = 11
+feet = Vector2i(49, 54)
+seconds = 1.0
+
+[sub_resource type="Resource" id="Resource_7feom"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("10_du1hd")
+frames = 8
+feet = Vector2i(60, 91)
+seconds = 0.55
+
+[sub_resource type="Resource" id="Resource_vtnqu"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("11_agswj")
+frames = 7
+feet = Vector2i(60, 73)
+
+[sub_resource type="Resource" id="Resource_npdf3"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("12_ndkho")
+frames = 7
+feet = Vector2i(60, 56)
+seconds = 0.583333333333333
+
+[sub_resource type="Resource" id="Resource_uh510"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("13_p1n1j")
+frames = 8
+feet = Vector2i(60, 61)
+seconds = 0.683333333333333
+
+[sub_resource type="Resource" id="Resource_c64o8"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("14_jl86l")
+frames = 8
+feet = Vector2i(58, 61)
+seconds = 0.65
+
+[sub_resource type="Resource" id="Resource_d2e5y"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("15_lqw60")
+frames = 7
+feet = Vector2i(74, 84)
+seconds = 0.733333333333333
+
+[sub_resource type="Resource" id="Resource_3svsg"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("16_epvhm")
+frames = 12
+feet = Vector2i(69, 94)
+seconds = 0.7
+
+[sub_resource type="Resource" id="Resource_yotom"]
+script = ExtResource("2_7tnya")
+strip = ExtResource("17_deqtu")
+frames = 5
+feet = Vector2i(38, 54)
+seconds = 0.7
+
+[resource]
+script = ExtResource("18_c1noo")
+sheet = ExtResource("19_dug01")
+layout = ExtResource("1_kgplq")
+pixel_size = 0.0320754716981132
+ground_offset = -0.0962264150943396
+moves = Dictionary[StringName, ExtResource("2_7tnya")]({
+&"move/arima_200": SubResource("Resource_34386"),
+&"move/arima_201": SubResource("Resource_t4j5j"),
+&"move/arima_202": SubResource("Resource_6pn6v"),
+&"move/arima_203": SubResource("Resource_fo6nv"),
+&"move/arima_2200": SubResource("Resource_7feom"),
+&"move/arima_2201": SubResource("Resource_vtnqu"),
+&"move/arima_2202": SubResource("Resource_npdf3"),
+&"move/arima_2203": SubResource("Resource_uh510"),
+&"move/arima_2211": SubResource("Resource_c64o8"),
+&"move/arima_3050": SubResource("Resource_d2e5y"),
+&"move/arima_3100": SubResource("Resource_3svsg"),
+&"move/arima_3150": SubResource("Resource_yotom"),
+&"move/arima_350": SubResource("Resource_c7coa"),
+&"move/arima_550": SubResource("Resource_60kub"),
+&"move/arima_560": SubResource("Resource_4emyc")
+})

@@ -5,8 +5,8 @@ extends CharacterBody3D
 ## and give it a `fighter` and a `brain`.
 ##
 ## IN PLAIN WORDS, each physics frame (`act`):
-## 1. It senses: the nearest hostile fighter (any standing `Hurtbox` the faction table calls an
-##    enemy), how far it is from home, its own hp, whether a move is playing, whether it reels.
+## 1. It senses: its target (`Aggro.pick`: a taunting fighter, the most threat, else the nearest
+##    standing `Hurtbox` the faction table calls an enemy), how far it is from home, its own hp, whether a move is playing, whether it reels.
 ## 2. It asks its `ActionDecider` what to do, with those plain facts.
 ## 3. It acts on the answer: walk to the target and stand at `attack_range`; start the chosen
 ##    move facing the target; back away; walk home; wander near home; or stand.
@@ -42,6 +42,11 @@ extends CharacterBody3D
 ## True for a one-off foe (a boss): once beaten it never comes back, even on re-entry. False, the
 ## default, means it is back whenever the area is entered again.
 @export var remember_defeat: bool = false
+## What the fall safety net does with this foe below the kill height (C5.8): false fells it
+## where it is, true puts it back at its home unhurt (a foe a quest needs alive).
+@export var returns_home: bool = false
+## False for a fighter that gives nothing when it falls: an owned fighter (C8.10a).
+@export var grants_reward: bool = true
 
 var decider: ActionDecider
 var timeline: MoveTimeline = MoveTimeline.new()
@@ -78,8 +83,10 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	FallNet.catch(self, home if returns_home else Vector3.INF, not returns_home)
 	act(delta)
-	velocity.y = velocity.y - _gravity * delta if not is_on_floor() else 0.0
+	# On the floor nothing falls, but a launch's upward speed is kept (C8.8a).
+	velocity.y = velocity.y - _gravity * delta if not is_on_floor() else maxf(velocity.y, 0.0)
 	move_and_slide()
 	var visual: CharacterVisual = get_node_or_null(^"Visual") as CharacterVisual
 	if visual != null:
@@ -96,10 +103,15 @@ func act(delta: float) -> ActionDecider.State:
 	var statuses: StatusSet = StatusSet.of(self)
 	if statuses != null:
 		statuses.tick_seconds(dt)
+	# Its own time speed (C8.11a): statuses count on the fight's clock, the rest on its own.
+	var rate: float = FighterTime.rate(self)
+	dt *= rate
 	# A stagger that has just worn off refills the shield (C4.6).
 	var me: Combatant = Combatant.of(self)
 	if me != null:
 		Weakness.recover(me)
+		HitGuard.pass_time(me, dt)
+		Aggro.of(self).pass_time(dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Staggered, it stands still and drops the swing it was in, as under a knockback.
 	var halted: bool = statuses != null and statuses.halts()
@@ -111,13 +123,17 @@ func act(delta: float) -> ActionDecider.State:
 	var defeated: bool = vitals != null and vitals.is_defeated()
 	var hp: float = float(vitals.current(&"hp")) / maxf(1.0, float(vitals.maximum(&"hp"))) if vitals != null else 1.0
 	var state: ActionDecider.State = decider.think(dt, to_target.length() if _target != null else INF,
-		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0 or halted, defeated, rng)
+		_flat(global_position - home).length(), hp, timeline.busy(), _stun_left > 0.0 or halted or Juggle.airborne(self) or Grab.held(self),
+		defeated, rng)
 	_carry_out(state, to_target)
+	velocity.x *= rate
+	velocity.z *= rate
 	if _fallen:
 		_gone_in -= dt
 		if _gone_in <= 0.0 and not is_queued_for_deletion():
 			queue_free()
 	timeline.step(dt)
+	Unseen.fade(self)
 	if _hitbox != null:
 		_hitbox.rotation.y = atan2(-facing.x, -facing.z)
 		if timeline.is_hitting():
@@ -125,9 +141,10 @@ func act(delta: float) -> ActionDecider.State:
 	return state
 
 
-## The nearest standing hurtbox this enemy may attack, or null.
+## The standing hurtbox this enemy picks, or null: a taunting fighter, then the most threat,
+## then the nearest (`Aggro`, C8.6).
 func nearest_hostile() -> Hurtbox:
-	return Hurtbox.nearest_hostile(self)
+	return Aggro.pick(self, decider.brain.give_up_radius)
 
 
 func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
@@ -140,8 +157,8 @@ func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
 				timeline.start(decider.chosen)
 				if _hitbox != null:
 					_hitbox.fit(decider.chosen)
-			if timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.move.travel_speed > 0.0:
-				wish = facing * timeline.move.travel_speed
+			if timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.speed() > 0.0:
+				wish = facing * timeline.speed()
 		ActionDecider.State.CHASE:
 			_face(to_target)
 			# Walk in to just inside range, then stand and wait out the cooldown.
@@ -202,6 +219,8 @@ func _fall() -> void:
 		return
 	_fallen = true
 	_gone_in = linger
+	if not grants_reward:
+		return
 	var mine: Combatant = Combatant.of(self)
 	var rolled: Array[StringName] = LootRoll.roll(fighter.loot_table if fighter != null else null, rng)
 	Events.field_enemy_defeated.emit(mine.combatant_id if mine != null else &"", experience, loot + rolled)
@@ -209,8 +228,11 @@ func _fall() -> void:
 		Flags.set_flag(defeat_flag(), true)
 
 
+# A map can exist and sync with no navmesh in it (an arena of bare floor): then it has no path
+# to give, so the body walks straight (C8.10b).
 func _has_navmesh() -> bool:
-	return NavigationServer3D.map_get_iteration_id(_agent.get_navigation_map()) > 0
+	var map: RID = _agent.get_navigation_map()
+	return NavigationServer3D.map_get_iteration_id(map) > 0 and not NavigationServer3D.map_get_regions(map).is_empty()
 
 
 func _face(direction: Vector3) -> void:
@@ -231,10 +253,15 @@ func _build() -> void:
 	combatant.base_stats = fighter.base_stats
 	combatant.weak_to = fighter.weak_to
 	combatant.attack_tags = fighter.attack_tags
+	combatant.traits = fighter.traits
+	combatant.steal_table = fighter.steal_table
+	combatant.capture_item = fighter.capture_item
 	combatant.kind = fighter.combatant_id
+	combatant.art = fighter.art
 	combatant.real_time = true
 	add_child(combatant)
 	# Its starting gear, if it has any (C7.1b). Not saved: a field foe is rebuilt fresh.
+	PassiveLending.own(self, fighter)
 	GearSet.fit(self, fighter, false)
 	var vitals: Vitals = Vitals.of(self)
 	for stat: StringName in fighter.base_stats:
@@ -254,6 +281,12 @@ func _build() -> void:
 	_hitbox = Hitbox.new()
 	_hitbox.timeline = timeline
 	add_child(_hitbox)
+	# Its sheet, move strips and move sounds, when its definition has art (C9.9e).
+	add_child(ArtSwap.new())
+	add_child(MoveEvents.new())
+	var aggro := Aggro.new()
+	aggro.fade = decider.brain.threat_fade
+	add_child(aggro)
 
 
 func _on_knockback(who: StringName, push: Vector3) -> void:

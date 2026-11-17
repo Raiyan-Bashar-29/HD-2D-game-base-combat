@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="GearDefinition" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/gear/gear_definition.gd" id="gear"]
+[ext_resource type="Resource" path="res://data/gear_types/quinque_armour.tres" id="type"]
+[ext_resource type="Script" path="res://src/content/combat/stat_modifier.gd" id="mod"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="pskill"]
+[ext_resource type="Resource" path="res://data/passives/kakuja_regen.tres" id="kakuja_regen"]
+[ext_resource type="Resource" path="res://data/passives/quinque_feed.tres" id="quinque_feed"]
+
+[resource]
+script = ExtResource("gear")
+id = &"gear/quinque_noro"
+item_id = &"item/quinque_noro"
+type = ExtResource("type")
+passives = Array[ExtResource("pskill")]([ExtResource("kakuja_regen"), ExtResource("quinque_feed")])

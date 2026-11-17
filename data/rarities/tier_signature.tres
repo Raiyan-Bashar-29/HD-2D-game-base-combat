@@ -13,3 +13,4 @@ drop_weight = 0.0
 affixes = 0
 sockets = 0
 max_upgrade = 15
+salvage = 0.0

@@ -10,6 +10,9 @@ files may appear under `src/` or `tests/`.
 | `weapon_ideas.csv` | The weapons list without the image columns. Read with [`../GEAR.md`](../GEAR.md) § The mechanism catalogue |
 | `power_atlas.csv` | One row per power (3,306), cut from the pack |
 | `power_handlers.csv` | One row per handler family (116), cut from the pack |
+| `originals/RPG_Gacha_Mechanics_Encyclopedia_v1.zip` | The owner's mechanics encyclopedia (2026-11-13), unchanged |
+| `originals/last_cloudia_verified_starter_records.csv` | The owner's Last Cloudia names list (2026-11-13): names only, no effects |
+| `mechanics_encyclopedia/` | The encyclopedia unpacked, without its spreadsheet and web page (they repeat the CSVs). A curated snapshot, not a full database. Read with [`../PASSIVES.md`](../PASSIVES.md) |
 | `power_pack/` | The pack's three guide pages and all its character profiles |
 
 [`../POWER_ATLAS.md`](../POWER_ATLAS.md) sorts every family onto the mechanism that runs it.

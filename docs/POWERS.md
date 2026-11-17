@@ -241,7 +241,33 @@ comes from `stat_bonuses`) and passives.
 | Narukami: Redirect | M3 `barrier` `absorb_elements [lightning]` into `store_pool charge`, then M2 `finisher` spending `charge` (power per point) | the stored charge |
 | Yukimura 1/3 | M5 `form` (group `ixa`): a fast 5-hit chain | free switch |
 | The Reaper (passive) | COUNTER reaction 25%, crit +25% against STAGGERED or broken foes (`TARGET_HAS_TAG staggered`) | — |
-| Reading (passive) | M7 `foresight`: the perfect-dodge window is ×1.5 (a `TimedWindow` widen) | — |
+| Reading (passive) | `passive/reading`: a `perfect_window` stat, ADD 0.5, so the perfect-dodge window is ×1.5 (C6.10b) | — |
+
+**As built (C9.9b), from the converter.** The table above is the design; this is what
+`data/powers/arima.tres` holds now. Every move number comes from the Arima Kisho JUS
+M.U.G.E.N character by 刃下心 (used with the owner's approval), through
+`tools/mugen_convert.gd`. The generator script is not in the repo; re-run the converter and
+copy numbers by state when tuning.
+
+| Power | M.U.G.E.N state | What it is here |
+|---|---|---|
+| Change Quinque | — | M5 `form` cycle, group `arima_quinque`: stage 1 IXA and Narukami (chain 200, 201, 202, 203), stage 2 Owl (chain 2200, 2201, 2202, 2203, 2211; attack ×1.15) |
+| IXA Throw | 350 | stage 1; a fast lunge |
+| Narukami: Pincer | 550 | stage 1; 1.2 s wind-up, untouchable from 1.2 s to 2.7 s |
+| Narukami: Squad Zero | 560 | stage 1; a wide hit with a long push |
+| Owl: Space Slash | 3050 | stage 2 |
+| Owl: Flower | 3100 | stage 2; untouchable for 0.7 s; the full-screen box is capped at 8 m |
+| Owl: Kaneki | 3150 | stage 2; 42 small hits; its box is a default, the source hits from a helper |
+
+- Each special costs 17 `focus` (500 of M.U.G.E.N's 3000 meter), has a 4 s cooldown and gives
+  2 s of Resolve (defence ×1.2). `focus` starts empty: +4 per hit dealt, +2 per hit taken.
+- Passives: `passive/reaper`, `passive/counter` and `passive/reading`.
+- Loadout: `data/action/arima_loadout.tres`, own chain 200 to 203. The dodge is the base's
+  standard roll; the source has no roll with i-frames.
+- Art (C9.9c): `assets/fan/arima_kisho/`, unpacked by `tools/mugen_sprites.gd`; a move's
+  animation is `strips/anim_<state>.png` (state 2211 uses animation 2206).
+- Converted but not used (one attack button here): chains 210 to 213 and 220 to 223, the air
+  moves 230 to 243, the IXA wall 300 to 325.
 
 ### Satoru Gojo (Jujutsu Kaisen) · `kit/gojo`
 
@@ -517,6 +543,221 @@ scales with the MP spent, because `PowerScaling` already scales a duration; scal
 strength would be a new `Affects` value, which can come later if the tuning needs it. The damage
 cap has no meaning here, because this base caps no damage.
 
+## Converting a M.U.G.E.N character (C9.9a)
+
+`tools/mugen_convert.gd` turns any M.U.G.E.N character folder into our move data:
+
+```
+godot --headless --script tools/mugen_convert.gd -- <character.def> <output folder>
+    [--height=1.7] [--power-scale=0.4] [--depth=1.0] [--prefix=name]
+```
+
+It writes `moves.json`, `report.md` and `moves/<prefix>_<state>.tres` (one `ActionMove` per
+attack and per dodge). It never writes into `data/`. **Only use a character the owner has
+said is usable, and keep the author's name with the output.**
+
+The formula (`tools/mugen/mugen_formula.gd`):
+
+| Ours | From theirs |
+|---|---|
+| seconds | ticks / 60 |
+| metres | pixels x (`--height` / the standing body box of animation 0) |
+| `startup` | time to the first `HitDef` (its `time` or `animelem` trigger) |
+| `active` | from there to the end of the last hit's frames with a `Clsn1` box |
+| `recovery` | the rest of the state (it ends at `animtime = 0` or a timed `ChangeState`) |
+| `power` | mean `damage` of a hit x `--power-scale` |
+| `hits` | how many times a `HitDef` fires (a `timemod` trigger repeats) |
+| `poise` | `animtype`: light 1, medium 2, hard 3, anything else (a launcher) 4 |
+| `knockback` | `ground.velocity` / 0.15 (their slide keeps 85% a tick), in metres |
+| `iframes_from`, `iframes_to` | the first stretch with no `Clsn2` box or under `NotHitBy` |
+| `iframes2_from`, `iframes2_to` | the second such stretch (C8.16b) |
+| `armour_from`, `armour_to` | the first stretch under `HitOverride` (C8.16b) |
+| `events` | each `PlaySnd` a sound, each `EnvShake` a shake (strength: its pixels over 20), each `Pause` or `SuperPause` a hit pause (C8.16b) |
+| `hitbox_size`, `hitbox_offset` | the box round the `Clsn1` boxes of the first hit's frame, `--depth` thick, y up from the feet (where a fighter's origin is) |
+| `travel_speed` | the fastest `VelSet` x before the hits end, x 60, in metres |
+| `chain_after` | when a `ChangeState` that waits for a button may fire |
+| button and meter (report only) | the `.cmd` file's `ChangeState` into the state |
+
+What a state sends out that hurts flies on its own (C8.16c): a `Helper` whose state has a
+`HitDef`, and every `Projectile`, is a SHOT event on the move, with its own numbers by this
+formula, its start (`pos`, or the foe's feet for `postype = p2`) and its first forward speed.
+Its hits are not the sender's. It also takes its y speed, its fall (`[Movement] yaccel`, for a
+`physics = A` state), whether it flies through (a helper always; a `Projectile` with `projhits`
+over 1, spreading its hits over its life) and its own sounds (C8.16d), and the shots it sends
+out (C8.16e). Each `Explod` is an effect picture (`effects/anim_<n>.png`, written by
+`mugen_sprites.gd --effects=<anims>`), shown for its animation's length (C8.16e). What has no field
+on a move is written in the move's notes: what it sends out, a third untouchable stretch or
+a second armour stretch, every controller not converted, and every trigger
+that depends on a button, a variable or the foe.
+
+## Unpacking a M.U.G.E.N character's sprites and sounds (C9.9c)
+
+```
+godot --headless --script tools/mugen_sprites.gd -- <character.def> <output folder>
+    [--height=1.7] [--frames=8] [--max-cell=256] [--walk=0,20,100]
+    [--actions=200,201] [--sounds=all|none|0_1,5_0]
+```
+
+| It writes | What it is |
+|---|---|
+| `sheet.png`, `sheet_layout.tres` | the `--walk` animations (stand, walk, run) as a sheet any `CharacterVisual` draws: 4 columns (right, right, left, left for south, east, north, west), `--frames` rows each |
+| `strips/anim_<n>.png` | one animation as one row, a cell per frame. `--actions` names them; the default is every animation whose cell fits `--max-cell` pixels |
+| `sounds/<group>_<index>.wav` | the sounds named by `--sounds` (a state's `PlaySnd` value `S500,11` is `500_11`) |
+| `sprites.json` | the index: each strip's frames, cell, feet pixel and ticks; `pixel_size` and the sheet's `ground_offset` |
+| `CREDITS.md` | the character's name and author. Keep it with the files |
+
+The formula (`tools/mugen/mugen_sprites.gd`):
+
+| Ours | From theirs |
+|---|---|
+| `pixel_size` (metres a pixel) | the move converter's scale, so art and hitboxes agree |
+| a cell | the box round every frame, as wide left of the feet as right, so the feet are at the cell's middle |
+| a sheet slot | the frame on screen at the slot's middle tick: slot i of N shows tick (i + 0.5) x length / N |
+| a strip frame's time | its ticks / 60 |
+| facing left | the same cell mirrored about the feet |
+
+It reads version 2 `.sff` files: raw, RLE8, LZ5, PNG8 (with the file's palette), PNG24 and
+PNG32 sprites. Not read: RLE5 and version 1 (PCX) files; it says so. Arima's output is in
+`assets/fan/arima_kisho/` (animations 0, 20, 100, 5000 and the kit's fifteen moves). Nothing
+draws it in play until C9.9d.
+
+## What fighting-game character files teach us (C9.8)
+
+Read from one real character, the owner-approved Arima upload (142 states in two `.cns`
+files), and from how M.U.G.E.N defines a character in general. Only ideas are taken; the
+logic is rewritten on this engine's parts.
+
+**How they write a character.** A character is a list of numbered STATES. Each state has an
+animation and a list of CONTROLLERS, and each controller has TRIGGERS (when it fires: a time,
+an animation frame, "my hit landed", a variable). Three always-on states (-1, -2, -3) read the
+buttons and watch for things every tick. A HELPER is a small second character the owner
+sends out (a thrown weapon, a lightning bolt) with states of its own.
+
+What Arima's files use most, and where that lands here:
+
+| Their part (uses in Arima) | What it does | Here today | Worth having |
+|---|---|---|---|
+| `HitDef` (67) | One hit: damage, weight, push, the state the victim goes to | `ActionMove` + `Hitbox` | - |
+| `ChangeState` (143) with button triggers | Chains and cancels | `MoveTimeline` chain, `chain_after` | Done: a power plays mid-swing (C9.9b), and `cancel_on_hit` chains a normal on hit (C8.8a) |
+| `VelSet`, `VelAdd`, `PosSet` (148) | Movement inside a move, changing per frame | One `travel_speed` per move | A speed curve: several timed speeds on a move |
+| `PlaySnd` (302), `Explod` (305) | Timed sounds and effect pictures | SOUND and EFFECT events on the move (C8.16; the converter fills sounds, C8.16b) | Timed effect pictures on a move, the same way |
+| `EnvShake` (104), `SuperPause` (20), `Pause` (3), `Zoom` (8) | Screen shake, a freeze before a super, hit pause | None | **Hit pause and screen shake as fields on a move** |
+| `Helper` (49) + `DestroySelf` | Projectiles and thrown weapons with their own path and hits | `Projectile`, barrage shots, SHOT events | Done in C8.16c: the converter makes them SHOT events |
+| `NotHitBy` (12) | Untouchable for a stretch | `iframes_from/to` (one stretch) | A second stretch (the converter notes later ones and drops them) |
+| `HitOverride` (9) | Super armour: take the hit, keep the move | `knockback_taken`, no flinch passive | **Armour as a stretch on a move** |
+| `ReversalDef` (3) | A counter: catch the foe's hit and answer | Counter stance (C6.6d) | - |
+| `TargetState`, `TargetBind`, `TargetDrop` (15) | A grab: hold the victim in place, then throw | None | Done by hand: `throw_move` and `Grab` (C8.8b). The converter does not make one yet |
+| `LifeAdd`, `TargetLifeAdd` (10) | Heal or hurt outside a hit | Skill effects, passives | - |
+| `VarSet`, `VarAdd` (32) | The character's own counters (stance, ammo, a mark) | Statuses, pools, forms | - |
+| `AssertSpecial`, `ScreenBound`, `PlayerPush` (38) | Engine flags | Not needed | - |
+| States -1, -2, -3 | Always-on watchers | Passives' triggers | - |
+
+**Ideas worth a row**, in the order I would build them:
+
+1. **Move events.** One list on `ActionMove`: at time T do X, where X is a sound, an effect
+   picture, a shot sent out, a speed change, a screen shake or a hit pause. It would replace
+   `sound_at`, cover five rows of the table, and the converter could fill it from the
+   controllers it now only writes into `notes`.
+2. **Armour and a second untouchable stretch on a move.** Two more time ranges beside
+   `iframes_from/to`.
+3. **Grabs and throws.** A hit that holds its victim and plays a follow-up; belongs with C8.8.
+
+What is not worth copying: numbered states as the main shape (a move here is data with a
+timeline, which is easier to check and reuse), and per-character variables (statuses and
+pools already do this and are saved).
+
+## From a M.U.G.E.N character to a playable fighter, step by step
+
+This is the whole path, done once for Arima. Follow it for any other character. Steps 1 and 2
+are tools. Steps 3 to 6 are one more tool (C9.9e): write a small choices file and run
+`godot --headless --script tools/mugen_build.gd -- <choices.json>`. It writes the kit, the
+loadout and the art file, and lists the CSV keys to add. Copy
+`tools/mugen/examples/arima_choices.json`; its fields are explained in
+`tools/mugen/mugen_kit.gd` and `mugen_starter.gd`. Run `--import` after step 2 and before the
+build. The steps below say what the tool does, for when you change its output by hand.
+
+1. **Convert the moves.** `godot --headless --script tools/mugen_convert.gd -- <character.def>
+   <out folder>` writes `moves.json`: one entry per attack state, already in our units
+   (`startup`, `active`, `recovery`, `iframes_from/to`, `power`, `hits`, `poise`, `knockback`,
+   `hitbox_size`, `hitbox_offset`, `travel_speed`), plus `button`, `chains_to` and `notes`.
+2. **Unpack the art** (only if the owner approved that character's art).
+   `godot --headless --script tools/mugen_sprites.gd -- <character.def> assets/fan/<name>
+   --actions=<the animation numbers of the moves you will use>` writes the sheet, its layout,
+   one strip per animation, the sounds and `sprites.json`.
+3. **Pick the moves.** Read `moves.json` and choose:
+   - the basic chain: the light-attack states that chain into each other (follow `chains_to`);
+   - the specials: the states that cost meter (their `button` and `notes` say so);
+   - a dodge: write one by hand (Arima's: 0.3 s active, i-frames for all of it, travel 6).
+   Each chosen state becomes one `ActionMove` sub-resource. Copy the numbers from `moves.json`
+   as they are; give it the id `move/<name>_<state>`.
+4. **Write the kit**, `data/powers/<name>.tres` (a `PowerKit`; copy `data/powers/arima.tres`):
+   - a gauge, if the character has meter: two `stat_bonuses` (`max_<pool>`, `start_<pool>`)
+     and a `GaugeRule` (gain per hit dealt and taken). A M.U.G.E.N cost of N out of 3000
+     power is N / 3000 of the pool;
+   - one `Power` per special: `move` = the special's `ActionMove`, and a `skill` that only
+     pays the cost (`cost_pool`, `cost`, aimed at the user). The move does the hitting;
+   - stances or weapon sets: one `FormMechanism` with `cycle` = one form per stance. Each
+     stance has a `status`, an `attack_chain` (its own basic chain), a `look`, and its
+     specials name the stance's status in `requires_statuses`, so they take a slot only then;
+   - `passive_skills`: files from `data/passives/` that fit the character.
+5. **Write the fighter**, `data/action/<name>_loadout.tres` (an `ActionLoadout`; copy
+   `data/action/arima_loadout.tres`): a `CombatantDef` (`combatant_id`, `name_key`,
+   `base_stats`, `power_kit` = the kit, `level_curve`, `art`) and a `MoveSet` (`attack_chain`
+   = the basic chain, `dodge`).
+6. **Write the art file**, `assets/fan/<name>/art.tres` (a `MemberArt`; copy Arima's): the
+   sheet, its layout, `pixel_size` and `ground_offset` from `sprites.json`, and per move id a
+   `MoveArt` with the strip's `file`, `frames`, `feet` and `seconds` from `sprites.json`.
+   Sounds: each `PlaySnd` in the move's state, with its time (see the section below).
+7. **Add the strings** to `localization/strings.csv`: `combat.member.<name>.name`,
+   `combat.kit.<name>.name/.desc`, `combat.power.<name>_<x>.name/.desc`,
+   `combat.form.<name>_<x>.name`. Quote a value that has a comma.
+8. **Check and play.** `godot --headless --import`, then `godot --headless --script
+   tools/check_content.gd` (it lists every problem in the new files). To play as the
+   character, set `[combat] action/loadout` in `project.godot` to the loadout's path.
+
+What the converter cannot give you, so you decide by hand: which moves are specials, the
+gauge numbers, stances, passives, names, and anything a helper does (a thrown weapon's
+flight). The `notes` on each move say what was left out.
+
+## Yoshimura Eto, as built (C9.10)
+
+From the owner's upload, by **刃下心** (the same author as Arima). The author's notice forbids
+any profit (selling, livestreaming); this project is not sold and is for community
+development. Credit: `assets/fan/yoshimura_eto/CREDITS.md`. To play as her, set
+`[combat] action/loadout` to `res://data/action/yoshimura_eto_loadout.tres`.
+
+| Part | M.U.G.E.N state | Cost (of 100 `kagune`) |
+|---|---|---|
+| Kagune chain | 200, 205, 215, 219, 216, 217 | — |
+| Kakuja chain | 330, 331, 332, 334 | — |
+| Kakuja Shift (slot 1) | a `FormMechanism` cycle: kagune, kakuja (attack x1.2, tint) | — |
+| Air Strike (kagune) | 500 | 17 |
+| Noroi & Tatara (kagune) | 400: summons Noroi (stand 401, walk 402, swings 406/407/419) and Tatara (450, 451; 460/462/465) for 20 s (3 turns in a battle), cap 2; sprites in `noroi/`, `tatara/` | 8, 12 s cooldown |
+| Bronze Tree (kagune) | 510; refused while the helpers are out (`alone`) | 17 |
+| Kakuja Noroi & Tatara (kakuja) | 4000: summons the kakuja Noroi (stand 2401; 2405 near, 2402 and 2406 far) and Tatara (2450, 2451; 2460/2461/2471), untouchable (their `HitOverride`), for 15 s (2 turns in a battle), cap 2; sprites in `noroi_kakuja/`, `tatara_kakuja/` | 17, 20 s cooldown |
+| Air Fall (kakuja) | 2502 (the hit of 2500) | 25, 8 s cooldown |
+| One-Eyed Owl (kakuja) | 2600 | 7 |
+| Passives | `kakuja_regen`, `kakuja_hunger`, `night_owl` | — |
+
+Not used yet: the 4000 cutscene and the helpers' entry and leaving moves, the 350 chain,
+the b and c chains and the air moves.
+
+## Showing a member's art in play (C9.9d)
+
+- `MemberArt` (a resource): `sheet` + `layout` (the walking sheet), `pixel_size`,
+  `ground_offset`, and `moves`: a move's id -> a `MoveArt`.
+- `MoveArt`: `strip`, `frames`, `feet`, `seconds` (all from `sprites.json`). Its sounds are
+  events on the move (`ActionMove.events`), not here.
+- Put it on the fighter: `CombatantDef.art`. A form's `LookDef.art` is a second costume: its
+  sheet and strips win while the form is held; a move it lacks falls back to the member's.
+- `ArtSwap` (on every field body) does the rest. No art means the body's own sheet.
+- Sound times from M.U.G.E.N: `PlaySnd` with `time = N` is N / 60 s; with `animelem = K` it is
+  the ticks of the animation's first K - 1 pictures / 60 s.
+- Arima: `assets/fan/arima_kisho/art.tres`, 15 moves. To play as him, set
+  `[combat] action/loadout` to `res://data/action/arima_loadout.tres`.
+- Followers and field enemies show strips too (C9.9e). Not yet: the Owl coat's own
+  sheet, hurt and dodge strips.
+
 ## Build order (the board rows)
 
 Each row is one package of about 8 files or fewer, red first, with the full ladder. The details
@@ -542,7 +783,7 @@ are on `COMBAT.md`'s board. Mechanism rows come before the kits that need them.
 | C6.24 | Kit: Isliid (C6.0b): three forms, the sword cycle, `arts`, `true_arts` and `super_arts` | C6.4, C6.5, C6.6, C6.8, C6.11, C6.12 |
 | C6.25 | Kit: Roland (C6.0b): three forms, Charisma, Trance, Glorious Finale; `PowerScaling.Source.ALLIES_STANDING` | C6.4, C6.5, C6.8, C6.9, C6.12 |
 
-### Adding a character later, in five steps (C6.23 writes the full how-to)
+### Adding a character later, in five steps (the full how-to is `AUTHORING.md` § Hero powers)
 
 1. Read the mechanism table. Most powers are a `Skill` plus one of M1–M14.
 2. Write `data/powers/<kit>.tres` with its powers, passives, gauges and stat bonuses.

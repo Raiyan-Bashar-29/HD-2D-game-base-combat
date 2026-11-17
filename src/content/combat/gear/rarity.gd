@@ -12,10 +12,11 @@ extends ContentEntry
 ## A game adds a tier by adding a file at `data/rarities/<name>.tres` with the id
 ## `rarity/<name>`. No code names any tier.
 ##
-## `sockets` adds sockets to every piece of the tier (C7.4c, `GearDefinition.socket_count`).
+## `sockets` adds sockets to every piece of the tier (C7.4c, `GearDefinition.socket_count`), and
+## `max_upgrade` caps how high its pieces are upgraded (C7.5, `GearDefinition.upgrade_cap`).
 ##
-## READ LATER: `color` (the gear screen, C7.7), `affixes` (C7.2b) and `max_upgrade` (C7.5).
-## They are here now so a tier is written once.
+## `color` tints the piece on the gear screen (C7.7); `affixes` is how many random extra
+## modifiers a dropped unique piece rolls (C7.2b, `GearAffixes`).
 ##
 ## OWNS: the data of one tier, and the scaling rule for one stat change.
 ## MUST NOT: know which pieces have it, or touch an autoload.
@@ -34,8 +35,11 @@ extends ContentEntry
 @export var affixes: int = 0
 ## Extra sockets on the piece.
 @export var sockets: int = 0
-## The highest upgrade level a piece of this tier reaches. 0 means the game's default.
+## The highest upgrade level a piece of this tier reaches (C7.5). 0 means no cap of its own.
 @export var max_upgrade: int = 0
+## The share of a piece's recipe given back when it is taken apart (C7.6, `Crafting.salvage`).
+## 0 means a piece of this tier is never taken apart.
+@export var salvage: float = 0.5
 
 
 ## `modifier` as a piece of this tier gives it. An added amount is multiplied. A multiplier
@@ -55,6 +59,8 @@ func problems() -> PackedStringArray:
 	var where: String = "%s (%s)" % [resource_path, id]
 	if name_key == "":
 		found.append("%s has no name_key" % where)
+	if salvage < 0.0 or salvage > 1.0:
+		found.append("%s has a salvage share outside 0 to 1" % where)
 	if stat_scale < 0.0:
 		found.append("%s has a negative stat_scale" % where)
 	if drop_weight < 0.0:

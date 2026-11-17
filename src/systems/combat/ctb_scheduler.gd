@@ -19,6 +19,8 @@ extends TurnScheduler
 ## calls the battle's `next_turn()`. Holding the clock at 0 while a menu is open is "wait" mode:
 ## nothing fills. `next()` alone, with no `advance`, is still plain CTB.
 ##
+## A HAND-OVER (C8.27b) gives the newcomer the leaver's remaining wait.
+##
 ## OWNS: each actor's remaining wait.
 ## MUST NOT: know what a tick is in seconds. A tick is an ordering unit, not time; whoever feeds
 ## `advance` decides how many ticks a second is worth.
@@ -42,6 +44,15 @@ func join(id: StringName, speed: float) -> void:
 func leave(id: StringName) -> void:
 	super(id)
 	_wait.erase(id)
+
+
+func hand_over(out_id: StringName, in_id: StringName, speed: float) -> bool:
+	var left: float = _wait.get(out_id, 0.0)
+	if not super(out_id, in_id, speed):
+		return false
+	_wait.erase(out_id)
+	_wait[in_id] = left
+	return true
 
 
 ## Pushes `id` back by `ticks`, or forward with a negative number, never below zero.
@@ -69,6 +80,9 @@ func wait_of(id: StringName) -> float:
 
 
 func next() -> StringName:
+	var owed: StringName = _take_owed()
+	if owed != &"":
+		return owed
 	var id: StringName = _soonest(_wait)
 	if id == &"":
 		return id
@@ -80,7 +94,7 @@ func next() -> StringName:
 
 
 func preview(count: int) -> Array[StringName]:
-	var out: Array[StringName] = []
+	var out: Array[StringName] = _owed_preview(count)
 	var waits: Dictionary[StringName, float] = _wait.duplicate()
 	while out.size() < count:
 		var id: StringName = _soonest(waits)

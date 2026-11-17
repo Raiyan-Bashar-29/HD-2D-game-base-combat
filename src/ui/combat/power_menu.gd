@@ -21,13 +21,19 @@ extends RefCounted
 ## MUST NOT: use a power, hold any state, or name a character.
 
 const CATEGORY_KEY: String = "ui.battle.powers"
+## Team techs get a submenu of their own (C8.21).
+const TEAM_CATEGORY_KEY: String = "ui.battle.team_techs"
 const COOLDOWN_TURNS_KEY: String = "ui.battle.reason.cooldown_turns"
 const COOLDOWN_SECONDS_KEY: String = "ui.battle.reason.cooldown_seconds"
 const HOURS_KEY: String = "ui.battle.reason.hours"
 const STATUS_KEY: String = "ui.battle.reason.needs_status"
+const FORBIDDEN_KEY: String = "ui.battle.reason.forbidden_status"
+const TEAM_KEY: String = "ui.battle.reason.team"
+const SEALED_KEY: String = "ui.battle.reason.sealed"
 const POOL_KEY: String = "ui.battle.reason.pool_low"
 const GEAR_KEY: String = "ui.battle.reason.needs_gear"
 const ONCE_KEY: String = "ui.battle.reason.once"
+const UPGRADE_KEY: String = "ui.battle.reason.needs_upgrade"
 const NOT_EQUIPPED_KEY: String = "ui.battle.reason.not_equipped"
 
 
@@ -42,7 +48,7 @@ static func commands(user: Combatant) -> Array[BattleCommand]:
 		if power.passive:
 			continue
 		var command := BattleCommand.for_power(power)
-		command.category = CATEGORY_KEY
+		command.category = TEAM_CATEGORY_KEY if power.mechanism is TeamMechanism else CATEGORY_KEY
 		out.append(command)
 	return out
 
@@ -77,6 +83,12 @@ static func reason_key(user: Combatant, power: Power) -> String:
 			return HOURS_KEY
 		PowerUse.Reason.STATUS:
 			return STATUS_KEY
+		PowerUse.Reason.FORBIDDEN:
+			return FORBIDDEN_KEY
+		PowerUse.Reason.TEAM:
+			return TEAM_KEY
+		PowerUse.Reason.SEALED:
+			return SEALED_KEY
 		PowerUse.Reason.POOL:
 			return POOL_KEY
 		PowerUse.Reason.BLOCKED:
@@ -87,6 +99,8 @@ static func reason_key(user: Combatant, power: Power) -> String:
 			return GEAR_KEY
 		PowerUse.Reason.ONCE:
 			return ONCE_KEY
+		PowerUse.Reason.UPGRADE:
+			return UPGRADE_KEY
 	return NOT_EQUIPPED_KEY
 
 

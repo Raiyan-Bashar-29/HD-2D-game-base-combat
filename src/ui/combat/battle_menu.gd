@@ -24,6 +24,8 @@ const ITEM_REASON_KEY: String = "ui.battle.reason.no_item"
 const TARGET_REASON_KEY: String = "ui.battle.reason.no_target"
 const FLEE_REASON_KEY: String = "ui.battle.reason.no_flee"
 const BOOST_REASON_KEY: String = "ui.battle.reason.no_boost"
+## The Swap row when it keeps the turn (C8.22c).
+const FREE_SWAP_KEY: String = "ui.battle.swap_free"
 
 
 ## The first menu, in authored order: a `BattleCommand` for each command with no category, and
@@ -60,7 +62,7 @@ static func refusal(battle: Battle, command: BattleCommand, boost: int) -> Strin
 	match command.kind:
 		BattleCommand.Kind.FLEE:
 			return "" if battle.can_flee else FLEE_REASON_KEY
-		BattleCommand.Kind.DEFEND:
+		BattleCommand.Kind.DEFEND, BattleCommand.Kind.ROW:
 			return ""
 		BattleCommand.Kind.POWER:
 			# `PowerUse` already checked the cost; what is left is someone to aim at.
@@ -77,3 +79,44 @@ static func refusal(battle: Battle, command: BattleCommand, boost: int) -> Strin
 			if command.skill.toggle_status != null:
 				return ""
 	return TARGET_REASON_KEY if battle.targets_for(command).is_empty() else ""
+
+
+## The current fighter's menu: its authored commands, or Attack, Defend and Flee when it has none.
+## A fighter with no authored commands gets Attack, Defend and Flee. Either way, its hero powers
+## Its hero powers follow under one Powers row (C6.2c).
+static func commands(battle: Battle) -> Array[BattleCommand]:
+	var def: CombatantDef = battle.defs.get(battle.current().combatant_id, null)
+	var basic: Array[BattleCommand] = []
+	if def != null and not def.commands.is_empty():
+		basic = def.commands
+	else:
+		for kind: BattleCommand.Kind in [BattleCommand.Kind.ATTACK, BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE]:
+			var command := BattleCommand.new()
+			command.kind = kind
+			basic.append(command)
+	var menu: Array[BattleCommand] = PowerMenu.with_powers(basic, battle.current()).duplicate()
+	# A party member of its own may change rows (C8.22b), and swap with the reserve while someone
+	# there stands (C8.3).
+	if battle.party.has(battle.current()) and not battle.guests.has(battle.current().combatant_id):
+		menu.append(_plain(BattleCommand.Kind.ROW))
+		if not BattleReserve.ready(battle).is_empty():
+			var swap: BattleCommand = _plain(BattleCommand.Kind.SWAP)
+			# A swap that keeps the turn says so (C8.22c).
+			if battle.free_swaps and not battle.free_swap_used:
+				swap.label_key = FREE_SWAP_KEY
+			menu.append(swap)
+	return menu
+
+
+static func _plain(kind: BattleCommand.Kind) -> BattleCommand:
+	var command := BattleCommand.new()
+	command.kind = kind
+	return command
+
+
+## The free swaps for waiting members offered beside a Swap's targets (C8.26): none for any other
+## command.
+static func free_pairs(battle: Battle, command: BattleCommand) -> Array[Array]:
+	if command == null or command.kind != BattleCommand.Kind.SWAP:
+		return []
+	return BattleReserve.waiting_pairs(battle)

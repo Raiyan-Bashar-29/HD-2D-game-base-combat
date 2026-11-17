@@ -18,6 +18,8 @@ extends ContentEntry
 @export var modifiers: Array[StatModifier] = []
 ## The element the piece's plain attack takes while the gem is in it. Empty means none.
 @export var element: StringName = &""
+## Passives (C9.3) the wearer of the piece holding the gem has.
+@export var passives: Array[PassiveSkill] = []
 
 
 func problems() -> PackedStringArray:
@@ -30,6 +32,6 @@ func problems() -> PackedStringArray:
 			found.append("%s lists an empty modifier" % where)
 		elif modifier.stat == &"":
 			found.append("%s has a modifier with no stat" % where)
-	if modifiers.is_empty() and element == &"":
-		found.append("%s gives nothing: no modifiers and no element" % where)
+	if modifiers.is_empty() and element == &"" and passives.is_empty():
+		found.append("%s gives nothing: no modifiers, no element and no passive" % where)
 	return found

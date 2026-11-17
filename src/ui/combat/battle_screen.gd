@@ -20,6 +20,12 @@ extends MenuScreen
 ## it has (MP, BP, a limit gauge, its shield), its statuses by name, and the weaknesses already
 ## revealed. Under the turn order, `battle_log` shows the newest few things that happened.
 ##
+## AUTO-BATTLE (C5.4b). The first menu ends with an Auto row that turns `AutoBattle` on and off.
+## While it is on, `advance` stops at each party member's turn as it would for the player, and
+## `tick_auto` plays that turn by its brain once every `AUTO_DELAY` seconds, so the log can be
+## followed and the row pressed again in between; on such a turn the Auto row is the only row,
+## so it has the focus (C8.27b). Each fighter's line and each command's label are `BattleReadout`'s.
+##
 ## CANCEL CANNOT LEAVE A BATTLE. `closes_on_cancel` is false: FLEE is the way out, when allowed.
 ## When it ends, the outcome is shown with one row that closes the screen, and closing releases
 ## the fighters (`BattleSetup.release`), which erases every enemy flag.
@@ -39,6 +45,11 @@ const TITLE_KEY: String = "ui.battle.title"
 const ATTACK_KEY: String = "ui.battle.attack"
 const DEFEND_KEY: String = "ui.battle.defend"
 const FLEE_KEY: String = "ui.battle.flee"
+const SWAP_KEY: String = "ui.battle.swap"
+## A free swap for a waiting member in the Swap target list (C8.26).
+const SWAP_PAIR_KEY: String = "ui.battle.swap_pair"
+const ROW_KEY: String = "ui.battle.row"
+const BACK_ROW_KEY: String = "ui.battle.back_row"
 const BACK_KEY: String = "ui.battle.back"
 const POOLS_KEY: String = "ui.battle.pools"
 const ORDER_KEY: String = "ui.battle.order"
@@ -61,6 +72,10 @@ const BOOST_KEY: String = "ui.battle.boost"
 const POOL_KEY: String = "ui.battle.pool"
 const STATUSES_KEY: String = "ui.battle.statuses"
 const WEAK_KEY: String = "ui.battle.weak"
+const AUTO_ON_KEY: String = "ui.battle.auto_on"
+const AUTO_OFF_KEY: String = "ui.battle.auto_off"
+## Seconds between two turns auto-battle plays.
+const AUTO_DELAY: float = 0.6
 ## How many upcoming turns the order line shows.
 const ORDER_LENGTH: int = 5
 
@@ -76,6 +91,7 @@ var _boost: int = 0
 var rewards: Rewards
 ## The running commentary, listening on the bus while the screen is open (C2.19).
 var battle_log: BattleLog
+var _auto_wait: float = AUTO_DELAY
 
 
 func _init() -> void:
@@ -110,7 +126,7 @@ func advance() -> void:
 		var actor: Combatant = battle.current()
 		if actor == null:
 			actor = battle.next_turn()
-		if actor == null or battle.brain_of(actor) == null:
+		if actor == null or battle.brain_of(actor) == null or AutoBattle.plays(battle, actor):
 			break
 		BattleAi.take_turn(battle, battle.brain_of(actor))
 	# The fight just ended: hand out rewards exactly once (Rewards only gives on a win).
@@ -119,15 +135,55 @@ func advance() -> void:
 	refresh()
 
 
+func _process(delta: float) -> void:
+	tick_auto(delta)
+
+
+## With auto-battle on and a party member's turn up, counts `delta` seconds down and, once
+## `AUTO_DELAY` has passed, plays that turn by its brain. True when a turn was played.
+func tick_auto(delta: float) -> bool:
+	if battle == null or battle.current() == null or not AutoBattle.plays(battle, battle.current()):
+		return false
+	_auto_wait -= delta
+	if _auto_wait > 0.0:
+		return false
+	_auto_wait = AUTO_DELAY
+	BattleAi.take_turn(battle, battle.brain_of(battle.current()))
+	_new_turn()
+	advance()
+	return true
+
+
+func _free_pair(pair: Array) -> void:
+	_pending = null
+	BattleReserve.free_swap(battle, pair[0] as Combatant, pair[1] as Combatant)
+	refresh()
+
+
+func _toggle_auto() -> void:
+	AutoBattle.toggle()
+	_auto_wait = AUTO_DELAY
+	_new_turn()
+	refresh()
+
+
+# A turn starts on the first menu, with no Boost level, nothing pending and no refusal shown.
+func _new_turn() -> void:
+	_boost = 0
+	_category = ""
+	_pending = null
+	_refused = false
+
+
 # Rebuilds the menu's rows from scratch. MenuScreen calls this on every refresh().
 func _fill() -> void:
 	if battle == null:
 		return
 	for fighter: Combatant in battle.party + battle.enemies:
-		add_note(_pools_line(fighter))
+		add_note(BattleReadout.line(fighter, name_of(fighter), battle_log))
 	# Over: show the result, the rewards, and one Continue button.
 	if battle.outcome() != Battle.Outcome.ONGOING:
-		add_note(tr(_outcome_key()))
+		add_note(tr(BattleReadout.outcome_key(battle)))
 		_reward_notes()
 		add_row(tr(CONTINUE_KEY), request_close)
 		return
@@ -139,10 +195,18 @@ func _fill() -> void:
 		add_note(tr(REFUSED_KEY))
 	if battle.current() == null:
 		return
+	# Auto plays this turn: only its row, so it has the focus and one press stops it (C8.27b).
+	if AutoBattle.plays(battle, battle.current()):
+		add_row(tr(AUTO_ON_KEY), _toggle_auto)
+		return
 	# A command is waiting for a target: list the targets, plus Back.
 	if _pending != null:
 		for target: Combatant in battle.targets_for(_pending):
 			add_row(name_of(target), _aim.bind(target))
+		# A free swap may trade a waiting member instead (C8.26): "Bench for Mate".
+		for pair: Array in BattleMenu.free_pairs(battle, _pending):
+			var names: Dictionary = {"in": name_of(pair[1] as Combatant), "out": name_of(pair[0] as Combatant)}
+			add_row(tr(SWAP_PAIR_KEY).format(names), _free_pair.bind(pair))
 		add_row(tr(BACK_KEY), _back)
 		return
 	# An open submenu: its commands, plus Back.
@@ -158,6 +222,7 @@ func _fill() -> void:
 			_command_row(entry as BattleCommand)
 		else:
 			add_row(tr(entry as String), _open.bind(entry as String))
+	add_row(tr(AUTO_ON_KEY if AutoBattle.on() else AUTO_OFF_KEY), _toggle_auto)
 
 
 # Leaving the screen frees the fighter nodes and forgets the enemies' HP.
@@ -174,31 +239,25 @@ func name_of(fighter: Combatant) -> String:
 	var def: CombatantDef = battle.defs.get(fighter.combatant_id, null)
 	if def == null or def.name_key == "":
 		return id
-	var suffix: String = id.trim_prefix(String(def.combatant_id))
+	# A field body's "/<node>" tail (a helper that joined, C8.10d) is not part of its name.
+	var suffix: String = id.trim_prefix(String(def.combatant_id)).get_slice("/", 0)
 	var shown: String = tr(def.name_key) + suffix.replace("_", " ")
+	# A back-row fighter says so (C8.22b).
+	shown = tr(BACK_ROW_KEY).format({"name": shown}) if fighter.back_row else shown
 	var form: String = LookSwap.form_name_key(fighter.get_parent())
 	return shown if form == "" else tr(FORM_TITLE_KEY).format({"name": shown, "form": tr(form)})
 
 
-# A fighter with no authored commands gets Attack, Defend and Flee. Either way, its hero powers
-# follow under one Powers row (C6.2c).
+# The current fighter's commands: `BattleMenu.commands`.
 func _menu() -> Array[BattleCommand]:
-	var def: CombatantDef = battle.defs.get(battle.current().combatant_id, null)
-	if def != null and not def.commands.is_empty():
-		return PowerMenu.with_powers(def.commands, battle.current())
-	var basic: Array[BattleCommand] = []
-	for kind: BattleCommand.Kind in [BattleCommand.Kind.ATTACK, BattleCommand.Kind.DEFEND, BattleCommand.Kind.FLEE]:
-		var command := BattleCommand.new()
-		command.kind = kind
-		basic.append(command)
-	return PowerMenu.with_powers(basic, battle.current())
+	return BattleMenu.commands(battle)
 
 
 # One command's row: its label with cost or stance state, greyed out with a reason when the
 # fighter cannot use it now. A greyed row has no action at all.
 func _command_row(command: BattleCommand) -> void:
 	var reason: String = BattleMenu.refusal(battle, command, _boost)
-	var text: String = _label(command)
+	var text: String = tr(BattleReadout.command_key(command))
 	var skill: Skill = command.skill
 	if skill != null and skill.toggle_status != null:
 		var on: bool = SkillUse.stance_on(battle.current(), skill)
@@ -235,26 +294,14 @@ func _open(category: String) -> void:
 	refresh()
 
 
-func _label(command: BattleCommand) -> String:
-	if command.label_key != "":
-		return tr(command.label_key)
-	match command.kind:
-		BattleCommand.Kind.ATTACK:
-			return tr(ATTACK_KEY)
-		BattleCommand.Kind.DEFEND:
-			return tr(DEFEND_KEY)
-		BattleCommand.Kind.FLEE:
-			return tr(FLEE_KEY)
-	return tr(command.skill.name_key)
-
-
 # A one-target command asks for a target first; anything else acts immediately. A stance acts
 # at once on its user.
 func _choose(command: BattleCommand) -> void:
 	if command.skill != null and command.skill.toggle_status != null:
 		_act(command, [battle.current()])
 		return
-	var single: bool = command.kind == BattleCommand.Kind.ATTACK or (command.skill != null
+	var single: bool = command.kind == BattleCommand.Kind.ATTACK or command.kind == BattleCommand.Kind.SWAP \
+			or (command.skill != null
 			and command.skill.scope == Skill.Scope.ONE and command.kind != BattleCommand.Kind.DEFEND
 			and command.kind != BattleCommand.Kind.FLEE)
 	if single:
@@ -284,36 +331,8 @@ func _act(command: BattleCommand, targets: Array[Combatant]) -> void:
 	# If the battle refused (e.g. not enough MP), show a line saying so and keep the menu.
 	_refused = not battle.act(command, targets, _boost)
 	if not _refused:
-		# The action happened: the next turn starts on the first menu with no Boost chosen.
-		_boost = 0
-		_category = ""
+		_new_turn()
 	advance()
-
-
-# One fighter's line: hp, then every other pool it has, its statuses, and the weaknesses the
-# player has already found. Parts it has none of are left out.
-func _pools_line(fighter: Combatant) -> String:
-	var vitals: Vitals = Vitals.of(fighter.get_parent())
-	var parts: Array[String] = [tr(POOLS_KEY).format({"name": name_of(fighter),
-			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})]
-	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
-		var pool: StringName = StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
-		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
-			parts.append(tr(POOL_KEY).format({"pool": String(pool).to_upper(),
-					"current": vitals.current(pool), "max": vitals.maximum(pool)}))
-	var names: Array[String] = []
-	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
-	for effect: StatusEffect in statuses.held() if statuses != null else []:
-		names.append(battle_log.status_name(fighter.combatant_id, effect.id) if battle_log != null else String(effect.id))
-	if not names.is_empty():
-		parts.append(tr(STATUSES_KEY).format({"list": ", ".join(names)}))
-	var found: Array[String] = []
-	for key: StringName in fighter.weak_to:
-		if Weakness.revealed(fighter, key):
-			found.append(tr(String(key)))
-	if not found.is_empty():
-		parts.append(tr(WEAK_KEY).format({"list": ", ".join(found)}))
-	return "   ".join(parts)
 
 
 func _upcoming() -> Array[String]:
@@ -343,12 +362,3 @@ func _reward_notes() -> void:
 func _item_name(item_id: StringName) -> String:
 	var definition: ItemDefinition = ItemDb.definition(item_id)
 	return tr(definition.name_key) if definition != null else String(item_id)
-
-
-func _outcome_key() -> String:
-	match battle.outcome():
-		Battle.Outcome.WON:
-			return WON_KEY
-		Battle.Outcome.LOST:
-			return LOST_KEY
-	return FLED_KEY

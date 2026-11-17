@@ -14,4 +14,4 @@ id = &"status/guard_up"
 name_key = "combat.status.guard_up.name"
 duration = 3.0
 modifiers = Array[ExtResource("2_mod")]([SubResource("defence")])
-tags = Array[StringName]([&"buff"])
+tags = Array[StringName]([&"buff", &"taunt"])

@@ -37,6 +37,19 @@ const ID_NAMESPACES: Array[String] = ["area", "item", "talk", "quest"]
 ## worth of labels, not content, and NEW_GAME.md already carves them out by name.
 const CONTENT_NAMESPACES: Array[String] = ["area", "item", "talk", "quest", "object", "action"]
 const ENGINE_ROWS: String = "item.category."
+
+## THE COMBAT FORK'S ROWS (C8.26). `combat.<space>.<name>` translates the content `<prefix><name>`
+## for each space below, so an orphan is a failure here as `quest.` is above. The ids are read
+## from every `id`, `kit_id`, `power_id` and `type_id` line under data/, sub-resources too.
+## `form`, `member`, `enemy` and `category` are authored freely and only counted; `craft`,
+## `gear`, `loadout` and `stat` are the engine's own screens and are neither.
+const COMBAT_ID_SPACES: Dictionary[String, String] = {
+	"skill": "skill/", "status": "status/", "passive": "passive/", "reaction": "reaction/",
+	"difficulty": "difficulty/", "affix": "affix/", "recipe": "recipe/", "kit": "kit/",
+	"power": "power/", "gear_type": "gear_type/",
+}
+const COMBAT_ENGINE: Array[String] = ["craft", "gear", "loadout", "stat"]
+const COMBAT_ID_MARKERS: Array[String] = ["id = &\"", "kit_id = &\"", "power_id = &\"", "type_id = &\""]
 ## The suite too, as of T1.3. It used to be exempt because a third of its assertions named demo
 ## content and unwelding it was T1.3's own job; now that the fixtures exist, scanning it is what
 ## stops the welding growing back one convenient literal at a time.
@@ -280,6 +293,8 @@ func _check_debug_gate() -> void:
 ## this goes red. A fork that authored its own quest keeps its own data, so it stays green.
 func _check_localization() -> void:
 	var demo: Dictionary[String, String] = _demo_names()
+	var combat: Dictionary[String, bool] = {}
+	_collect_combat_ids(DATA_ROOT, combat)
 	var file: FileAccess = FileAccess.open(CSV, FileAccess.READ)
 	if file == null:
 		print("  localization: no %s in this checkout" % CSV)
@@ -298,6 +313,9 @@ func _check_localization() -> void:
 			continue
 		rows += 1
 		var space: String = key.get_slice(".", 0)
+		if space == "combat" and not COMBAT_ENGINE.has(key.get_slice(".", 1)):
+			_check_combat_row(key, combat, counts)
+			continue
 		if not CONTENT_NAMESPACES.has(space) or key.begins_with(ENGINE_ROWS):
 			continue
 		counts[space] = counts.get(space, 0) + 1
@@ -320,6 +338,39 @@ func _check_row(key: String, space: String, demo: Dictionary[String, String]) ->
 	_fail("%s translates %s '%s', which exists in neither data/ nor scenes/areas/" % [
 		CSV, space, id,
 	])
+
+
+## The content id a `combat.*` row translates (C8.26), or "" when its space is engine or
+## authored freely: `combat.power.ember_dash.name` is `power/ember_dash`.
+static func combat_row_id(key: String) -> String:
+	var parts: PackedStringArray = key.split(".")
+	if parts.size() < 3 or parts[0] != "combat" or not COMBAT_ID_SPACES.has(parts[1]):
+		return ""
+	return COMBAT_ID_SPACES[parts[1]] + parts[2]
+
+
+func _check_combat_row(key: String, combat: Dictionary[String, bool], counts: Dictionary[String, int]) -> void:
+	var space: String = "combat." + key.get_slice(".", 1)
+	counts[space] = counts.get(space, 0) + 1
+	var id: String = combat_row_id(key)
+	if id != "" and not combat.has(id):
+		_fail("%s translates '%s', which no file under data/ declares" % [CSV, id])
+
+
+# Every id a combat file declares, on any line: a kit's powers and an inline status are
+# sub-resources, so the first `id` line alone would miss them.
+func _collect_combat_ids(root: String, into: Dictionary[String, bool]) -> void:
+	if not DirAccess.dir_exists_absolute(root):
+		return
+	for directory: String in DirAccess.get_directories_at(root):
+		_collect_combat_ids("%s/%s" % [root, directory], into)
+	for file_name: String in DirAccess.get_files_at(root):
+		if not file_name.ends_with(".tres"):
+			continue
+		for line: String in FileAccess.get_file_as_string("%s/%s" % [root, file_name]).split("\n"):
+			for marker: String in COMBAT_ID_MARKERS:
+				if line.begins_with(marker):
+					into[_quoted_after(line, marker)] = true
 
 
 static func _total(counts: Dictionary[String, int]) -> int:

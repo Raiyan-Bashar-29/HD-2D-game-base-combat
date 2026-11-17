@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Recipe" format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/gear/recipe.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"recipe/quinque_owl"
+name_key = "combat.recipe.quinque_owl.name"
+kind = 0
+inputs = Dictionary[StringName, int]({
+&"item/kakuhou_owl": 1
+})
+outputs = Dictionary[StringName, int]({
+&"item/quinque_owl": 1
+})
+station = &"quinque_lab"

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SpriteSheetLayout" format=3]
+
+[ext_resource type="Script" path="res://src/content/art/sprite_sheet_layout.gd" id="1_cfhtw"]
+
+[resource]
+script = ExtResource("1_cfhtw")
+facings = 4
+frames = 8
+animations = 3
+cell_size = Vector2i(82, 58)
+walk_row = 1
+run_row = 2

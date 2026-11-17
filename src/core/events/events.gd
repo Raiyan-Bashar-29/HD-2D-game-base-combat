@@ -296,12 +296,31 @@ signal attack_missed(who: StringName, by: StringName)
 signal attack_blocked(who: StringName, by: StringName)
 ## `who` struck back at `against` through a COUNTER status. Emitted by `SkillUse.counter` (C2.15).
 signal countered(who: StringName, against: StringName)
+## `who` followed an ally's attack on `against` through a FOLLOW_UP status. Emitted by
+## `TeamAttacks` (C8.2).
+signal followed_up(who: StringName, against: StringName)
+## `out` stepped back into the battle's reserve and `coming` took its place. Emitted by
+## `BattleReserve` (C8.3).
+signal party_swapped(out: StringName, coming: StringName)
+## A hit on `who` met the mark of another element and set off the reaction `reaction_id`.
+## Emitted by `ElementReactions` (C8.4).
+signal elements_reacted(who: StringName, reaction_id: StringName)
+## A hit moved `who` to the back row (`back`) or the front. Emitted by `Rows` (C8.5).
+signal row_changed(who: StringName, back: bool)
+## Held-back foes `who` joined the battle. Emitted by `BattleSetup.reinforce` (C8.22a).
+signal reinforcements_arrived(who: Array[StringName])
+## `who` used a team tech, struck by every one of `members` (`who` first). Emitted by `TeamRun`
+## (C8.2).
+signal team_attacked(who: StringName, members: Array[StringName])
 ## A skill aimed at `who` bounced back to `back_to` through a REFLECT status. Emitted by
 ## `SkillUse.apply` (C2.15).
 signal skill_reflected(who: StringName, back_to: StringName, skill_id: StringName)
 ## A hit matched `key` (an element or a skill tag) among `who`'s weaknesses for the first time:
 ## it is now remembered under `weakness/<kind>/<key>`. Emitted by `Weakness` (C2.17).
 signal weakness_revealed(who: StringName, key: StringName)
+## `who` hit a foe's weakness in its battle turn and earned one more turn (C8.1, the turn
+## order's `weakness_extra_turns`). Emitted by `Weakness`.
+signal extra_turn_earned(who: StringName)
 ## `who`'s shield reached zero and it is BROKEN. Emitted by `Weakness` (C2.17), from a weakness
 ## hit or, in real time, from poise (C3.3).
 signal combatant_broken(who: StringName)
@@ -311,6 +330,9 @@ signal attack_dodged(who: StringName, by: StringName)
 ## That dodge was perfect: the hit came in the first `perfect_window` seconds of `who`'s i-frames.
 ## Emitted by `Hurtbox.take` (C6.6c), just after `attack_dodged`.
 signal perfect_dodge(who: StringName, by: StringName)
+## The hybrid's defence prompt (C8.20): a foe's hit is about to land on the player. `kind` is
+## `&"evade"` or `&"block"`, `seconds` the time left; `&""` clears it. Emitted by `DefenceWatch`.
+signal defence_prompt(kind: StringName, seconds: float)
 ## A real-time hit asks for `who` to be pushed by `push`: the direction times the distance in
 ## metres, flat on the ground. Emitted by `Hurtbox.take` (C3.3); the fighter's body moves (C3.4).
 signal knockback_requested(who: StringName, push: Vector3)
@@ -327,6 +349,10 @@ signal atb_changed(who: StringName, value: float, segments: int)
 ## battle) of cooldown before it can be used again; 0 means it is ready. Emitted by `PowerSet`
 ## (C6.3b) only when that whole number changes, not every frame, so a HUD can show it live.
 signal power_cooldown_changed(who: StringName, power_id: StringName, left: int)
+## `who` used a hero power, landing on `targets` (ids; empty for a power with no skill). `power`
+## is the `Power` resource, typed loosely because `core` may not name content. Emitted by
+## `PowerUse` (C8.13b) after the power has run, so a copy can learn it.
+signal power_used(who: StringName, power: Resource, targets: Array[StringName])
 ## `who` raised the battlefield `power_id` and it stands (C6.9g). Emitted by `BattlefieldRun` after
 ## any clash let it rise, so a log and a HUD can name it and its place.
 signal battlefield_raised(who: StringName, power_id: StringName)
@@ -345,3 +371,6 @@ signal battle_ended(outcome: int)
 ## The field asked for a fight. Emitted by an `EncounterPoint`, or a game's own trigger, with an
 ## `encounter/<name>` id; whoever hosts battles (C2.7) builds it with `BattleSetup`.
 signal encounter_requested(encounter_id: StringName)
+## The player asked to craft at a station (C7.8). Emitted by a `CraftStation` with its station
+## id (empty for "anywhere"); `CraftHost` opens the craft screen for it.
+signal craft_requested(station: StringName)

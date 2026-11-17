@@ -33,7 +33,9 @@ enum Block { SKIP_TURN, NO_SKILLS, NO_ITEMS, NO_FLEE }
 ## A COUNTER can name a `counter_move` (C6.6d, M13 counter stance): in the field the holder swings
 ## that move at whoever hit it; in a battle the counter strikes with that move's numbers. With
 ## none, the counter is one plain hit with the holder's attack.
-enum Reaction { COUNTER, REFLECT }
+## FOLLOW_UP (C8.2): when an ally's plain ATTACK lands in a battle, the holder strikes the same
+## foe too, with its `counter_move`'s numbers or one plain hit (`TeamAttacks`).
+enum Reaction { COUNTER, REFLECT, FOLLOW_UP }
 
 ## Localization key for the status's name in the battle readout and log (C2.19). Empty shows
 ## the last part of its id.
@@ -53,6 +55,9 @@ enum Reaction { COUNTER, REFLECT }
 @export var tags: Array[StringName] = []
 ## What the holder cannot do while this is held.
 @export var blocks: Array[Block] = []
+## Powers the holder cannot use while this is held (C8.13a, a seal): each entry is a power id or a
+## tag a power carries (`Power.tags`), so a seal can name one power or a whole kind.
+@export var seals: Array[StringName] = []
 ## True for a sleep: the first hit that does damage ends it.
 @export var breaks_on_hit: bool = false
 ## How the holder answers a hit while this is held, and the chance (0 to 1) each one fires.
@@ -60,7 +65,8 @@ enum Reaction { COUNTER, REFLECT }
 @export_range(0.0, 1.0, 0.01) var reaction_chance: float = 1.0
 ## The skill tag a REFLECT bounces. A skill without it (a sword art, say) goes through.
 @export var reflect_tag: StringName = &"magic"
-## COUNTER only: the move that answers a hit (a six-hit thrust, a riposte). Null is a plain hit.
+## COUNTER or FOLLOW_UP: the move that answers a hit or follows an ally's (a six-hit thrust, a
+## riposte). Null is a plain hit.
 @export var counter_move: ActionMove
 ## C6.9c: while held, every hit this holder makes is a sure hit (it cannot miss). A battlefield
 ## with `sure_hit` puts this on its caster (Domain Expansion). A foe holding `cancelled_by`
@@ -71,6 +77,39 @@ enum Reaction { COUNTER, REFLECT }
 @export var grants_hit_tags: Array[StringName] = []
 ## C6.9c: the id of a status that, held by a TARGET, stops this holder's sure hits against it.
 @export var cancelled_by: StringName = &""
+## C9.5a: while held, no hit touches the holder (`HitGuard`): each is announced as blocked. A
+## hit carrying one of the `pierced_by` tags goes through. Heals and status ticks still land.
+@export var invincible: bool = false
+@export var pierced_by: Array[StringName] = []
+## C9.5c: berserk. While held, this brain plays the holder: in a battle the holder's turn is
+## the brain's and the player gets no menu; in the field the player's fighter swings without
+## stopping and cannot dodge or use a command, and a party follower thinks with this brain.
+## A brain with no entries attacks the first foe.
+@export var takeover: BattleBrain
+## C8.7a: doom. When this status runs out its holder falls at once, whatever its hp. Curing
+## it first (a CURE or a DISPEL) saves the holder. `resist_<tag>` refuses it as any status.
+@export var fatal: bool = false
+## C8.7a: petrify. While held, the holder counts as fallen when a battle decides who has
+## won, stands still in the field, and may skip its turns with no end.
+@export var counts_as_fallen: bool = false
+## C8.12: unseen. While held, no foe can choose the holder as a target or lock on to it
+## (`Unseen`). It ends when the holder hits a foe or is hit by one.
+@export var unseen: bool = false
+## C8.15a: a delayed hit. When this status runs out, whoever applied it hits the holder with
+## this power and element (`Delayed`). A cure before then stops the hit.
+@export var late_power: float = 0.0
+@export var late_element: StringName = &""
+## C8.15a: a ledger. While held, hits and heals on the holder's damage pool are only noted;
+## the sum is applied once when the status ends, by time or by a cure.
+@export var ledger: bool = false
+## C8.15b: a spreading status. When it runs out, standing fighters on the holder's side
+## within this many metres catch a copy, once each (`Contagion`). 0 does not spread.
+@export var spread_reach: float = 0.0
+## C8.15b: while held, a foe that hits at the holder gets this status.
+@export var punish_status: StatusEffect
+## C6.11: obey. While held, the holder fights for whoever applied it: it takes that fighter's
+## side for every target choice (`Combatant.side`), and a battle counts it out of its own side.
+@export var obeys: bool = false
 
 
 ## True when this status carries `block`.
@@ -93,15 +132,27 @@ func problems() -> PackedStringArray:
 		found.append("%s (%s) ticks but names no tick_pool" % [resource_path, id])
 	if unit == Unit.SECONDS and tick_change != 0 and tick_interval <= 0.0:
 		found.append("%s (%s) ticks in seconds with no tick_interval" % [resource_path, id])
-	if blocks.has(Block.SKIP_TURN) and duration <= 0.0 and not breaks_on_hit:
+	if late_power < 0.0 or (late_power > 0.0 and duration <= 0.0):
+		found.append("%s (%s) has a late_power that is negative or never comes due" % [resource_path, id])
+	if spread_reach < 0.0 or (spread_reach > 0.0 and duration <= 0.0):
+		found.append("%s (%s) has a spread_reach that is negative or never spreads" % [resource_path, id])
+	if punish_status == self:
+		found.append("%s (%s) punishes with itself" % [resource_path, id])
+	if fatal and duration <= 0.0:
+		found.append("%s (%s) is fatal but never runs out: give it a duration" % [resource_path, id])
+	if blocks.has(Block.SKIP_TURN) and duration <= 0.0 and not breaks_on_hit and not counts_as_fallen:
 		# Nothing would ever end it short of a cure, and a whole side asleep forever would stall.
 		found.append("%s (%s) skips turns forever: give it a duration or breaks_on_hit" % [resource_path, id])
 	if reactions.has(Reaction.REFLECT) and reflect_tag == &"":
 		# With no tag to match, nothing would ever be reflected: almost certainly a slip.
 		found.append("%s (%s) reflects but names no reflect_tag" % [resource_path, id])
+	if not pierced_by.is_empty() and not invincible:
+		found.append("%s (%s) has pierced_by tags but is not invincible" % [resource_path, id])
+	if takeover != null:
+		found.append_array(takeover.problems("%s (%s) takeover" % [resource_path, id]))
 	if counter_move != null:
-		if not reactions.has(Reaction.COUNTER):
-			found.append("%s (%s) has a counter_move but no COUNTER reaction" % [resource_path, id])
+		if not reactions.has(Reaction.COUNTER) and not reactions.has(Reaction.FOLLOW_UP):
+			found.append("%s (%s) has a counter_move but no COUNTER or FOLLOW_UP reaction" % [resource_path, id])
 		found.append_array(counter_move.problems("%s (%s) counter_move" % [resource_path, id]))
 	for modifier: StatModifier in modifiers:
 		if modifier == null or modifier.stat == &"":

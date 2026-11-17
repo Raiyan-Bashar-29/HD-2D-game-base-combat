@@ -18,6 +18,11 @@ extends Node
 ## 4c. The moves played are the fighter's own, with a worn weapon's chain in their place
 ##    (`Combatant.field_moves`, C7.3b), unless a running power hands over others on top: a
 ##    form's own attack chain and dodge (`current_moves`, C6.5b).
+## 3a. Holding a thing overhead (`Carried`, C8.18b), the attack button throws it instead.
+## 3b. HOLD TO ATTACK (C5.4c): with the flag `combat/hold_to_attack` on, a held attack button
+##     presses again every frame, so the chain plays on as long as it is held. A held press is
+##     never a timed press (C8.8c), never throws a carried thing, and the hold after a throw
+##     never swings (C8.27a).
 ## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
 ## 4d. A counter stance's move (C6.6d) is started on this timeline by the `Hurtbox`; the fighter
 ##    turns to face whoever it counters (`Events.countered`), so the counter swings at them.
@@ -35,6 +40,10 @@ extends Node
 ## only through its lock methods.
 
 const LOCK: StringName = &"action"
+## The kind `Events.defence_prompt` carries for a move's timed press (C8.17).
+const PRESS: StringName = &"press"
+## The flag that turns hold-to-attack on (C5.4c), saved with the game.
+const HOLD_FLAG: StringName = &"combat/hold_to_attack"
 
 ## Who this fighter is, as the loadout that fitted them. A party switch changes it (C4.7).
 var loadout: ActionLoadout
@@ -58,6 +67,11 @@ var _dodge_swing: int = -1
 var _roll: Vector3 = Vector3.ZERO
 var _fitted: int = -1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
+# The last place the body stood on a floor, where the fall safety net puts it back (C5.8).
+var _safe: Vector3 = Vector3.INF
+var _prompting: bool = false
+## True from a throw until the attack button is let go, so holding it on does not swing.
+var _threw: bool = false
 
 
 func _ready() -> void:
@@ -84,22 +98,31 @@ func _physics_process(delta: float) -> void:
 	for slot: int in CombatActions.SLOTS.size():
 		if Input.is_action_just_pressed(CombatActions.SLOTS[slot]):
 			press_slot(slot)
+	var held: bool = Flags.get_bool(HOLD_FLAG) and Input.is_action_pressed(CombatActions.ATTACK)
 	drive(delta, Input.is_action_just_pressed(CombatActions.ATTACK),
-		Input.is_action_just_pressed(CombatActions.DODGE))
+		Input.is_action_just_pressed(CombatActions.DODGE), held)
 
 
-## One frame of fighting: `delta` seconds pass, with these buttons just pressed.
-func drive(delta: float, attack: bool, dodge: bool) -> void:
+## One frame of fighting: `delta` seconds pass, with these buttons just pressed. `held` is an
+## attack button held down with hold-to-attack on (C5.4c).
+func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 	# Fight time, not frame time: the hybrid's menu slows or stops the fight (C4.1).
 	var dt: float = CombatClock.scaled(delta)
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	if statuses != null:
 		statuses.tick_seconds(dt)
+	# Its own time speed (C8.11a): statuses count on the fight's clock, the rest on its own.
+	dt *= FighterTime.rate(get_parent())
 	# A stagger that has just worn off refills the shield (C4.6).
 	var me: Combatant = Combatant.of(get_parent())
 	if me != null:
 		Weakness.recover(me)
+		HitGuard.pass_time(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
+	# Berserk (C9.5c): the fighter swings without stopping and cannot roll.
+	if _taken_over():
+		attack = true
+		dodge = false
 	# Locked on, the fighter always faces its target, so every swing and roll aims at it (C3.5).
 	if _lock_on != null and _lock_on.target != null and _lock_on.direction() != Vector3.ZERO:
 		facing = _lock_on.direction()
@@ -108,22 +131,44 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 	if (vitals != null and vitals.is_defeated()) or (statuses != null and statuses.halts()):
 		timeline.cancel()
 	elif not stunned() and not _held_by_others() and moves != null:
-		_start_moves(attack, dodge)
+		# A press while a move plays is first its timed press, if it has a prompt (C8.8c).
+		if attack and timeline.busy():
+			timeline.time_press()
+		# Carrying a thing (C8.18b), the attack button throws it instead of swinging.
+		# The press that throws never swings too, nor does the hold that follows it (C8.27a).
+		if attack and not timeline.busy() and Carried.throw(_body, facing):
+			attack = false
+			_threw = true
+		_threw = _threw and held
+		_start_moves(attack or (held and not _threw and Carried.of(_body) == null), dodge)
 	timeline.step(dt)
 	_report_move()
+	_cue_prompt()
+	Unseen.fade(get_parent())
 	_aim_hitbox()
 	_move_body()
+	# Off the world: back to the last floor, and felled, so the defeat rule runs (C5.8).
+	if _body != null and (_body.is_on_floor() or not _safe.is_finite()):
+		_safe = _body.global_position
+	FallNet.catch(_body, _safe, true)
 
 
 ## Uses the power in quick slot `slot` (0 is the first, C6.3a). It works mid-swing, as a menu
 ## command does, but not while knocked back or staggered, fallen, or held by something else (a
-## menu, dialogue). False when refused or the slot is empty.
+## menu, dialogue). False when refused or the slot is empty. A power that has a `move` then plays
+## it on the fighter's own clock, in place of whatever swing was running.
 func press_slot(slot: int) -> bool:
 	var me: Combatant = Combatant.of(get_parent())
 	var vitals: Vitals = Vitals.of(get_parent())
 	if me == null or stunned() or _held_by_others() or (vitals != null and vitals.is_defeated()):
 		return false
-	return PowerSlots.press(me, slot, _rng)
+	var slotted: Array[Power] = PowerSlots.powers(me)
+	if not PowerSlots.press(me, slot, _rng):
+		return false
+	# A power with a move of its own plays it (C9.9b): its wind-up, hitbox, travel and i-frames.
+	if slotted[slot].move != null:
+		timeline.start(slotted[slot].move)
+	return true
 
 
 ## The moves the fighter plays now: its own `moves`, with a worn weapon's chain in their place
@@ -135,13 +180,19 @@ func current_moves() -> MoveSet:
 	return powers.moves_over(base) if powers != null else base
 
 
-## True while the fighter cannot start moves: knocked back, or under a status counted in
+## True while the fighter cannot start moves: knocked back, in the air (C8.8a), held by a grab (C8.8b), or under a status counted in
 ## seconds that skips turns, such as a stagger (`StatusSet.halts`).
 func stunned() -> bool:
-	if _stun_left > 0.0:
+	if _stun_left > 0.0 or Juggle.airborne(get_parent()) or Grab.held(get_parent()):
 		return true
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	return statuses != null and statuses.halts()
+
+
+# True while a status plays this fighter in the player's place (berserk, C9.5c).
+func _taken_over() -> bool:
+	var statuses: StatusSet = StatusSet.of(get_parent())
+	return statuses != null and statuses.takeover() != null
 
 
 func _start_moves(attack: bool, dodge: bool) -> void:
@@ -169,6 +220,16 @@ func _aim_hitbox() -> void:
 		_hitbox.sweep()
 
 
+# The player's timed press (C8.8c) shows on screen while its window is open and unpressed (C8.17).
+func _cue_prompt() -> void:
+	var window: TimedWindow = timeline.move.prompt if timeline.busy() and timeline.move != null else null
+	var open: bool = window != null and _body is PlayerController and not timeline.pressed() \
+			and window.inside(timeline.elapsed)
+	if open != _prompting:
+		_prompting = open
+		Events.defence_prompt.emit(PRESS if open else &"", window.closes - timeline.elapsed if open else 0.0)
+
+
 # Tells the kit about each move started since last frame, except a dodge (C6.4b).
 func _report_move() -> void:
 	if timeline.swing == _reported or timeline.move == null:
@@ -184,7 +245,8 @@ func _move_body() -> void:
 	if _body == null:
 		return
 	var player: PlayerController = _body as PlayerController
-	var holding: bool = timeline.busy() or _stun_left > 0.0
+	var holding: bool = timeline.busy() or _stun_left > 0.0 or Juggle.airborne(_body) or Grab.held(_body) \
+			or FighterTime.rate(_body) <= 0.0
 	if player != null:
 		if holding:
 			player.lock_input(LOCK)
@@ -201,9 +263,12 @@ func _move_body() -> void:
 	var wish: Vector3 = Vector3.ZERO
 	if _stun_left > 0.0:
 		wish = _push
-	elif timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.move.travel_speed > 0.0:
+	elif timeline.phase == MoveTimeline.Phase.ACTIVE and timeline.speed() > 0.0:
 		var way: Vector3 = _roll if timeline.swing == _dodge_swing else facing
-		wish = way * timeline.move.travel_speed
+		wish = way * timeline.speed()
+		# A lunge or a roll stops at a ledge rather than carry the fighter off it (C9.12).
+		if _body.is_on_floor() and CombatSight.drop_ahead(_body, way):
+			wish = Vector3.ZERO
 	# A slowed fight slows the roll and the push with it, and a stopped one holds them still.
 	_body.velocity.x = wish.x * CombatClock.scale
 	_body.velocity.z = wish.z * CombatClock.scale

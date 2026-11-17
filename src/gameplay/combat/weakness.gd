@@ -23,6 +23,8 @@ extends RefCounted
 ##   few seconds and takes more damage. When the stagger wears off, `recover` refills the shield.
 ## A game swaps any of the three statuses by setting `broken`, `pressured` or `staggered` once at
 ## boot.
+## ONE MORE (C8.1): a weakness hit in a turn-based battle asks the turn order to give the
+## fighter whose turn it is one more turn; the order's `weakness_extra_turns` decides.
 ##
 ## OWNS: shield points, revealing weaknesses, and when a break starts and ends.
 ## MUST NOT: decide what a hit is (the caller passes its keys), or skip a turn itself. The
@@ -100,6 +102,7 @@ static func strike(target: Combatant, keys: Array[StringName]) -> bool:
 			_reveal(target, key)
 	if not matched:
 		return false
+	_one_more(target)
 	if _chip(target, 1):
 		return true
 	# Not broken yet: a real-time fighter is pressured, so poise bites harder for a while.
@@ -108,6 +111,16 @@ static func strike(target: Combatant, keys: Array[StringName]) -> bool:
 	if target.real_time and statuses != null and vitals != null and vitals.current(SHIELD_POOL) > 0:
 		statuses.apply(pressured_status())
 	return false
+
+
+# A weakness hit in a turn-based battle earns the fighter whose turn it is one more turn, when
+# the turn order's rule allows (C8.1).
+static func _one_more(target: Combatant) -> void:
+	var battle: Battle = Battle.running
+	var striker: Combatant = battle.current() if battle != null else null
+	if striker != null and striker != target and striker.can_target(target, FactionTable.Target.ENEMY) \
+			and battle.scheduler.again(striker.combatant_id):
+		Events.extra_turn_earned.emit(striker.combatant_id)
 
 
 ## POISE (C3.3): a real-time hit that LANDED takes `points` from `target`'s shield whatever it
@@ -179,6 +192,16 @@ static func keys_of(skill: Skill) -> Array[StringName]:
 	var keys: Array[StringName] = [skill.element]
 	keys.append_array(skill.tags)
 	return keys
+
+
+## Reveals every weakness of `fighter`'s kind at once: a scan (C8.7b). Returns how many were new.
+static func reveal_all(fighter: Combatant) -> int:
+	var fresh: int = 0
+	for key: StringName in fighter.weak_to:
+		if not revealed(fighter, key):
+			_reveal(fighter, key)
+			fresh += 1
+	return fresh
 
 
 static func _reveal(fighter: Combatant, key: StringName) -> void:

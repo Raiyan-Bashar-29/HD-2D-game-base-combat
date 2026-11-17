@@ -48,7 +48,7 @@ const GATE_SITES: Array[Array] = [
 
 
 func run() -> void:
-	plan(63)
+	plan(64)
 	_the_verbs_are_the_command_lines_own()
 	_a_malformed_argument_is_refused_whole()
 	_the_console_runs_a_line_and_keeps_a_transcript()
@@ -67,7 +67,8 @@ func _the_verbs_are_the_command_lines_own() -> void:
 	# A COUNT, and deliberately a number somebody has to edit: a verb added without a thought
 	# about testing it should fail here exactly once. T5.1 added `save` and `load`, and this
 	# is where that showed up - which is the assertion doing its job, not being in the way.
-	equal("the vocabulary is six verbs", DevCommands.VERBS.size(), 6)
+	# The combat fork's C6.23 adds a seventh, `power_kit`.
+	equal("the vocabulary is seven verbs", DevCommands.VERBS.size(), 7)
 	# THE PART THAT CANNOT ROT. A count says how many there are; this says every one of them
 	# is wired, which is what a seventh verb declared in VERBS and forgotten in `run` breaks.
 	equal("every verb in the vocabulary dispatches", _every_verb_dispatches(), true)
@@ -82,6 +83,10 @@ func _the_verbs_are_the_command_lines_own() -> void:
 	equal("and reports what it wrote", said.contains("true"), true)
 	equal("a value that is not true or false is read as an integer",
 		_flag_int("flag %s:7" % FLAG_B), 7)
+	Flags.erase_flag(FLAG_B)
+	DevCommands.run("flag %s:fixture/text" % FLAG_B)
+	equal("and one that is not a number stays text", Flags.get_string(FLAG_B), "fixture/text")
+	Flags.erase_flag(FLAG_B)
 
 	var day: int = Clock.day
 	var hour: int = Clock.hour

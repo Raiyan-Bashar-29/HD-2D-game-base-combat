@@ -12,13 +12,14 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(10)
+	plan(13)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_content_problems()
 	_weights_and_fallback()
 	_a_flag_condition_gates()
 	_a_pool_condition_waits()
+	_a_target_condition_waits()
 	_lowest_hp_and_cost()
 	_seeded_choices_repeat()
 	Flags.clear_all()
@@ -138,6 +139,34 @@ func _a_pool_condition_waits() -> void:
 	Vitals.of(ai.get_parent()).set_to(&"hp", 10)
 	BattleAi.take_turn(battle, _brain([mend, plain]))
 	equal("under half it heals itself: 10 + 10", _hp(ai), 20)
+	_free_all()
+
+
+# C8.25: the pool test asked of the command's targets, not of the user.
+func _a_target_condition_waits() -> void:
+	var battle := _duel(true)
+	var finish := _entry(BattleCommand.new(), 100.0)
+	finish.below_any_target = true
+	finish.below_fraction = 0.5
+	finish.target_rule = BrainEntry.TargetRule.LOWEST_HP
+	var guard := BattleCommand.new()
+	guard.kind = BattleCommand.Kind.DEFEND
+	BattleAi.take_turn(battle, _brain([finish, _entry(guard, 1.0)]))
+	equal("with every target above half the entry waits, and it guards",
+		[_hp(battle.party[0]), _hp(battle.party[1])], [100, 100])
+	_free_all()
+	battle = _duel(true)
+	Vitals.of(battle.party[1].get_parent()).set_to(&"hp", 30)
+	BattleAi.take_turn(battle, _brain([finish, _entry(guard, 1.0)]))
+	equal("once one is under half it fires, at the most hurt", [_hp(battle.party[0]), _hp(battle.party[1])], [100, 25])
+	_free_all()
+	battle = _duel(true)
+	Vitals.of(battle.party[0].get_parent()).set_to(&"hp", 45)
+	battle.party[1].sheet.set_base(&"max_hp", 40.0)
+	Vitals.of(battle.party[1].get_parent()).set_to(&"hp", 40)
+	BattleAi.take_turn(battle, _brain([finish, _entry(guard, 1.0)]))
+	equal("it aims among those under the line, not at a lower hp that is not (C8.27b)",
+		[_hp(battle.party[0]), _hp(battle.party[1])], [40, 40])
 	_free_all()
 
 

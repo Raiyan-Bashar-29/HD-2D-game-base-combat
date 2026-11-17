@@ -222,6 +222,7 @@ func _put_on(added: PowerKit, source: StringName) -> void:
 			if bonus != null:
 				sheet.add(StatModifier.of(bonus.stat, bonus.op, bonus.value, source))
 	_hold_passives()
+	PassiveLending.kit(get_parent(), source, added.passive_skills)
 	_regauge()
 	for power: Power in added.powers:
 		if power == null or power.mechanism == null:
@@ -238,6 +239,7 @@ func _take_off(removed: PowerKit, source: StringName) -> void:
 	var sheet: StatSheet = _sheet()
 	if sheet != null:
 		sheet.remove_from(source)
+	PassiveLending.kit(get_parent(), source, [])
 	var statuses: StatusSet = StatusSet.of(get_parent())
 	for passive: StatusEffect in removed.passives:
 		if passive != null and _passives.has(passive.id):
@@ -284,6 +286,14 @@ func start_cooldown(power: Power) -> void:
 		var before: float = cooldown_left(power.power_id)
 		_cooling[power.power_id] = power.cooldown
 		_announce(power.power_id, before, power.cooldown)
+
+
+## Every cooldown loses `share` of what is left, then `amount` more (a passive's COOLDOWN_CUT).
+## `whole` rounds what is left down to whole turns (a battle's M14 refresh, C6.12b).
+func cut_cooldowns(amount: float, share: float, whole: bool = false) -> void:
+	for power_id: StringName in _cooling.keys():
+		var after: float = maxf(0.0, _cooling[power_id] * (1.0 - share) - amount)
+		_cool(power_id, _cooling[power_id], floorf(after) if whole else after)
 
 
 ## Every running executor of the kit, in no set order: a form uses it to find its rivals (C6.5a).
@@ -351,16 +361,21 @@ func tick_turn() -> void:
 func _count_down(amount: float) -> void:
 	if amount <= 0.0:
 		return
+	# A `cooldown_rate` stat counts cooldowns faster or slower (C6.12b); mechanisms keep time.
+	var fast: float = RefreshRun.rate(Combatant.of(get_parent()))
 	for power_id: StringName in _cooling.keys():
-		var before: float = _cooling[power_id]
-		var left: float = before - amount
-		if left <= 0.0:
-			_cooling.erase(power_id)
-		else:
-			_cooling[power_id] = left
-		_announce(power_id, before, maxf(left, 0.0))
+		_cool(power_id, _cooling[power_id], _cooling[power_id] - amount * fast)
 	for running: PowerExecutor in _running.values():
 		running.tick(amount)
+
+
+# `power_id`'s cooldown goes from `before` to `after`; at 0 or below it is over.
+func _cool(power_id: StringName, before: float, after: float) -> void:
+	if after > 0.0:
+		_cooling[power_id] = after
+	else:
+		_cooling.erase(power_id)
+	_announce(power_id, before, maxf(after, 0.0))
 
 
 # Puts the passives of every kit on, unless it is already held (a save that kept it), and

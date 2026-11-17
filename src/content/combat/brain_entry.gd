@@ -5,7 +5,9 @@ extends Resource
 ##
 ## TWO CONDITIONS, BOTH OPTIONAL. A flag test, the closed set `FlagQuery` already reads for
 ## dialogue and quests (so "after the bridge burns, the boss uses fire" is data), and the one
-## thing a flag cannot say: the user's own pool below a fraction ("heal under half hp").
+## thing a flag cannot say: the user's own pool below a fraction ("heal under half hp"). With
+## `below_any_target` (C8.25) the pool test asks every target the command may aim at instead,
+## so "heal whoever is under half" is data; pair it with LOWEST_HP to aim at the most hurt.
 ##
 ## OWNS: the shape of one choice.
 ## MUST NOT: evaluate itself. `BattleAi` (gameplay) does, because the pool test reads `Vitals`.
@@ -25,6 +27,9 @@ enum TargetRule { FIRST, RANDOM, LOWEST_HP, SELF }
 ## Allowed only while the user's `below_pool` is under this fraction of its maximum. Zero is off.
 @export var below_pool: StringName = &"hp"
 @export_range(0.0, 1.0, 0.01) var below_fraction: float = 0.0
+## True asks the pool test of each target the command may aim at, not of the user: allowed while
+## any of them is under `below_fraction` (C8.25).
+@export var below_any_target: bool = false
 
 
 func problems(context: String) -> PackedStringArray:

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="PassiveSkill" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_skill.gd" id="skill"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_effect.gd" id="eff"]
+[ext_resource type="Script" path="res://src/content/combat/passives/passive_trigger.gd" id="trig"]
+
+[sub_resource type="Resource" id="eff_1"]
+script = ExtResource("eff")
+kind = 5
+amount = 1.25
+
+[sub_resource type="Resource" id="trig_2"]
+script = ExtResource("trig")
+event = 7
+effects = Array[ExtResource("eff")]([SubResource("eff_1")])
+
+[resource]
+script = ExtResource("skill")
+id = &"passive/vital_aim"
+name_key = "combat.passive.vital_aim.name"
+desc_key = "combat.passive.vital_aim.desc"
+cost = 3
+triggers = Array[ExtResource("trig")]([SubResource("trig_2")])
+tags = Array[StringName]([&"offence"])

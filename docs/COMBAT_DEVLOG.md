@@ -3996,3 +3996,1237 @@ that re-lends.
 - There is no rule limiting a gem to certain slots.
 - Two copies of one piece share their sockets.
 - A piece that leaves the bag keeps its gems recorded.
+
+## 2026-11-13 — C7.5 · Upgrading and awakening (combat 0.88.0)
+
+**Did.**
+
+- New content `UpgradeLevel` (`items`, `stat_bonus`, `modifiers`, `sockets`) and `UpgradeTrack`
+  (`levels`, `awaken_into`, `awaken_items`), both checked with the piece.
+- `GearDefinition.upgrade`, `max_upgrade` and `upgrade_cap()`. `Rarity.max_upgrade` is now read.
+- `Power.requires_upgrade`, refused with the new `PowerUse.Reason.UPGRADE` and the words
+  `ui.battle.reason.needs_upgrade`.
+- New `GearUpgrades` (gameplay):
+  - `upgrade` pays the next level from the bag and raises the level (`refusal` says why not);
+  - `awaken`, at the cap, swaps the piece for the track's `awaken_into` (`awaken_refusal`);
+  - `apply` puts the worn pieces' gains on the sheet under `upgrades`;
+  - `extra_sockets` is read by `GearSockets.gems`, and `unlocks` by `PowerUse.refusal`.
+- `GearLending` calls `apply`.
+
+**Why.** It is `GEAR.md` § Sets, sockets, upgrading. The level is a flag, as a socket is, so
+it needs no new save code. The gains are rebuilt from scratch, so a refresh can't double them.
+The stat bonus is a share of the added amounts and not a scale on everything, so it sits on
+the sheet as plain added amounts under its own source. Every level costs items, so
+`inventory_changed` stays the one place that re-lends.
+
+**Connects.** `Inventory` (the cost), `Flags`, `GearLending`, `GearSockets` (C7.4c), `Rarity`
+(C7.2), `PowerUse` and `PowerMenu` (C6.1b, C6.2).
+
+**Verified.**
+
+- Boot: 0 warnings, 0 errors.
+- The suite has 0 failed, and `gear_upgrades_test.gd` passes 13/13.
+- Red first: with the `apply` call and the power check switched off, 4 checks failed.
+- All seven checkers exit 0, and the stripped run has 0 failed.
+
+**Unblocks.** C7.6 (crafting's UPGRADE and AWAKEN recipes), C7.2b (affixes) and C7.9 (the
+weapons).
+
+**Gaps.**
+
+- No money cost, because the base has no money.
+- No screen yet (C7.7).
+- The level is per item: two copies of a piece, and a foe wearing the same item, share it.
+- An awakened piece's gems stay recorded on the old item, and the new piece is not put on.
+
+## 2026-11-13 — C9.0 · Design: passives, armours and kakujas (documents only, combat 0.88.1)
+
+**Did.**
+
+- New `docs/PASSIVES.md`: the passive as one file (when, if, what), what the engine already
+  runs, the catalogue of passive families, the loadout, the armour functions, new armour rows
+  (the Akame ga Kill armours, the quinque armours), and every kakuja as a form and as an
+  armour.
+- New phase C9 on the board, rows C9.1 to C9.8. C9.1 to C9.4 are built before C7.6.
+- The owner's mechanics encyclopedia and Last Cloudia names list are in `docs/reference/`.
+- Pointers in `GEAR.md`, `HANDOFF.md`, `CLAUDE.md` and the reference README.
+
+**Why.** The owner asked for every ability to be a separate passive that characters and gear
+are given, in Last Cloudia's way, and for armours and kakujas built from them by changing
+numbers. Most always-on passives already run through `StatusEffect`; the missing part is a
+passive that waits for an event and then acts once, so that is what the new rows build.
+
+**Connects.** `StatusEffect`, `GaugeRule`, `PowerScaling`, `FormMechanism`, `PowerSet.lend`,
+gear (C7.3 to C7.5), and rows C8.6, C8.10 and C8.12.
+
+**Verified.** Boot: 0 warnings, 0 errors. The suite has 0 failed. All seven checkers exit 0,
+and the stripped run has 0 failed. No file under `src/` or `tests/` changed.
+
+**Unblocks.** C9.1.
+
+**Gaps.**
+
+- The encyclopedia has no full Last Cloudia skill list (names only), so the catalogue is built
+  from mechanic families and not from that game's exact skills.
+- Three kakuja lines are marked "to confirm" against the source.
+- Only Arata is an armour in the source; the other armour versions are a reading.
+- C9.8 (studying fan-made fighting-game character files) is not started.
+
+## 2026-11-13 — C9.1 · Passives, the core (combat 0.89.0)
+
+**Did.**
+
+- Content: `PassiveSkill`, `PassiveTrigger`, `PassiveEffect`, `PassiveDb` in
+  `src/content/combat/passives/`; `CombatantDef.passives`.
+- Gameplay: `PassiveSet` (who gave which passives, held statuses, each trigger's cooldown and
+  count, the event listeners) and `PassiveEffects` (who an effect lands on, and applying it).
+- Wiring: `BattleSetup`, `ActionHost` and `ActionEnemy` fit the set; `Battle` hands it its
+  random numbers and tells it each turn; `StatusSet` finds a held status again on load.
+- `tests/unit/passives_test.gd`, 14 checks.
+
+**Why.** The owner wants every ability as a reusable passive. This is the part the engine
+lacked: something that waits for an event and then acts once.
+
+**Connects.** `Events` (battle started, area entered, damaged, defeated, revived), `Vitals`,
+`StatusSet`, `Combatant`, `Battle`.
+
+**Verified.** Red first: with the effects switched off, 8 checks failed. Then the suite: 4207
+passed, 0 failed. Boot: 0 warnings, 0 errors. All seven checkers exit 0. The stripped run has
+0 failed.
+
+**Unblocks.** C9.2 (conditions and hit effects), C9.3 (passives on kits and gear).
+
+**Gaps.**
+
+- A battle won by a defeat rule other than "every foe is down" does not wake FIGHT_WON.
+- Cooldowns and counts are not saved; a load starts them again.
+- By the owner's word (2026-11-13) batch PRs stop until the remaining rows are done; an
+  `invincible` status, mercy time and the overshield were added to row C9.5.
+
+
+## 2026-11-13 — C9.2a · Passive conditions and more events (combat 0.90.0)
+
+- **Did:** `PassiveCondition` (content) and `PassiveConditions` (gameplay); `PassiveTrigger`
+  gained `conditions`, `threshold`, `tag` and six events (CRIT_DEALT, DODGE, GUARD, HP_BELOW,
+  HP_ABOVE, STATUS_GAINED); `PassiveSkill.group` and `rank`; `traits` on `CombatantDef` and
+  `Combatant`, copied by the three builders.
+- **Why split:** C9.2 as one row was over the 8-file rule. The hit effects are C9.2b.
+- **Fix found on the way:** a party member's field body and battle copy share an id and
+  pools, so the field body's passives answered the battle's hits too. A field set now sleeps
+  from `battle_started` to `battle_ended` (or the next area).
+- **Verified:** suite 4219 passed, 0 failed; with `PassiveConditions` answering true, 3 fail.
+- **Gaps:** HIT_TAG and HIT_ELEMENT need the hit itself (C9.2b). DODGE exists only in the
+  field, as i-frames do.
+
+## 2026-11-13 — C9.2b · Passive hit effects (combat 0.91.0)
+
+- **Did:** new `PassiveHits` in the hit path (`Combatant.receive` → `scale`, barriers,
+  `lethal`, HP). Effects SCALE_HIT, SURVIVE, EXTRA_HIT; event LETHAL_HIT; conditions HIT_TAG,
+  HIT_ELEMENT. `PassiveSet._busy` became `_running` (the triggers running now), so a trigger
+  never wakes inside itself.
+- **Why split:** the skill-used and form events and COOLDOWN_CUT are C9.2c (8-file rule);
+  BREAK_PIECE needs a gear source, so it moved to C9.5.
+- **Verified:** suite 4229 passed, 0 failed; with `PassiveSet.before` doing nothing, 5 fail.
+- **Gaps:** a status tick or a field hazard that does not go through `Combatant.receive` is
+  neither scaled nor survivable.
+
+## 2026-11-13 — C9.2c · Passive skill and form events (combat 0.92.0)
+
+- **Did:** new `PassiveMoments` (`skill`, `form`), called by `SkillUse.apply`, `PowerUse.use`
+  and `FormRun._tell`. Events SKILL_USED (`tag` filter), FORM_ENTERED, FORM_LEFT; effect
+  COOLDOWN_CUT (`share`, `amount`) through `PowerSet.cut_cooldowns`; `PassiveSet.happened`.
+- **Verified:** suite 4239 passed, 0 failed; with `PassiveSet.happened` waking nothing, 8 fail.
+- **Gaps:** a form cured from outside is heard as left only at its next tick or use.
+  `passive_set.gd` (241/250) and `power_set.gd` (247/250) are near their budgets.
+- **Unblocks:** C9.3.
+
+## 2026-11-13 — C9.3a · Passives on kits and gear (combat 0.93.0)
+
+- **Did:** new `PassiveLending` (`own`, `kit`, `gear`). Fields `PowerKit.passive_skills`, and
+  `passives` on `GearDefinition`, `GearSetTier`, `GemDefinition`, `UpgradeLevel`.
+  `GearSetBonuses.reached` and `GearUpgrades.reached` are public; `PassiveSet.sources`;
+  `PassiveSet.fit` became `PassiveLending.own`.
+- **Why split:** the sample library is C9.3b (8-file rule).
+- **Verified:** suite 4251 passed, 0 failed; with `PassiveLending._give` doing nothing, 252 fail.
+- **Gaps:** a form stage has no passive list of its own. A set made in the middle of a battle
+  rolls its chances with its own random numbers, not the battle's seed.
+- **Unblocks:** C9.3b, C9.4.
+
+## 2026-11-13 — C9.3b · The sample passive library (combat 0.94.0)
+
+- **Did:** 22 files in `data/passives/`, one per catalogue family; statuses `battle_fury` and
+  `desperation`; 46 CSV rows; a passives section in `tools/check_content.gd`; new
+  `tests/unit/passive_library_test.gd` (3 checks). No code under `src/` changed.
+- **Verified:** suite 4257 passed, 0 failed. With one file's amount set to 0, `check_content`
+  fails and 2 suite checks fail.
+- **Gaps:** the samples are held and checked as a whole; each family's behaviour is proven by
+  the fixture tests of C9.1 to C9.2c, not once more per file.
+- **Unblocks:** C9.4.
+
+## 2026-11-13 — C9.4 · The passive loadout (combat 0.95.0)
+
+- **Did:** new `PassiveLoadout` (learned, chosen, budget, refusals, `practise`) and
+  `PassiveLesson`; `GearDefinition.teaches`; `CombatantDef.passive_budget` and
+  `passive_budget_per_level`; `Rewards.learned`; `PassiveSet.given_by`; `PassiveLending.give`
+  public, and `gear` refits the loadout of a saved fighter. Four refusal rows in the CSV. The
+  demo party members have a budget of 4, plus 1 per level.
+- **Verified:** suite 4272 passed, 0 failed (15 new checks). With the refit in
+  `PassiveLending.gear` turned off, 1 check fails.
+- **Gaps:** no screen yet (C9.7). No demo gear teaches a passive, because the demo has no
+  gear files. A refit does not check the budget again.
+- **Unblocks:** C9.5, C9.7.
+
+## 2026-11-13 — C9.5a · Defences that need no power (combat 0.96.0)
+
+- **Did:** new `HitGuard` (`stops`, `soak`, `hurt`, `pass_time`), called from
+  `Combatant._land`, `Battle.next_turn` and the three field fighters. `StatusEffect.invincible`
+  and `pierced_by`. Stats `mercy_time`, `max_overshield`, `overshield_regen`,
+  `overshield_delay`. `Vitals.change` scales a heal by `healing_taken`. C9.5 was split by the
+  8-file rule; C9.5b keeps berserk, the breaking power, levels won by fights and adapting
+  resistance.
+- **Verified:** suite 4288 passed, 0 failed (14 new checks). With `HitGuard.stops` turned off
+  in `Combatant._land`, 3 checks fail.
+- **Gaps:** no HUD bar for the overshield. An invincible fighter can still be given a status.
+  The three clocks are not saved. No data file uses these yet.
+- **Unblocks:** C9.5b, C9.6, C7.10.
+
+## 2026-11-13 — C9.5b · A piece that breaks, and adapting resistance (combat 0.97.0)
+
+- **Did:** new `GearBreak.giver`, called by `PassiveEffects` for the new kind `BREAK_PIECE`.
+  New event `SKILL_DONE`, told by `SkillUse.apply` after the strikes. `PassiveEffect.per_element`
+  lets `GIVE_STATUS` pick its status by the element of the hit. The row was split again by the
+  8-file rule; C9.5c keeps berserk and levels won by fights.
+- **Verified:** suite 4297 passed, 0 failed (9 new checks). With `GearBreak.giver` doing
+  nothing, 5 checks fail.
+- **Gaps:** a power with no skill tells no `SKILL_DONE`. The gems in a broken piece are lost
+  with it. Nothing on screen says a piece broke. No data file uses these yet.
+- **Unblocks:** C9.5c, then C9.6 and C7.10.
+
+## 2026-11-14 — C9.5c · The berserk status (combat 0.98.0)
+
+- **Did:** `StatusEffect.takeover` (a `BattleBrain`) and `StatusSet.takeover()`.
+  `Battle.brain_of` returns it first. `ActionFighter.drive` forces the attack and drops the
+  dodge, `FieldCommands.refusal` says BLOCKED, `PartyFollower.think` uses the brain. The row
+  was split again by the 8-file rule; C9.5d keeps upgrade levels won by fights.
+- **Verified:** suite 4305 passed, 0 failed (8 new checks). With `StatusSet.takeover` always
+  null, 5 checks fail.
+- **Gaps:** a field enemy is not taken over. Berserk does not turn the holder on its allies.
+  The player still walks in the field. No data file uses it yet.
+- **Unblocks:** C9.5d, C9.6.
+
+## 2026-11-14 — C9.5d · Upgrade levels won by fights (combat 0.99.0)
+
+- **Did:** `UpgradeLevel.fights`. `GearUpgrades.practise` (called by `Rewards.give`) counts a
+  won fight for every worn piece whose next level is won, raises the piece at the number and
+  sends `inventory_changed`. `Refusal.EARNED` stops buying such a level. `Rewards.upgraded`.
+- **Verified:** suite 4314 passed, 0 failed (9 new checks). With `practise` doing nothing,
+  6 checks fail.
+- **Gaps:** no screen shows the count or that a piece went up. A fallen member's pieces do
+  not count. No data file uses it yet.
+- **Unblocks:** C9.6.
+
+## 2026-11-14 — C9.6a · A form's own passives, and the shared kakuja passives (combat 0.100.0)
+
+- **Did:** `FormMechanism.passive_skills` and `passives_at`. `FormRun` lends them under
+  `form/<power id>` (`PassiveLending.form`) while the form is held. Five passives as data:
+  `kakuja_shell`, `kakuja_regen`, `kakuja_hunger`, `frenzy`, `quinque_feed`. C9.6 was split
+  by the 8-file rule; C9.6b keeps the kakuja forms and armours.
+- **Verified:** suite 4325 passed, 0 failed (10 new checks). With the lending turned off,
+  4 checks fail.
+- **Gaps:** no limb regrowth. `kakuja_hunger` names the pool `rc`, which no fighter has yet.
+  No kit or armour uses the five passives yet.
+- **Unblocks:** C9.6b.
+
+## 2026-11-14 — C9.6b · The first four kakujas as data (combat 0.101.0)
+
+- **Did:** `PowerKitDb` (every kit under `data/powers/`, checked; `check_content` runs it).
+  Centipede, Arata, Jason and Noro as kits with a form, and as quinque armours with their
+  items and two gear types. Passives `centipede_bite` and `noro_regrowth`, status `venom`.
+  The row was split again: C9.6c and C9.6d keep the other nine.
+- **Verified:** suite 4331 passed, 0 failed. With a kit's `max_rc` removed, 1 check fails and
+  `check_content` names the file. A probe in the engine entered each real form and wore each
+  real armour: the numbers, the lent passives and the RC drain were as written, and a form
+  ends and cannot be re-entered on an empty pool.
+- **Gaps:** the probe found a form could be entered on an empty pool; fixed in the data
+  (`requires_fraction` 0.1), not in code. No windowed capture. No demo fighter has the kits.
+  The Jason gauntlet has no frenzy risk.
+- **Unblocks:** C9.6c.
+
+## 2026-11-14 — C9.6c · Four more kakujas as data (combat 0.102.0)
+
+- **Did:** Owl, One-Eyed Owl, T-Owl and Amon as kits (a form each; the Owls also a barrage
+  power that needs the form; Amon's Attack becomes a heavy skill) and as quinque armours,
+  three of which lend a kit with one ranged power. Passive `great_regen`. No code.
+- **Verified:** suite 4331 passed, 0 failed. A probe in the engine (deleted after) fought
+  with each kit: the barrage is refused outside the form, lands on both foes inside it, the
+  numbers, lent passives and RC drain are as written; each armour is worn and lends its power.
+- **Gaps:** T-Owl has no half stage. No field chains for the blade arms. No windowed capture.
+
+## 2026-11-14 — C9.9a · A converter for any M.U.G.E.N character (combat 0.103.0)
+
+- **Did:** `tools/mugen_convert.gd` and six files in `tools/mugen/`: readers for `.def`,
+  `.cns`, `.cmd` and `.air`, a trigger reader, a state reader and the formula. A character's
+  `.def` in; `moves.json`, `report.md` and one `ActionMove` per attack and dodge out. The
+  formula is in `POWERS.md`. Nothing under `src/` changed.
+- **Why:** the owner approved the Arima Kisho upload (author 刃下心) and asked for a tool
+  that works on any character, not an Arima-only script.
+- **Verified:** suite 4341 passed, 0 failed (9 new checks on a made-up character). Seven
+  checkers exit 0. On the Arima folder (in the scratchpad, not the repo): exit 0, 61 moves;
+  state 200 checked by hand against the `.air` (5 ticks to the hit, a 2-tick hurting frame).
+- **Gaps:** one untouchable stretch per move. Super armour is noted, not converted (a move
+  has no armour field). A helper's place and a projectile's flight are not converted. A
+  trigger on a button, a variable or the foe is treated as true and listed.
+- **Unblocks:** C9.9b (Arima's moves as data), C9.9c (his sprites and sounds).
+
+## 2026-11-14 — C9.9b · Arima's kit from the converter (combat 0.104.0)
+
+- **Did:** `ActionFighter.press_slot` plays a power's `move` after a successful press.
+  `data/powers/arima.tres` (`kit/arima`) and `data/action/arima_loadout.tres`, generated from
+  the converter's `moves.json`: a two-stage quinque cycle, six specials, a `focus` gauge, two
+  passives. Converter fix: a hitbox's height is measured from the feet, not mid-body.
+- **Why:** `Power.move` was declared but never read, so a special had no wind-up, hitbox or
+  i-frames in the field. Arima's specials need them (state 550 is untouchable for 1.5 s).
+- **Decided:** no armour field on a move. None of his 61 moves uses super armour.
+- **Verified:** suite 4350 passed, 0 failed (8 new checks in `power_move_test.gd`). Probe in
+  the engine on the real loadout: slot 1 enters stage 1 and the three specials take slots 2 to
+  4; the pincer is refused at 0 focus, then costs 17; untouchable is false at 0.5 s, true at
+  1.5 s and 2.6 s, false at 3.0 s; a second press changes to Owl (attack 12 to 13.8).
+- **Gaps:** one attack button, so the b and c chains and the air moves are unused. Helpers'
+  flight is not converted, so each special hits with its own box only. Followers and enemies
+  do not play a power's move. A special's skill needs a status to count as doing something.
+- **Unblocks:** C9.9c (his sprites and sounds).
+
+## 2026-11-14 — C9.9c · A sprite and sound unpacker; Arima's art (combat 0.105.0)
+
+- **Did:** `tools/mugen_sprites.gd` and five classes in `tools/mugen/`: `MugenSff` (version 2
+  sprite file), `MugenPacking` (RLE8, LZ5, a PNG given the file's palette), `MugenSnd`,
+  `MugenSprites` (cells, strips, the sheet, the time formula), `MugenSpriteFiles` (the folder).
+  `MugenAir` frames now keep `x`, `y` and `flip`; `MugenCharacter.about` gives the file paths.
+  Ran it on Arima: `assets/fan/arima_kisho/` (sheet, 19 strips, 23 sounds, 2.4 MB).
+- **Why:** the owner approved this upload's art (2026-11-14) and wants the tool reusable.
+- **Split:** drawing the art in play (a per-member sheet, a strip per move, sounds) is C9.9d.
+  It needs a new seam and would pass the package size limit here.
+- **Verified:** suite 4357 passed, 0 failed (7 new checks on a sprite file built byte by byte
+  in the test). Arima's sheet, five strips and two LZ5 sprites were looked at as pictures:
+  right colours, feet aligned, left columns mirrored.
+- **Gaps:** RLE5 and version 1 files are not read. The sheet is the white-coat form only; the
+  Owl coat's stand and walk are for C9.9d. Effects (wide pictures) were not unpacked.
+
+## 2026-11-14 — C9.9d · The fighter shows a member's art (combat 0.106.0)
+
+- **Did:** `MemberArt` and `MoveArt` (content); `CombatantDef.art`, `LookDef.art`,
+  `Combatant.art`; `ArtSwap` (added by `ActionHost.fit_identity`) swaps the body's sheet through
+  the new `CharacterVisual.use_sheet` and, during a move with art, shows its strip on a second
+  sprite and plays its sounds at their times, once per swing. Arima's
+  `assets/fan/arima_kisho/art.tres` (15 moves) is on his loadout.
+- **Why:** C9.9c unpacked the art; nothing drew it.
+- **Verified:** suite, 13 new checks in `tests/unit/member_art_test.gd`. Two windowed captures
+  with Arima's loadout set: standing on the sheet, and mid-swing on the strip of move 202, feet
+  on the same spot.
+- **Gaps:** followers and enemies have no move strips (a follower has no timeline; an enemy's
+  `Combatant` gets no art). No Owl coat sheet. No hurt or dodge strip. The art file was built
+  by a scratch script, not by the tool in `tools/`.
+
+## 2026-11-14 — C9.6d · The last kakujas as data (combat 0.107.0)
+
+- **Did:** five kits and five quinque armours as data (Tatara, Roma, Donato, Furuta, Mutsuki),
+  one armour kit (Donato's relic), strings. No code. At the owner's ask, a step-by-step guide
+  in `docs/POWERS.md` for turning a converted M.U.G.E.N character into a kit, a fighter and an
+  art file; the two Arima generators are in `tools/mugen/examples/` as the pattern. New row
+  C9.9e: the tools write those files.
+- **Verified:** suite and checkers; a probe in the engine entered each form: the status is
+  held, the look is on, the stats move as written (Roma max HP 100 to 150, speed 5 to 2;
+  Tatara `resist_fire` 0.5).
+- **Gaps:** C8.6 and C8.10 are not built, so Roma has no second health layer and Donato's
+  copies are a barrage. The Furuta and Mutsuki rows are my reading of the source, marked so in
+  `docs/PASSIVES.md`. The barrages were not fired in the probe. No windowed capture.
+
+## 2026-11-14 — C9.8 · Research: fighting-game character files (combat 0.108.0)
+
+- **Did:** documents only. Counted the controllers in the Arima upload's two `.cns` files and
+  mapped each kind to what this engine has; wrote it in `docs/POWERS.md` with three ideas worth
+  a row. New row C8.16 (move events, armour on a move); C8.8 now includes grabs and cancels.
+- **Why:** the owner's suggestion (2026-11-13).
+- **Verified:** boot, suite and checkers unchanged (no code).
+- **Gaps:** one character was read, not several; other authors may use parts this one does not.
+
+## 2026-11-14 — C7.6 · Crafting, the logic (combat 0.109.0)
+
+- **Did:** `Recipe` and `RecipeDb` (content), `Crafting` (gameplay): recipes known by station
+  and flag, a refusal with a reason, craft, transmute, upgrade (the piece's own track), awaken
+  (the piece at its cap) and dismantle (the piece's own recipe, else a share of the recipe that
+  makes it, by `Rarity.salvage`). `GearUpgrades.forget`. `check_content` checks recipes. One
+  sample recipe (`data/recipes/quinque_owl.tres`) and its material.
+- **Why:** board row C7.6, the owner's order.
+- **Connects:** `Inventory`, `Flags`, `GearUpgrades`, `GearDb`, `RarityDb`.
+- **Verified:** `tests/unit/crafting_test.gd`, 13 checks; the full ladder.
+- **Unblocks:** C7.8 (the craft screen and `CraftStation`).
+- **Gaps:** no screen, so only tests call `Crafting`; no money cost; a used-up piece's gems
+  stay recorded; a lucky result is a second output list, not a rarity per copy.
+
+## 2026-11-14 — C9.7 · The passive loadout screen (combat 0.110.0)
+
+- **Did:** `LoadoutScreen` (a `MenuScreen`) and `LoadoutHost` (in `game_root.tscn`); the
+  rebindable action `combat_loadout` on L. The screen shows one member: budget line, chosen
+  rows (press to take out), learned rows (press to choose, greyed out with the refusal's
+  words), lessons in progress from worn gear, passives held from other sources, and the
+  description of the row under the cursor. With followers, a row steps to the next member.
+- **Why:** board row C9.7. Built without C7.7 (the gear screen), which is still to do.
+- **Connects:** `PassiveLoadout`, `PassiveSet`, `GearSet`, `GearDb`, `FieldParty`, `UiRoot`.
+- **Verified:** `tests/unit/loadout_screen_test.gd`, 12 checks; the full ladder.
+- **Gaps:** no pad button; opens in the field only; not seen in a windowed capture.
+
+## 2026-11-14 — C9.9e · The tools write the kit and art files (combat 0.111.0)
+
+- **Did:** `tools/mugen_build.gd` and three classes in `tools/mugen/`: `MugenKit` (choices +
+  moves -> `PowerKit` and `ActionLoadout`), `MugenArt` (`sprites.json` + moves -> `MemberArt`
+  with sound times), `MugenStarter` (reads the choices file, saves the files so the loadout
+  points at the kit and art by path, lists the CSV keys). `MugenFormula.numbers` now gives
+  each move's `sounds`. `ActionEnemy` copies its definition's art and adds an `ArtSwap`.
+  The two scratch Python scripts in `tools/mugen/examples/` are replaced by
+  `arima_choices.json`.
+- **Fixed on the way:** `(dict["problems"] as PackedStringArray).append(...)` appends to a
+  copy, so the converter and the sprite tool never reported a problem. `MugenIni.note` writes
+  the list back; all uses changed.
+- **Why:** board row C9.9e: steps 3 to 6 of the how-to were hand work.
+- **Verified:** `tests/unit/mugen_build_test.gd`, 12 checks; the full ladder. Run on the Arima
+  upload: same chain, powers, costs, required stances and 15 art moves as the shipped files.
+- **Gaps:** a starter kit has no extra status on a special (Arima's hand-made "resolve");
+  the shipped Arima files were not rebuilt; sound times differ slightly from the hand-made
+  art where a helper state also plays a sound.
+
+## 2026-11-14 — C8.16 · Move events, armour on a move (combat 0.112.0)
+
+- **Did:** `MoveEvent` (content): one timed thing in a move, of kind SOUND, EFFECT, SHOT,
+  SPEED, SHAKE or PAUSE. `ActionMove` gained `events`, `armour_from/to` and `iframes2_from/to`,
+  with checks. `MoveTimeline`: `invulnerable()` covers both stretches (a perfect dodge only in
+  the first), `armoured()`, `speed()`. `Hurtbox._push` gives no push inside armour. The
+  `MoveEvents` node (added by `ActionHost` and `ActionEnemy` beside `ArtSwap`) does the events
+  once per swing; a hit pause sets `CombatClock` to 0 and puts it back after real seconds.
+  The three bodies read `timeline.speed()` in place of `move.travel_speed`.
+- **Why:** board row C8.16, from the C9.8 study: converted characters use armour, a second
+  untouchable stretch, shakes and pauses, and we had no field for them.
+- **Verified:** `tests/unit/move_events_test.gd`, 13 checks; suite 4426 passed, 0 failed;
+  boot 0 warnings, 0 errors; seven checkers exit 0; stripped run 4320 passed, 0 failed.
+- **Gaps:** a speed change only counts in the ACTIVE phase; a hit pause asked for while the
+  fight is already stopped is skipped; the effect picture is one still picture at a fixed
+  pixel size; no windowed capture. The converter does not fill these yet: row C8.16b, which
+  also retires `MoveArt.sound_at`.
+
+## 2026-11-14 — C8.16b · The converter fills move events (combat 0.113.0)
+
+- **Did:** `MugenState` now keeps each `EnvShake` and each `Pause`/`SuperPause` with its tick.
+  `MugenFormula.numbers` gives `armour_from/to` (first `HitOverride` stretch), `iframes2_from/to`
+  (second untouchable stretch) and `events` (sounds, shakes, pauses; time order, each once,
+  inside the move). New `tools/mugen/mugen_events.gd` (`MugenEvents.fill`) turns them into
+  `MoveEvent`s, loading sounds from the choices file's `sprites` folder; `MugenKit.move` calls
+  it. Removed `MoveArt.sounds`, `sound_at`, `time_of` and `ArtSwap`'s sound playing. Arima's
+  kit, loadout and art were refilled in place (19 moves, 69 events), keeping the hand-made
+  parts.
+- **Why:** board row C8.16b: C8.16 made the fields; the converter still wrote notes.
+- **Verified:** `mugen_build_test.gd` (15 checks, 3 new), `mugen_convert_test.gd` and
+  `member_art_test.gd` updated; the full ladder (numbers in the commit report).
+- **Gaps:** a special's `SuperPause` stops the whole fight for 0.5 s, the user included;
+  helper flight paths and `Explod` pictures are not converted; a sound not unpacked is left
+  out silently; no windowed capture.
+
+## 2026-11-14 — C8.6 · Aggro and taunt (combat 0.114.0)
+
+- **Did:** new `src/gameplay/combat/aggro.gd` (`Aggro`). On an `ActionEnemy` it keeps a threat
+  table from `combatant_damaged`: damage times 1 plus the attacker's `threat` stat, fading by
+  `ActionBrain.threat_fade` a second. `Aggro.pick` (used by `ActionEnemy` and `PartyFollower`)
+  chooses a fighter holding a status tagged `taunt` within reach, then the most threat, then
+  the nearest. `Aggro.narrow` (used by `BattleAi`) cuts a battle brain's aim to the taunting
+  foes. The demo `guard_up` status now carries the tag, so Bulwark draws foes.
+- **Why:** board row C8.6. Its second half, the overshield, was already built in C9.5a.
+- **Verified:** `tests/unit/aggro_test.gd` (11 checks); the full ladder.
+- **Gaps:** no threat table in a turn battle (taunt only); a foe's taunt does not force the
+  player's own aim; nothing on the HUD shows who a foe is after; the table is not saved.
+
+## 2026-11-14 — C8.8a · Launch, juggle and cancel on hit (combat 0.115.0)
+
+- **Did:** `ActionMove.launch` and `cancel_on_hit`. New `src/gameplay/combat/juggle.gd`
+  (`Juggle`): time left in the air and a juggle count, made under the victim by the `Hurtbox`
+  on a landed launching hit (or any landed hit while already in the air); each juggle is worth
+  0.7 of the one before. `ActionFighter` and `ActionEnemy` cannot act while in the air; a
+  `CharacterBody3D` is thrown up to fall back in that time. `Hurtbox.landed` and
+  `MoveTimeline.connected` let a `cancel_on_hit` swing go straight into the next chain move.
+  The demo Wanderer chain uses both.
+- **Why:** board row C8.8, split in three (C8.8b grabs, C8.8c prompts and interrupts). A power
+  already plays mid-swing, so only the chain cancel was missing.
+- **Verified:** `tests/unit/juggle_test.gd` (11 checks), 3 new in `move_timeline_test.gd`; the
+  full ladder.
+- **Gaps:** the player's body is stunned but not thrown up (upstream's controller zeroes
+  upward speed on the floor); no damage bonus or combo counter; the converter does not fill
+  the fields; turn battles have no launch; no windowed capture.
+
+## 2026-11-15 — C8.8b · Grabs and throws (combat 0.116.0)
+
+- **Did:** `ActionMove.throw_move`. New `src/gameplay/combat/grab.gd` (`Grab`): made under the
+  victim by the `Hitbox` when a grab lands on a fighter that flinched (`Hurtbox.flinched`, now
+  also the test for a launch). The attacker's clock starts the throw; the victim cannot act
+  (`ActionFighter`, `ActionEnemy`), follows its holder, and is struck through the holder's
+  `Hitbox` the moment the throw is live, once. It is let go unharmed if the holder's clock
+  leaves the throw first.
+- **Why:** board row C8.8b, the grab idea from C9.8's reading of fighting-game files.
+- **Verified:** `tests/unit/grab_test.gd` (9 checks); the full ladder.
+- **Gaps:** no escape for the victim; a boss avoids a grab only by not flinching; no demo move
+  grabs and the converter makes none; field only; others can still hit a held victim; no
+  windowed capture.
+
+## 2026-11-15 — C8.8c · Prompts and interrupts (combat 0.117.0)
+
+- **Did:** `ActionMove.prompt` (a `TimedWindow`) and `interrupts`. `MoveTimeline.time_press`
+  times the first attack press of a move and keeps the multiplier in `boost`; `ActionFighter`
+  calls it, the `Hitbox` passes `boost` to `Hurtbox.take`, which multiplies a plain move's
+  power. `Hurtbox._interrupt` cancels the victim's move in its wind-up or armour stretch and
+  asks for a push (of no length when the move has none), which is the stun. The demo
+  Wanderer's third swing has a prompt and interrupts.
+- **Why:** board row C8.8c, the last part of C8.8.
+- **Verified:** `tests/unit/prompt_test.gd` (10 checks); the full ladder.
+- **Gaps:** nothing on screen shows the window or the result; a move wrapping a `skill`
+  ignores the boost; followers and foes never press a prompt; a fighter with
+  `knockback_taken` -1 cannot be interrupted; no windowed capture.
+
+## 2026-11-15 — C8.7a · The rarer ailments (combat 0.118.0)
+
+- **Did:** `StatusEffect.fatal` (doom): `StatusSet._run_out` fells the holder when the status
+  runs out, in turns or seconds; a cure does not. `StatusEffect.counts_as_fallen` (petrify):
+  `StatusSet.fallen`, which `Battle._all_down` reads and `halts` returns, so a petrified side
+  has lost and a field fighter stands still. `SkillEffect.Kind.SLAY` (instant death):
+  `SkillUse._slay` rolls `amount` cut by the stat `resist_death`; an invincible status stops
+  it. Demo statuses `status/death_count` and `status/stone_gaze`. C8.7 is split; C8.7b is steal, scan
+  and capture. `HANDOFF.md` gained the owner-approved order of every remaining row.
+- **Why:** board row C8.7, first half.
+- **Verified:** `tests/unit/rare_ailment_test.gd` (10 checks); the full ladder.
+- **Gaps:** no doom count on the HUD; in the field a petrified fighter only stands still
+  (`FieldDefeat` does not count it); SLAY does not wake a `LETHAL_HIT` passive; no demo
+  skill uses SLAY; no windowed capture.
+
+## 2026-11-15 — C8.7b · Steal, scan and capture (combat 0.119.0)
+
+- **Did:** three `SkillEffect` kinds. STEAL and CAPTURE go through the new
+  `src/gameplay/combat/pilfer.gd` (`Pilfer`): a steal takes one roll of the target's
+  `steal_table`, once per target; a capture's chance is `amount` times the share of hp lost,
+  and a caught target falls, gives its `capture_item` and adds 1 to the flag
+  `captured/<kind>`. SCAN calls `Weakness.reveal_all`. `CombatantDef` and `Combatant` gained
+  `steal_table` and `capture_item` (copied by `BattleSetup` and `ActionEnemy`). Goods go to the
+  bag on the user's body; with none they wait in `Combatant.spoils`, which `Rewards.grant`
+  adds to a won battle's loot.
+- **Why:** board row C8.7, second half.
+- **Verified:** `tests/unit/pilfer_test.gd` (10 checks); the full ladder.
+- **Gaps:** spoils are lost on a flight or a loss; a field follower's spoils are never handed
+  over; nothing on screen says what was taken; a captured creature is only an item and a
+  count; no demo skill uses the kinds; no windowed capture.
+
+## 2026-11-15 — C5.8 · The fall safety net (combat 0.120.0)
+
+- **Did:** new `src/gameplay/combat/fall_net.gd` (`FallNet`): below the project setting
+  `combat/field/kill_height` (-50) a body is dealt with. `ActionEnemy` asks each physics
+  frame: the foe is felled where it is, or with `returns_home` put back at its home unhurt.
+  `ActionFighter` remembers the last floor the body stood on, puts the player back there and
+  fells them, so `FieldDefeat` carries out their `DefeatRule`.
+- **Why:** board row C5.8, found in C4.11: a body knocked off an open edge fell for ever.
+- **Verified:** `tests/unit/fall_net_test.gd` (6 checks); the full ladder.
+- **Gaps:** a party follower is not caught; one height for the whole game; no windowed
+  capture.
+
+
+## 2026-11-15 — C8.12 · Unseen (combat 0.121.0)
+
+- **Did:** `StatusEffect.unseen` and new `src/gameplay/combat/unseen.gd` (`Unseen`): `open`
+  stands in for `Combatant.can_target` in `Battle.targets_for`, `Hurtbox.nearest_hostile`,
+  `Aggro.pick` and `FieldCommands.candidates`, and refuses an unseen foe unless the skill
+  hits everyone; `LockOn` drops and skips an unseen fighter; `Combatant.hit` calls
+  `Unseen.struck`, which ends the status on both the attacker and the one hit. Demo status
+  `data/statuses/smoke_cloak.tres`.
+- **Why:** board row C8.12 (stealth, from `POWER_ATLAS.md`).
+- **Verified:** `tests/unit/unseen_test.gd` (9 checks); the full ladder.
+- **Gaps:** any hit ends it, not only an area hit; a field swing that hits nobody does not;
+  no fade on the holder's sprite; no reveal effect of its own (DISPEL by tag); no windowed
+  capture.
+
+## 2026-11-15 — C8.15a · Late outcomes (combat 0.122.0)
+
+- **Did:** new `src/gameplay/combat/delayed.gd` (`Delayed`). `StatusEffect.late_power` and
+  `late_element`: when the status runs out, whoever applied it hits the holder (a sure hit,
+  through the formula); a cure stops it. `StatusEffect.ledger`: `Combatant` and the heals in
+  `SkillUse` note a change on the ledger and leave the pool alone; `StatusSet` tells
+  `Delayed.ended` when a status is gone, and the sum is applied once. `StatusSet.apply` takes
+  `by`, and `SkillUse.apply` passes the user.
+- **Why:** board row C8.15, first half (split into C8.15a and C8.15b).
+- **Verified:** `tests/unit/delayed_test.gd` (8 checks); the full ladder.
+- **Gaps:** ticks are not held by a ledger; a held hit shows no number; `by` is not saved;
+  no demo status uses either; no windowed capture.
+
+## 2026-11-15 — C8.15b · Conditional outcomes (combat 0.123.0)
+
+- **Did:** new `src/gameplay/combat/contagion.gd` (`Contagion`). `StatusEffect.spread_reach`:
+  `Delayed.ended` tells `Contagion.passed` when a status runs out, and standing fighters on
+  the holder's side in reach catch it, once each. `StatusEffect.punish_status`:
+  `Combatant.hit` tells `Contagion.aimed`, and a hostile attacker gets that status.
+  `Skill.filter`, `filter_stat`, `filter_value` and `Skill.admits`, asked in `Unseen.open`,
+  so a battle's target list and a field command's candidates keep only the fitting targets.
+- **Why:** board row C8.15, second half.
+- **Verified:** `tests/unit/contagion_test.gd` (8 checks); the full ladder.
+- **Gaps:** scaling by the place and a slot cap on named rules are not built; the filter
+  reads a stat only; no demo content uses these; no windowed capture.
+
+## 2026-11-15 — C8.9 · Things in the arena (combat 0.124.0)
+
+- **Did:** new `src/gameplay/combat/arena_thing.gd` (`ArenaThing`) and
+  `scenes/objects/arena_thing.tscn`. It makes its own `Vitals`, `Combatant` (its faction is
+  its own id, so everyone may hit it) and `Hurtbox`, and joins `Unseen.INERT`, so no target
+  search picks it. Its hp gone, a `burst` move plays where it stands as a `Planted` owned by
+  the thing, so friend and foe are hit and the next thing breaks too. A `thrown` move makes
+  a hit send it off as a `Projectile` owned by the striker.
+- **Why:** board row C8.9; C8.14 (constructs) builds on it.
+- **Verified:** `tests/unit/arena_thing_test.gd` (7 checks); the full ladder.
+- **Gaps:** struck, not carried; no burst on landing; not saved; a plain box; none in the
+  demo; no windowed capture.
+
+## 2026-11-15 — Stage 1 close
+
+- **Did:** a windowed capture of the demo (`xvfb-run`, 960x540, frame 70): the area, the
+  party, the HUD and the prompt line draw. `template/main` has nothing new to merge. The gaps
+  recorded in stage 1 became board rows C8.17, C8.18 and C8.19.
+- **Gaps:** the capture shows the demo standing still; none of the stage 1 mechanics is in
+  the demo, so none of them was seen in a window.
+
+## 2026-11-15 — C6.12a · Blink and swap (combat 0.125.0)
+
+- **Did:** M9: `src/content/combat/powers/mechanisms/blink_mechanism.gd` (`BlinkMechanism`,
+  kind `blink`) and `src/gameplay/combat/powers/mechanisms/blink_run.gd` (`BlinkRun`),
+  registered in `PowerMechanisms`. Field: `to` TARGET, BEHIND_TARGET, FORWARD, UP or SWAP,
+  `cancels_recovery`, `arrival`, `path_strike` along the line. Battle: `sooner` through a CTB
+  `delay_by`, SWAP trades waits. `Battle.running` names the battle in progress.
+- **Why:** board row C6.12, first half (split into C6.12a and C6.12b).
+- **Verified:** `tests/unit/blink_test.gd` (8 checks); the full ladder.
+- **Gaps:** no wall or floor check; UP and the player's controller; no demo power.
+
+## 2026-11-15 — C6.12b · Sacrifice and refresh (combat 0.126.0)
+
+- **Did:** M11 `SacrificeMechanism` and `SacrificeRun` (kind `sacrifice`; `SacrificeRun.side`
+  finds the user's standing allies in reach). M14 `RefreshMechanism` and `RefreshRun` (kind
+  `refresh`). `PowerSet` counts cooldowns down at `RefreshRun.rate` (1 + `cooldown_rate`), and
+  `cut_cooldowns` can round down to whole turns; a shared `_cool` keeps it inside its budget.
+- **Why:** board row C6.12, second half; Yhwach's Auswählen and Isliid's Super Arts need them.
+- **Verified:** `tests/unit/sacrifice_refresh_test.gd` (10 checks); suite 4558 passed, the
+  seven checkers, stripped 4450 passed, 29 skipped.
+- **Gaps:** a taken buff restarts at full length; the rate also applies to turn cooldowns; no
+  demo power.
+
+## 2026-11-15 — C6.10 · Foresight (combat 0.127.0)
+
+- **Did:** M7 `ForesightMechanism` and `ForesightRun` (kind `foresight`), and the static
+  helper `Foresight`: `Combatant.hit` hands each resolved hit to `Foresight.rewrite` (FORCE on
+  the attacker, then observe and DODGE on the target). `SkillUse._hit` and `Hurtbox` set
+  `Foresight.striking`. Reveal uses `Weakness.reveal_all` on the holder's tick.
+- **Why:** board row C6.10; The Almighty, Six Eyes and Sha Naqba Imuru need it.
+- **Verified:** `tests/unit/foresight_test.gd` (10 checks); suite 4568 passed, the seven
+  checkers, stripped 4460 passed, 29 skipped.
+- **Gaps:** field refill on entering an area; rewrites spent automatically; "Reading" not built.
+
+## 2026-11-15 — C6.11 · Command and grant (combat 0.128.0)
+
+- **Did:** M8 `CommandMechanism` and `CommandRun` (kind `command`: OBEY, STOP, FORGET, FALL,
+  with the once flag, a canceller, an immune trait, reach and sight); M12 `GrantMechanism` and
+  `GrantRun` (kind `grant`: gifts and a lent kit, held through `PowerSet.hold_kit`).
+  `StatusEffect.obeys`, `StatusSet.obeyed` and `Combatant.side`: `can_target` reads the side,
+  so every target choice follows an obeying foe; `Battle._all_down` counts it out.
+- **Why:** board row C6.11; Lelouch's orders, the Almighty's Schrift, Isliid's arts.
+- **Verified:** `tests/unit/command_grant_test.gd` (13 checks); suite 4583 passed, the seven
+  checkers, stripped 4475 passed, 29 skipped.
+- **Gaps:** a refused order still costs; a forgotten battle foe's reward share is still given;
+  the obeyed id is not saved; no demo power.
+
+## 2026-11-15 — C9.10 · Yoshimura Eto (combat 0.129.0)
+
+- **Did:** the owner's second M.U.G.E.N upload (Yoshimura Eto, 刃下心) through the existing
+  tools: converted (62 moves), art unpacked (14 strips, 20 of 125 sounds kept: the ones the
+  moves play), kit and fighter built from `tools/mugen/examples/eto_choices.json`.
+  `MugenKit` now gives each special's pay-only skill a shared `<name>_resolve` status (Arima
+  had it by hand), so a built kit passes `check_content` untouched.
+- **Why:** the owner's request; Arima and Eto first, as they use many mechanics.
+- **Verified:** `check_content` clean; a probe (stance cycle, specials gated by stance, costs
+  17/17/25/7 paid); a windowed capture shows her sprite and the `kagune` gauge; suite 4586
+  passed, the seven checkers, stripped 4476 passed, 30 skipped.
+- **Gaps:** Noroi and Tatara wait for C8.10; the kakuja walks on the human sheet; one attack
+  button; the build tool writes absolute paths into the loadout (fixed by hand to `res://`).
+
+## 2026-11-15 — C9.11 · The mechanics guide (combat 0.130.0)
+
+- **Did:** `docs/MECHANICS_GUIDE.md` (the parts; a kit going on; a power from key press to hit
+  in the field and in a battle; the damage path; moves, statuses, gauges, forms, every
+  mechanism and its hook; passives; Arima and Eto taken apart; traps). `docs/POWER_COOKBOOK.md`
+  (22 recipes and a five-power example kit). `tools/kit_probe/` (a scene that plays every slot
+  of a kit in every style against a dummy and prints damage, gauges and refusals).
+- **Why:** the owner asked for detailed guides to the mechanics, to make the main character's
+  powers later.
+- **Verified:** the probe on the cookbook's own example kit (read from the page): no problems,
+  every power used, styles swap the slots, the wall halved a probe hit (48 → 26), the
+  finisher scaled with missing hp. On Eto and Arima every special lands but Narukami Pincer.
+  `docs_test` checks every field name in the recipes.
+- **Gaps (found, not fixed):** converted specials do no damage in a turn-based battle (their
+  damage is in the move, which a battle never plays); a kit's passives hold in every stance
+  (Eto's regen should be the kakuja's); Narukami Pincer's lightning is a helper (the helper
+  row). Next: C9.12, Eto in a real area, at the owner's request.
+
+## 2026-11-15 — C9.12 · Walls and ledges (combat 0.131.0)
+
+**Did.** The owner asked that Eto "handle walls, maps, objects and everything". Reading the
+code showed no combat file cast a single ray. Bodies were already fine: `move_and_slide` stops a
+lunge at a wall. But every hit is an `Area3D`, and areas pass through walls.
+- New `CombatSight` (`src/gameplay/combat/combat_sight.gd`): a ray masked `WORLD |
+  SIGHT_BLOCKER`, aimed 0.8 m above each end (`wall_between`, `short_of`, `aim`), plus
+  `drop_ahead` for ledges.
+- `Hitbox.strike` refuses a target behind a wall, and does not mark it struck. `Projectile` and
+  `Planted` hit from where they are.
+- A shot stops at a wall and reports `landed` there.
+- A blink stops short of a wall; a swap across one does nothing.
+- A move-event shot starts this side of a wall.
+- `FieldCommands.candidates` and `BarrageRun.aim_of` skip foes behind a wall.
+- `ActionFighter`: a lunge or roll stops at a ledge.
+- `kit_probe`: `--wall` and `--ledge`.
+
+**Why.** Before this, Eto's specials hit a foe through a wall, and Air Strike carried her off a
+ledge into the void (the probe saw her fall to y −49).
+
+**Verified.**
+- `tests/unit/combat_walls_test.gd`: 8 checks. With the hitbox check removed, the swing and
+  the breakable-thing checks fail.
+- `kit_probe --wall`: Eto, Arima and the example hero all deal 0, and the hero stays on its side
+  (z −0.32 at most against the wall at −0.75). Before the aiming fix, Final Verdict and Storm of
+  Blades still hit through it.
+- `--ledge`: every lunge stops at about z −0.6 (the edge is at −1), y 0, and still hits the foe
+  over the drop.
+- With Eto as the loadout, the game loads the courtyard and the lantern hall with 0 warnings and
+  0 errors. A windowed capture shows her sprite in the courtyard.
+- The ladder: see the commit.
+
+**Gaps.**
+- A barrage pattern that spawns around the target can spawn past a wall.
+- Enemies still choose a target behind a wall; they walk round on the navmesh.
+- A wall lower than 0.8 m does not block, which is intended.
+
+## 2026-11-15 — C8.10a · Owned fighters, the engine (combat 0.132.0)
+
+**Did.** `SummonMechanism` (kind `summon`) and `SummonRun`: a use makes one `OwnedFighter`
+(`scenes/objects/owned_fighter.tscn`, inherits the enemy prefab) per entry, beside the user and
+never past a wall, as a sibling of the user's body. `OwnedFighter` takes its owner's `side()`,
+treats its owner as home (so it follows), and gives no reward (`ActionEnemy.grants_reward`).
+The run keeps its list and clocks; one leaves on `lifetime`, over `cap`, when the user falls,
+when the kit comes off, or when it is freed (fell, or the area was left). `owner_status` is held
+while any is out; `Power.forbids_statuses` with the new reason FORBIDDEN refuses a power while
+it is (words: `ui.battle.reason.forbidden_status`).
+**Why.** Eto's special 400 summons Noroi and Tatara, and Bronze tree needs "no helpers out".
+The row was split: the engine here, Eto's data in C8.10b, the rest in C8.10c.
+**Verified.** `tests/unit/summon_test.gd` 8/8; the no-reward check fails with the reward on.
+Ladder below.
+**Gaps.** No battle side; no linked hp; not saved; a summon picks targets as an enemy does
+(walls ignored, C9.12's gap).
+**Unblocks.** C8.10b.
+
+## 2026-11-15 — C8.10b · Eto's Noroi and Tatara (combat 0.133.0)
+
+**Did.** The converter reads `helpers` (each: sprite folder, moves with weights, stats, brain
+fields) and a special's `summons`, `lifetime`, `cap` and `alone` (`tools/mugen/mugen_helpers.gd`).
+Eto's choices gained Noroi (stand 401, walk 402; 406/407/419 weighted 5/2/5, the `random` odds
+of her stand state) and Tatara (450, 451; 460/462/465), unpacked into `assets/fan/yoshimura_eto/
+noroi/` and `tatara/` (approved with her art). Special 400 summons both for 20 s (cost 8 = 250/3000);
+Bronze Tree is `alone`. Dev flag `--press=<slots>`.
+**Found on the way.** (1) An `ActionEnemy` in an area with no navmesh stood still: the default
+map syncs with no region, so `_has_navmesh` said yes and the path was empty. It now needs a
+region. (2) The player's body lives under `WorldRoot`, so its summoned siblings outlived the
+area; a summon now leaves on `area_unloading`.
+**Verified.** `kit_probe`: the summon brings 2 helpers, the foe takes 29 from them alone, Bronze
+Tree is REFUSED (FORBIDDEN); with `--wall` all 0. Windowed capture in the courtyard: Noroi beside
+Eto, HUD "Helpers Out" and Bronze Tree "not while that lasts". `mugen_build_test` +1,
+`summon_test` covers the area leaving. Ladder green.
+**Gaps.** The kakuja helpers (4000); no battle side, linked hp or saving (C8.10d).
+
+## 2026-11-15 — C8.10c · Untouchable and one-move summons; Eto's kakuja helpers (combat 0.134.0)
+
+**Did.** `SummonMechanism.untouchable` (the `OwnedFighter` takes its hurtbox out of the group
+and turns `monitorable` off, so no hit lands and no foe picks it) and `moves_each` (it counts
+the moves it starts; `SummonRun.tick` sends it away once that many are done and it is idle).
+The converter reads both from a special. Eto's kakuja special 4000 (cost 17 = 500/3000, the
+command's need) calls the kakuja Noroi (stand 2401; 2405 near, 2402 and 2406 far, weighted as
+her stand state's odds) and Tatara (2450, 2451; 2460/2461/2471), untouchable as their
+`HitOverride` is, for 15 s; unpacked into `noroi_kakuja/` and `tatara_kakuja/` with credits.
+**Why.** The owner: summons are separate units, some come for a while, some do one thing and go.
+**Verified.** `summon_test` 10/10 (untouchable: out of the group, the foe picks the user; one
+move: there during it, gone after). `mugen_build_test` reads both fields. `kit_probe`: 4000 used,
+4 helpers out (the human pair too), foe took 257. Windowed capture: the kakuja Noroi in its own
+sprite, HUD "Helpers Out". Ladder green.
+**Gaps.** The entry (2400) and leaving moves (2404, 2453) and the 4000 cutscene are not played.
+By design a helper's hit on a symbol foe opens its turn-based battle, which the helpers do not
+join yet (C8.10d, with linked hp and a saved roster).
+
+## 2026-11-15 — C8.10d · Helpers join turn-based battles (combat 0.135.0)
+
+**Did.** `BattleHost` passes `OwnedFighter.standing(tree)` to `BattleSetup.build`, which adds
+each as a guest on the party's side (`Battle.guests`): its field id (so the same hp flags), the
+party's faction, its def's `brain` or an empty one (the fallback attacks the first foe). An
+untouchable one joins `Unseen.INERT`. The party loses when all but the guests are down;
+`Rewards` skips guests; `release` does not stand them back up, so a guest that fell here is at 0
+hp in the field and falls there. `BattleScreen.name_of` drops the `/<node>` tail. Dev token
+`battle:<encounter id>` in `--press`.
+**Why.** C8.10c's capture: a helper's hit opened a battle the helpers sat out. The owner: turn-
+based stays simple; Arima and Eto are for real time and the hybrid (new row C8.20, defence prompts).
+**Verified.** `summon_battle_test` 6/6 (the rewards assertion fails with the guest skip removed).
+Windowed capture: Eto's Noroi and Tatara listed with their hp in the thorn wisps' battle and in
+the turn order. Ladder green.
+**Gaps.** A hit-everyone skill still reaches an untouchable guest. A summon used during a battle,
+linked hp and a saved roster are C8.10e.
+
+## 2026-11-15 — C8.10e · A summon used during a battle (combat 0.136.0)
+
+**Did.** `SummonRun.use` in a turn-based battle calls one fighter per entry through
+`BattleSetup.summon`: built fresh under the battle's holder, the user's faction, added to the
+party (and `guests`) or to the enemies by the user's side, its def's `brain` or a plain attack,
+then `Battle.admit` (new; `start` uses it too) gives it a place in the order. `tick` counts
+`SummonMechanism.turns` (new) of the user's turns; at 0, on falling, over `cap`, when the user
+falls or the kit comes off, `BattleSetup.dismiss` takes it out. `release` forgets the pools of
+group `SUMMONED`. The converter reads `turns`; Eto's 400 has 3, 4000 has 2.
+**Why.** Eto's specials paid their cost in a battle and brought nobody. The row's linked hp and
+saved roster are not needed by Arima or Eto and `battle.gd` is at 250/250: split to C8.10f.
+**Verified.** `summon_called_test` 5/5; `mugen_build_test` reads `turns`. Headless probe with
+Eto's kit in the thorn wisps' battle: 400 used, Noroi 40/40 and Tatara 30/30 join the party and
+the order, hit the wisp (60 to 42), and are gone on her third turn after. Ladder green.
+**Gaps.** No windowed capture (the battle menu cannot be pressed from the command line).
+`lifetime` and `moves_each` do not count in a battle. An untouchable called foe could never be
+beaten, so the fight would need its owner down first (the owner falling sends them away).
+
+## 2026-11-15 — C8.16c · The converter's sent-out shots (combat 0.137.0)
+
+- **Did:** a `Helper` whose state hurts, and a `Projectile`, become SHOT events on the converted move (its own move, start, speed); `MoveEvent.at_foe` starts a shot at the aimed foe (`postype = p2`); the sender keeps no hit of it, and a state that only shoots is still kept. `MugenIni.first_number` reads `2407+random%2` as 2407. Eto's kit rebuilt.
+- **Why:** the helpers' hits were folded into the sender's own body box, so a spike under the foe struck beside the sender.
+- **Verified:** suite, ladder (below). Kit probe on Eto, four runs: the shots that fired (the kakuja Noroi's 2406 at the foe, the kakuja Tatara's 2461) struck, none missed.
+- **Gaps:** Arima's kit is not rebuilt: his source files are gone with the container reset. A many-hit shot strikes each foe once. A shot's sounds and `Explod` pictures, and any fall (y speed), are not converted.
+
+## 2026-11-15 — C8.16d · Shots that fall, hit over time and sound (combat 0.138.0)
+
+- **Did:** `MoveEvent.lift`, `gravity`, `pierce`; `Projectile.lift`/`fall` and one-hit-at-a-time pierce shots (`Hitbox.forget`); a shot's own events play on a `MoveEvents` the sender gives it. Converter: y speed, `yaccel` fall for air states, `pierce`, the shot's own sounds and shakes. Eto rebuilt.
+- **Why:** the gaps C8.16c recorded (owner: fix the issues that exist).
+- **Verified:** suite and ladder (below); kit probe on Eto, four runs: every shot struck, Tatara's 2461 fire 6 times over its life.
+- **Gaps:** `Explod` pictures are C8.16e. Arima still needs his upload. A shot's own sent-out shots are not followed.
+
+## 2026-11-16 — C8.16e · Effect pictures and shots that shoot (combat 0.139.0)
+
+- **Did:** the converter reads `Explod` into EFFECT events and follows sent states two levels; `mugen_sprites.gd --effects` writes each picture; an EFFECT's `amount` is its pixel size; a shot's own shot strikes for the first shot's attacker. Eto: 53 pictures in her five art folders, 95 effect events.
+- **Why:** the last gaps of C8.16c/d (owner: fix the problems).
+- **Verified:** suite and ladder (below); kit probe on Eto showed pictures from bodies and from shots; a windowed capture of Air Strike shows its pictures in the world.
+- **Gaps:** one frame per picture, not following its owner, centred rather than on its feet pixel. Arima still needs his upload.
+
+## 2026-11-16 — C8.16f · Arima rebuilt from his re-upload (combat 0.140.0)
+
+- **Did:** reconverted Arima; unpacked 31 effect pictures and 6 missing sounds into `assets/fan/arima_kisho/`; rebuilt his kit and loadout. Added a `stance_id` choice to `MugenKit` so the rebuild keeps his stance power `power/arima_quinque` (the default name would have broken his slots and shown a missing string).
+- **Verified:** ladder green (4884 passed, stripped 4772); kit probe: all six specials land, shots `arima_550_shot16` and `arima_3150_shot3` strike; windowed capture shows his slot names.
+- **Gaps:** IXA Throw is a grab plus cutscene in the source, kept as a lunge; Owl call is strong (about 300 damage) because each of its hits adds the attacker's attack.
+
+## 2026-11-16 — C6.10b · Reading, a wider perfect dodge (combat 0.141.0)
+
+- **Did:** a `perfect_window` stat (`Hurtbox.PERFECT_WINDOW`) widens the perfect-dodge window through `MoveTimeline.perfectly(widen)`, capped at the first untouchable stretch. `data/passives/reading.tres` (ADD 0.5) is in Arima's kit. Also fixed the board: 0.139.0 and 0.140.0 were both bold, which failed `combat_record_test` after C8.16f.
+- **Why:** Arima's Reading (POWERS.md); a stat, not a new mechanism, so any fighter, gear or status can use it.
+- **Verified:** ladder (below); kit probe on Arima loads the kit with no problems.
+
+## 2026-11-16 — C8.20 · Defence prompts in the hybrid (combat 0.142.0)
+
+- **Did:** `DefenceWatch` (gameplay, on the player in the hybrid) and `DefenceCue` (UI) over a new `Events.defence_prompt`. A foe's swing winding up in reach, or a foe's shot under 0.5 s away, gives one prompt: BLOCK with a timed-block guard, else EVADE. C6.17 closed: both kits come from the converter.
+- **Verified:** `defence_watch_test` 6/6; in the lantern hall as Arima, two foes' swings each gave one EVADE 0.33 s ahead; ladder (below).
+- **Gaps:** no slow-down; blasts and plants not watched; passive statuses show their raw ids in the HUD line (seen in the capture, older than this).
+
+## 2026-11-16 — C8.10f · A summon's links to its user (combat 0.143.0)
+
+- **Did:** `SummonMechanism.linked_hp` and `saved`; `SummonRun` reads them through a new static `SummonLink` (flag `summon/<user>/<power>`). Leaving an area keeps the count and the summons return once the next is entered; a load brings them on the next tick; falling, the kit coming off, lifetime and cap lower it. The converter reads both from a special.
+- **Fixed on the way:** `_send_all` with none out never settled, so a count could outlive its user.
+- **Verified:** `summon_link_test` 6/6; ladder (below).
+- **Gaps:** neither Arima nor Eto uses them yet (their summons are short-lived); a return appears beside the user wherever it stands.
+
+## 2026-11-16 — C6.13a · The clone in the field (combat 0.144.0)
+
+- **Did:** M10 `clone`: `CloneMechanism`, `CloneRun` (`moved` feeds the ghost), `CloneGhost` (a `Hitbox` on fight time that records its source's path and facing, stands `delay` s behind, plays each queued move as a copy at `power_fraction`, and wears a tinted copy of the source's sprite). A second use replaces the ghost; falling, kit off and area left send it away.
+- **Verified:** `clone_test` 8/8; ladder (below).
+- **Gaps:** battle reading is C6.13b; the ghost cannot be hit, does not dodge, and plays no move events (shots, sounds, pictures). No kit uses it yet.
+
+## 2026-11-16 — C6.13b · The clone in a battle (combat 0.145.0)
+
+- **Did:** `CloneMechanism.actions`; in a battle `CloneRun.use` arms that many of the user's turns, `tick` (turn start) makes each live, and a live turn answers each `combatant_damaged` the user causes with `power_fraction` of it on the same fighter (announced, never echoed again). No `Battle` change.
+- **Verified:** `clone_battle_test` 3/3 (turns hit [2, 2, 1]; the echo is half); ladder (below).
+- **Gaps:** heals, statuses and Boost spending are not doubled; a counter the user makes during a doubled turn is echoed too.
+
+## 2026-11-16 — C8.11a · Each fighter's own time (combat 0.146.0)
+
+- **Did:** `FighterTime` (gameplay): `rate(body)` = 1 + the stat `time_rate`, floored at 0. `ActionFighter` and `ActionEnemy` tick statuses on the fight clock, then run the rest at their rate (an enemy's walk too; a stopped player is held). Shots, blasts and clone ghosts use their attacker's rate; the ATB gauge its holder's.
+- **Verified:** `fighter_time_test` 4/4; ladder (below).
+- **Gaps:** no power that puts a time stop on everyone but its user yet (data with a battlefield or grant can); in a battle `time_rate` does nothing (use `speed`).
+
+## 2026-11-16 — C8.11b · Rewind (combat 0.147.0)
+
+- **Did:** `RewindMechanism` and `RewindRun`: every tick writes the user's place and hp (keeping just over `back`); a use restores the newest record at least `back` old (else the oldest). Place only in the field; `Vitals.set_to` never raises the fallen.
+- **Verified:** `rewind_test` 4/4; ladder (below).
+- **Gaps:** statuses and other pools are not put back; nobody but the user, and no thrown thing, can be rewound.
+
+## 2026-11-16 — C8.13a · Seals (combat 0.148.0)
+
+- **Did:** `StatusEffect.seals`, `Power.tags`, `PowerUse.Reason.SEALED` (checked after FORBIDDEN), its menu words `ui.battle.reason.sealed`.
+- **Verified:** `seal_test` 4/4; ladder (below).
+- **Gaps:** no kit tags its powers yet; a passive is not sealed (passives are never "used").
+
+## 2026-11-16 — C8.13b · Copy (combat 0.149.0)
+
+- **Did:** `Events.power_used(who, power: Resource, targets)` after each `PowerUse.use`; `CopyMechanism`/`CopyRun` remember the last power another used (passives and copies never), and a use lends it with `hold_kit` under `copy/<power>` for `lasts`.
+- **Verified:** `copy_test` 5/5; ladder (below).
+- **Gaps:** "seen" has no distance; the borrow is not saved; in a battle a copier starts listening on its first turn.
+
+## 2026-11-16 — C8.13c · Steal and a random power (combat 0.150.0)
+
+- **Did:** `StealMechanism`/`StealRun` (cure the tagged status on each target, apply it to the user, up to `most`); `RandomMechanism`/`RandomRun` (pick with the use's rng, land the pick's skill, make and use its executor, forward `tick`/`moved`/`end` until the next pick).
+- **Verified:** `steal_random_test` 4/4; ladder (below).
+- **Gaps:** a stolen status starts with a fresh duration; a random pick's cost, cooldown and rules are skipped on purpose.
+
+## 2026-11-16 — C8.14a · Walls (combat 0.151.0)
+
+- **Did:** `ArenaThing.solid` (a `StaticBody3D` on `WORLD` with its box); `CombatSight.wall_between(..., exclude)` and `solids(node)`, used by `Hitbox._walled` so a wall can be struck; `ConstructMechanism`/`ConstructRun` (placed and turned before entering the tree; lifetime, cap, upkeep in whole points, down on fall/kit off/area left).
+- **Verified:** `construct_test` 5/5; ladder (below).
+- **Gaps:** nothing in a battle; a wall raised over a fighter's body overlaps it; constructs are not saved.
+
+## 2026-11-16 — C8.14b · A made weapon (combat 0.152.0)
+
+- **Did:** `WieldMechanism`/`WieldRun`: remember `lent_moves`/`lent_element`, write the weapon's, add bonuses under `wield/<power>` once; restore at the end of `lasts` or on `end`, unless gear wrote its own meanwhile.
+- **Verified:** `wield_test` 5/5; ladder (below).
+- **Gaps:** no look for the weapon; worn gear changed while it is held wins when it ends.
+
+## 2026-11-16 — C8.14c · Linked doors (combat 0.153.0)
+
+- **Did:** `DoorsMechanism`, `DoorsRun` (place and turn before entering the tree, keep the newest two, link them, lifetime, down on fall/kit off/area left), `LinkedDoor` (`pass_through` on `body_entered`, puts the body `exit` m out of the far door, which lets it be `REST` s; `may_pass` decides by side).
+- **Verified:** `doors_test` 5/5; ladder (below).
+- **Gaps:** shots and thrown things do not pass; no look; nothing in a battle.
+
+## 2026-11-16 — C8.17 · What the player sees (combat 0.154.0)
+
+- **Did:** `ActionFighter._cue_prompt` (player only) sends `defence_prompt(&"press", left)` while a move's prompt window is open and unpressed, `&""` after; `DefenceCue` shows "Now!"; `MoveTimeline.pressed()`. `Unseen.fade(body)` from both fighters' frames. `Delayed.ended` announces the released ledger sum. 12 passive files' statuses got their passive's `name_key` (the HUD showed raw ids).
+- **Verified:** `player_sees_test` 4/4; ladder (below).
+- **Gaps:** the `ArenaThing` box stays (art deferred); no on-screen number popups exist in the field, only the battle log.
+
+## 2026-11-16 — C8.18a · The player's body (combat 0.155.0)
+
+- **Did:** `PlayerController` on the floor keeps `max(velocity.y, 0)` (the same rule `ActionEnemy` uses), so `Juggle.lift` raises the player; `FieldDefeat.tick` starts the fall wait when a held status `counts_as_fallen`, and `_get_up` cures such statuses.
+- **Verified:** a headless probe (floor + player, `velocity.y = 6`): highest 0.80 m, back at 0.00; `field_defeat_test` 13/13; ladder (below).
+- **Gaps:** carrying a throwable is C8.18b.
+
+## 2026-11-16 — C8.19a · Saves and flights (combat 0.156.0)
+
+- **Did:** `StatusSet` saves and loads `by`, with `applier(status_id)`; `Rewards.grant` on FLED gives only the party's spoils (no experience, no loot); `ArenaThing.stays_broken` sets and reads `broken/<area>/<thing_id>`.
+- **Verified:** `saves_kept_test` 4/4; ladder (below).
+- **Gaps:** a ledger's held sum (a meta) is not saved; no demo thing uses `stays_broken`.
+
+## 2026-11-16 — C8.19b · The converter reads launch, cancel on hit and throws (combat 0.157.0)
+
+- **Did:** `MugenState` keeps each hit's `rise`, `fall` and `throw` (p1stateno when p2stateno is set) and marks `cancel_on_hit` when a command chain needs the hit to have landed (`on_hit`); `MugenFormula` turns them into `launch` (2 x rise / yaccel / 60), `throw_state`, `cancel_on_hit`; `MugenKit.move` builds `throw_move` one level deep. Arima and Eto reconverted and rebuilt (only those fields changed).
+- **Verified:** `mugen_convert_test` 13/13; both kit probes: no problems, 0 errors; ladder (below).
+- **Gaps:** Arima's IXA Throw stays a lunge (its grab is a helper cutscene).
+
+## 2026-11-16 — C8.18b · Carry and throw (combat 0.158.0)
+
+- **Did:** `ArenaThing.carryable` (+ `label_key`) adds a `CarryPoint` (an `Interactable`, verb TAKE; refused HANDS_FULL while carrying). `Carried` holds it overhead, out of the hurtbox group and not solid; `ActionFighter` turns an attack press into `Carried.throw` along `facing`; a fall, stun, air juggle or grab sets it down. `ArenaThing.throw_from` is the shared flight code (struck or thrown).
+- **Verified:** `carry_test` 6/6; ladder: 0 warnings, 4969 passed, checkers clean, stripped 4857 passed.
+- **Gaps:** no demo thing is carryable yet, so not seen in a windowed run; no carry pose or slower walk; the throw is flat; enemies never carry.
+
+## 2026-11-16 — C7.7a · The gear screen (combat 0.159.0)
+
+- **Did:** `GearScreen` (a `MenuScreen`, like the loadout screen): a row per slot of `GearSet.configured_rules()`, the worn piece in its `Rarity.color`; a pressed slot lists the bag's fitting pieces (`candidates`) with `compare` (added amounts, stat by stat), greyed with `refusal_key` when refused; take off (greyed for cursed); next member. `CombatActions.GEAR` (G) through `LoadoutHost.toggle(..., gear)`. Slot, stat and refusal names in the CSV; a stat with no row shows its id.
+- **Verified:** `gear_screen_test` 7/7; xvfb capture of the screen opened by `--press=gear`; ladder: 0 warnings, 4976 passed, checkers clean, stripped 4864.
+- **Gaps:** no set bonus, sockets or upgrade level on the screen; multipliers not compared; C7.7b (HUD weapon, battle screen, form names) next.
+
+## 2026-11-16 — C7.7b · The weapon and its mode on screen (combat 0.160.0)
+
+- **Did:** `WeaponLine.text(body)`: the piece in the slot list's first slot, with the form held from that piece's own kit as its mode (`mode_key`); added to `CombatHud._fighter_line` and `BattleScreen._pools_line`. Form names beside members were already done (C6.5d).
+- **Verified:** `weapon_line_test` 4/4; ladder: 0 warnings, 4981 passed, checkers clean, stripped 4869.
+- **Gaps:** the weapon is always the first slot; no capture (the demo starts with no weapon).
+
+## 2026-11-16 — C7.8 · The craft screen (combat 0.161.0)
+
+- **Did:** `Events.craft_requested(station)`; `CraftStation` (`Interactable`, `station` id) emits it; `CraftHost` (new node in `game_root.tscn`) opens `CraftScreen.for_station` over the player's bag. The screen lists `Crafting.known(station)` with `listed` needs (a piece worked on counts), greys a refusal with `refusal_key`, makes on a press (`last` note), and lists pieces whose `salvage` is not empty to take apart.
+- **Verified:** `craft_screen_test` 5/5; ladder: 0 warnings, 4986 passed, checkers clean, stripped 4874.
+- **Gaps:** no station in the demo, so no capture; TRANSMUTE is in the same list as CRAFT; a lucky roll is not called out.
+
+## 2026-11-16 — C8.1 · One more turn for a weakness hit (combat 0.162.0)
+
+- **Did:** `TurnScheduler.weakness_extra_turns`, `again(id)`, `_take_owed`, `_owed_preview`, used by `RoundScheduler` and `CtbScheduler`; `Encounter.weakness_extra_turns` set by `BattleSetup.build`. `Weakness.strike` asks `_one_more`: the fighter whose battle turn it is, striking a foe, is owed the next turn; `Events.extra_turn_earned`; battle log `ui.battle.log.one_more`. `battle.gd` (at its budget) is untouched.
+- **Verified:** `one_more_test` 5/5; ladder: 0 warnings, 4992 passed, checkers clean, stripped 4880.
+- **Gaps:** no Press Turn (half-turn icons); only weakness hits count (not crits or knock-downs); the hybrid's ATB gauge is not changed.
+
+## 2026-11-16 — C8.2 · Team attacks
+
+**Did.** A FOLLOW_UP reaction on statuses: a waiting ally strikes the foe a side-mate's plain
+attack just hit (`TeamAttacks.after_attack`, which `Battle` now calls where it called only
+`SkillUse.counter`). A `team` power mechanism (`TeamMechanism` / `TeamRun`) for dual and triple
+techs, chains and the all-out; `PowerUse.Reason.TEAM` while its partners or broken foes are not
+there. `Events.followed_up`, `Events.team_attacked`, two battle-log lines, one refusal string.
+**Why.** Board row C8.2. `battle.gd` is at its budget, so techs ride the POWER path.
+**Verified.** Ladder: 0 warnings; 5000 passed, 0 failed; checkers silent; stripped 4888 passed.
+`team_attack_test` 7. **Gaps.** No follow-ups in the field or after a skill; techs list as
+ordinary powers; partners lose no turn in a round order; no demo kit uses a tech yet.
+
+## 2026-11-16 — C8.3 · The reserve line
+
+**Did.** `Party.reserve` reads the saved reserve; `BattleSetup.build` takes it as `bench` and
+builds it into `Battle.reserve`. A new SWAP command (`BattleReserve.swap`) trades the acting
+party member for a standing reserve member: slot, turn order, turn spent, `Events.party_swapped`,
+a log line. The screen offers Swap while a reserve stands (menu building moved into
+`BattleMenu.commands`, and `BattleSetup` gained `default_defend` and `_foes`, for the budgets).
+**Why.** Board row C8.3; mid-fight joiners already existed as battle summons (C8.10e).
+**Verified.** Ladder: 0 warnings; 5008 passed, 0 failed; checkers silent; stripped 4896 passed.
+`reserve_test` 7. **Gaps.** No enemy reinforcements beyond summons; losing the active line loses
+the fight; no free swap; the demo sets no reserve, so it is not seen in the game yet.
+
+## 2026-11-16 — C8.4 · Elemental reactions
+
+**Did.** `ElementReaction` (content) and `ReactionDb` (`data/reactions/`, id `reaction/<name>`);
+`ElementReactions` (gameplay): a landing hit whose element a reaction names marks the target;
+the paired element then reacts (`damage_bonus`, `status`, mark used up unless `keeps_mark`),
+announced by `Events.elements_reacted` and a battle-log line. Hooked once in `Combatant._land`,
+so battles, the field and the hybrid all react. Marks are built-in statuses a save reloads.
+**Verified.** Ladder: 0 warnings; 5015 passed, 0 failed; checkers silent; stripped 4903 passed.
+`element_reaction_test` 6. **Gaps.** The demo uses one element, so no reaction file ships; marks
+have no icon of their own; no spreading reactions.
+
+## 2026-11-16 — C8.5 · Front and back rows
+
+**Did.** `CombatantDef.back_row` and `Combatant.back_row`; `Rows.soften` and `Rows.shift`, hooked
+in `Combatant.hit` around `receive`: close blows halved from and onto a screened back row,
+`knock_back`/`pull` tags move a target, `Events.row_changed` and two log lines. Battle only.
+**Verified.** Ladder: 0 warnings; 5022 passed, 0 failed; checkers silent; stripped 4910 passed.
+`rows_test` 6. **Gaps.** No Row command; rows not drawn on the battle screen; no demo data.
+
+## 2026-11-16 — C7.2b · Affixes
+
+**Did.** `Affix` (content) and `AffixDb` (`data/affixes/`); `GearAffixes` rolls a unique piece's
+`Rarity.affixes` once when `Rewards.give` hands it over, keeps them in `Flags` as
+`affix/<item id>`, lends them while worn (source `affixes`, from `GearLending`), and forgets them
+on `Crafting.dismantle`. The gear screen names them after the piece and counts them.
+**Verified.** Ladder: 0 warnings; 5029 passed, 0 failed; checkers silent; stripped 4917 passed.
+`affix_test` 6. **Gaps.** Field drops added to the bag outside `Rewards.give` do not roll; no
+demo affix files.
+
+## 2026-11-16 — End of stage 3 (turn-battle rules)
+
+**Did.** Stage-end pass. Upstream: already merged (base 5.18.1, nothing new). Capture:
+`--new-game "--party=wanderer|keeper_ally" --press=battle:encounter/thorn_wisps`, windowed under
+xvfb; the battle screen draws, the Keeper waits off the field and the menu ends in **Swap**
+(new dev option `--party=<active>|<reserve>`, debug only). The stage's gaps are rows C8.21 and
+C8.22. Correction to the C7.2b entry: field kills go through `Rewards.give` too, so field drops
+roll affixes; only items added to a bag some other way do not.
+
+## 2026-11-16 — C8.21 · Team-attack gaps
+
+**Did.** `TeamAttacks.use_skill` wraps `SkillUse.apply` in a battle: a one-target skill that
+lowered a foe's hp draws follow-ups (shared `follow_ups`). `RoundScheduler.skip_next` gives
+`TeamRun` a round-order cost for partners. `PowerMenu` files team techs under a Team submenu.
+**Verified.** Ladder: 0 warnings; 5032 passed, 0 failed; checkers silent; stripped 4920 passed.
+`team_attack_test` 10. **Gaps.** Field follow-ups (now in C8.22); the order preview does not
+yet show a skipped turn.
+
+## 2026-11-16 — C8.22a · The reserve steps in, foes come in waves
+
+**Did.** `BattleReserve.refill`, called once from `Battle._settle`: a fallen party member's slot
+goes to the first standing reserve member, then `BattleSetup.reinforce` brings the encounter's
+next `wave` of `reinforcements` when every foe is down. Reinforcements' loot is rolled on a win.
+`Events.reinforcements_arrived` and a log line.
+**Verified.** Ladder: 0 warnings; 5038 passed, 0 failed; checkers silent; stripped 4926 passed.
+`reinforcement_test` 5. **Gaps.** No experience for reinforcements beyond the encounter's own;
+no demo wave (C8.22b).
+
+## 2026-11-16 — C8.22b · The Row command and demo data
+
+**Did.** `BattleCommand.Kind.ROW` through `BattleReserve.move` → `Rows.step`; `BattleMenu.commands`
+offers Row (and Swap) to party members of their own; `name_of` marks "(back)". Demo: three
+`data/affixes/` files and the Keeper's `back_row`.
+**Verified.** Ladder: 0 warnings; 5041 passed, 0 failed; checkers silent; stripped 4929 passed.
+`rows_test` 8. Windowed capture of the thorn-wisp battle: "Keeper (back)" in the readout and the
+turn order, and Row at the foot of the Wanderer's menu. A first ladder run hung: the new test
+waited for the turn of a hero left fallen by an hp round-trip; it now revives through `revive`.
+**Gaps.** Field follow-ups, a free swap, a demo reaction and wave (C8.22c).
+
+## 2026-11-17 — C8.22c · Field follow-ups, the free swap, a demo reaction and wave
+
+**Did.** `FieldFollowUps.after_hit`, called by `Hurtbox.take` on a landed hit: allies of the
+attacker within `REACH` (8 m) of the foe go to `TeamAttacks.answer_all`, the loop the battle's
+`follow_ups` now shares. `Encounter.free_swaps` → `TurnScheduler.free_swaps`: `Battle._kept` hands
+the turn to the one swapped in, once a turn (`free_swap_used`); `BattleMenu` labels it "Swap
+(free)". `_all_down` moved to `BattleReserve.all_out` to keep `battle.gd` in budget. Demo: Rime
+(frost) for the Keeper, `data/reactions/thaw.tres`, a reinforcement wisp and `free_swaps` on the
+thorn wisps.
+**Verified.** Ladder: 0 warnings; 5049 passed, 0 failed; checkers silent; stripped 4936 passed.
+`field_follow_up_test` 5, `reserve_test` 9. Windowed capture of the thorn-wisp battle with the
+Keeper in reserve: "Swap (free)" at the foot of the Wanderer's menu. The first run failed on a
+field fighter with no `StatusSet` (an `action_enemy_test` body); `answer_all` now skips one.
+**Gaps.** A field follow-up lands at once, with no swing of its own. A free swap trades only the
+fighter whose turn it is. The order preview does not show a lost turn; reinforcements give no
+experience of their own (both C8.23).
+
+## 2026-11-17 — C8.23 · The preview shows a lost turn; reinforcements give experience
+
+**Did.** `RoundScheduler.preview` walks the queue, then whole orders, against a copy of the skip
+counts, so a partner's lost turn (C8.21) is left out of "Next:" as `next` leaves it out.
+`Encounter.reinforcement_experience`, added per arrived reinforcement in `Rewards.grant`; the
+thorn wisps' third wisp gives 15.
+**Verified.** Ladder: 0 warnings; 5050 passed, 0 failed; checkers silent; stripped 4937 passed.
+`team_attack_test` (the preview), `reinforcement_test` 6. No capture: the demo has no team tech
+to make a lost turn, and the readout's drawing is unchanged.
+**Gaps.** None new. Stage 3's recorded gaps are closed.
+
+## 2026-11-17 — C6.23 · Choosing a kit, and authoring
+
+**Did.** `DevKit.power_kit` (in `src/systems/debug/`): equips `kit/<name>` from `PowerKitDb` on
+`Director.player`, adding a `PowerSet` when missing; `none` takes it off; alone it lists the kits.
+`DevCommands` dispatches it as a seventh verb, and `dev_stage` takes `--power-kit=` after the area
+lands. The demo Wanderer's loadout wears `data/powers/wanderer.tres` (Thorn Volley, Sidestep).
+`AUTHORING.md` § Hero powers: what a kit is, where it shows, trying one, and five steps.
+**Verified.** Ladder: 0 warnings; 5057 passed, 0 failed; checkers silent; stripped 4944 passed.
+`dev_kit_test` 6; `dev_tools_test` counts seven verbs. Windowed capture with `--press=1`: the HUD
+reads "[1] Thorn Volley (ready in 4s) [2] Sidestep", and the volley's hit on a thorn wisp opened
+its battle. Headless runs of `--power-kit=none` and `--power-kit=nope` log the take-off and the
+refusal.
+**Gaps.** The roster's Wanderer (turn-based battles) has no kit, so the demo battle shows no
+Powers row. The verb's kit does not survive a new area.
+
+## 2026-11-17 — C5.4a · Difficulty
+
+**Did.** `Difficulty` (content: `side`, `dealt`, `taken`, `order`) and `DifficultyDb`
+(`data/difficulty/`). `CombatDifficulty` (gameplay): the flag `combat/difficulty`, else the project
+setting `combat/difficulty/default`; `choose` refuses an unknown id; `scale` multiplies a resolved
+hit between the player's side and another. `Combatant.hit` calls it after `Foresight.rewrite`. The
+board asked for a formula stage, but a stage sees only two stat sheets and cannot tell sides
+apart, so the scaling sits in `Combatant.hit` instead. Demo: Story, Balanced, Harsh. The first
+names, "normal" and "hard", failed `check_boundary` because those words appear in code; renamed.
+**Verified.** Ladder: 0 warnings; 5066 passed, 0 failed; checkers silent; stripped 4953 passed.
+`difficulty_test` 8 (the game's own files load clean). A headless probe lists the three in order
+with no problems. No capture: nothing shows on screen until a settings screen (C5.3b).
+**Gaps.** No player-facing choice yet (C5.3b, which waits on upstream T7.4).
+
+## 2026-11-17 — C5.4b · Auto-battle
+
+**Did.** `AutoBattle` (gameplay): the flag `combat/auto_battle`, `toggle`, `plays` and
+`brain_for` (the definition's `brain`, else an empty one whose fallback attacks). `Battle.brain_of`
+asks it where it used to return null. `BattleScreen`: `advance` stops at an auto-played party
+turn, `tick_auto` (from `_process`) plays it after `AUTO_DELAY`, and an Auto row ends the first
+menu. `_pools_line` moved to `BattleReadout.line`. Also fixed: C5.4a's commit failed
+`combat_record_test`, because its devlog heading "C5.4a" needs the word C5.4 on the board and
+the ladder ran before the docs were written; the C5.4a row now names C5.4.
+**Verified.** Ladder: 0 warnings; 5073 passed, 0 failed; checkers silent; stripped 4960 passed.
+`auto_battle_test` 6 (a whole fight plays itself to a win). Windowed capture of the thorn-wisp
+battle with `--flag=combat/auto_battle:true`: "Auto: On" ends the menu, and the log shows the
+party's turns played.
+**Gaps.** The plain brain only attacks: it never heals, so the demo party can lose on auto. A
+member needs its own `brain` on the roster for anything smarter. The settings screen (C5.3b)
+will offer the flag too.
+
+## 2026-11-17 — C5.4c · Hold to attack
+
+**Did.** `ActionFighter.HOLD_FLAG` (`combat/hold_to_attack`): `_physics_process` passes a held
+attack button to `drive` as `held`, which presses the chain each frame (`timeline.press` already
+buffers and chains). A held press skips `time_press`, so holding never earns a timed bonus, and
+never throws a carried thing. `AUTHORING.md` names the three accessibility flags.
+**Verified.** Ladder: 0 warnings; 5075 passed, 0 failed; checkers silent; stripped 4962 passed.
+`action_fighter_test` 26 (a held
+button starts and chains the attack, and its press is not timed). No capture: holding a key in a
+headless or captured run is not something the dev stage can stage.
+**Gaps.** The flags have no player-facing switch until C5.3b.
+
+## 2026-11-17 — C5.5 · The combat docs
+
+**Did.** `NEW_GAME.md` § 1b, Choose your combat: turn-based, action or hybrid and the settings
+each reads; the combat demo folders under `data/`; `assets/fan/` deleted before any release
+(non-commercial fan work); the `combat.*` prune. Measured from `src/`: of 316 `combat.*` rows, 67
+are engine (`craft`, `gear`, `loadout`, `stat`) and 249 translate content. `AUTHORING.md`
+§ Turn-battle rules: one table of the C8 rules and their fields. CI's strip job and the local
+ladder prune the combat rows too.
+**Verified.** Ladder: 0 warnings; 5075 passed, 0 failed; checkers silent; stripped 4962 passed,
+and in the stripped copy `check_boundary` (365 rows, 0 content namespace), `check_strings` and
+`check_content` pass.
+**Gaps.** `check_boundary` does not know the `combat.*` content namespaces, so an orphaned combat
+row is found by the prune, not by a gate.
+
+## 2026-11-17 — C8.24 · Review fixes for C8.22c and C8.23
+
+**Did.** A review workflow (three reviewers on logic, engine pitfalls and tests/rules, then one
+adversarial verifier per finding; 14 agents) confirmed seven findings and rejected four. Fixed:
+`FieldFollowUps` leaves out an ally with a wall between it and the foe (`CombatSight`), and a hit
+on an `Unseen.INERT` thing draws no follow-up; `Hurtbox.take` reads the target's hp before
+resolving and asks for follow-ups only when it fell, because a skill move counts as landed even
+when it missed or bounced. Also taken, though rejected as "no behaviour change": `free_swaps`
+lives on `Battle` (set by `BattleSetup` from the encounter), not on `TurnScheduler`, whose header
+says it knows nothing of what a turn does; and the first follow-up assertion now checks the exact
+hp lost. Left: allies grabbed, airborne or time-stopped still follow up (rejected: no field
+fighter refuses a move in those states today).
+**Verified.** Ladder: 0 warnings; 5081 passed, 0 failed; checkers silent; stripped 4968 passed.
+`field_follow_up_test` 8 (a walled ally 4 m away is left
+out, a status-only skill move and an inert thing draw none, 25 hp lost exactly), `reserve_test` 10
+(the menu says plain Swap once the free one is spent, and the next turn has one again).
+**Gaps.** None new.
+
+## 2026-11-17 — C8.25 · Smarter auto-battle and demo polish (stage-6 close)
+
+**Did.** `BrainEntry.below_any_target` and `BattleAi._below`: the pool test asks the command's
+legal targets instead of the user. The demo roster: the Keeper's `brain` (Salve at LOWEST_HP
+when an ally is under half, weight 4; Rime and attack at LOWEST_HP, weight 1), which only
+auto-battle reads for a party member; the Wanderer's `power_kit`; `data/statuses/fleet.tres`
+given by Sidestep's `arrival`. `BattleSetup._numbered`: a reinforcement takes the next
+`<id>_<n>` of its kind.
+Stage close: upstream `main` is still 5.18.1 (nothing to merge); captures this stage: the free
+swap row, the HUD's quick slots, auto-battle, and this package's battle (below); the recorded
+gaps are rows C8.26, C5.3b and C5.3c.
+**Verified.** Ladder: 0 warnings; 5085 passed, 0 failed; checkers silent; stripped 4971 passed.
+`battle_ai_test` 12, `reinforcement_test` 6. Windowed
+capture of the thorn-wisp battle on auto: the second wave arrived, frost marks on the wisps and
+the Keeper's MP spent show its brain casting Rime, and the Wanderer's menu has a Powers row.
+**Gaps.** C8.26.
+
+## 2026-11-17 — C8.26 · Combat CSV orphans, a free swap for a waiting member
+
+**Did.** `check_boundary`: `COMBAT_ID_SPACES` and `combat_row_id`; ids read from every `id`,
+`kit_id`, `power_id` and `type_id` line under `data/` (sub-resources too); a `combat.*` row naming
+none fails. First run: two failures, `combat.power.amon_crush` and `roma_swallow`, whose files
+declare `skill/...` ids; renamed to `combat.skill.*`. `BattleReserve.free_swap` and
+`waiting_pairs`, offered by `BattleMenu.free_pairs` as rows in Swap's target list ("{in} for
+{out}"); `BattleScreen._outcome_key` moved to `BattleReadout.outcome_key` for room.
+`FieldFollowUps._stopped`: `Grab.held`, `Juggle.airborne`, `FighterTime.rate` 0.
+**Verified.** Ladder: 0 warnings; 5090 passed, 0 failed; checkers silent; stripped 4976 passed.
+`reserve_test` 12 (the pair row is listed, the trade keeps
+the turn, once a turn), `field_follow_up_test` 9, `gates_test` 66 (`combat_row_id`).
+**Gaps.** None new.
+A second review workflow (C6.23 to C5.5) ran out of the session's usage limit before any reviewer
+reported; its findings, if any, are still to come.
+
+## 2026-11-17 — C8.27a · Review fixes: field and difficulty
+
+**Did.** The second review (C6.23 to C8.26, three reviewers, each finding verified) confirmed ten
+defects; this package fixes six. `BlinkMechanism.battle_arrival` (a TURNS status a battle puts on
+instead of `arrival`), and a TURNS `arrival` is a problem: the Wanderer's Fleet lasted for ever in
+the field and was saved. Fleet is now 1.5 s, `status/fleet_battle` one turn. `ActionFighter._threw`
+stops the hold-to-attack swing on the throw press and while that hold lasts.
+`CombatDifficulty.current` falls back to the default only with no flag. `DevCommands.set_flag`
+keeps non-numbers as text (the documented `--flag=combat/difficulty:...` stored 0). `NEW_GAME`
+§ 1b says which `combat.*` rows the gate only counts.
+**Why.** Review findings; each had a concrete failing scenario.
+**Verified.** Ladder: 0 warnings; 5094 passed, 0 failed; checkers silent; stripped 4980 passed.
+**Gaps.** The other four (auto-battle's Boost and focus, `below_any_target` aim, the free swap's
+turn order) are C8.27b. `set_flag` is an upstream file; the same fix belongs upstream.
+
+## 2026-11-17 — C8.27b · Review fixes: battles
+
+**Did.** The second review's other four defects. `BattleScreen._new_turn` clears the Boost level,
+category, pending command and refusal after an auto-played turn, a manual one and an Auto toggle;
+on a turn Auto plays, `_fill` draws only the Auto row, which takes the focus (a pad could hardly
+reach it before, the menu being rebuilt every 0.6 s). `BattleAi._aim` narrows a `below_any_target`
+entry's targets to those under the line (the Keeper healed a full 40/40 member over a 45/100 one).
+`TurnScheduler.hand_over`, overridden by `RoundScheduler` (queued slot; `_acted` keeps anyone from
+a second turn in a round) and `CtbScheduler` (remaining wait); `BattleReserve.swap(keep_place)`
+uses it for the free swap of a waiting member, which before lost that member's turn this round.
+`BattleScreen._label` moved to `BattleReadout.command_key` to stay in budget.
+**Verified.** Ladder: 0 warnings; 5100 passed, 0 failed; checkers silent; stripped 4986 passed. A
+windowed capture of the thorn wisps with `combat/auto_battle` on shows "Auto: On" as the only row, focused.
+**Gaps.** None new.

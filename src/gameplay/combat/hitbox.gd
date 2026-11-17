@@ -13,6 +13,8 @@ extends Area3D
 ## (`MoveTimeline.swing` counts them), or a new clock, forgets them all, so it may strike each
 ## again.
 ##
+## WALLS (C9.12): a hurtbox behind a wall is never struck; `CombatSight` says what a wall is.
+##
 ## OWNS: the hitbox's shape and who it has already struck this swing.
 ## MUST NOT: decide what a hit does (the `Hurtbox` resolves it) or play the move (`MoveTimeline`).
 
@@ -72,6 +74,12 @@ func sweep() -> int:
 
 ## Strikes one hurtbox, unless the move is not live or this swing already struck it.
 ## True when the hurtbox counted the hit.
+## Forgets who this swing has struck, so each may be struck again: a shot of several hits
+## (C8.16d, `Projectile`) calls it between its hits.
+func forget() -> void:
+	_struck.clear()
+
+
 func strike(hurtbox: Hurtbox) -> bool:
 	if timeline == null or not timeline.is_hitting() or attacker == null:
 		return false
@@ -80,10 +88,36 @@ func strike(hurtbox: Hurtbox) -> bool:
 		_clock = timeline
 		_struck.clear()
 	var key: int = hurtbox.get_instance_id()
-	if _struck.has(key):
+	if _struck.has(key) or _walled(hurtbox):
 		return false
 	_struck[key] = true
-	return hurtbox.take(attacker, timeline.move, rng, global_position)
+	var clock: MoveTimeline = timeline
+	var move: ActionMove = timeline.move
+	var counted: bool = hurtbox.take(attacker, timeline.move, rng, global_position, timeline.boost)
+	# A landed hit lets a `cancel_on_hit` move go straight into the next swing (C8.8a).
+	if hurtbox.landed:
+		clock.connected()
+	# A grab (C8.8b): the victim is held and this fighter goes straight into the throw.
+	var victim: Node3D = hurtbox.get_parent() as Node3D
+	if hurtbox.flinched and move.throw_move != null and victim != null and not Grab.held(victim):
+		clock.start(move.throw_move)
+		Grab.hold(victim, self, move.throw_move)
+	return counted
+
+
+## Where this hit comes from, for the wall check (C9.12): the attacker's middle. A shot or a
+## blast comes from where it is.
+func _eye() -> Vector3:
+	var body: Node3D = attacker.get_parent() as Node3D if attacker != null else null
+	return CombatSight.aim(body if body != null else self)
+
+
+# True when a wall stands between this hit and `hurtbox` (C9.12). It is not remembered as
+# struck, so a foe who steps out from behind the wall can still be hit this swing.
+func _walled(hurtbox: Hurtbox) -> bool:
+	var target: Node3D = hurtbox.get_parent() as Node3D
+	var at: Vector3 = CombatSight.aim(target if target != null else hurtbox)
+	return CombatSight.wall_between(self, _eye(), at, CombatSight.solids(target)).is_finite()
 
 
 func _on_area_entered(area: Area3D) -> void:

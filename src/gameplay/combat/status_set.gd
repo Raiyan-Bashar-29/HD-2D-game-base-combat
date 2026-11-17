@@ -39,6 +39,8 @@ class Held:
 	var stacks: int = 1
 	## Seconds gathered toward the next tick of a SECONDS status.
 	var carry: float = 0.0
+	## Who applied it, for a delayed hit (C8.15a).
+	var by: StringName = &""
 
 
 ## True only while a status is being taken off because its time ran out, so a listener to
@@ -92,7 +94,7 @@ static func of(who: Node) -> StatusSet:
 
 ## Applies a status, by its stacking rule. False when refused: a broken status, IGNORE held, or
 ## shrugged off by resistance. `rng` decides a partial resistance; null uses the global one.
-func apply(effect: StatusEffect, rng: RandomNumberGenerator = null) -> bool:
+func apply(effect: StatusEffect, rng: RandomNumberGenerator = null, by: StringName = &"") -> bool:
 	if effect == null or not effect.problems().is_empty():
 		return false
 	if _resists(effect, rng):
@@ -103,6 +105,7 @@ func apply(effect: StatusEffect, rng: RandomNumberGenerator = null) -> bool:
 		var held := Held.new()
 		held.effect = effect
 		held.remaining = effect.duration
+		held.by = by
 		_held[effect.id] = held
 		_add_modifiers(effect)
 	else:
@@ -140,7 +143,30 @@ func halts() -> bool:
 		var effect: StatusEffect = _held[status_id].effect
 		if effect.unit == StatusEffect.Unit.SECONDS and effect.has_block(StatusEffect.Block.SKIP_TURN):
 			return true
+	return fallen()
+
+
+## True while a held status counts its holder as fallen (petrify, C8.7a). A battle reads it
+## when it decides who has won.
+func fallen() -> bool:
+	for status_id: StringName in _held:
+		if _held[status_id].effect.counts_as_fallen:
+			return true
 	return false
+
+
+## Who applied `status_id`, or an empty id when it is not held or nobody did (C8.19).
+func applier(status_id: StringName) -> StringName:
+	return _held[status_id].by if _held.has(status_id) else &""
+
+
+## The id of whoever the holder obeys now (C6.11): who applied the first held status that
+## `obeys`, or an empty id while it is its own.
+func obeyed() -> StringName:
+	for status_id: StringName in _held:
+		if _held[status_id].effect.obeys:
+			return _held[status_id].by
+	return &""
 
 
 ## Every status held now, in the order they were applied. The battle readout lists them (C2.19).
@@ -149,6 +175,15 @@ func held() -> Array[StatusEffect]:
 	for status_id: StringName in _held:
 		out.append(_held[status_id].effect)
 	return out
+
+
+## The brain that plays this fighter now (C9.5c): the `takeover` of the first held status
+## that has one (berserk), or null while the fighter is its own.
+func takeover() -> BattleBrain:
+	for status_id: StringName in _held:
+		if _held[status_id].effect.takeover != null:
+			return _held[status_id].effect.takeover
+	return null
 
 
 ## The first held status carrying `reaction` (a counter stance, a reflect), or null (C2.15).
@@ -282,19 +317,26 @@ func _add_modifiers(effect: StatusEffect) -> void:
 		target.add(StatModifier.of(modifier.stat, modifier.op, modifier.value, effect.id))
 
 
-# Takes a status off because its time ran out, saying so while it does.
+# Takes a status off because its time ran out, saying so while it does. A fatal one (doom,
+# C8.7a) then fells its holder.
 func _run_out(status_id: StringName) -> void:
+	var fatal: bool = _held[status_id].effect.fatal
 	running_out = true
 	_expire(status_id)
 	running_out = false
+	var vitals: Vitals = Vitals.of(get_parent())
+	if fatal and vitals != null:
+		vitals.set_to(vitals.defeat_pool, 0)
 
 
 func _expire(status_id: StringName) -> void:
 	var target: StatSheet = _sheet()
 	if target != null:
 		target.remove_from(status_id)
+	var gone: Held = _held[status_id]
 	_held.erase(status_id)
 	Events.status_expired.emit(owner_id, status_id)
+	Delayed.ended(self, gone.effect, gone.by, running_out)
 
 
 ## Quietly: a new game or a load is not every status wearing off.
@@ -315,7 +357,8 @@ func _collect_save() -> Dictionary:
 	var out: Dictionary = {}
 	for status_id: StringName in _held:
 		var held: Held = _held[status_id]
-		out[String(status_id)] = {"remaining": held.remaining, "stacks": held.stacks, "carry": held.carry}
+		out[String(status_id)] = {"remaining": held.remaining, "stacks": held.stacks, "carry": held.carry,
+			"by": String(held.by)}
 	return out
 
 
@@ -326,7 +369,11 @@ func _apply_save(data: Dictionary, _from_version: int) -> void:
 		if effect == null:
 			effect = Weakness.built_in(StringName(key))
 		if effect == null:
+			effect = ElementReactions.built_in(StringName(key))
+		if effect == null:
 			effect = PowerSet.passive_of(get_parent(), StringName(key))
+		if effect == null:
+			effect = PassiveSet.held_of(get_parent(), StringName(key))
 		if effect == null:
 			Log.warn(CATEGORY, "'%s' held a status '%s' that no longer exists; dropped" % [owner_id, key])
 			continue
@@ -336,6 +383,8 @@ func _apply_save(data: Dictionary, _from_version: int) -> void:
 		held.remaining = DictRead.get_float(row, "remaining", effect.duration)
 		held.stacks = clampi(DictRead.get_int(row, "stacks", 1), 1, effect.max_stacks)
 		held.carry = DictRead.get_float(row, "carry", 0.0)
+		# Who applied it is kept (C8.19), so a late hit or an obey still knows its caster.
+		held.by = StringName(DictRead.get_string(row, "by", ""))
 		_held[effect.id] = held
 		for i: int in held.stacks:
 			_add_modifiers(effect)

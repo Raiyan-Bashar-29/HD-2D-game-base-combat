@@ -4,17 +4,19 @@ extends Resource
 ## inline in a combatant's definition (C2.6), not catalogued, because a command is a slot in a
 ## menu, and what it does lives in the `Skill` it names.
 ##
-## SIX KINDS, CLOSED. ATTACK uses the combatant's basic hit; SKILL and ITEM carry a `Skill` that
+## EIGHT KINDS, CLOSED. ATTACK uses the combatant's basic hit; SKILL and ITEM carry a `Skill` that
 ## says what happens; DEFEND and FLEE are the battle's own rules (C2.4). An item is a skill that
 ## also spends one `item_id` from the inventory, so a potion and a heal spell share every field.
 ## POWER (C6.2a) uses a hero `Power` from the fighter's equipped kit, through `PowerUse`. It also
-## carries that power's skill in `skill`, so it is aimed exactly like a skill.
+## carries that power's skill in `skill`, so it is aimed exactly like a skill. SWAP (C8.3) trades
+## the actor for a member of the battle's reserve, aimed at that member. ROW (C8.22b) steps the
+## actor between the front and back rows, aimed at nobody.
 ##
 ## OWNS: which kind a menu entry is and what it carries.
 ## MUST NOT: run itself. The battle reads it.
 
-# POWER is last on purpose: a saved menu stores the kind as a number, so new kinds go at the end.
-enum Kind { ATTACK, SKILL, ITEM, DEFEND, FLEE, POWER }
+# POWER and SWAP are last on purpose: a saved menu stores the kind as a number, so new kinds go at the end.
+enum Kind { ATTACK, SKILL, ITEM, DEFEND, FLEE, POWER, SWAP, ROW }
 
 @export var kind: Kind = Kind.ATTACK
 ## Required for SKILL and ITEM: what the command does.

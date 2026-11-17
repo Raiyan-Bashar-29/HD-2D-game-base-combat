@@ -17,6 +17,15 @@ extends RefCounted
 ## A DODGE (`start` with the dodge move) is allowed when idle or during recovery
 ## (`can_dodge`): it cancels the follow-through, never a wind-up or a live swing.
 ##
+## A move may have a second untouchable stretch, an armour stretch (`armoured`: hits land but
+## do not push) and SPEED events that change its travel speed part-way (`speed`), all C8.16.
+##
+## CANCEL ON HIT (C8.8a): a move with `cancel_on_hit` that has landed (`connected`) opens its
+## chain window at once, even mid-swing, so the next swing comes straight out of the hit.
+##
+## A PROMPT (C8.8c): `time_press` measures the first attack press of a move against the move's
+## `prompt` window and keeps the result in `boost`, which multiplies the move's power.
+##
 ## `swing` counts every move started, so a hitbox can hit each target once per swing.
 ##
 ## OWNS: the current move, its elapsed time, the chain position and the buffered press.
@@ -35,9 +44,15 @@ var elapsed: float = 0.0
 ## Which move of the chain is playing; -1 when no chain is.
 var chain_index: int = -1
 var swing: int = 0
+## What the current move's power is multiplied by: 1, or what a timed press earned (C8.8c).
+var boost: float = 1.0
 
 var _chain: Array[ActionMove] = []
 var _buffered: bool = false
+# True once the current move has landed a hit.
+var _connected: bool = false
+# True once the current move's one timed press has been used.
+var _pressed: bool = false
 
 
 ## Plays `next` from its first frame, ending whatever was playing. Leaves any chain.
@@ -62,10 +77,13 @@ func press(chain: Array[ActionMove]) -> bool:
 		_chain = chain
 	if chain_index + 1 >= _chain.size():
 		return false
+	if _cancels():
+		_next_in_chain(0.0)
+		return true
 	if phase == Phase.RECOVERY and elapsed >= _window_opens():
 		_next_in_chain(elapsed - _window_opens())
 		return true
-	if _window_opens() - elapsed <= buffer_window:
+	if move.cancel_on_hit or _window_opens() - elapsed <= buffer_window:
 		_buffered = true
 	return false
 
@@ -82,8 +100,30 @@ func step(dt: float) -> Array[int]:
 	return entered
 
 
+## True once this move's prompt has had its press (C8.17: the cue goes when it is pressed).
+func pressed() -> bool:
+	return _pressed
+
+
+## The attack button, pressed while a move plays: the first press of a move with a `prompt` is
+## timed against it. Returns the multiplier it earned; 1.0 when it missed or there is no prompt.
+func time_press() -> float:
+	if move == null or move.prompt == null or _pressed:
+		return 1.0
+	_pressed = true
+	boost = move.prompt.multiplier(elapsed)
+	return boost
+
+
+## The current move has landed a hit. A buffered press of a `cancel_on_hit` move plays on the
+## next `step`.
+func connected() -> void:
+	_connected = phase != Phase.IDLE
+
+
 ## Ends the current move at once: a stagger, a knockback, a defeat.
 func cancel() -> void:
+	_connected = false
 	phase = Phase.IDLE
 	move = null
 	chain_index = -1
@@ -103,21 +143,46 @@ func can_dodge() -> bool:
 	return phase == Phase.IDLE or phase == Phase.RECOVERY
 
 
+## True inside either of the move's untouchable stretches.
 func invulnerable() -> bool:
-	if move == null or move.iframes_to <= move.iframes_from:
+	if move == null:
 		return false
-	return elapsed >= move.iframes_from and elapsed < move.iframes_to
+	return _first_iframes() or (elapsed >= move.iframes2_from and elapsed < move.iframes2_to)
+
+
+## True inside the move's armour stretch (C8.16): a hit lands but does not push.
+func armoured() -> bool:
+	return move != null and elapsed >= move.armour_from and elapsed < move.armour_to
+
+
+## The move's travel speed now: its own, or the latest SPEED event's that has come (C8.16).
+func speed() -> float:
+	if move == null:
+		return 0.0
+	var now: float = move.travel_speed
+	for event: MoveEvent in move.events:
+		if event != null and event.kind == MoveEvent.Kind.SPEED and event.at <= elapsed:
+			now = event.amount
+	return now
 
 
 ## True while untouchable AND inside the move's `perfect_window` (C6.6c): a hit now is dodged
-## perfectly, because the dodge started only just before it.
-func perfectly() -> bool:
-	return invulnerable() and elapsed < move.iframes_from + move.perfect_window
+## perfectly, because the dodge started only just before it. `widen` stretches the window
+## (0.5 = 1.5 times, C6.10b); it never reaches past the first untouchable stretch.
+func perfectly(widen: float = 0.0) -> bool:
+	return move != null and _first_iframes() \
+		and elapsed < move.iframes_from + move.perfect_window * maxf(0.0, 1.0 + widen)
+
+
+func _first_iframes() -> bool:
+	return elapsed >= move.iframes_from and elapsed < move.iframes_to
 
 
 ## One transition if one is due; true when it happened, so `step` loops on.
 func _advance(entered: Array[int]) -> bool:
-	if phase == Phase.STARTUP and elapsed >= move.startup:
+	if _buffered and _cancels():
+		_next_in_chain(0.0)
+	elif phase == Phase.STARTUP and elapsed >= move.startup:
 		phase = Phase.ACTIVE
 	elif phase == Phase.ACTIVE and elapsed >= move.startup + move.active:
 		phase = Phase.RECOVERY
@@ -137,6 +202,14 @@ func _begin(next: ActionMove, carried: float) -> void:
 	elapsed = carried
 	swing += 1
 	_buffered = false
+	_connected = false
+	_pressed = false
+	boost = 1.0
+
+
+# True when the current move has landed and may be cancelled into the chain's next move.
+func _cancels() -> bool:
+	return _connected and move != null and move.cancel_on_hit and chain_index + 1 < _chain.size()
 
 
 func _next_in_chain(carried: float) -> void:

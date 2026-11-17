@@ -3,7 +3,8 @@ extends RefCounted
 ## Gems socketed into pieces of gear (C7.4c). See `docs/GEAR.md` § Sets, sockets, upgrading.
 ##
 ## IN PLAIN WORDS:
-##   - A piece holds as many gems as `GearDefinition.socket_count()` says.
+##   - A piece holds as many gems as `GearDefinition.socket_count()` says, plus the sockets its
+##     upgrade levels add (`GearUpgrades.extra_sockets`, C7.5).
 ##   - Socketing a gem uses the gem item up. While the piece is worn, the gem's stat changes are
 ##     on the wearer, and a gem with an element gives the piece's plain attack that element.
 ##   - Taking a gem out gives the item back. When the project setting `combat/gear/gem_remover`
@@ -53,7 +54,7 @@ static func gems(piece_id: StringName) -> Array[StringName]:
 	var out: Array[StringName] = []
 	if piece == null:
 		return out
-	for index: int in piece.socket_count():
+	for index: int in piece.socket_count() + GearUpgrades.extra_sockets(piece):
 		out.append(StringName(Flags.get_string(_key(piece_id, index))))
 	return out
 

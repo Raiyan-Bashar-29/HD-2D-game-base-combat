@@ -74,54 +74,7 @@ between them, written in plain words.
   `sure_hit` and `hit_tags` are flags its caster holds while it stands, read by `Combatant.hit`
   (`HitFlags`); `cancelled_by` leaves a target to a roll; `broken_by_tags` ends the battlefield
   on a landed field hit (a battle attack does not break it yet).
-- **Next: C7.5, upgrading and awakening** (`UpgradeTrack`, `GEAR.md`'s order). C7.4c (gem sockets: `GemDefinition`, `GemDb`, `GearDefinition.sockets`, `GearSockets`, the `combat/gear/gem_remover` setting) is done at 0.87.0. C7.4b (gear sets: `GearSetBonus`, `GearSetTier`, `GearDefinition.set_bonus`, `GearSetBonuses`) is done at 0.86.0. C7.4a (who may wear what: `needs_level`, `needs_stats`, `cursed`; the lending moved into `GearLending`) is done at 0.85.0. C7.3b (a weapon's own swing chain: `GearType.moves`, `GearDefinition.moves`, `Combatant.field_moves`) is done at 0.84.0. C6.9g (the log and HUD: `Events.battlefield_raised`, `battlefield_lowered`, `battlefield_clashed`, the battle log's lines, the HUD's battlefield line) is done at 0.83.0. C6.9f (the place: `place`, `moves_fight`, `weather`, run by `BattlefieldStage`) is done at 0.82.0. C6.9e (a battlefield's `caster_kit`, held while it stands) is done at 0.81.0; `summons` moved to C8.10. C6.9d (clashes and `closed`) is done at 0.80.0, see the bullet above.
-  The build order is the table at the foot of `GEAR.md`, then the rest of C7.
-  The fandom wikis were not reachable when C7.0 was written; if they are now, check the
-  "(reading)" lines in `GEAR.md` § Part 2 against them.
-  **A new combat test is listed in `tests/combat_cases.gd`** (since C6.5c), not in upstream's
-  `tests/test_runner.gd`, whose own list had reached its line budget.
-  Before it, C6.5b, a form plays its own moves: while held, its `attack_chain`
-  and `dodge` replace the fighter's own in the field (`PowerSet.moves_over`, read by
-  `ActionFighter.current_moves()` and the follower's swing), a cycle stage plays its own or the
-  cycle's, and `drain_per_action` drains for each move started.
-  Before it, C6.5a, forms, the first built-in mechanism (M5 `form`): a form's
-  power enters it (its status is held) and leaves it; one form per `exclusive_group`; a `cycle`
-  moves on with each use and after a power in `advance_after`; a drain by the second (field) or
-  turn (battle) ends it at an empty pool. `FormMechanism` and `FormRun` live in
-  `powers/mechanisms/` under content and gameplay.
-  Before it, C6.4b, the other gauge events: a `GaugeRule` also moves on a kill
-  of the holder's own, an ally falling, a move unlike the last (the field), points of another pool
-  spent as a cost (`spent_pool`, `on_spent`), and a running second on top of a moving one. The HUD
-  already shows a gauge and its level. **C6.4 is complete.**
-  Before it, C6.4a, kit gauges run: a kit's `GaugeRule`s (`PowerKit.gauges`)
-  move its gauge pools by the second, the battle turn, standing still or moving, and for each hit
-  landed or taken, dodge and miss, through a `KitGauges` that `PowerSet` feeds; a status tag can
-  pause a rule (`blocked_by_tags`), and each gauge's level status follows its pool.
-  Before it, C6.0b, documents only: two more characters for the main character,
-  Isliid (Grand Summoners; Emperor, Defier of Fate, Human Pinnacle forms and three swords) and
-  Roland (The Last Cloudia; base, Ascended and Heroic Lord forms), in `POWERS.md`, with a
-  fourteenth mechanism (`refresh`) and kit rows C6.24 and C6.25.
-  Before it, C6.3b, the HUD's slot line: `CombatHud` shows each quick slot's
-  key, power and cost, or "ready in 3s" counting down, from a new
-  `Events.power_cooldown_changed` that `PowerSet` emits when the whole seconds or turns left
-  change; the F menu redraws when a power is ready again.
-  Before it, C6.3a, quick slots: keys 1 to 4 (rebindable, no pad default) use
-  the kit's first four non-passive powers in the field through `PowerSlots` and
-  `ActionFighter.press_slot`, with no menu and no ATB.
-  Before it, C6.2c, hero powers in the menus: the battle menu and the F
-  overlay list a fighter's powers under one Powers row (`PowerMenu`), a refused power greyed out
-  with its reason in words, and every cost as the fighter really pays it.
-  Before it, C6.2b, hero powers in the field: the player and each follower
-  wear their fighter's `power_kit`, a party switch carries it with the member, a POWER
-  command goes through `FieldCommands` with no ATB cost, and a kit's passive survives a load.
-  Before it, C6.2a, hero powers in a turn-based battle: a fighter whose
-  `CombatantDef.power_kit` is set has the kit equipped when the battle builds it, and a POWER
-  `BattleCommand` uses a power through `PowerUse`, its cooldown counted in the holder's turns.
-  Before it, C6.1b built the gameplay side in `src/gameplay/combat/powers/`: `PowerSet` (equips a kit on a body, counts cooldowns, runs
-  mechanisms), `PowerUse` (why a power is refused, who it aims at, scaling, using it),
-  `PowerMechanisms` (which executor runs which mechanism) and `PowerExecutor` (the base every
-  mechanism's code extends). C6.1a's data shapes are in `src/content/combat/powers/`. The design
-  is [`POWERS.md`](POWERS.md).
+- **Next: the PR**, then what the owner unblocks. C8.27b (the review's battle fixes: auto-battle's Boost and focus, `below_any_target` aim, `TurnScheduler.hand_over`, combat 0.181.0) is done. C8.27a (the review's field and difficulty fixes: `battle_arrival`, Fleet in seconds, hold after a throw, text flags, combat 0.180.0) is done. C8.26 (`check_boundary` gates `combat.*` rows, a free swap for a waiting member, combat 0.179.0) is done. C8.25 (`below_any_target`, the Keeper's battle brain, the Wanderer's kit in battles, combat 0.178.0) is done. Stage 6's close: upstream is still 5.18.1, nothing to merge. C8.24 (review fixes: field follow-ups and walls, `Battle.free_swaps`, combat 0.177.0) is done. C5.5 (`NEW_GAME.md` § 1b, `AUTHORING.md` § Turn-battle rules, combat 0.176.1) is done. C5.4c (hold to attack, combat 0.176.0) is done. C5.4b (auto-battle, the screen's Auto row, combat 0.175.0) is done. C5.4a (difficulty files, the `combat/difficulty` flag, combat 0.174.0) is done. C6.23 (`power_kit` in the console, the Wanderer's demo kit, `AUTHORING.md` § Hero powers, combat 0.173.0) is done. C8.23 (the preview shows a lost turn, reinforcement experience, combat 0.172.0) is done. C8.22c (field follow-ups, the free swap, demo frost, Thaw and a second wave, combat 0.171.0) is done. C8.22b (the Row command, demo affixes, combat 0.170.0) is done. C8.22a (the reserve steps in, foes in waves, combat 0.169.0) is done. C7.9 and C7.10 (the armoury) wait on the deferred hero kits and Arima's upload. C8.21 (combat 0.168.0) is done. C7.2b (affixes, combat 0.167.0) is done. C8.5 (front and back rows, combat 0.166.0) is done. C8.4 (elemental reactions as data, combat 0.165.0) is done. C8.3 (the reserve line and SWAP, combat 0.164.0) is done. C8.2 (team attacks, combat 0.163.0) is done. C8.1 (one more turn for a weakness hit, combat 0.162.0) is done. C7.7 (gear screen on G) and C7.8 (craft screen, `CraftStation`, combat 0.161.0) are done. C8.19, C8.18 (combat 0.158.0), C8.17 (combat 0.157.0), C8.14, C8.13, C8.11 and C6.13 are done.
 - **Combat version:** see `[combat] core/version` in `project.godot`, and the bold version in
   `COMBAT.md` § Releases. A test keeps the two equal.
 - **What works today:**
@@ -153,6 +106,10 @@ between them, written in plain words.
 - **Known gaps:** each package's "Gaps" list in `COMBAT_DEVLOG.md`, newest last.
 
 ## Working rhythm (the owner's standing preference)
+
+**Merging while the Actions quota is used up (owner, 2026-11-13):** until the monthly quota resets, a batch PR is merged WITHOUT waiting for CI. The full ladder is run locally first (import, boot, the suite, all seven checkers, the stripped run), and the PR body says so. When the quota is back, green CI is required again.
+
+**One PR at the end (owner, 2026-11-13):** while the Actions quota is out, no batch PRs. Every finished package is pushed to the working branch (free), and ONE PR is opened when the remaining board rows are finished, or sooner if the owner asks. The local ladder stays the gate for every package. Focus is code: keep document updates short.
 
 - **One package at a time, all the way to done:** tested and verified locally, committed, and
   pushed.
@@ -296,3 +253,20 @@ header before the code.
 6. New code has plain comments wherever the reason is not obvious from the line itself.
 7. Commit and push (a working branch runs no CI). Open a pull request when the batch is
    complete (§ Working rhythm), wait for green CI, then merge.
+
+## What is left, in order (roadmap of 2026-11-15, approved by the owner)
+
+One row per turn, as always. A row over 8 files or 500 lines is split before it starts.
+
+1. **Hit and field mechanics:** done (C8.7 to C8.15, C5.8). Its recorded gaps are rows C8.17 to C8.19, to do before the playtest (stage 6).
+2. **Power mechanisms the kits need:** C6.12, C6.10, C6.11, C6.13, C8.10, C8.11, C8.13, C8.14.
+3. **Turn-battle rules:** C8.1, C8.2, C8.3, C8.4, C8.5.
+4. **Hero kits as data:** C6.14 to C6.25 (C6.17 is mostly done by C9.9b), then C6.23.
+5. **Gear:** C7.2b, C7.9, C7.10, C7.7, C7.8.
+6. **Finish:** C5.4, C5.3b and C5.3c (each needs an upstream row first), C5.5, C5.6, C5.7.
+
+At the end of each stage: one windowed capture pass (`xvfb-run`), merge `template/main`,
+and add the devlog's recorded gaps to the board as rows. New hit rules go in small helper
+files (`Juggle`, `Grab`, `HitGuard`), because `hurtbox.gd`, `hitbox.gd` and
+`action_fighter.gd` are near the 250-line budget. Needed from outside: the Actions quota,
+a person to playtest (C5.6), art, and the two upstream rows.
