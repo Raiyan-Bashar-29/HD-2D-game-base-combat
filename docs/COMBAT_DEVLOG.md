@@ -5123,3 +5123,15 @@ party's turns played.
 **Gaps.** The plain brain only attacks: it never heals, so the demo party can lose on auto. A
 member needs its own `brain` on the roster for anything smarter. The settings screen (C5.3b)
 will offer the flag too.
+
+## 2026-11-17 — C5.4c · Hold to attack
+
+**Did.** `ActionFighter.HOLD_FLAG` (`combat/hold_to_attack`): `_physics_process` passes a held
+attack button to `drive` as `held`, which presses the chain each frame (`timeline.press` already
+buffers and chains). A held press skips `time_press`, so holding never earns a timed bonus, and
+never throws a carried thing. `AUTHORING.md` names the three accessibility flags.
+**Verified.** Ladder: 0 warnings; 5075 passed, 0 failed; checkers silent; stripped 4962 passed.
+`action_fighter_test` 26 (a held
+button starts and chains the attack, and its press is not timed). No capture: holding a key in a
+headless or captured run is not something the dev stage can stage.
+**Gaps.** The flags have no player-facing switch until C5.3b.

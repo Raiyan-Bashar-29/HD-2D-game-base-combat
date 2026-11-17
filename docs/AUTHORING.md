@@ -1880,7 +1880,7 @@ A fan-made character converted from M.U.G.E.N files goes through `tools/mugen_co
 `tools/mugen_build.gd` instead, which write the kit for you (`POWERS.md` § From a M.U.G.E.N
 character to a playable fighter).
 
-## Difficulty (C5.4a, combat fork only)
+## Difficulty and the accessibility flags (C5.4, combat fork only)
 
 A difficulty is `data/difficulty/<name>.tres` (`Difficulty`, id `difficulty/<name>`): `dealt` and
 `taken` are shares added to every hit the `side` (the player's faction) lands on a foe and takes
@@ -1889,6 +1889,11 @@ it. The flag `combat/difficulty` names the one on and is saved with the game; wi
 `[combat] difficulty/default` in `project.godot` does; with neither, hits are what the formula
 makes them. Try one with `--flag=combat/difficulty:difficulty/story`. The demo ships Story,
 Balanced and Harsh.
+
+Two more flags, saved with the game like the difficulty, until a settings screen offers them
+(C5.3b): `combat/auto_battle` makes the party play its own turns in a turn-based battle (the
+battle screen's Auto row turns it on and off; each member plays by its definition's `brain`, or
+attacks), and `combat/hold_to_attack` lets a held attack button keep the field chain going.
 
 ## Mixing formulas (C5.1, combat fork only)
 

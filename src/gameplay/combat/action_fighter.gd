@@ -19,6 +19,9 @@ extends Node
 ##    (`Combatant.field_moves`, C7.3b), unless a running power hands over others on top: a
 ##    form's own attack chain and dodge (`current_moves`, C6.5b).
 ## 3a. Holding a thing overhead (`Carried`, C8.18b), the attack button throws it instead.
+## 3b. HOLD TO ATTACK (C5.4c): with the flag `combat/hold_to_attack` on, a held attack button
+##     presses again every frame, so the chain plays on as long as it is held. A held press is
+##     never a timed press (C8.8c) and never throws a carried thing.
 ## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
 ## 4d. A counter stance's move (C6.6d) is started on this timeline by the `Hurtbox`; the fighter
 ##    turns to face whoever it counters (`Events.countered`), so the counter swings at them.
@@ -38,6 +41,8 @@ extends Node
 const LOCK: StringName = &"action"
 ## The kind `Events.defence_prompt` carries for a move's timed press (C8.17).
 const PRESS: StringName = &"press"
+## The flag that turns hold-to-attack on (C5.4c), saved with the game.
+const HOLD_FLAG: StringName = &"combat/hold_to_attack"
 
 ## Who this fighter is, as the loadout that fitted them. A party switch changes it (C4.7).
 var loadout: ActionLoadout
@@ -90,12 +95,14 @@ func _physics_process(delta: float) -> void:
 	for slot: int in CombatActions.SLOTS.size():
 		if Input.is_action_just_pressed(CombatActions.SLOTS[slot]):
 			press_slot(slot)
+	var held: bool = Flags.get_bool(HOLD_FLAG) and Input.is_action_pressed(CombatActions.ATTACK)
 	drive(delta, Input.is_action_just_pressed(CombatActions.ATTACK),
-		Input.is_action_just_pressed(CombatActions.DODGE))
+		Input.is_action_just_pressed(CombatActions.DODGE), held)
 
 
-## One frame of fighting: `delta` seconds pass, with these buttons just pressed.
-func drive(delta: float, attack: bool, dodge: bool) -> void:
+## One frame of fighting: `delta` seconds pass, with these buttons just pressed. `held` is an
+## attack button held down with hold-to-attack on (C5.4c).
+func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 	# Fight time, not frame time: the hybrid's menu slows or stops the fight (C4.1).
 	var dt: float = CombatClock.scaled(delta)
 	var statuses: StatusSet = StatusSet.of(get_parent())
@@ -127,7 +134,7 @@ func drive(delta: float, attack: bool, dodge: bool) -> void:
 		# Carrying a thing (C8.18b), the attack button throws it instead of swinging.
 		if attack and not timeline.busy() and Carried.throw(_body, facing):
 			attack = false
-		_start_moves(attack, dodge)
+		_start_moves(attack or (held and Carried.of(_body) == null), dodge)
 	timeline.step(dt)
 	_report_move()
 	_cue_prompt()

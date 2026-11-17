@@ -15,7 +15,7 @@ var _fighter: ActionFighter
 
 
 func run() -> void:
-	plan(24)
+	plan(26)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_player = build("res://scenes/characters/player.tscn") as PlayerController
@@ -23,6 +23,7 @@ func run() -> void:
 	_equipping()
 	_swinging()
 	_dodging()
+	_holding()
 	_knockback_and_stun()
 	_falling()
 	_player.free()
@@ -127,6 +128,24 @@ func _dodging() -> void:
 	_run(0.25)
 	equal("in recovery it stands firm instead of sliding on", _player.velocity.z, 0.0)
 	_run(0.5)
+
+
+# Hold to attack (C5.4c): a held button starts the chain and keeps it going, never timed.
+func _holding() -> void:
+	var swing: ActionMove = _fighter.moves.attack_chain[0]
+	swing.prompt = TimedWindow.new()
+	swing.prompt.opens = 0.0
+	swing.prompt.closes = 1.0
+	_fighter.drive(DT, false, false, true)
+	var first: int = _fighter.timeline.chain_index
+	var chained: bool = false
+	for i: int in 40:
+		_fighter.drive(DT, false, false, true)
+		chained = chained or _fighter.timeline.chain_index == 1
+	equal("a held attack starts the chain and keeps it going", [first, chained], [0, true])
+	equal("a held press is never a timed press", _fighter.timeline.pressed(), false)
+	swing.prompt = null
+	_run(1.0)
 
 
 func _knockback_and_stun() -> void:
