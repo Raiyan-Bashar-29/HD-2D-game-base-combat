@@ -18,6 +18,28 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.22.0
+
+*2026-11-17 — T7.8: one pull of a trigger is one press.*
+
+**A consuming game does:** read an action from an EVENT through `Actions.pressed_now(event, action)`
+rather than `event.is_action_pressed(action)`, wherever a player could bind a trigger to it. A
+game that reads its actions with `Input.is_action_just_pressed` already behaves.
+
+**What changed.**
+- New `Actions.pressed_now(event, action)`. A key or a pad button sends one press event, but a
+  trigger sends a motion event each time it moves, and every one past the deadzone reads as
+  pressed. Since 5.20.0 let a trigger be bound to any action, one pull of a trigger bound to the
+  inventory opened and closed it once per event, and a Cancel on a trigger closed every screen.
+  For a trigger, only the event that pressed the action in `Input` counts.
+- `ScreenKeys` (pause, inventory, journal, map), `UiRoot` (cancel, pause) and `DialogueScreen`
+  (cancel, interact) read through it.
+- The controls screen swallows the rest of the pull that binds a trigger, until the trigger falls
+  back under the action's deadzone. Binding Cancel to a trigger had closed the menus behind it.
+
+**Why.** Found by a review of 5.19.0 to 5.21.1 run from the combat fork.
+
+---
 ## 5.21.1
 
 *2026-11-17 — T7.7: the debug `flag` verb keeps text as text.*
