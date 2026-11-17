@@ -12076,3 +12076,36 @@ nothing else added, where the two counts agree.
 
 **Gaps.** None.
 
+
+## 2026-11-17 — T7.4 · A game can add its own settings
+
+**Did.** New `GameSettings` (`src/core/state/game_settings.gd`), held by `Settings.game`.
+`Settings.game.add(path, default, choices)` adds one of a game's own settings; `Settings`
+reads, writes, announces and resets it through the new `Settings.default_of(path)`, which answers
+for a built-in or an added path. `GameSettings.every()` lists every setting in drawing order, and
+`SettingsScreen` draws that list: a game's row walks its choices, a String value reads through
+`SettingsScreen.value_key`, and a row's kind is its default's. `options_test` counts rows and
+headings from `every()`. New `tests/unit/game_settings_test.gd`. Base `5.19.0`, a MINOR.
+
+**Why.** The combat fork (its C5.3b) wants difficulty, aim assist and battle modes as player
+settings. `Settings.DEFAULTS` is a constant, so a game could only add project settings, which a
+player never sees. The same shape as T7.3 for input actions.
+
+**Connects.** `Settings` (the file, the type check, `setting_changed`), `SettingsScreen` (rows,
+stepping, value text), `options_test` (row count and computed keys). `GameSettings` is handed
+the built-in list when made and does not name `Settings`, so the two files are not a cycle.
+`settings.gd` stays at 149 of its 150 code lines.
+
+**Verified.** Red first: with `default_of` and `every()` stubbed to ignore added settings, 28 of
+the new case's 54 assertions failed. Green: suite 2780 passed, 0 failed; boot 0 warnings, 0
+errors; all seven checkers exit 0; the stripped run 2703 passed, 0 failed. The case covers the refusals, the
+drawing order (a game's row at the end of a built-in section, a new section after them), a value
+written, announced and saved, a saved value surviving a boot (forget, then add again), a reset,
+and the screen stepping a bool, a String, an int (also one stored as a float) and two floats.
+
+**Unblocks.** The combat fork's C5.3b, its combat settings on the settings screen.
+
+**Gaps.** No capture: the base adds no setting of its own, so there is no new row to photograph;
+the fork's C5.3b captures one. A String value that is not among the choices (a value a game
+later dropped) reads through a key that does not exist; the game should treat an unknown value
+as its default.

@@ -10,7 +10,7 @@ extends Node
 ## hand if a bad value ever locks them out of the game.
 ##
 ## OWNS: the settings file, the default values, and applying the ones that belong to the
-## window and the display server.
+## window and the display server. A game's own settings (T7.4) are listed in `game` and stored here.
 ## MUST NOT: apply audio, world or gameplay settings itself. It announces a change through
 ## Events.setting_changed and the owning system reacts. That keeps this file from growing a
 ## branch for every feature that ever gains an option.
@@ -47,6 +47,8 @@ var file_path: String = PATH
 ## screen needs no edit at all, which the shake and the autosave have now both proved literally
 ## rather than by claim. `tests/unit/settings_consumers_test.gd` is what refuses a key with no
 ## reader, so do not re-add one before its consumer.
+##
+## A GAME ADDS ITS OWN THROUGH `game` (T7.4), not here: this list is the base's, and a const.
 const DEFAULTS: Dictionary = {
 	"video/window_mode": 0,          # 0 windowed, 1 borderless fullscreen, 2 exclusive
 	"video/vsync": 1,                # matches DisplayServer.VSyncMode
@@ -82,6 +84,9 @@ const DEFAULTS: Dictionary = {
 ## The one setting with no section, and the second this file applies without a system owning it.
 const LOCALE: String = "locale"
 
+## The settings a game added at boot (T7.4). Read, written, saved and reset like the ones above.
+var game: GameSettings = GameSettings.new(DEFAULTS)
+
 var _config: ConfigFile = ConfigFile.new()
 ## RefCounted, so it needs no freeing and leaks no RID. It holds the two authored sizes.
 var _shadows: ShadowAtlas = ShadowAtlas.new()
@@ -94,13 +99,19 @@ func _ready() -> void:
 	Log.info("settings", "Loaded %d settings" % DEFAULTS.size())
 
 
-## Read a setting. `path` is "section/key" exactly as written in DEFAULTS.
+## Read a setting. `path` is "section/key" exactly as written in DEFAULTS, or as a game added it.
 func get_value(path: String) -> Variant:
-	if not DEFAULTS.has(path):
+	var fallback: Variant = default_of(path)
+	if fallback == null:
 		Log.error("settings", "Unknown setting '%s' requested" % path)
 		return null
 	var parts: PackedStringArray = _split(path)
-	return _config.get_value(parts[0], parts[1], DEFAULTS[path])
+	return _config.get_value(parts[0], parts[1], fallback)
+
+
+## A setting's default, built-in or added by the game (T7.4); null for a path that is neither.
+func default_of(path: String) -> Variant:
+	return DEFAULTS[path] if DEFAULTS.has(path) else game.default_of(path)
 
 
 func get_bool(path: String) -> bool:
@@ -134,10 +145,11 @@ func get_string(path: String) -> String:
 ## Write a setting, announce it, and persist. Unknown keys are refused loudly rather than
 ## stored, so a typo shows up immediately instead of becoming a setting nothing reads.
 func set_value(path: String, value: Variant) -> void:
-	if not DEFAULTS.has(path):
+	var fallback: Variant = default_of(path)
+	if fallback == null:
 		Log.error("settings", "Refusing to set unknown setting '%s'" % path)
 		return
-	var expected: int = typeof(DEFAULTS[path])
+	var expected: int = typeof(fallback)
 	var got: int = typeof(value)
 	var numeric_swap: bool = (expected == TYPE_FLOAT and got == TYPE_INT) or (expected == TYPE_INT and got == TYPE_FLOAT)
 	if got != expected and not numeric_swap:
@@ -160,15 +172,15 @@ func save() -> void:
 		Log.error("settings", "Could not write %s: %s" % [file_path, error_string(err)])
 
 
-## Restore every default and re-apply. Used by the settings screen's reset button.
+## Restore every default, a game's too, and re-apply. Used by the settings screen's reset button.
 func reset_to_defaults() -> void:
 	_config.clear()
 	save()
 	_apply_display()
 	_apply_locale()
-	for path: String in DEFAULTS:
+	for path: String in game.every():
 		var parts: PackedStringArray = _split(path)
-		Events.setting_changed.emit(parts[0], parts[1], DEFAULTS[path])
+		Events.setting_changed.emit(parts[0], parts[1], default_of(path))
 	Log.info("settings", "Reset to defaults")
 
 

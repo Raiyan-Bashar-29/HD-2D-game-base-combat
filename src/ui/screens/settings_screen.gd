@@ -1,7 +1,9 @@
 class_name SettingsScreen
 extends MenuScreen
 ## Every row in `Settings.DEFAULTS`, on screen and changeable. The first consumer the settings
-## file has ever had for most of what it declares.
+## file has ever had for most of what it declares. And every setting a game added through
+## `Settings.game` (T7.4), in the order `GameSettings.every()` gives: a game's row joins the end of
+## the built-in section it names, or opens a section of its own after them.
 ##
 ## IT IS GENERATED FROM DEFAULTS, NOT HAND-LISTED. Adding a setting is one line in
 ## `settings.gd` and one row in the CSV; this file does not change, and there is no second list
@@ -12,6 +14,10 @@ extends MenuScreen
 ## text scan can find them. They are asserted mechanically instead, by a loop over DEFAULTS in
 ## `tests/unit/menus_test.gd`, exactly as the prompt's verb keys and the inventory's category
 ## keys are. That is better verification than a scan, not worse.
+##
+## A GAME'S ROW WALKS ITS OWN CHOICES (`GameSettings.choices_of`). Its label is computed exactly
+## as a built-in one's, its section heading is `ui.settings.section.<section>`, and a String value
+## reads through `value_key`, so a game adds those rows to its CSV and nothing here.
 ##
 ## ONE GESTURE CHANGES A ROW: press it, or push left or right on it. Left and right are handled
 ## in `_input`, which runs BEFORE the viewport's own focus navigation, because otherwise a
@@ -35,6 +41,8 @@ const MULTIPLIER_KEY: String = "ui.settings.value.multiplier"
 const RESET_KEY: String = "ui.settings.reset"
 ## The section a setting with no slash belongs to. `Settings._split` uses the same word.
 const GENERAL: String = "general"
+## How an empty String value reads in `value_key`, which cannot end in a bare dot.
+const NONE_VALUE: String = "none"
 
 ## Low, high and step for every float row. A percentage row is one whose high is 1.0; that is
 ## read from this table rather than declared twice.
@@ -96,8 +104,8 @@ func _input(event: InputEvent) -> void:
 func _fill() -> void:
 	_paths.clear()
 	var section: String = ""
-	for path: String in Settings.DEFAULTS:
-		var head: String = path.get_slice("/", 0) if path.contains("/") else GENERAL
+	for path: String in Settings.game.every():
+		var head: String = GameSettings.section_of(path)
 		if head != section:
 			section = head
 			add_note(tr("%s%s" % [SECTION_PREFIX, section]))
@@ -113,19 +121,31 @@ func _fill() -> void:
 ##
 ## Public because no assertion can press a key: TestCase.run() is synchronous, so the suite
 ## drives this directly and the windowed probe proves the key path separately.
+##
+## A ROW'S KIND IS ITS DEFAULT'S, not the stored value's, so a file hand-edited to the wrong kind
+## still steps the row its proper way.
 func step(path: String, direction: int) -> void:
-	if not Settings.DEFAULTS.has(path):
+	var default: Variant = Settings.default_of(path)
+	if default == null:
 		return
-	var value: Variant = Settings.get_value(path)
-	if value is bool:
+	var options: Array = choices(path)
+	if default is bool:
 		Settings.set_value(path, not Settings.get_bool(path))
-	elif value is String:
+	elif path == Settings.LOCALE:
 		Settings.set_value(path, _next_locale(direction))
-	elif CHOICES.has(path):
-		Settings.set_value(path, _next_choice(path, direction))
+	elif not options.is_empty():
+		Settings.set_value(path, _next_choice(path, options, direction))
 	else:
 		Settings.set_value(path, _next_float(path, direction))
 	_redraw(path)
+
+
+## The values a press walks on one row: a built-in's from `CHOICES`, a game's from
+## `GameSettings.choices_of`. Empty for a bool, the locale, or a float stepped through `RANGES`.
+func choices(path: String) -> Array:
+	if CHOICES.has(path):
+		return DictRead.get_array(CHOICES, path)
+	return Settings.game.choices_of(path)
 
 
 ## The path of the row that has focus, or "" for a heading, the reset row, or no focus at all.
@@ -149,14 +169,25 @@ static func label_key(path: String) -> String:
 	return "%s%s" % [LABEL_PREFIX, path.replace("/", ".")]
 
 
+## The key a game's String value reads through (T7.4): `ui.settings.combat.mode.calm` for the
+## value "calm" of `combat/mode`. A slash in the value reads as a dot, and "" as `NONE_VALUE`.
+static func value_key(path: String, value: String) -> String:
+	return "%s.%s" % [label_key(path), value.replace("/", ".") if value != "" else NONE_VALUE]
+
+
+## Read by the default's kind, as `step` is.
 func value_text(path: String) -> String:
-	var value: Variant = Settings.get_value(path)
-	if value is bool:
+	var default: Variant = Settings.default_of(path)
+	if default is bool:
 		return tr(ON_KEY) if Settings.get_bool(path) else tr(OFF_KEY)
-	if value is String:
+	if path == Settings.LOCALE:
 		return Settings.get_string(path)
+	if default is String:
+		return tr(value_key(path, Settings.get_string(path)))
 	if CHOICES.has(path):
 		return _choice_text(path)
+	if default is int:
+		return str(Settings.get_int(path))
 	return _float_text(path)
 
 
@@ -187,11 +218,12 @@ func _float_text(path: String) -> String:
 	return tr(MULTIPLIER_KEY).format({"value": "%.2f" % current})
 
 
-func _next_choice(path: String, direction: int) -> Variant:
-	var options: Array = DictRead.get_array(CHOICES, path)
-	if options.is_empty():
-		return Settings.get_value(path)
-	var at: int = maxi(0, options.find(Settings.get_int(path)))
+## An int row is found by `get_int`, so a value hand-edited into the file as 2.0 still finds 2.
+func _next_choice(path: String, options: Array, direction: int) -> Variant:
+	var current: Variant = Settings.get_value(path)
+	if current is float and options[0] is int:
+		current = Settings.get_int(path)
+	var at: int = maxi(0, options.find(current))
 	return options[wrapi(at + direction, 0, options.size())]
 
 
@@ -217,7 +249,11 @@ func _next_locale(direction: int) -> String:
 	return locales[wrapi(at + direction, 0, locales.size())]
 
 
+## A game's float with choices is a percentage while its largest choice is at most 1.0.
 func _high(path: String) -> float:
+	var options: Array = Settings.game.choices_of(path)
+	if not options.is_empty():
+		return DictRead.to_float(options.max())
 	return _bound(path, 1, 1.0)
 
 

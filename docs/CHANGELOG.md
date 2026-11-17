@@ -18,6 +18,52 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.19.0
+
+*2026-11-17 — T7.4: a game can add its own settings.*
+
+**A consuming game does: nothing.** With no setting added, `Settings`, the settings file and the
+settings screen behave exactly as before.
+
+**What changed.**
+- New `GameSettings` (`src/core/state/game_settings.gd`), held by `Settings.game`.
+  `Settings.game.add(path, default, choices)` adds one of the game's own settings:
+  - `default` is a bool, an int, a float or a String;
+  - `choices` are the values one press walks, in order. An int or a String must have them, and
+    the default must be one of them; a float without them steps from 0 to 1 by a tenth;
+  - from then on `Settings.get_*`, `set_value` (with its type check and its
+    `setting_changed` announcement) and `reset_to_defaults` treat it as a built-in;
+  - a value the player saved comes back with no restoring: the file is read whole at boot;
+  - it refuses (returns false, changing nothing) an empty or built-in path, a kind a settings file
+    cannot hold, an int or String with no choices, a choice of another kind, or a default that is
+    not among the choices.
+- `Settings.default_of(path)`: a built-in or added default, null for neither.
+- `GameSettings.every()`: every setting in drawing order. An added setting joins the end of the
+  built-in section its path names (`gameplay/...`), or opens its own section after them.
+- `SettingsScreen` draws `every()`. A game's row walks its choices; a String value reads through
+  `SettingsScreen.value_key(path, value)`, `ui.settings.<section>.<key>.<value>`, with a slash
+  read as a dot and `""` as `none`; an int reads as its number. A row's kind is its default's.
+- `options_test` counts the screen's rows and section headings from `every()`, and checks the
+  computed keys of every added setting too.
+
+**How a game uses it.** Once, at boot, from any node:
+
+```gdscript
+func _ready() -> void:
+	Settings.game.add("combat/assist", true)
+	Settings.game.add("combat/speed", "normal", ["slow", "normal", "fast"])
+```
+
+and CSV rows for its section heading and labels: `ui.settings.section.combat`,
+`ui.settings.combat.assist`, `ui.settings.combat.speed`, and one per String value,
+`ui.settings.combat.speed.slow` and so on. A game that prunes its CSV keeps them: they are `ui.`
+rows. Its systems read the value with `Settings.get_*` and listen to `Events.setting_changed`.
+
+**Why.** The combat fork found it. Its difficulty, aim assist and battle modes could only be
+project settings, because `Settings.DEFAULTS` is a constant a game cannot add to without editing
+this base.
+
+---
 ## 5.18.1
 
 *2026-10-31 — T7.3 follow-up: `game_actions_test` counted the controls screen wrongly in a game.*
