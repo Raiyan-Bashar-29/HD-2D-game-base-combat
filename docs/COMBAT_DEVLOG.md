@@ -5200,3 +5200,18 @@ the turn, once a turn), `field_follow_up_test` 9, `gates_test` 66 (`combat_row_i
 **Gaps.** None new.
 A second review workflow (C6.23 to C5.5) ran out of the session's usage limit before any reviewer
 reported; its findings, if any, are still to come.
+
+## 2026-11-17 — C8.27a · Review fixes: field and difficulty
+
+**Did.** The second review (C6.23 to C8.26, three reviewers, each finding verified) confirmed ten
+defects; this package fixes six. `BlinkMechanism.battle_arrival` (a TURNS status a battle puts on
+instead of `arrival`), and a TURNS `arrival` is a problem: the Wanderer's Fleet lasted for ever in
+the field and was saved. Fleet is now 1.5 s, `status/fleet_battle` one turn. `ActionFighter._threw`
+stops the hold-to-attack swing on the throw press and while that hold lasts.
+`CombatDifficulty.current` falls back to the default only with no flag. `DevCommands.set_flag`
+keeps non-numbers as text (the documented `--flag=combat/difficulty:...` stored 0). `NEW_GAME`
+§ 1b says which `combat.*` rows the gate only counts.
+**Why.** Review findings; each had a concrete failing scenario.
+**Verified.** Ladder: 0 warnings; 5094 passed, 0 failed; checkers silent; stripped 4980 passed.
+**Gaps.** The other four (auto-battle's Boost and focus, `below_any_target` aim, the free swap's
+turn order) are C8.27b. `set_flag` is an upstream file; the same fix belongs upstream.

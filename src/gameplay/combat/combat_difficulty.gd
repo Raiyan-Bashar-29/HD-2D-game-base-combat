@@ -5,7 +5,8 @@ extends RefCounted
 ## IN PLAIN WORDS: the flag `combat/difficulty` names a `Difficulty` by id. It is a flag, so it is
 ## saved with the game and each save keeps its own; `choose` sets it, and a settings screen (C5.3b)
 ## will too. With no flag, the project setting `combat/difficulty/default` names one; with neither,
-## there is none and every hit is what the formula made it. `Combatant.hit` calls `scale` once the
+## or with the flag set empty (`choose(&"")`, which turns even a default off), there is none and
+## every hit is what the formula made it. `Combatant.hit` calls `scale` once the
 ## formula has resolved a hit: a hit the difficulty's side lands on another side is multiplied by
 ## 1 plus `dealt`, one it takes from another side by 1 plus `taken`, never below 0.
 ##
@@ -18,9 +19,10 @@ const SETTING: String = "combat/difficulty/default"
 
 ## The difficulty on now, or null for none.
 static func current() -> Difficulty:
-	var id: String = Flags.get_string(FLAG)
-	if id == "":
-		id = str(ProjectSettings.get_setting(SETTING, ""))
+	# Only a missing flag falls back to the default, so choosing none really is none (C8.27a).
+	var id: String = str(ProjectSettings.get_setting(SETTING, ""))
+	if Flags.has_flag(FLAG):
+		id = Flags.get_string(FLAG)
 	return DifficultyDb.of(StringName(id)) if id != "" else null
 
 

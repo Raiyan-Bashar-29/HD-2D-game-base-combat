@@ -6,7 +6,8 @@ extends PowerExecutor
 ## IN PLAIN WORDS: in the field, using the power works out where the user lands, strikes the
 ## foes on the way when there is a `path_strike`, moves the body there with its speed cleared,
 ## ends its move when `cancels_recovery`, and puts `arrival` on it. In a battle it moves the
-## user's turn sooner (or swaps two places in the turn order) and puts `arrival` on it.
+## user's turn sooner (or swaps two places in the turn order) and puts `battle_arrival` (else
+## `arrival`) on it.
 ## In the field a blink never passes a wall (C9.12): it stops short of it, and a swap across one
 ## moves nobody.
 ##
@@ -23,8 +24,11 @@ func use(user: Combatant, targets: Array[Combatant], rng: RandomNumberGenerator)
 	else:
 		_battle(user, aim, rng)
 	var statuses: StatusSet = StatusSet.of(user.get_parent())
-	if blink.arrival != null and statuses != null:
-		statuses.apply(blink.arrival, rng, user.combatant_id)
+	var landed: StatusEffect = blink.arrival
+	if not user.real_time and blink.battle_arrival != null:
+		landed = blink.battle_arrival
+	if landed != null and statuses != null:
+		statuses.apply(landed, rng, user.combatant_id)
 
 
 ## Where `body` lands for `blink`, given the aimed body (null for none), or `Vector3.INF`

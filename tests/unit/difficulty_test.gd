@@ -2,7 +2,8 @@ extends TestCase
 ## Difficulty (C5.4a). A difficulty file is found by its id and checked; `choose` turns one on
 ## through a flag and refuses an unknown id; with one on, a hit the player's side lands on a foe is
 ## scaled by `dealt` and one it takes by `taken`, while a hit within a side, a miss or a heal is
-## left alone; with none on, nothing changes. `Combatant.hit` applies it.
+## left alone; with none on, nothing changes. `Combatant.hit` applies it. The project default is
+## on with no flag, and choosing none turns it off.
 ##
 ## OWNS: assertions about `Difficulty`, `DifficultyDb` and `CombatDifficulty`.
 ## MUST NOT: name a game's difficulties, or wait for frames.
@@ -11,7 +12,7 @@ const EASY: StringName = &"difficulty/fixture_easy"
 
 
 func run() -> void:
-	plan(8)
+	plan(9)
 	SaveFixture.activate()
 	Flags.clear_all()
 	DifficultyDb.rescan()
@@ -37,19 +38,42 @@ func run() -> void:
 	var foe: Combatant = _fighter(holder, &"fixture_diff_foe", &"side_b")
 	var plain: Array[float] = [_scaled(hero, foe, 10.0), _scaled(foe, hero, 10.0)]
 	equal("with none on, a hit is left as it is", plain, [10.0, 10.0])
+	var unscaled: Array = _landed(hero, foe)
 	equal("choosing one sets the flag", [CombatDifficulty.choose(EASY), Flags.get_string(CombatDifficulty.FLAG)],
 		[true, String(EASY)])
 	equal("the side's hits are scaled by dealt and the hits it takes by taken; within a side, alone",
 		[_scaled(hero, foe, 10.0), _scaled(foe, hero, 10.0), _scaled(hero, mate, 10.0)], [15.0, 5.0, 10.0])
 	equal("a heal is left alone", _scaled(hero, foe, -4.0), -4.0)
-	var before: int = Vitals.of(foe.get_parent()).current(&"hp")
-	var landed: DamageResult = hero.hit(foe, 10.0, &"", RandomNumberGenerator.new(), true)
-	equal("Combatant.hit lands the scaled amount", before - Vitals.of(foe.get_parent()).current(&"hp"),
-		roundi(landed.amount))
+	var amount: float = unscaled[0]
+	equal("Combatant.hit lands the amount scaled by dealt, against the same hit with none on",
+		_landed(hero, foe), [amount * 1.5, roundi(amount * 1.5)])
+	_default_off()
 	holder.free()
 	Flags.clear_all()
 	DifficultyDb.content_dir = DifficultyDb.DIFFICULTY_DIR
 	DifficultyDb.rescan()
+
+
+## [the amount `attacker` lands on `target` through `Combatant.hit`, the hp it took].
+func _landed(attacker: Combatant, target: Combatant) -> Array:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	var before: int = Vitals.of(target.get_parent()).current(&"hp")
+	var landed: DamageResult = attacker.hit(target, 10.0, &"", rng, true)
+	return [landed.amount, before - Vitals.of(target.get_parent()).current(&"hp")]
+
+
+## C8.27a: the project default applies with no flag, and choosing none turns even it off.
+func _default_off() -> void:
+	var kept: Variant = ProjectSettings.get_setting(CombatDifficulty.SETTING, "")
+	ProjectSettings.set_setting(CombatDifficulty.SETTING, String(EASY))
+	Flags.erase_flag(CombatDifficulty.FLAG)
+	var by_default: Difficulty = CombatDifficulty.current()
+	CombatDifficulty.choose(&"")
+	var chose_none: Difficulty = CombatDifficulty.current()
+	ProjectSettings.set_setting(CombatDifficulty.SETTING, kept)
+	equal("with no flag the project default is on; choosing none turns it off",
+		[by_default != null and by_default.id == EASY, chose_none], [true, null])
 
 
 func _scaled(attacker: Combatant, target: Combatant, amount: float) -> float:

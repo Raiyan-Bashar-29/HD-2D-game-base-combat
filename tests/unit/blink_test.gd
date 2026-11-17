@@ -2,7 +2,8 @@ extends TestCase
 ## Blinks (C6.12a). In the field: FORWARD moves the user the way it faces; TARGET and
 ## BEHIND_TARGET land in front of or behind the aimed foe; UP rises; SWAP trades places; with
 ## no one to aim at a targeted blink goes nowhere; `cancels_recovery` ends the user's move;
-## `arrival` lands on the user; a `path_strike` hits a foe on the line and not one beside it.
+## `arrival` lands on the user and runs out in the field, and `battle_arrival` is the one a
+## battle puts on; a `path_strike` hits a foe on the line and not one beside it.
 ## In a battle: `sooner` brings the user's next turn forward, and SWAP trades places in the
 ## turn order.
 ##
@@ -37,8 +38,10 @@ func _shape() -> void:
 	blink.to = BlinkMechanism.To.UP
 	blink.height = 0.0
 	blink.distance = -1.0
-	equal("a blink's kind, its executor, a forward blink aims at nobody, and bad numbers are problems",
-		[clean, blink.problems("fixture").size()], [[&"blink", true, false, 0], 2])
+	blink.arrival = _status(&"status/fixture_blink_turn", StatusEffect.Unit.TURNS, 1.0)
+	equal("a blink's kind, its executor, a forward blink aims at nobody, and bad numbers and an arrival "
+		+ "counted in turns are problems",
+		[clean, blink.problems("fixture").size()], [[&"blink", true, false, 0], 3])
 
 
 func _field() -> void:
@@ -52,8 +55,10 @@ func _field() -> void:
 	var crossed: Combatant = _fighter(&"fixture_blink_crossed", &"side_b", Vector3(0.2, 0, -2), null)
 	_use(me, "forward")
 	var forward: Vector3 = body.global_position
-	equal("with nobody to aim at a targeted blink stays; FORWARD moves the way the user faces",
-		[stayed.is_equal_approx(Vector3.ZERO), forward.is_equal_approx(Vector3(0, 0, -4))], [true, true])
+	equal("with nobody to aim at a targeted blink stays; FORWARD moves the way the user faces, "
+		+ "and its battle-only arrival stays off in the field",
+		[stayed.is_equal_approx(Vector3.ZERO), forward.is_equal_approx(Vector3(0, 0, -4)),
+			StatusSet.of(body).stacks(&"status/fixture_blink_turn")], [true, true, 0])
 	body.global_position = Vector3.ZERO
 	_use(me, "behind", [foe])
 	var behind: Vector3 = body.global_position
@@ -62,14 +67,7 @@ func _field() -> void:
 	equal("BEHIND_TARGET lands past the foe, TARGET in front of it",
 		[behind.is_equal_approx(Vector3(0, 0, -8)), body.global_position.is_equal_approx(Vector3(0, 0, -4))],
 		[true, true])
-	body.global_position = Vector3.ZERO
-	var timeline: MoveTimeline = _hurtbox(body).timeline
-	timeline.start(_move(0.0))
-	var busy: bool = timeline.busy()
-	_use(me, "up")
-	equal("UP rises and, cancelling recovery, ends the user's move; the arrival status lands",
-		[body.global_position.is_equal_approx(Vector3(0, 3, 0)), busy, timeline.busy(),
-			StatusSet.of(body).stacks(&"status/fixture_blink_arrival")], [true, true, false, 1])
+	_up(me, body)
 	body.global_position = Vector3.ZERO
 	body.look_at(Vector3(0, 0, -1), Vector3.UP)
 	_use(me, "dash")
@@ -80,6 +78,20 @@ func _field() -> void:
 	equal("SWAP trades places with the aimed foe",
 		[body.global_position.is_equal_approx(Vector3(0, 0, -6)),
 			(foe.get_parent() as Node3D).global_position.is_equal_approx(Vector3(1, 0, 0))], [true, true])
+
+
+func _up(me: Combatant, body: Node3D) -> void:
+	body.global_position = Vector3.ZERO
+	var timeline: MoveTimeline = _hurtbox(body).timeline
+	timeline.start(_move(0.0))
+	var busy: bool = timeline.busy()
+	_use(me, "up")
+	var landed: int = StatusSet.of(body).stacks(&"status/fixture_blink_arrival")
+	StatusSet.of(body).tick_seconds(1.0)
+	equal("UP rises and, cancelling recovery, ends the user's move; the arrival status lands and "
+		+ "runs out in the field",
+		[body.global_position.is_equal_approx(Vector3(0, 3, 0)), busy, timeline.busy(), landed,
+			StatusSet.of(body).stacks(&"status/fixture_blink_arrival")], [true, true, false, 1, 0])
 
 
 func _battle() -> void:
@@ -97,8 +109,10 @@ func _battle() -> void:
 	var running: bool = Battle.running == battle
 	var before: float = queue.wait_of(&"fixture_blink_hero")
 	battle.act(BattleCommand.for_power(_powers["forward"]), [])
-	equal("in a battle a blink brings the user's next turn sooner",
-		[running, before - queue.wait_of(&"fixture_blink_hero")], [true, 4.0])
+	var held: StatusSet = StatusSet.of(battle.party[0].get_parent())
+	equal("in a battle a blink brings the user's next turn sooner and puts its battle arrival on",
+		[running, before - queue.wait_of(&"fixture_blink_hero"), held.stacks(&"status/fixture_blink_turn")],
+		[true, 4.0, 1])
 	var again: bool = battle.next_turn() == battle.party[0]
 	var mine: float = queue.wait_of(&"fixture_blink_hero")
 	var theirs: float = queue.wait_of(&"fixture_blink_slow")
@@ -112,13 +126,10 @@ func _battle() -> void:
 func _kit() -> PowerKit:
 	var forward := _blink(BlinkMechanism.To.FORWARD)
 	forward.sooner = 4.0
+	forward.battle_arrival = _status(&"status/fixture_blink_turn", StatusEffect.Unit.TURNS, 1.0)
 	var up := _blink(BlinkMechanism.To.UP)
 	up.cancels_recovery = true
-	up.arrival = StatusEffect.new()
-	up.arrival.id = &"status/fixture_blink_arrival"
-	up.arrival.name_key = "ui.cancel"
-	up.arrival.unit = StatusEffect.Unit.SECONDS
-	up.arrival.duration = 0.5
+	up.arrival = _status(&"status/fixture_blink_arrival", StatusEffect.Unit.SECONDS, 0.5)
 	up.arrival.invincible = true
 	var behind := _blink(BlinkMechanism.To.BEHIND_TARGET)
 	behind.distance = 2.0
@@ -132,6 +143,15 @@ func _kit() -> PowerKit:
 		_power("up", up), _power("behind", behind), _power("front", front), _power("dash", dash),
 		_power("swap", _blink(BlinkMechanism.To.SWAP))]
 	return kit
+
+
+func _status(id: StringName, unit: StatusEffect.Unit, duration: float) -> StatusEffect:
+	var made := StatusEffect.new()
+	made.id = id
+	made.name_key = "ui.cancel"
+	made.unit = unit
+	made.duration = duration
+	return made
 
 
 func _blink(to: BlinkMechanism.To) -> BlinkMechanism:

@@ -297,7 +297,7 @@ The built-in mechanisms (the table that maps them is `PowerMechanisms.BUILT_IN`)
 | `plant` | `PlantMechanism` | traps left behind, set off REMOTE, PROXIMITY, TIMER or ON_HIT | use, tick, projectile_landed |
 | `finisher` | `FinisherMechanism` | charge, a frozen flourish, then the big `strike`; can empty a gauge | use, tick |
 | `battlefield` | `BattlefieldMechanism` | a domain, terrain or weather: `effects` on who stands in `radius` | use, tick |
-| `blink` | `BlinkMechanism` | teleport TARGET, BEHIND_TARGET, FORWARD, UP or SWAP; optional `path_strike` | use |
+| `blink` | `BlinkMechanism` | teleport TARGET, BEHIND_TARGET, FORWARD, UP or SWAP; optional `path_strike`; `arrival` in seconds, `battle_arrival` in turns | use |
 | `sacrifice` | `SacrificeMechanism` | take a `fraction` of allies' hp (and buffs) to grow | use |
 | `refresh` | `RefreshMechanism` | cut cooldowns, fill a pool, a speed status | use |
 | `foresight` | `ForesightMechanism` | rewrite hits (`dodge`, `force`), `observe`, `reveal` | use, and `Foresight.rewrite` in `Combatant.hit` |

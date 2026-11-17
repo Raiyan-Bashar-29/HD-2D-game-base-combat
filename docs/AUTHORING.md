@@ -1903,7 +1903,8 @@ A difficulty is `data/difficulty/<name>.tres` (`Difficulty`, id `difficulty/<nam
 from one, so `dealt = 0.5, taken = -0.5` is an easy mode. `order` is where a settings screen lists
 it. The flag `combat/difficulty` names the one on and is saved with the game; with no flag,
 `[combat] difficulty/default` in `project.godot` does; with neither, hits are what the formula
-makes them. Try one with `--flag=combat/difficulty:difficulty/story`. The demo ships Story,
+makes them. An empty flag (`CombatDifficulty.choose(&"")`) turns even the default off. Try one with
+`--flag=combat/difficulty:difficulty/story`. The demo ships Story,
 Balanced and Harsh.
 
 Two more flags, saved with the game like the difficulty, until a settings screen offers them

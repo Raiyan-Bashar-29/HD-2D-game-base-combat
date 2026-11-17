@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://src/content/combat/powers/mechanisms/blink_mechanism.gd" id="blink"]
 [ext_resource type="Script" path="res://src/content/combat/action_move.gd" id="move"]
 [ext_resource type="Resource" path="res://data/statuses/fleet.tres" id="fleet"]
+[ext_resource type="Resource" path="res://data/statuses/fleet_battle.tres" id="fleet_battle"]
 
 [sub_resource type="Resource" id="thorn"]
 script = ExtResource("move")
@@ -40,6 +41,7 @@ to = 2
 distance = 4.0
 cancels_recovery = true
 arrival = ExtResource("fleet")
+battle_arrival = ExtResource("fleet_battle")
 
 [sub_resource type="Resource" id="step"]
 script = ExtResource("power")

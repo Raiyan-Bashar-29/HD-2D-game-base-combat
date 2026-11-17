@@ -15,7 +15,7 @@ var _fighter: ActionFighter
 
 
 func run() -> void:
-	plan(26)
+	plan(27)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_player = build("res://scenes/characters/player.tscn") as PlayerController
@@ -24,6 +24,7 @@ func run() -> void:
 	_swinging()
 	_dodging()
 	_holding()
+	_throw_held()
 	_knockback_and_stun()
 	_falling()
 	_player.free()
@@ -145,6 +146,28 @@ func _holding() -> void:
 	equal("a held attack starts the chain and keeps it going", [first, chained], [0, true])
 	equal("a held press is never a timed press", _fighter.timeline.pressed(), false)
 	swing.prompt = null
+	_run(1.0)
+
+
+## C8.27a: with hold-to-attack on, the press that throws a carried thing does not swing too, nor
+## does the hold after it; a fresh hold swings again.
+func _throw_held() -> void:
+	var made := build("res://scenes/objects/arena_thing.tscn") as ArenaThing
+	made.carryable = true
+	made.label_key = "ui.cancel"
+	made.position = Vector3(300, 0, 0)
+	attach(made)
+	var lifted: bool = Carried.lift(_player, made)
+	_fighter.drive(DT, true, false, true)
+	var thrown: bool = Carried.of(_player) == null
+	var swung: bool = _fighter.timeline.busy()
+	for i: int in 3:
+		_fighter.drive(DT, false, false, true)
+		swung = swung or _fighter.timeline.busy()
+	_fighter.drive(DT, false, false, false)
+	_fighter.drive(DT, false, false, true)
+	equal("a held throw press throws without swinging, the hold after it stays still, a new hold swings",
+		[lifted, thrown, swung, _fighter.timeline.busy()], [true, true, false, true])
 	_run(1.0)
 
 

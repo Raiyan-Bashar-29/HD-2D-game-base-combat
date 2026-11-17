@@ -83,8 +83,8 @@ static func travel_to(area_id: String) -> String:
 	return "goto requested '%s'" % area_id
 
 
-## Forge a plot flag. `true` and `false` are spelled; anything else is read as an integer, which
-## covers the counter flags AT_LEAST and AT_MOST test. Deliberately the raw store and not a
+## Forge a plot flag. `true` and `false` are spelled, a whole number is an integer, which covers
+## the counter flags AT_LEAST and AT_MOST test, and anything else stays text, a flag naming an id. Deliberately the raw store and not a
 ## system: this is the development harness, and a flag is exactly what a harness should forge.
 static func set_flag(value: String) -> String:
 	var at: int = value.rfind(":")
@@ -92,9 +92,11 @@ static func set_flag(value: String) -> String:
 		return "flag expects <key>:<value>, got '%s'" % value
 	var flag: StringName = StringName(value.substr(0, at))
 	var raw: String = value.substr(at + 1)
-	var parsed: Variant = raw.to_int()
+	var parsed: Variant = raw
 	if raw == "true" or raw == "false":
 		parsed = raw == "true"
+	elif raw.is_valid_int():
+		parsed = raw.to_int()
 	Flags.set_flag(flag, parsed)
 	return "flag %s = %s" % [flag, str(parsed)]
 

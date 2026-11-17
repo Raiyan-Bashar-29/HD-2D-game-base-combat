@@ -61,8 +61,9 @@ repository only under their author's non-commercial notice. They are not the tem
 
 **The CSV:** step 3's command below also removes the `combat.*` rows that translate demo content.
 Only `combat.craft.*`, `combat.gear.*`, `combat.loadout.*` and `combat.stat.*` are engine.
-`check_boundary` fails a `combat.*` row whose skill, status, passive, kit, power or other id is not
-under `data/`, so a missed row names itself.
+`check_boundary` fails a `combat.*` row whose skill, status, passive, reaction, difficulty, affix,
+recipe, kit, power or gear type id is not under `data/`. The `combat.member.*`, `combat.enemy.*`,
+`combat.form.*` and `combat.category.*` rows are only counted, so check those by eye.
 
 ## 2. Keep, and never edit to start a game
 

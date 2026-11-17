@@ -21,7 +21,8 @@ extends Node
 ## 3a. Holding a thing overhead (`Carried`, C8.18b), the attack button throws it instead.
 ## 3b. HOLD TO ATTACK (C5.4c): with the flag `combat/hold_to_attack` on, a held attack button
 ##     presses again every frame, so the chain plays on as long as it is held. A held press is
-##     never a timed press (C8.8c) and never throws a carried thing.
+##     never a timed press (C8.8c), never throws a carried thing, and the hold after a throw
+##     never swings (C8.27a).
 ## 4b. A quick-slot key (1 to 4) uses that slot's power (`press_slot`, C6.3a).
 ## 4d. A counter stance's move (C6.6d) is started on this timeline by the `Hurtbox`; the fighter
 ##    turns to face whoever it counters (`Events.countered`), so the counter swings at them.
@@ -69,6 +70,8 @@ var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 # The last place the body stood on a floor, where the fall safety net puts it back (C5.8).
 var _safe: Vector3 = Vector3.INF
 var _prompting: bool = false
+## True from a throw until the attack button is let go, so holding it on does not swing.
+var _threw: bool = false
 
 
 func _ready() -> void:
@@ -132,9 +135,12 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 		if attack and timeline.busy():
 			timeline.time_press()
 		# Carrying a thing (C8.18b), the attack button throws it instead of swinging.
+		# The press that throws never swings too, nor does the hold that follows it (C8.27a).
 		if attack and not timeline.busy() and Carried.throw(_body, facing):
 			attack = false
-		_start_moves(attack or (held and Carried.of(_body) == null), dodge)
+			_threw = true
+		_threw = _threw and held
+		_start_moves(attack or (held and not _threw and Carried.of(_body) == null), dodge)
 	timeline.step(dt)
 	_report_move()
 	_cue_prompt()
