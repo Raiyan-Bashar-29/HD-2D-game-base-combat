@@ -5230,3 +5230,15 @@ uses it for the free swap of a waiting member, which before lost that member's t
 **Verified.** Ladder: 0 warnings; 5100 passed, 0 failed; checkers silent; stripped 4986 passed. A
 windowed capture of the thorn wisps with `combat/auto_battle` on shows "Auto: On" as the only row, focused.
 **Gaps.** None new.
+
+## 2026-11-17 — C5.3c · Triggers on the controls screen
+
+**Did.** Merged base 5.21.0. Its T7.5 (built upstream for this row) makes a pad trigger the pad
+half of a binding: `KeyBindings.text_for` names it, `rebind` accepts one, and it is saved as
+`TRIGGER_CODE` plus its axis. Dodge and lock on now read "Right Trigger" and "Left Trigger" in the
+controls screen's pad column, where they read "—". `combat_input_test` asserts it (28).
+**Why.** C5.3a's capture found the dashes; a trigger could not be chosen when rebinding either.
+**Verified.** Ladder: 0 warnings; 5192 passed, 0 failed; checkers silent; stripped 5078 passed. A windowed capture of the
+controls screen (`--open-menu=pause,controls`) shows both triggers named.
+**Gaps.** Pad buttons are still named in engine English ("Left Action"); only the triggers are
+localized (upstream's gap).
