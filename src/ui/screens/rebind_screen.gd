@@ -7,12 +7,13 @@ extends MenuScreen
 ## comment "in the order a rebinding screen should list them" and then had no reader for eleven
 ## packages. This is the reader; the order still lives with the actions, not here.
 ##
-## PRESS A ROW, THEN PRESS THE THING YOU WANT. The next key or pad button becomes the binding.
+## PRESS A ROW, THEN PRESS THE THING YOU WANT. The next key, pad button or trigger pushed past
+## half-way (T7.5) becomes the binding: `KeyBindings.bindable` decides.
 ## Escape aborts without changing anything, which is why capture happens in `_input`: it runs
 ## before `UiRoot._unhandled_input`, so the escape that cancels listening cannot also close the
 ## screen behind it.
 ##
-## A KEY AND A PAD BUTTON ARE SEPARATE HALVES. Rebinding one never touches the other, and
+## A KEY AND A PAD BUTTON ARE SEPARATE HALVES, and a trigger is a pad button here. Rebinding one never touches the other, and
 ## neither touches the analogue stick - see `KeyBindings`. So a player who reassigns the whole
 ## keyboard still has a working controller, which is the exit criterion this package is judged
 ## on.
@@ -55,9 +56,7 @@ func _init() -> void:
 func _input(event: InputEvent) -> void:
 	if _listening == &"":
 		return
-	if not event.is_pressed() or event.is_echo():
-		return
-	if not (event is InputEventKey or event is InputEventJoypadButton):
+	if not KeyBindings.bindable(event):
 		return
 	get_viewport().set_input_as_handled()
 	var key: InputEventKey = event as InputEventKey
