@@ -5167,3 +5167,20 @@ fighter refuses a move in those states today).
 out, a status-only skill move and an inert thing draw none, 25 hp lost exactly), `reserve_test` 10
 (the menu says plain Swap once the free one is spent, and the next turn has one again).
 **Gaps.** None new.
+
+## 2026-11-17 — C8.25 · Smarter auto-battle and demo polish (stage-6 close)
+
+**Did.** `BrainEntry.below_any_target` and `BattleAi._below`: the pool test asks the command's
+legal targets instead of the user. The demo roster: the Keeper's `brain` (Salve at LOWEST_HP
+when an ally is under half, weight 4; Rime and attack at LOWEST_HP, weight 1), which only
+auto-battle reads for a party member; the Wanderer's `power_kit`; `data/statuses/fleet.tres`
+given by Sidestep's `arrival`. `BattleSetup._numbered`: a reinforcement takes the next
+`<id>_<n>` of its kind.
+Stage close: upstream `main` is still 5.18.1 (nothing to merge); captures this stage: the free
+swap row, the HUD's quick slots, auto-battle, and this package's battle (below); the recorded
+gaps are rows C8.26, C5.3b and C5.3c.
+**Verified.** Ladder: 0 warnings; 5085 passed, 0 failed; checkers silent; stripped 4971 passed.
+`battle_ai_test` 12, `reinforcement_test` 6. Windowed
+capture of the thorn-wisp battle on auto: the second wave arrived, frost marks on the wisps and
+the Keeper's MP spent show its brain casting Rime, and the Wanderer's menu has a Powers row.
+**Gaps.** C8.26.

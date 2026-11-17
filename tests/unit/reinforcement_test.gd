@@ -55,7 +55,7 @@ func _waves(holder: Node) -> void:
 	_spend_turn(battle)
 	equal("with every foe down, the next wave arrives, named apart, and the fight goes on",
 		[battle.enemies.size(), _arrived, battle.outcome()],
-		[2, [[StringName(String(LATE) + "_r1")]], Battle.Outcome.ONGOING])
+		[2, [[StringName(String(LATE) + "_1")]], Battle.Outcome.ONGOING])
 	_fell(battle.enemies[1])
 	_spend_turn(battle)
 	equal("the waves keep coming until none are left", battle.enemies.size(), 3)

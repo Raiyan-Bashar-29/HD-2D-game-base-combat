@@ -14,6 +14,9 @@
 [ext_resource type="Resource" path="res://data/skills/rekindle.tres" id="12_raise"]
 [ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="13_bulwark"]
 [ext_resource type="Resource" path="res://data/skills/rime.tres" id="14_rime"]
+[ext_resource type="Resource" path="res://data/powers/wanderer.tres" id="15_kit"]
+[ext_resource type="Script" path="res://src/content/combat/battle_brain.gd" id="16_brain"]
+[ext_resource type="Script" path="res://src/content/combat/brain_entry.gd" id="17_entry"]
 
 [sub_resource type="Resource" id="attack"]
 script = ExtResource("3_cmd")
@@ -85,6 +88,30 @@ kind = 3
 script = ExtResource("3_cmd")
 kind = 4
 
+[sub_resource type="Resource" id="mend_low"]
+script = ExtResource("17_entry")
+command = SubResource("salve")
+weight = 4.0
+target_rule = 2
+below_fraction = 0.5
+below_any_target = true
+
+[sub_resource type="Resource" id="frost_foe"]
+script = ExtResource("17_entry")
+command = SubResource("rime")
+weight = 1.0
+target_rule = 2
+
+[sub_resource type="Resource" id="strike_foe"]
+script = ExtResource("17_entry")
+command = SubResource("attack")
+weight = 1.0
+target_rule = 2
+
+[sub_resource type="Resource" id="keeper_brain"]
+script = ExtResource("16_brain")
+entries = Array[ExtResource("17_entry")]([SubResource("mend_low"), SubResource("frost_foe"), SubResource("strike_foe")])
+
 [sub_resource type="Resource" id="curve"]
 script = ExtResource("4_curve")
 growth = Dictionary[StringName, float]({
@@ -115,6 +142,7 @@ commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("embe
 level_curve = SubResource("curve")
 passive_budget = 4
 passive_budget_per_level = 1
+power_kit = ExtResource("15_kit")
 
 [sub_resource type="Resource" id="keeper"]
 script = ExtResource("2_def")
@@ -130,6 +158,7 @@ base_stats = Dictionary[StringName, float]({
 &"speed": 5.0
 })
 back_row = true
+brain = SubResource("keeper_brain")
 commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("rime"), SubResource("salve"), SubResource("cleanse"), SubResource("raise"), SubResource("bulwark"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
 passive_budget = 4

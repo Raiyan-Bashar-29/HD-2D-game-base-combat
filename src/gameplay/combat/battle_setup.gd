@@ -31,7 +31,8 @@ extends RefCounted
 ## and leaves no pool flags (group `SUMMONED`); `dismiss` takes it out of the battle again.
 ##
 ## REINFORCEMENTS (C8.22a): `reinforce` brings the encounter's next `wave` of held-back foes in
-## when every foe is down; each is built fresh as `<id>_r<n>` in group `REINFORCED`.
+## when every foe is down; each is built fresh as the next `<id>_<n>` of its kind (C8.25), in
+## group `REINFORCED`.
 ##
 ## THE RESERVE LINE (C8.3): `bench` members are built like the party into `Battle.reserve`, off
 ## the field until a SWAP brings one in; `release` stands them up and frees them like the party.
@@ -247,7 +248,7 @@ static func reinforce(battle: Battle) -> int:
 	var ids: Array[StringName] = []
 	while ids.size() < maxi(1, encounter.wave) and arrived + ids.size() < encounter.reinforcements.size():
 		var def: CombatantDef = encounter.reinforcements[arrived + ids.size()]
-		var id := StringName("%s_r%d" % [def.combatant_id, arrived + ids.size() + 1])
+		var id: StringName = _numbered(battle, def)
 		var foe: Combatant = _fighter(def, id, holder, true)
 		foe.add_to_group(REINFORCED)
 		battle.enemies.append(foe)
@@ -258,3 +259,18 @@ static func reinforce(battle: Battle) -> int:
 	if not ids.is_empty():
 		Events.reinforcements_arrived.emit(ids)
 	return ids.size()
+
+
+# The next free "<id>_<n>" for another of `def` in `battle`, so a late foe joins the count: the
+# third of a kind is "Name 3" on the screen (C8.25).
+static func _numbered(battle: Battle, def: CombatantDef) -> StringName:
+	var n: int = 1
+	for one: Combatant in battle.enemies:
+		var known: CombatantDef = battle.defs.get(one.combatant_id, null)
+		if known != null and known.combatant_id == def.combatant_id:
+			n += 1
+	var id := StringName("%s_%d" % [def.combatant_id, n])
+	while battle.defs.has(id):
+		n += 1
+		id = StringName("%s_%d" % [def.combatant_id, n])
+	return id

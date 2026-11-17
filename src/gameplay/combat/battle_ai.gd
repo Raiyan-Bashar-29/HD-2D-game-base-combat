@@ -55,11 +55,8 @@ static func _allowed(context: BrainContext, entry: BrainEntry) -> bool:
 	if not FlagQuery.passes(entry.condition_flag, entry.condition_test, entry.condition_value):
 		return false
 	var actor: Combatant = context.actor
-	if entry.below_fraction > 0.0:
-		var vitals: Vitals = Vitals.of(actor.get_parent())
-		var ceiling: int = vitals.maximum(entry.below_pool)
-		if ceiling <= 0 or float(vitals.current(entry.below_pool)) >= entry.below_fraction * ceiling:
-			return false
+	if entry.below_fraction > 0.0 and not _below(context, entry):
+		return false
 	# Statuses (silence), cost, ATB and whether the formula has this kind at all (C2.14, C4.8).
 	if not context.allows(entry.command):
 		return false
@@ -102,3 +99,17 @@ static func _aim(context: BrainContext, entry: BrainEntry) -> Array[Combatant]:
 
 static func _hp(fighter: Combatant) -> int:
 	return Vitals.of(fighter.get_parent()).current(fighter.damage_pool)
+
+
+# The pool test: the user's own `below_pool` under `below_fraction` of its maximum, or with
+# `below_any_target` any target the command may aim at (C8.25).
+static func _below(context: BrainContext, entry: BrainEntry) -> bool:
+	var asked: Array[Combatant] = [context.actor]
+	if entry.below_any_target:
+		asked = context.targets_for(entry.command)
+	for fighter: Combatant in asked:
+		var vitals: Vitals = Vitals.of(fighter.get_parent())
+		var ceiling: int = vitals.maximum(entry.below_pool) if vitals != null else 0
+		if ceiling > 0 and float(vitals.current(entry.below_pool)) < entry.below_fraction * ceiling:
+			return true
+	return false
