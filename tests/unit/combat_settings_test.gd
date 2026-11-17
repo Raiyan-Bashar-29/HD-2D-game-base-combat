@@ -21,7 +21,7 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(30)
+	plan(35)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_real = Settings.game
@@ -30,14 +30,17 @@ func run() -> void:
 	_fixture_difficulty()
 	equal("before install every combat setting reads as off",
 		[CombatSettings.is_on(CombatSettings.AUTO_BATTLE), CombatSettings.difficulty("kept")], [false, "kept"])
-	CombatSettings.install()
+	CombatSettings.install(_loadout(), true)
 	_they_are_added()
+	_every_key_they_draw_exists()
 	_the_difficulty()
 	_auto_battle()
 	_wait_mode()
 	_lock_on_assist()
 	_hold_to_attack()
 	_the_screen()
+	_only_what_the_game_has()
+	_the_project_defaults_seed_them()
 	_tear_down()
 
 
@@ -70,7 +73,7 @@ func _they_are_added() -> void:
 		[difficulty, false, is_zero_approx(_project_slow()), false])
 	equal("hold to attack joins the built-in Accessibility section, at its end (C5.3d)",
 		every.find(CombatSettings.HOLD_TO_ATTACK), every.find("accessibility/hold_to_confirm") + 1)
-	CombatSettings.install()
+	CombatSettings.install(_loadout(), true)
 	equal("installing again adds nothing", Settings.game.every().size(), every.size())
 
 
@@ -159,6 +162,68 @@ func _the_screen() -> void:
 		[Settings.get_string(CombatSettings.DIFFICULTY), screen.value_text(CombatSettings.DIFFICULTY)],
 		[String(EASY), tr(EASY_NAME)])
 	equal("cleanup", _stack.close_top(), true)
+
+
+## C5.3e: `options_test` runs before any case installs these, so their computed keys are checked
+## here; a missing CSV row would otherwise show its key on screen and pass.
+func _every_key_they_draw_exists() -> void:
+	var missing: Array[String] = []
+	var keys: Array[String] = [CombatSettings.NONE_KEY]
+	for path: String in [CombatSettings.DIFFICULTY, CombatSettings.AUTO_BATTLE, CombatSettings.WAIT_MODE,
+			CombatSettings.LOCK_ON_ASSIST, CombatSettings.HOLD_TO_ATTACK]:
+		keys.append(SettingsScreen.label_key(path))
+		keys.append("%s%s" % [SettingsScreen.SECTION_PREFIX, GameSettings.section_of(path)])
+	for key: String in keys:
+		if tr(key) == key:
+			missing.append(key)
+	equal("every label and heading the combat rows draw is in the CSV", missing, [] as Array[String])
+
+
+## C5.3e: a row is added only where the game has its feature.
+func _only_what_the_game_has() -> void:
+	var kept: GameSettings = Settings.game
+	Settings.game = GameSettings.new(Settings.DEFAULTS)
+	DifficultyDb.content_dir = RunScratch.path("settings_no_difficulty")
+	DirAccess.make_dir_recursive_absolute(DifficultyDb.content_dir)
+	DifficultyDb.rescan()
+	CombatSettings.install(null, false)
+	equal("with no difficulty file, no roster and no field loadout, no row is added",
+		Settings.game.every().size(), Settings.DEFAULTS.size())
+	CombatSettings.install(ActionLoadout.new(), false)
+	equal("a field loadout without ATB rules adds lock-on assist and hold to attack, not wait mode",
+		[Settings.default_of(CombatSettings.LOCK_ON_ASSIST) != null, Settings.default_of(CombatSettings.HOLD_TO_ATTACK)
+			!= null, Settings.default_of(CombatSettings.WAIT_MODE), Settings.default_of(CombatSettings.AUTO_BATTLE)],
+		[true, true, null, null])
+	Settings.game = kept
+	DifficultyDb.content_dir = RunScratch.path("settings_difficulty")
+	DifficultyDb.rescan()
+
+
+## The project's `difficulty/default` and `hybrid/slow` are the settings' defaults, and wait mode off
+## in a project set to stop the fight runs at `SLOW_DEFAULT` (C5.3e).
+func _the_project_defaults_seed_them() -> void:
+	var kept: GameSettings = Settings.game
+	var difficulty: Variant = ProjectSettings.get_setting(CombatDifficulty.SETTING, "")
+	var slow: Variant = ProjectSettings.get_setting(CombatSettings.SLOW_SETTING, CommandOverlay.SLOW_DEFAULT)
+	ProjectSettings.set_setting(CombatDifficulty.SETTING, String(EASY))
+	ProjectSettings.set_setting(CombatSettings.SLOW_SETTING, 0.0)
+	Settings.game = GameSettings.new(Settings.DEFAULTS)
+	Settings.reset_to_defaults()
+	CombatSettings.install(_loadout(), true)
+	equal("the project's difficulty and its stopped fight are the defaults",
+		[Settings.get_string(CombatSettings.DIFFICULTY), Settings.get_bool(CombatSettings.WAIT_MODE)], [String(EASY), true])
+	Settings.set_value(CombatSettings.WAIT_MODE, false)
+	equal("and wait mode off there runs at the default slow-down", CommandOverlay.slow(), CommandOverlay.SLOW_DEFAULT)
+	ProjectSettings.set_setting(CombatDifficulty.SETTING, difficulty)
+	ProjectSettings.set_setting(CombatSettings.SLOW_SETTING, slow)
+	Settings.game = kept
+
+
+## A field loadout with ATB rules: every combat row applies.
+func _loadout() -> ActionLoadout:
+	var loadout := ActionLoadout.new()
+	loadout.atb = AtbRules.new()
+	return loadout
 
 
 func _project_slow() -> float:

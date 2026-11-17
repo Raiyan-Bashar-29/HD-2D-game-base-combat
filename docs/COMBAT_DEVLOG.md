@@ -5274,3 +5274,20 @@ setting drops the flag. One CSV row. `combat_settings_test` 30.
 three and two of hold's). Ladder: 0 warnings; 5222 passed, 0 failed; checkers silent; stripped
 5108 passed.
 **Gaps.** None new.
+
+## 2026-11-17 — C5.3e · Review fixes: settings and triggers
+
+**Did.** A review of base T7.4 to T7.7 and C5.3b to C5.3d (three reviewers, each finding checked
+by a second agent) confirmed 8 of 21 findings. Four were the base's: a trigger bound to a screen
+key fired once per motion event, the pull that bound a trigger leaked into the menus, a float row
+holding an int lost its label, and bool labels were accepted and ignored. They are fixed upstream
+as T7.8 and T7.9 (base 5.22.0 and 5.22.1), merged here. In this fork, `CommandHost` and
+`LoadoutHost` read their actions through `Actions.pressed_now`. `CombatSettings.install(loadout,
+battles)` adds a row only where the game has its feature (a difficulty file; a party roster,
+`has_battles`; a field loadout; ATB rules for wait mode). `combat_settings_test` 35 checks those
+rows, the project's defaults seeding the settings (which the old test computed with the code's own
+logic), and every key the combat rows draw (`options_test` runs before any case installs them).
+**Verified.** Red first: with every row added and one CSV row deleted, 3 failed. Ladder: 0 warnings;
+5237 passed, 0 failed; checkers silent; stripped 5123 passed.
+**Gaps.** None new. Rejected findings (13) were refuted by the second agent, among them lock-on
+assist turning to a foe behind (it can, by design: `cycle` does too).

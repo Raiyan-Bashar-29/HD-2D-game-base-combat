@@ -25,7 +25,7 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not event.is_action_pressed(CombatActions.COMMAND):
+	if not Actions.pressed_now(event, CombatActions.COMMAND):
 		return
 	var stack: UiRoot = UiRoot.find(self)
 	if stack != null and toggle(stack, Director.player):

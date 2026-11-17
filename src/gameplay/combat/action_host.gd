@@ -24,7 +24,7 @@ const LOADOUT_SETTING: String = "combat/action/loadout"
 
 func _ready() -> void:
 	CombatActions.install()
-	CombatSettings.install()
+	CombatSettings.install(configured(), CombatSettings.has_battles())
 	Log.info("combat", "Action inputs ready: %d" % CombatActions.ALL.size())
 	Events.player_spawned.connect(_on_player_spawned)
 	Events.field_enemy_defeated.connect(_on_field_enemy_defeated)

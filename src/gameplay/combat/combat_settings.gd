@@ -5,7 +5,10 @@ extends RefCounted
 ##
 ## IN PLAIN WORDS: `install()` adds them to upstream's settings with `Settings.game.add` (base
 ## 5.19.0), under their own "Combat" section, once at boot (`ActionHost`). They are kept on the
-## player's machine like every other setting, and each is read where it acts:
+## player's machine like every other setting, and each is read where it acts. ONLY WHERE THE GAME
+## HAS THE FEATURE (C5.3e): a row that changes nothing is worse than none, so the difficulty needs a
+## difficulty file, auto-battle a party roster, and the rest a field loadout (wait mode one with ATB
+## rules). A reader treats a setting never added as off, or as the project's default.
 ## - DIFFICULTY, by `CombatDifficulty.current()`. The choices are "none" and every difficulty
 ##   file, lowest `order` first, each shown by its own `name_key` (base 5.21.0). The default is
 ##   the project's `combat/difficulty/default`.
@@ -35,25 +38,32 @@ const HOLD_TO_ATTACK: String = "accessibility/hold_to_attack"
 const NONE_KEY: String = "ui.settings.combat.difficulty.none"
 ## Where the command menu's slow-down is set; 0 there means the project starts in wait mode.
 const SLOW_SETTING: String = "combat/hybrid/slow"
+## The party roster turn-based battles are fought with (`BattleHost`); none, no battles.
+const ROSTER_SETTING: String = "combat/party/roster"
 
 
-## Adds the five settings. Safe to call again: a second call re-reads the difficulty files and
-## changes nothing else.
-static func install() -> void:
-	var ids: Array = [""]
-	var labels: Array[String] = [NONE_KEY]
-	for id: StringName in DifficultyDb.ids():
-		ids.append(String(id))
-		labels.append(DifficultyDb.of(id).name_key)
-	var fallback: String = str(ProjectSettings.get_setting(CombatDifficulty.SETTING, ""))
-	Settings.game.add(DIFFICULTY, fallback if ids.has(fallback) else "", ids, labels)
-	Settings.game.add(AUTO_BATTLE, false)
-	var slow: float = ProjectSettings.get_setting(SLOW_SETTING, 0.1)
-	Settings.game.add(WAIT_MODE, is_zero_approx(slow))
-	Settings.game.add(LOCK_ON_ASSIST, false)
-	Settings.game.add(HOLD_TO_ATTACK, false)
+## Adds the settings this game has a feature for. `loadout` is the field fighter's
+## (`ActionHost.configured()`, null for none) and `battles` whether turn-based battles have a party
+## (`has_battles()`). Safe to call again.
+static func install(loadout: ActionLoadout, battles: bool) -> void:
+	if not DifficultyDb.ids().is_empty():
+		_add_difficulty()
+	if battles:
+		Settings.game.add(AUTO_BATTLE, false)
+	if loadout != null and loadout.atb != null:
+		var slow: float = ProjectSettings.get_setting(SLOW_SETTING, 0.1)
+		Settings.game.add(WAIT_MODE, is_zero_approx(slow))
+	if loadout != null:
+		Settings.game.add(LOCK_ON_ASSIST, false)
+		Settings.game.add(HOLD_TO_ATTACK, false)
 	if not Events.setting_changed.is_connected(_on_changed):
 		Events.setting_changed.connect(_on_changed)
+
+
+## True when `[combat] party/roster` names a file, so there are turn-based battles to play.
+static func has_battles() -> bool:
+	var path: String = str(ProjectSettings.get_setting(ROSTER_SETTING, ""))
+	return path != "" and ResourceLoader.exists(path)
 
 
 ## True when the combat setting `path` is added and on; false before `install`, so a test or a
@@ -70,6 +80,17 @@ static func flag_or_setting(flag: StringName, path: String) -> bool:
 ## The difficulty id the player chose, or `fallback` before `install`.
 static func difficulty(fallback: String) -> String:
 	return Settings.get_string(DIFFICULTY) if Settings.default_of(DIFFICULTY) != null else fallback
+
+
+## None, then every difficulty file, lowest `order` first, each by its own `name_key`.
+static func _add_difficulty() -> void:
+	var ids: Array = [""]
+	var labels: Array[String] = [NONE_KEY]
+	for id: StringName in DifficultyDb.ids():
+		ids.append(String(id))
+		labels.append(DifficultyDb.of(id).name_key)
+	var fallback: String = str(ProjectSettings.get_setting(CombatDifficulty.SETTING, ""))
+	Settings.game.add(DIFFICULTY, fallback if ids.has(fallback) else "", ids, labels)
 
 
 static func _on_changed(section: String, key: String, _value: Variant) -> void:
