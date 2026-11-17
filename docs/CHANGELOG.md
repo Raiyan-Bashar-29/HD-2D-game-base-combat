@@ -18,6 +18,31 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.20.0
+
+*2026-11-17 — T7.5: a pad trigger can be named and rebound.*
+
+**A consuming game does: nothing.** An action with no trigger behaves exactly as before. One
+that has a trigger in its defaults now shows it in the controls screen's pad column instead of
+"—". A game that prunes its CSV keeps the two new `ui.rebind.trigger_*` rows: they are `ui.` rows.
+
+**What changed.**
+- `KeyBindings` treats a trigger (`JOY_AXIS_TRIGGER_LEFT` or `_RIGHT`) as the pad half of a
+  binding, like a pad button:
+  - `text_for(action, true)` names it, through `ui.rebind.trigger_left` and `_right`;
+  - `rebind` accepts one, and a trigger and a pad button replace each other. A stick axis is
+    still never erased;
+  - it is stored in the pad field as `KeyBindings.TRIGGER_CODE` (200) plus its axis, and put
+    back at boot. A stored code past 200 that is not a trigger is ignored.
+- New `KeyBindings.event_for_trigger(axis)` and `KeyBindings.bindable(event)`. The second is what
+  the controls screen now asks before binding: a key, a pad button, or a trigger pushed past
+  half-way, not a release, an echo, a mouse button or a stick.
+- `code_of` returns `TRIGGER_CODE + axis` for a trigger pressed in its own direction.
+
+**Why.** The combat fork found it: its dodge and lock-on sit on the triggers, so their pad column
+read "—", and a trigger could not be chosen when rebinding.
+
+---
 ## 5.19.0
 
 *2026-11-17 — T7.4: a game can add its own settings.*

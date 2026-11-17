@@ -191,6 +191,8 @@ ui.rebind.row,,{action}  —  {key}  /  {pad},[~~{action}  —  {key}  /  {pad}~
 ui.rebind.listening,,{action}  —  press anything...,[~~{action}  —  press anything...~~]
 ui.rebind.unbound,,—,[~~—~~]
 ui.rebind.reset,,Reset every binding to defaults,[~~Reset every binding to defaults~~]
+ui.rebind.trigger_left,,Left Trigger,[~~Left Trigger~~]
+ui.rebind.trigger_right,,Right Trigger,[~~Right Trigger~~]
 ui.action.move_up,,Move forward,[~~Move forward~~]
 ui.action.move_down,,Move back,[~~Move back~~]
 ui.action.move_left,,Move left,[~~Move left~~]

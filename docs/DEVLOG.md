@@ -12109,3 +12109,33 @@ and the screen stepping a bool, a String, an int (also one stored as a float) an
 the fork's C5.3b captures one. A String value that is not among the choices (a value a game
 later dropped) reads through a key that does not exist; the game should treat an unknown value
 as its default.
+
+## 2026-11-17 — T7.5 · A pad trigger can be named and rebound
+
+**Did.** `KeyBindings` treats a trigger as the pad half of a binding: `text_for(action, true)`
+names it through `ui.rebind.trigger_left` and `ui.rebind.trigger_right`, `rebind` accepts one, a
+trigger and a pad button replace each other, and it is stored in the pad field as
+`TRIGGER_CODE` (200) plus its axis. New `KeyBindings.bindable(event)`, which `RebindScreen._input`
+now asks, and `event_for_trigger(axis)`. New `tests/unit/pad_trigger_test.gd`. Base `5.20.0`, a
+MINOR.
+
+**Why.** The combat fork's C5.3c: its dodge and lock-on are on the triggers, an axis to the
+engine, so the controls screen's pad column read "—" and a trigger could not be chosen there.
+
+**Connects.** `KeyBindings` (codes, the pad half, restoring), `RebindScreen` (what it listens
+for), the interact prompt and dialogue hints, which name a trigger now if an action has one. A
+stick axis is still never erased: `_pad_half` is a button or a trigger, never a stick.
+
+**Verified.** Red first: with `_trigger_axis` stubbed to answer -1, 11 of the new case's 21
+assertions failed. Green: suite 2803 passed, 0 failed; boot 0 warnings, 0 errors; all seven
+checkers exit 0; the stripped run 2726 passed, 0 failed. The case covers codes and `bindable`, a
+trigger replacing a pad button (named, saved, on the controls screen row), a saved trigger put
+back over the default as at boot, a button replacing the trigger, a stick surviving a trigger
+rebind, an action whose default is a trigger, and a stored code that is no trigger.
+
+**Unblocks.** The combat fork's C5.3c.
+
+**Gaps.** Pad buttons are still named in engine English ("Left Action"); only the triggers are
+localized. A trigger takes the action's own deadzone, so on a built-in action (0.25) it fires
+a little before half-way. No windowed probe of a real trigger press; there is no pad in the
+container.

@@ -15,9 +15,15 @@ extends RefCounted
 ## a field.
 ##
 ## AN ANALOGUE STICK IS NEVER ERASED. Rebinding a key replaces the KEYS of that action and
-## rebinding a pad button replaces its PAD BUTTONS. `InputEventJoypadMotion` is neither, so
-## `move_up` keeps its left-stick axis however often W is reassigned - which is what stops a
+## rebinding a pad button replaces its PAD BUTTONS. A stick's `InputEventJoypadMotion` is neither,
+## so `move_up` keeps its left-stick axis however often W is reassigned - which is what stops a
 ## keyboard rebind from quietly making the game unplayable on a controller.
+##
+## A TRIGGER IS A PAD BUTTON HERE (T7.5). It is an axis to the engine, but a player presses it like
+## a button, so it belongs to the pad half: it is named, it can be chosen when rebinding a pad
+## slot, and choosing a button replaces it (or the other way round). It is stored in the pad field
+## as `TRIGGER_CODE` plus its axis, and named through a localization key, because the engine's own
+## name for it starts "Joystick 2 Y-Axis".
 ##
 ## OWNS: user://input.cfg, and the events it installs into the InputMap.
 ## MUST NOT: name an action, decide a default, or read input. It mentions `Actions` in exactly
@@ -27,6 +33,11 @@ extends RefCounted
 const PATH: String = "user://input.cfg"
 const KEY_FIELD: String = "key"
 const PAD_FIELD: String = "pad"
+## A trigger's stored code is this plus its axis: 204 the left, 205 the right. Pad buttons stop
+## below 128, so the two can never meet.
+const TRIGGER_CODE: int = 200
+const LEFT_TRIGGER_KEY: String = "ui.rebind.trigger_left"
+const RIGHT_TRIGGER_KEY: String = "ui.rebind.trigger_right"
 
 ## The file read and written. `PATH` unless the suite says otherwise: the runner points it at its
 ## own scratch copy, T6.13, because a case that rebinds and resets would otherwise write, then
@@ -35,8 +46,8 @@ static var file_path: String = PATH
 
 
 ## Bind `action` to `event` and remember it. Returns false for an action that is not rebindable,
-## or an event that is neither a key nor a pad button - a mouse wheel cannot be a movement key,
-## and saying so is better than storing a binding that never fires.
+## or an event that is not a key, a pad button or a trigger - a mouse wheel cannot be a movement
+## key, and saying so is better than storing a binding that never fires.
 ##
 ## THE GATE IS `Actions.is_rebindable`, NOT `InputMap.has_action`, AND THE DIFFERENCE WAS A BUG.
 ## Until T5.5 this asked only whether the action EXISTED, so `debug_console` or `cam_zoom_in`
@@ -61,7 +72,7 @@ static func rebind(action: StringName, event: InputEvent) -> bool:
 		Log.warn("input", "'%s' cannot be bound to %s" % [action, event.as_text()])
 		return false
 
-	var pad: bool = event is InputEventJoypadButton
+	var pad: bool = _pad_half(event)
 	_install(action, event, pad)
 
 	var file := ConfigFile.new()
@@ -127,6 +138,8 @@ static func text_for(action: StringName, pad: bool) -> String:
 		var button: InputEventJoypadButton = event as InputEventJoypadButton
 		if pad and button != null:
 			return _pad_text(button)
+		if pad and _trigger_axis(event) >= 0:
+			return _trigger_text(_trigger_axis(event))
 		var key: InputEventKey = event as InputEventKey
 		if not pad and key != null:
 			return _key_text(key)
@@ -141,7 +154,16 @@ static func code_of(event: InputEvent) -> int:
 	var button: InputEventJoypadButton = event as InputEventJoypadButton
 	if button != null:
 		return button.button_index
+	var motion: InputEventJoypadMotion = event as InputEventJoypadMotion
+	if _trigger_axis(event) >= 0 and motion.axis_value > 0.0:
+		return TRIGGER_CODE + motion.axis
 	return -1
+
+
+## Whether a press the controls screen hears can become a binding: a key, a pad button, or a
+## trigger pushed past half-way (T7.5). Not a release, an echo, a mouse button or a stick.
+static func bindable(event: InputEvent) -> bool:
+	return event.is_pressed() and not event.is_echo() and code_of(event) >= 0
 
 
 ## Physical keycodes, exactly as the defaults use, so a reassigned WASD stays in the same
@@ -158,11 +180,19 @@ static func event_for_pad(index: int) -> InputEventJoypadButton:
 	return event
 
 
+## A trigger pressed all the way, as a binding (T7.5). `axis` is `JOY_AXIS_TRIGGER_LEFT` or `_RIGHT`.
+static func event_for_trigger(axis: int) -> InputEventJoypadMotion:
+	var event := InputEventJoypadMotion.new()
+	event.axis = axis as JoyAxis
+	event.axis_value = 1.0
+	return event
+
+
 ## Replace the events of the SAME KIND, then add the new one. action_get_events hands back a
 ## fresh Array each call, so erasing while walking it is safe.
 static func _install(action: StringName, event: InputEvent, pad: bool) -> void:
 	for existing: InputEvent in InputMap.action_get_events(action):
-		var same_kind: bool = (existing is InputEventJoypadButton) if pad else (existing is InputEventKey)
+		var same_kind: bool = _pad_half(existing) if pad else (existing is InputEventKey)
 		if same_kind:
 			InputMap.action_erase_event(action, existing)
 	InputMap.action_add_event(action, event)
@@ -175,12 +205,36 @@ static func _restore(file: ConfigFile, action: StringName, field: String) -> int
 	if code < 0:
 		return 0
 	var event: InputEvent = null
-	if field == PAD_FIELD:
-		event = event_for_pad(code)
-	else:
+	if field == KEY_FIELD:
 		event = event_for_key(code)
+	elif code < TRIGGER_CODE:
+		event = event_for_pad(code)
+	elif code == TRIGGER_CODE + JOY_AXIS_TRIGGER_LEFT or code == TRIGGER_CODE + JOY_AXIS_TRIGGER_RIGHT:
+		event = event_for_trigger(code - TRIGGER_CODE)
+	else:
+		return 0
 	_install(action, event, field == PAD_FIELD)
 	return 1
+
+
+## The pad half of a binding: a button, or a trigger (T7.5). A stick axis is neither.
+static func _pad_half(event: InputEvent) -> bool:
+	return event is InputEventJoypadButton or _trigger_axis(event) >= 0
+
+
+## A trigger's axis, or -1 for any other event.
+static func _trigger_axis(event: InputEvent) -> int:
+	var motion: InputEventJoypadMotion = event as InputEventJoypadMotion
+	if motion == null:
+		return -1
+	if motion.axis == JOY_AXIS_TRIGGER_LEFT or motion.axis == JOY_AXIS_TRIGGER_RIGHT:
+		return motion.axis
+	return -1
+
+
+static func _trigger_text(axis: int) -> String:
+	var key: String = LEFT_TRIGGER_KEY if axis == JOY_AXIS_TRIGGER_LEFT else RIGHT_TRIGGER_KEY
+	return String(TranslationServer.translate(key))
 
 
 ## as_text() on a physical-only key prints "W (Physical)", which is accurate and unreadable on
