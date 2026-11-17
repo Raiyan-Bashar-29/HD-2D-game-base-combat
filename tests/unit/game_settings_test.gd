@@ -33,7 +33,7 @@ var _heard: Array[Array] = []
 
 
 func run() -> void:
-	plan(64)
+	plan(67)
 	_real = Settings.game
 	Settings.game = GameSettings.new(Settings.DEFAULTS)
 	Settings.reset_to_defaults()
@@ -178,6 +178,13 @@ func _labels_name_the_choices() -> void:
 	Settings.game.add(LEVEL, 2, [1, 2, 3], three)
 	Settings.set_value(LEVEL, 3)
 	equal("an int can be named too", screen.value_text(LEVEL), tr(SettingsScreen.HINT_KEY))
+	equal("a bool's labels are refused (T7.9)", Settings.game.add(FLAG, false, [false, true], labels), false)
+	Settings.game.add(SPEED, 1.0, [0.5, 1.0, 2.0], three)
+	Settings.set_value(SPEED, 1)
+	equal("a float row holding the int 1 still finds its label (T7.9)", screen.value_text(SPEED),
+			tr(SettingsScreen.TITLE_KEY))
+	screen.step(SPEED, 1)
+	equal("and a press moves to the next choice", Settings.get_float(SPEED), 2.0)
 	equal("cleanup", _stack.close_top(), true)
 
 

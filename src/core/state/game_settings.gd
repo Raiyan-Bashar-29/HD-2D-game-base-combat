@@ -15,7 +15,8 @@ extends RefCounted
 ##
 ## `labels` NAME THE CHOICES THEMSELVES (T7.6): one localization key per choice, in the same order,
 ## for choices that come from data and already have names, such as a list of difficulty files.
-## With labels the screen shows those, whatever the kind.
+## With labels the screen shows those for an int, a float or a String. A bool has no choices to
+## name, so labels on one are refused (T7.9).
 ##
 ## A SAVED VALUE NEEDS NO RESTORING, unlike a key binding (T7.3). `Settings` reads the whole file at
 ## boot, a game's sections too, so the player's choice is already there when `add` runs; `add`
@@ -48,8 +49,8 @@ func _init(built_in: Dictionary = {}) -> void:
 ## labels that are not one per choice.
 func add(path: String, default: Variant, choices: Array = [], labels: Array[String] = []) -> bool:
 	var problem: String = _problem(path, default, choices)
-	if problem == "" and not labels.is_empty() and labels.size() != choices.size():
-		problem = "the labels are not one per choice"
+	if problem == "" and not labels.is_empty() and (default is bool or labels.size() != choices.size()):
+		problem = "the labels are not one per choice, or name a bool's, which reads On and Off"
 	if problem != "":
 		Log.error("settings", "Cannot add setting '%s': %s" % [path, problem])
 		return false
