@@ -6,7 +6,8 @@ extends Node
 ## in front (within `cone` degrees either side of where the fighter faces). Pressing it again
 ## lets go. Cycling moves to the next hostile in reach, nearest first, wrapping round, and may
 ## pick one behind. A target that falls, or that gets further than `reach * leash` away, is
-## dropped on the next `refresh`. Every change is announced by `Events.lock_on_changed`.
+## dropped on the next `refresh`; with the player's lock-on assist on (C5.3b), one that FELL is
+## replaced by the nearest other hostile in reach. Every change is announced by `Events.lock_on_changed`.
 ##
 ## While locked, `ActionFighter` turns the fighter to face the target, so every swing aims at it.
 ##
@@ -65,13 +66,17 @@ func cycle() -> void:
 	_hold(found[(at + 1) % found.size()])
 
 
-## Drops a target that has fallen, left the tree, or gone beyond the leash.
+## Drops a target that has fallen, left the tree, or gone beyond the leash. With lock-on assist on
+## (C5.3b), one that fell or left gives way to the nearest other hostile in reach.
 func refresh() -> void:
 	if target == null:
 		return
-	if not is_instance_valid(target) or not target.is_inside_tree() or not _standing(target) \
-			or _flat(target.global_position - _origin()).length() > reach * leash:
+	var fell: bool = not is_instance_valid(target) or not target.is_inside_tree() or not _standing(target)
+	if fell or _flat(target.global_position - _origin()).length() > reach * leash:
 		_hold(null)
+		var found: Array[Hurtbox] = candidates()
+		if fell and not found.is_empty() and CombatSettings.is_on(CombatSettings.LOCK_ON_ASSIST):
+			_hold(found[0])
 
 
 ## The hostile, standing hurtboxes within `reach`, nearest first.

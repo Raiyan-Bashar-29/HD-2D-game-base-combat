@@ -1850,7 +1850,8 @@ Three well-known styles come from parts that already exist.
   mode. Speeds and the scheduler's `delay` set how long each gauge takes. The battle screen still
   runs plain CTB; a screen that feeds time is a game's choice.
 - **Pause-and-play:** set `[combat] hybrid/slow` to 0. The command menu then stops the fight while
-  it is open, and the chosen command lands the moment it is picked.
+  it is open, and the chosen command lands the moment it is picked. That is also the default of the
+  player's wait-mode setting (C5.3b), which can turn it on or off.
 - **Timed hits:** a `TimedWindow` resource. `opens` and `closes` are seconds after the move starts;
   a press between them multiplies the power by `bonus` (1.5). `perfect` (seconds, 0 for none) is a
   tighter centre worth `perfect_bonus` (2.0). Call `multiplier(pressed_at)` and multiply the hit's
@@ -1901,16 +1902,20 @@ character to a playable fighter).
 A difficulty is `data/difficulty/<name>.tres` (`Difficulty`, id `difficulty/<name>`): `dealt` and
 `taken` are shares added to every hit the `side` (the player's faction) lands on a foe and takes
 from one, so `dealt = 0.5, taken = -0.5` is an easy mode. `order` is where a settings screen lists
-it. The flag `combat/difficulty` names the one on and is saved with the game; with no flag,
-`[combat] difficulty/default` in `project.godot` does; with neither, hits are what the formula
-makes them. An empty flag (`CombatDifficulty.choose(&"")`) turns even the default off. Try one with
+it. The player picks one on the settings screen (Combat → Difficulty, C5.3b), which lists none
+and every file, each by its `name_key`; `[combat] difficulty/default` in `project.godot` is that
+setting's default. A save may keep its own in the flag `combat/difficulty`, which wins until the
+player changes the setting; with none, hits are what the formula makes them. An empty flag (`CombatDifficulty.choose(&"")`) turns even the default off. Try one with
 `--flag=combat/difficulty:difficulty/story`. The demo ships Story,
 Balanced and Harsh.
 
-Two more flags, saved with the game like the difficulty, until a settings screen offers them
-(C5.3b): `combat/auto_battle` makes the party play its own turns in a turn-based battle (the
-battle screen's Auto row turns it on and off; each member plays by its definition's `brain`, or
-attacks), and `combat/hold_to_attack` lets a held attack button keep the field chain going.
+The settings screen's Combat section (`CombatSettings`, C5.3b) has three more: **Battles play
+themselves** (auto-battle: the party plays its own turns in a turn-based battle, each member by
+its definition's `brain`, or it attacks; the battle screen's Auto row sets the save's own flag
+`combat/auto_battle`, which wins until the setting changes), **Stop the fight while choosing a
+command** (wait mode for the hybrid's command menu), and **Lock on to the next foe when one
+falls**. The flag `combat/hold_to_attack` lets a held attack button keep the field chain going.
+A game adds its own settings the same way, with upstream's `Settings.game.add` (base 5.19.0).
 
 ## Mixing formulas (C5.1, combat fork only)
 

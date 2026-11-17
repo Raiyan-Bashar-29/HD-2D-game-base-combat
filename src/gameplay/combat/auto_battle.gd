@@ -3,7 +3,7 @@ extends RefCounted
 ## Auto-battle (C5.4b): the party plays its own turns in a turn-based battle.
 ##
 ## IN PLAIN WORDS: while the flag `combat/auto_battle` is on (saved with the game; the battle
-## screen's Auto row turns it on and off), `Battle.brain_of` asks `brain_for` about each party
+## screen's Auto row turns it on and off; with no flag, the player's setting decides, C5.3b), `Battle.brain_of` asks `brain_for` about each party
 ## member of its own. It plays by its definition's `brain` when it has one, else by a plain brain
 ## with no entries, whose fallback attacks the first foe it may (`BattleBrainContext.fallback`).
 ## Guests and a status that takes a fighter over (berserk) are played as before. The screen paces
@@ -17,9 +17,11 @@ const FLAG: StringName = &"combat/auto_battle"
 static var _plain: BattleBrain = BattleBrain.new()
 
 
-## True while auto-battle is on.
+## True while auto-battle is on: the save's flag when it has one, else the player's setting (C5.3b).
 static func on() -> bool:
-	return Flags.get_bool(FLAG)
+	if Flags.has_flag(FLAG):
+		return Flags.get_bool(FLAG)
+	return CombatSettings.is_on(CombatSettings.AUTO_BATTLE)
 
 
 ## Turns auto-battle on when it was off and off when it was on. Returns the new state.

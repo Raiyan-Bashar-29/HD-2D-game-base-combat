@@ -5242,3 +5242,22 @@ controls screen's pad column, where they read "—". `combat_input_test` asserts
 controls screen (`--open-menu=pause,controls`) shows both triggers named.
 **Gaps.** Pad buttons are still named in engine English ("Left Action"); only the triggers are
 localized (upstream's gap).
+
+## 2026-11-17 — C5.3b · Combat settings
+
+**Did.** New `CombatSettings`: `install()` (called by `ActionHost` beside `CombatActions.install`)
+adds `combat/difficulty` (none and every difficulty file, named by each file's `name_key`),
+`combat/auto_battle`, `combat/wait_mode` and `combat/lock_on_assist` through upstream's
+`Settings.game.add`. `CombatDifficulty.current`, `AutoBattle.on`, `CommandOverlay.slow` and
+`LockOn.refresh` read them; lock-on assist moves a lock whose target fell to the nearest other foe
+in reach (not one that only went out of reach). Changing the difficulty or auto-battle setting
+drops the save's own flag, which wins until then. Six CSV rows. `combat_settings_test` 25;
+`difficulty_test` checks the project-default path with no settings installed, since a case that
+builds an `ActionHost` now installs them.
+**Why.** The board row: these were project settings or save flags a player never saw. Upstream
+T7.4 (a game's own settings) and T7.6 (labels for its choices) were built for it.
+**Verified.** Red first: with `is_on` and `difficulty` stubbed, 7 of 25 failed. Ladder: 0 warnings;
+5217 passed, 0 failed; checkers silent; stripped 5103 passed. A windowed capture of the settings
+screen (`--open-menu=pause,settings`) shows the Combat section and its four rows.
+**Gaps.** Hold-to-attack is still only a flag. The settings screen does not say a save's own flag
+is overriding a setting; the next change of the setting clears it.
