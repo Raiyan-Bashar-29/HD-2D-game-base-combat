@@ -12139,3 +12139,20 @@ rebind, an action whose default is a trigger, and a stored code that is no trigg
 localized. A trigger takes the action's own deadzone, so on a built-in action (0.25) it fires
 a little before half-way. No windowed probe of a real trigger press; there is no pad in the
 container.
+
+## 2026-11-17 — T7.6 · A game's setting can name its choices
+
+**Did.** `Settings.game.add(path, default, choices, labels)`: an optional localization key per
+choice, refused when they are not one per choice. `GameSettings.labels_of(path)`. The settings
+screen reads a labelled value through its own key, whatever the kind; `options_test` checks those
+keys. Nine more assertions in `game_settings_test`. Base `5.21.0`, a MINOR.
+
+**Why.** The combat fork's C5.3b lists its difficulty files as the choices of a setting, and each
+file names itself with a `name_key`. T7.4 read a String value only through a key computed from
+the value, which would have meant repeating every difficulty's name in the CSV.
+
+**Verified.** Red first: with `labels_of` stubbed empty, 4 of the 9 new assertions failed. Green:
+suite 2814 passed, 0 failed; boot 0 warnings, 0 errors; all seven checkers exit 0; the stripped run
+2737 passed, 0 failed.
+
+**Gaps.** None new.

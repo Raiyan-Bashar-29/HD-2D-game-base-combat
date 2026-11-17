@@ -13,6 +13,10 @@ extends RefCounted
 ## by a tenth. The default must be one of them. The screen shows a String value through the key
 ## `ui.settings.<section>.<key>.<value>` (`SettingsScreen.value_key`), and an int as its number.
 ##
+## `labels` NAME THE CHOICES THEMSELVES (T7.6): one localization key per choice, in the same order,
+## for choices that come from data and already have names, such as a list of difficulty files.
+## With labels the screen shows those, whatever the kind.
+##
 ## A SAVED VALUE NEEDS NO RESTORING, unlike a key binding (T7.3). `Settings` reads the whole file at
 ## boot, a game's sections too, so the player's choice is already there when `add` runs; `add`
 ## only says what the default is and which values a press may choose.
@@ -30,22 +34,28 @@ var _built_in: Dictionary = {}
 var _defaults: Dictionary[String, Variant] = {}
 ## path -> the values a press walks.
 var _choices: Dictionary[String, Array] = {}
+## path -> one localization key per choice, or nothing.
+var _labels: Dictionary[String, Array] = {}
 
 
 func _init(built_in: Dictionary = {}) -> void:
 	_built_in = built_in
 
 
-## Add a setting, or change the default and choices of one already added. Refused, with an error
-## and false, for an empty or built-in path, a kind a settings file cannot hold, an int or a String
-## with no choices, a choice of another kind, or a default that is not one of the choices.
-func add(path: String, default: Variant, choices: Array = []) -> bool:
+## Add a setting, or change the default, choices and labels of one already added. Refused, with an
+## error and false, for an empty or built-in path, a kind a settings file cannot hold, an int or a
+## String with no choices, a choice of another kind, a default that is not one of the choices, or
+## labels that are not one per choice.
+func add(path: String, default: Variant, choices: Array = [], labels: Array[String] = []) -> bool:
 	var problem: String = _problem(path, default, choices)
+	if problem == "" and not labels.is_empty() and labels.size() != choices.size():
+		problem = "the labels are not one per choice"
 	if problem != "":
 		Log.error("settings", "Cannot add setting '%s': %s" % [path, problem])
 		return false
 	_defaults[path] = default
 	_choices[path] = [] if default is bool else choices.duplicate()
+	_labels[path] = labels.duplicate()
 	return true
 
 
@@ -60,6 +70,15 @@ func choices_of(path: String) -> Array:
 	if not _choices.has(path):
 		return []
 	return _choices[path].duplicate()
+
+
+## The localization key naming each choice, in the order of `choices_of`; empty when the setting
+## was added without labels (T7.6).
+func labels_of(path: String) -> Array[String]:
+	var labels: Array[String] = []
+	if _labels.has(path):
+		labels.assign(_labels[path])
+	return labels
 
 
 ## Every setting, built-in and added, in the order the settings screen draws them: the built-ins in

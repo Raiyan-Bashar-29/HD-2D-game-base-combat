@@ -18,6 +18,30 @@ the exact rot this discipline exists to prevent.
 | **MINOR** | the base gained something a game may ignore | merges and carries on |
 | **PATCH** | nothing a game wrote is affected | merges and carries on |
 
+## 5.21.0
+
+*2026-11-17 — T7.6: a game's setting can name its choices.*
+
+**A consuming game does: nothing.** A setting added without labels reads as before.
+
+**What changed.**
+- `Settings.game.add(path, default, choices, labels)` takes an optional `labels`: one
+  localization key per choice, in the same order. It is refused when they are not one per choice.
+- `GameSettings.labels_of(path)` returns them.
+- `SettingsScreen` shows a labelled setting's value through its own key, whatever the kind, instead
+  of `value_key` or the number. `options_test` checks those keys exist.
+
+**How a game uses it.** For choices that come from data and already have names:
+
+```gdscript
+Settings.game.add("combat/level", "level/normal", ["level/easy", "level/normal"],
+		["level.easy.name", "level.normal.name"] as Array[String])
+```
+
+**Why.** The combat fork's difficulties are data files, each with its own `name_key`. Without
+labels the fork would have had to repeat every name under `ui.settings.*`.
+
+---
 ## 5.20.0
 
 *2026-11-17 — T7.5: a pad trigger can be named and rebound.*

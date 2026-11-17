@@ -17,7 +17,8 @@ extends MenuScreen
 ##
 ## A GAME'S ROW WALKS ITS OWN CHOICES (`GameSettings.choices_of`). Its label is computed exactly
 ## as a built-in one's, its section heading is `ui.settings.section.<section>`, and a String value
-## reads through `value_key`, so a game adds those rows to its CSV and nothing here.
+## reads through `value_key`, so a game adds those rows to its CSV and nothing here. A game that
+## named its choices (T7.6) has its own keys read instead, whatever the kind.
 ##
 ## ONE GESTURE CHANGES A ROW: press it, or push left or right on it. Left and right are handled
 ## in `_input`, which runs BEFORE the viewport's own focus navigation, because otherwise a
@@ -182,6 +183,9 @@ func value_text(path: String) -> String:
 		return tr(ON_KEY) if Settings.get_bool(path) else tr(OFF_KEY)
 	if path == Settings.LOCALE:
 		return Settings.get_string(path)
+	var named: String = _label(path, default)
+	if named != "":
+		return tr(named)
 	if default is String:
 		return tr(value_key(path, Settings.get_string(path)))
 	if CHOICES.has(path):
@@ -247,6 +251,14 @@ func _next_locale(direction: int) -> String:
 		return Settings.get_string("locale")
 	var at: int = maxi(0, locales.find(Settings.get_string("locale")))
 	return locales[wrapi(at + direction, 0, locales.size())]
+
+
+## The key a game named for the row's current value (T7.6), or "" when it named none.
+func _label(path: String, default: Variant) -> String:
+	var labels: Array[String] = Settings.game.labels_of(path)
+	var current: Variant = Settings.get_int(path) if default is int else Settings.get_value(path)
+	var at: int = Settings.game.choices_of(path).find(current)
+	return labels[at] if at >= 0 and at < labels.size() else ""
 
 
 ## A game's float with choices is a percentage while its largest choice is at most 1.0.

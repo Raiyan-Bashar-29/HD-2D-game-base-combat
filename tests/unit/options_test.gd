@@ -171,8 +171,11 @@ func _every_computed_key_exists() -> void:
 	for path: String in Settings.game.every():
 		_key_exists(SettingsScreen.label_key(path))
 		_key_exists("%s%s" % [SettingsScreen.SECTION_PREFIX, GameSettings.section_of(path)])
+		var labels: Array[String] = Settings.game.labels_of(path)
+		for key: String in labels:
+			_key_exists(key)
 		for value: Variant in Settings.game.choices_of(path):
-			if value is String:
+			if value is String and labels.is_empty():
 				_key_exists(SettingsScreen.value_key(path, value as String))
 	for path: String in SettingsScreen.NAMED:
 		for value: Variant in DictRead.get_array(SettingsScreen.CHOICES, path):
