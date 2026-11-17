@@ -21,7 +21,7 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(25)
+	plan(30)
 	SaveFixture.activate()
 	Flags.clear_all()
 	_real = Settings.game
@@ -36,6 +36,7 @@ func run() -> void:
 	_auto_battle()
 	_wait_mode()
 	_lock_on_assist()
+	_hold_to_attack()
 	_the_screen()
 	_tear_down()
 
@@ -67,6 +68,8 @@ func _they_are_added() -> void:
 		[Settings.get_string(CombatSettings.DIFFICULTY), Settings.get_bool(CombatSettings.AUTO_BATTLE),
 			Settings.get_bool(CombatSettings.WAIT_MODE), Settings.get_bool(CombatSettings.LOCK_ON_ASSIST)],
 		[difficulty, false, is_zero_approx(_project_slow()), false])
+	equal("hold to attack joins the built-in Accessibility section, at its end (C5.3d)",
+		every.find(CombatSettings.HOLD_TO_ATTACK), every.find("accessibility/hold_to_confirm") + 1)
 	CombatSettings.install()
 	equal("installing again adds nothing", Settings.game.every().size(), every.size())
 
@@ -125,6 +128,21 @@ func _lock_on_assist() -> void:
 	lock.refresh()
 	equal("but one that only went out of reach is let go", lock.target, null)
 	Settings.set_value(CombatSettings.LOCK_ON_ASSIST, false)
+
+
+## C5.3d: the same flag rule as auto-battle, read by `ActionFighter` through `flag_or_setting`.
+func _hold_to_attack() -> void:
+	var on: Callable = func() -> bool:
+		return CombatSettings.flag_or_setting(ActionFighter.HOLD_FLAG, CombatSettings.HOLD_TO_ATTACK)
+	equal("hold to attack is off by default", on.call(), false)
+	Settings.set_value(CombatSettings.HOLD_TO_ATTACK, true)
+	equal("the setting turns it on", on.call(), true)
+	Flags.set_flag(ActionFighter.HOLD_FLAG, false)
+	equal("a save's own flag wins", on.call(), false)
+	Settings.set_value(CombatSettings.HOLD_TO_ATTACK, true)
+	equal("until the setting changes, which drops it", [Flags.has_flag(ActionFighter.HOLD_FLAG), on.call()],
+		[false, true])
+	Settings.set_value(CombatSettings.HOLD_TO_ATTACK, false)
 
 
 func _the_screen() -> void:

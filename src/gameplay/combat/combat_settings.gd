@@ -1,7 +1,7 @@
 class_name CombatSettings
 extends RefCounted
 ## The combat options a player changes on the settings screen (C5.3b): the difficulty, whether
-## battles play themselves, wait mode for the command menu, and lock-on assist.
+## battles play themselves, wait mode for the command menu, lock-on assist, and hold to attack.
 ##
 ## IN PLAIN WORDS: `install()` adds them to upstream's settings with `Settings.game.add` (base
 ## 5.19.0), under their own "Combat" section, once at boot (`ActionHost`). They are kept on the
@@ -13,27 +13,31 @@ extends RefCounted
 ## - WAIT_MODE, by `CommandOverlay.slow()`: on, the fight stops while the command menu is open.
 ## - LOCK_ON_ASSIST, by `LockOn.refresh()`: on, a lock whose target falls moves to the nearest
 ##   other foe in reach.
+## - HOLD_TO_ATTACK (C5.3d), by `ActionFighter`: a held attack button keeps the chain going. It
+##   joins upstream's own Accessibility section rather than the Combat one.
 ##
-## A SAVE'S OWN CHOICE WINS UNTIL THE PLAYER CHANGES THE SETTING. The flags `combat/difficulty`
-## and `combat/auto_battle` are kept with a save (the battle screen's Auto row sets the second),
+## A SAVE'S OWN CHOICE WINS UNTIL THE PLAYER CHANGES THE SETTING. The flags `combat/difficulty`,
+## `combat/auto_battle` and `combat/hold_to_attack` are kept with a save (the battle screen's Auto
+## row sets the second),
 ## and while one is there it is what counts. Changing the matching setting drops it, so the change
 ## takes effect at once; a reset of every setting does the same.
 ##
 ## OWNS: the combat settings' names, defaults and choices, and dropping a save's flag when the
 ## player changes the matching setting.
-## MUST NOT: act on a setting itself. The four readers above do.
+## MUST NOT: act on a setting itself. The five readers above do.
 
 const DIFFICULTY: String = "combat/difficulty"
 const AUTO_BATTLE: String = "combat/auto_battle"
 const WAIT_MODE: String = "combat/wait_mode"
 const LOCK_ON_ASSIST: String = "combat/lock_on_assist"
+const HOLD_TO_ATTACK: String = "accessibility/hold_to_attack"
 ## How "no difficulty" reads on the settings screen.
 const NONE_KEY: String = "ui.settings.combat.difficulty.none"
 ## Where the command menu's slow-down is set; 0 there means the project starts in wait mode.
 const SLOW_SETTING: String = "combat/hybrid/slow"
 
 
-## Adds the four settings. Safe to call again: a second call re-reads the difficulty files and
+## Adds the five settings. Safe to call again: a second call re-reads the difficulty files and
 ## changes nothing else.
 static func install() -> void:
 	var ids: Array = [""]
@@ -47,6 +51,7 @@ static func install() -> void:
 	var slow: float = ProjectSettings.get_setting(SLOW_SETTING, 0.1)
 	Settings.game.add(WAIT_MODE, is_zero_approx(slow))
 	Settings.game.add(LOCK_ON_ASSIST, false)
+	Settings.game.add(HOLD_TO_ATTACK, false)
 	if not Events.setting_changed.is_connected(_on_changed):
 		Events.setting_changed.connect(_on_changed)
 
@@ -55,6 +60,11 @@ static func install() -> void:
 ## stripped game that never installed them reads every one as off.
 static func is_on(path: String) -> bool:
 	return Settings.default_of(path) != null and Settings.get_bool(path)
+
+
+## A save's own `flag` when it has one, else the player's setting `path` (off before `install`).
+static func flag_or_setting(flag: StringName, path: String) -> bool:
+	return Flags.get_bool(flag) if Flags.has_flag(flag) else is_on(path)
 
 
 ## The difficulty id the player chose, or `fallback` before `install`.
@@ -68,3 +78,5 @@ static func _on_changed(section: String, key: String, _value: Variant) -> void:
 		Flags.erase_flag(CombatDifficulty.FLAG)
 	elif path == AUTO_BATTLE:
 		Flags.erase_flag(AutoBattle.FLAG)
+	elif path == HOLD_TO_ATTACK:
+		Flags.erase_flag(ActionFighter.HOLD_FLAG)

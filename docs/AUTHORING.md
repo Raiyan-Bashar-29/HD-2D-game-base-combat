@@ -1914,7 +1914,9 @@ themselves** (auto-battle: the party plays its own turns in a turn-based battle,
 its definition's `brain`, or it attacks; the battle screen's Auto row sets the save's own flag
 `combat/auto_battle`, which wins until the setting changes), **Stop the fight while choosing a
 command** (wait mode for the hybrid's command menu), and **Lock on to the next foe when one
-falls**. The flag `combat/hold_to_attack` lets a held attack button keep the field chain going.
+falls**. **Hold attack to keep attacking** (C5.3d) sits in the Accessibility section: a held
+attack button keeps the field chain going; a save's flag `combat/hold_to_attack` wins until it
+changes.
 A game adds its own settings the same way, with upstream's `Settings.game.add` (base 5.19.0).
 
 ## Mixing formulas (C5.1, combat fork only)

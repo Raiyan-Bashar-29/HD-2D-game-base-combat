@@ -19,9 +19,7 @@ static var _plain: BattleBrain = BattleBrain.new()
 
 ## True while auto-battle is on: the save's flag when it has one, else the player's setting (C5.3b).
 static func on() -> bool:
-	if Flags.has_flag(FLAG):
-		return Flags.get_bool(FLAG)
-	return CombatSettings.is_on(CombatSettings.AUTO_BATTLE)
+	return CombatSettings.flag_or_setting(FLAG, CombatSettings.AUTO_BATTLE)
 
 
 ## Turns auto-battle on when it was off and off when it was on. Returns the new state.

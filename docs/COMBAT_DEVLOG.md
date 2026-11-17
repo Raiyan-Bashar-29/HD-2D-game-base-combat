@@ -5261,3 +5261,16 @@ T7.4 (a game's own settings) and T7.6 (labels for its choices) were built for it
 screen (`--open-menu=pause,settings`) shows the Combat section and its four rows.
 **Gaps.** Hold-to-attack is still only a flag. The settings screen does not say a save's own flag
 is overriding a setting; the next change of the setting clears it.
+
+## 2026-11-17 — C5.3d · Hold to attack as a setting
+
+**Did.** `accessibility/hold_to_attack`, added by `CombatSettings.install` into upstream's own
+Accessibility section (T7.4 places a game's row at the end of the built-in section it names).
+New `CombatSettings.flag_or_setting(flag, path)`: a save's flag when it has one, else the setting.
+`ActionFighter` reads hold-to-attack through it and `AutoBattle.on` now does too; changing the
+setting drops the flag. One CSV row. `combat_settings_test` 30.
+**Why.** C5.3b's recorded gap: hold to attack, an accessibility option, was still only a flag.
+**Verified.** Red first: with `flag_or_setting` reading only the flag, 5 failed (auto-battle's
+three and two of hold's). Ladder: 0 warnings; 5222 passed, 0 failed; checkers silent; stripped
+5108 passed.
+**Gaps.** None new.
