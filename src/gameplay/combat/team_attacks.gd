@@ -7,13 +7,15 @@ extends RefCounted
 ##   holds a FOLLOW_UP status (and is not asleep or stunned, and rolls its `reaction_chance`)
 ##   strikes the same foe at once: its status's `counter_move`, or one plain hit. A follow-up
 ##   never sets off another one. `Battle` calls `after_attack` where it used to call only
-##   `SkillUse.counter`, so the counter still comes first.
+##   `SkillUse.counter`, so the counter still comes first. IN THE FIELD (C8.22c) `FieldFollowUps`
+##   gathers the allies near the foe and asks `answer_all` the same question.
 ## - TEAM TECHS. A power whose mechanism is a `TeamMechanism` is ready only while every partner it
 ##   names stands on the user's side, awake, and (for an all-out) every standing foe is broken.
 ##   `PowerUse` refuses it with `Reason.TEAM` otherwise; `TeamRun` does the striking.
 ##
 ## OWNS: who follows up, and whether a team tech is ready.
-## MUST NOT: run outside a battle, or decide what a hit does (that is `Combatant.hit`'s).
+## MUST NOT: find field allies itself (`FieldFollowUps` does), or decide what a hit does (that is
+## `Combatant.hit`'s).
 
 
 ## A plain ATTACK by `actor` on `target` landed as `landed` (null or missed when it did not):
@@ -45,11 +47,20 @@ static func follow_ups(actor: Combatant, target: Combatant, rng: RandomNumberGen
 	var battle: Battle = Battle.running
 	if battle == null:
 		return 0
+	return answer_all(side_of(battle, actor), actor, target, rng)
+
+
+## Each of `allies` (not `actor`) that stands, is awake, may hit `target` and holds a FOLLOW_UP
+## status that rolls true strikes `target` once, until it falls. Returns how many did. The
+## battle's `follow_ups` and the field's `FieldFollowUps` both end here.
+static func answer_all(allies: Array[Combatant], actor: Combatant, target: Combatant,
+		rng: RandomNumberGenerator) -> int:
 	var count: int = 0
-	for ally: Combatant in side_of(battle, actor):
+	for ally: Combatant in allies:
 		if ally == actor or not _awake(ally) or _down(target) or not ally.can_target(target, FactionTable.Target.ENEMY):
 			continue
-		var stance: StatusEffect = StatusSet.of(ally.get_parent()).reactor(StatusEffect.Reaction.FOLLOW_UP)
+		var statuses: StatusSet = StatusSet.of(ally.get_parent())
+		var stance: StatusEffect = statuses.reactor(StatusEffect.Reaction.FOLLOW_UP) if statuses != null else null
 		if stance == null or not (stance.reaction_chance >= 1.0 or rng.randf() < stance.reaction_chance):
 			continue
 		SkillUse.answer(ally, target, stance.counter_move, rng)

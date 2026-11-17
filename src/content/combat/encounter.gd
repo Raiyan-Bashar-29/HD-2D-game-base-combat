@@ -17,6 +17,9 @@ enum TurnOrder { ROUNDS, CTB }
 @export var turn_order: TurnOrder = TurnOrder.ROUNDS
 ## Above 0, hitting a foe's weakness earns one more turn, up to this many in a row (C8.1).
 @export var weakness_extra_turns: int = 0
+## True makes a SWAP free: the one coming in takes the swapping fighter's turn at once, once a
+## turn (C8.22c). False spends the turn, and the one coming in waits for its own.
+@export var free_swaps: bool = false
 ## Foes held back (C8.22a): when every foe on the field is down, the next `wave` of these join,
 ## until none are left. The battle is won only when the last of them falls.
 @export var reinforcements: Array[CombatantDef] = []

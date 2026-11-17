@@ -83,6 +83,8 @@ var encounter: Encounter
 var guests: Array[StringName] = []
 ## Party members waiting off the field; a SWAP brings one in (`BattleReserve`, C8.3).
 var reserve: Array[Combatant] = []
+## True once this turn's free swap is spent (C8.22c, the turn order's `free_swaps`).
+var free_swap_used: bool = false
 
 var _by_id: Dictionary[StringName, Combatant] = {}
 var _current: Combatant
@@ -124,6 +126,7 @@ func admit(fighter: Combatant) -> void:
 ## statuses tick first, and one that falls to a tick is skipped.
 func next_turn() -> Combatant:
 	_current = null
+	free_swap_used = false
 	# A cap on lost turns in a row, so a whole field asleep can never loop forever.
 	var skips_left: int = 64 * maxi(1, party.size() + enemies.size())
 	# Loop because a fighter may fall to poison at the start of their turn; then try the next one.
@@ -270,9 +273,11 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 			if not _use(actor, command, targets, boost):
 				return false
 		BattleCommand.Kind.POWER, BattleCommand.Kind.SWAP, BattleCommand.Kind.ROW:
-			var power: bool = command.kind == BattleCommand.Kind.POWER
-			if not (_power(actor, command, targets) if power else BattleReserve.move(self, actor, command.kind, targets)):
-				return false
+			var done: bool = _power(actor, command, targets) if command.kind == BattleCommand.Kind.POWER \
+					else BattleReserve.move(self, actor, command.kind, targets)
+			# A free swap keeps the turn for the one coming in (C8.22c).
+			if not done or _kept(command, targets):
+				return done
 		# Guard: a one-turn defence bonus that wears off when this fighter's next turn starts.
 		BattleCommand.Kind.DEFEND:
 			StatusSet.of(actor.get_parent()).apply(defend_status)
@@ -288,6 +293,15 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 	# The turn is spent: clear it, then remove the fallen and check for a winner.
 	_current = null
 	_settle()
+	return true
+
+
+# A free swap (C8.22c): the one coming in takes this same turn, once a turn, so it is not spent.
+func _kept(command: BattleCommand, targets: Array[Combatant]) -> bool:
+	if command.kind != BattleCommand.Kind.SWAP or not scheduler.free_swaps or free_swap_used:
+		return false
+	free_swap_used = true
+	_current = targets[0]
 	return true
 
 
@@ -387,24 +401,10 @@ func _settle() -> void:
 func _check_outcome() -> void:
 	if _outcome != Outcome.ONGOING:
 		return
-	if _all_down(enemies):
+	if BattleReserve.all_out(enemies):
 		_end(Outcome.WON)
-	elif _all_down(party, guests):
+	elif BattleReserve.all_out(party, guests):
 		_end(Outcome.LOST)
-
-
-# True when everyone on `side` is out of it, those named in `skip` aside.
-func _all_down(side: Array[Combatant], skip: Array[StringName] = []) -> bool:
-	for fighter: Combatant in side:
-		if skip.has(fighter.combatant_id):
-			continue
-		# A petrified fighter counts as fallen here, though it still stands (C8.7a).
-		var statuses: StatusSet = StatusSet.of(fighter.get_parent())
-		# One that obeys the other side (C6.11) is out of its own side too.
-		if not _vitals(fighter).is_defeated() and not (statuses != null \
-				and (statuses.fallen() or statuses.obeyed() != &"")):
-			return false
-	return true
 
 
 func _end(how: Outcome) -> void:

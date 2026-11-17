@@ -5049,3 +5049,20 @@ offers Row (and Swap) to party members of their own; `name_of` marks "(back)". D
 turn order, and Row at the foot of the Wanderer's menu. A first ladder run hung: the new test
 waited for the turn of a hero left fallen by an hp round-trip; it now revives through `revive`.
 **Gaps.** Field follow-ups, a free swap, a demo reaction and wave (C8.22c).
+
+## 2026-11-17 — C8.22c · Field follow-ups, the free swap, a demo reaction and wave
+
+**Did.** `FieldFollowUps.after_hit`, called by `Hurtbox.take` on a landed hit: allies of the
+attacker within `REACH` (8 m) of the foe go to `TeamAttacks.answer_all`, the loop the battle's
+`follow_ups` now shares. `Encounter.free_swaps` → `TurnScheduler.free_swaps`: `Battle._kept` hands
+the turn to the one swapped in, once a turn (`free_swap_used`); `BattleMenu` labels it "Swap
+(free)". `_all_down` moved to `BattleReserve.all_out` to keep `battle.gd` in budget. Demo: Rime
+(frost) for the Keeper, `data/reactions/thaw.tres`, a reinforcement wisp and `free_swaps` on the
+thorn wisps.
+**Verified.** Ladder: 0 warnings; 5049 passed, 0 failed; checkers silent; stripped 4936 passed.
+`field_follow_up_test` 5, `reserve_test` 9. Windowed capture of the thorn-wisp battle with the
+Keeper in reserve: "Swap (free)" at the foot of the Wanderer's menu. The first run failed on a
+field fighter with no `StatusSet` (an `action_enemy_test` body); `answer_all` now skips one.
+**Gaps.** A field follow-up lands at once, with no swing of its own. A free swap trades only the
+fighter whose turn it is. The order preview does not show a lost turn; reinforcements give no
+experience of their own (both C8.23).

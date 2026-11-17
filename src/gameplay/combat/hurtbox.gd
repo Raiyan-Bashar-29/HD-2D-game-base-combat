@@ -38,6 +38,9 @@ extends Area3D
 ## PROMPT (C8.8c): `boost` multiplies a plain move's power; the `Hitbox` passes what the
 ## attacker's timed press earned.
 ##
+## FOLLOW-UPS (C8.22c): a landed hit lets the attacker's allies near this fighter follow up
+## (`FieldFollowUps`), as a battle's plain attack does.
+##
 ## `flinched` says whether the last hit moved the fighter at all: it landed, was not countered,
 ## and the fighter flinches. A grab (C8.8b) holds only a fighter that flinched.
 ##
@@ -126,6 +129,8 @@ func take(attacker: Combatant, move: ActionMove, rng: RandomNumberGenerator, fro
 	landed = outcome == Outcome.LANDED
 	if landed:
 		Weakness.wear(target, move.poise)
+		# Allies near the foe holding a follow-up stance strike it too (C8.22c).
+		FieldFollowUps.after_hit(attacker, target, rng)
 		if not countered:
 			_interrupt(target, move)
 			_push(target, move, from)

@@ -69,6 +69,7 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
 			else RoundScheduler.new()
 	turns.weakness_extra_turns = encounter.weakness_extra_turns
+	turns.free_swaps = encounter.free_swaps
 	var battle := Battle.new(ours + guests, theirs, turns, rng)
 	battle.encounter = encounter
 	battle.can_flee = encounter.can_flee

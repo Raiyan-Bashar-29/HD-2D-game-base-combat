@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="PartyRoster" load_steps=26 format=3]
+[gd_resource type="Resource" script_class="PartyRoster" load_steps=28 format=3]
 
 [ext_resource type="Script" path="res://src/content/combat/party_roster.gd" id="1_roster"]
 [ext_resource type="Script" path="res://src/content/combat/combatant_def.gd" id="2_def"]
@@ -13,6 +13,7 @@
 [ext_resource type="Resource" path="res://data/skills/cleanse.tres" id="11_cleanse"]
 [ext_resource type="Resource" path="res://data/skills/rekindle.tres" id="12_raise"]
 [ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="13_bulwark"]
+[ext_resource type="Resource" path="res://data/skills/rime.tres" id="14_rime"]
 
 [sub_resource type="Resource" id="attack"]
 script = ExtResource("3_cmd")
@@ -70,6 +71,12 @@ kind = 1
 skill = ExtResource("13_bulwark")
 category = "combat.category.magic"
 
+[sub_resource type="Resource" id="rime"]
+script = ExtResource("3_cmd")
+kind = 1
+skill = ExtResource("14_rime")
+category = "combat.category.magic"
+
 [sub_resource type="Resource" id="defend"]
 script = ExtResource("3_cmd")
 kind = 3
@@ -123,7 +130,7 @@ base_stats = Dictionary[StringName, float]({
 &"speed": 5.0
 })
 back_row = true
-commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("salve"), SubResource("cleanse"), SubResource("raise"), SubResource("bulwark"), SubResource("defend"), SubResource("flee")])
+commands = Array[ExtResource("3_cmd")]([SubResource("attack"), SubResource("rime"), SubResource("salve"), SubResource("cleanse"), SubResource("raise"), SubResource("bulwark"), SubResource("defend"), SubResource("flee")])
 level_curve = SubResource("curve")
 passive_budget = 4
 passive_budget_per_level = 1

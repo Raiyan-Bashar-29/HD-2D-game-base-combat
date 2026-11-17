@@ -19,11 +19,16 @@ extends Resource
 ## `next()` asks `_take_owed()` first and its `preview()` starts from `_owed_preview()`. Extra
 ## turns in a row stop at `weakness_extra_turns`, and one turn earns at most one.
 ##
+## A FREE SWAP (C8.22c): with `free_swaps` on, a SWAP does not spend the turn: the one coming in
+## takes it at once, once a turn. The scheduler only carries the rule; `Battle` keeps it.
+##
 ## OWNS: who is in the queue, each one's speed, and the order they act in.
 ## MUST NOT: know what a turn does, read stats itself, or use the global random generator.
 
 ## How many extra turns in a row a weakness hit can earn (C8.1). 0 is off.
 @export var weakness_extra_turns: int = 0
+## True makes a SWAP free: the one coming in takes the same turn, once a turn (C8.22c).
+@export var free_swaps: bool = false
 
 var _ids: Array[StringName] = []
 var _owed: Array[StringName] = []

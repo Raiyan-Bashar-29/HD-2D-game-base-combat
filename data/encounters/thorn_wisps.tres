@@ -58,5 +58,7 @@ brain = SubResource("brain")
 script = ExtResource("1_enc")
 id = &"encounter/thorn_wisps"
 enemies = Array[ExtResource("2_def")]([SubResource("wisp"), SubResource("wisp")])
+reinforcements = Array[ExtResource("2_def")]([SubResource("wisp")])
+free_swaps = true
 experience = 30
 loot = Array[StringName]([&"item/stone_chip"])

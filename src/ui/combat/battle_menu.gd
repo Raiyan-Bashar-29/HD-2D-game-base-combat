@@ -24,6 +24,8 @@ const ITEM_REASON_KEY: String = "ui.battle.reason.no_item"
 const TARGET_REASON_KEY: String = "ui.battle.reason.no_target"
 const FLEE_REASON_KEY: String = "ui.battle.reason.no_flee"
 const BOOST_REASON_KEY: String = "ui.battle.reason.no_boost"
+## The Swap row when it keeps the turn (C8.22c).
+const FREE_SWAP_KEY: String = "ui.battle.swap_free"
 
 
 ## The first menu, in authored order: a `BattleCommand` for each command with no category, and
@@ -98,7 +100,11 @@ static func commands(battle: Battle) -> Array[BattleCommand]:
 	if battle.party.has(battle.current()) and not battle.guests.has(battle.current().combatant_id):
 		menu.append(_plain(BattleCommand.Kind.ROW))
 		if not BattleReserve.ready(battle).is_empty():
-			menu.append(_plain(BattleCommand.Kind.SWAP))
+			var swap: BattleCommand = _plain(BattleCommand.Kind.SWAP)
+			# A swap that keeps the turn says so (C8.22c).
+			if battle.scheduler.free_swaps and not battle.free_swap_used:
+				swap.label_key = FREE_SWAP_KEY
+			menu.append(swap)
 	return menu
 
 

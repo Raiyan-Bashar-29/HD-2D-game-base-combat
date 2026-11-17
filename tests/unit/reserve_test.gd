@@ -3,7 +3,8 @@ extends TestCase
 ## turn order; a party member's SWAP aims only at standing reserve members, brings one into its
 ## slot and the turn order, sends itself to the reserve and spends the turn. A fallen member, a
 ## guest and a missing target are refused. The screen offers Swap only while a reserve stands,
-## and the log says who came in. `Party.reserve` reads the saved reserve.
+## and the log says who came in. `Party.reserve` reads the saved reserve. C8.22c: with the turn
+## order's `free_swaps`, Swap says it is free and the one coming in takes the same turn, once a turn.
 ##
 ## OWNS: assertions about `BattleReserve`, `Battle.reserve`, the SWAP command and `Party.reserve`.
 ## MUST NOT: name a game's fighters or encounters, or wait for frames.
@@ -17,7 +18,7 @@ var _swaps: Array = []
 
 
 func run() -> void:
-	plan(7)
+	plan(9)
 	SaveFixture.activate()
 	Flags.clear_all()
 	var holder := Node.new()
@@ -54,9 +55,35 @@ func run() -> void:
 	stack.close_all()
 	BattleSetup.release(battle)
 	equal("release stands the reserve up too", Vitals.of(spare.get_parent()).is_defeated(), false)
+	_free_then_close(stack, holder, roster)
+	Flags.clear_all()
+
+
+# A free swap keeps the turn for the one coming in; a second swap that turn spends it (C8.22c).
+func _free_then_close(stack: UiRoot, holder: Node, roster: Array[CombatantDef]) -> void:
+	var encounter: Encounter = _encounter()
+	encounter.free_swaps = true
+	var battle: Battle = BattleSetup.build(encounter, [roster[0]], holder, RandomNumberGenerator.new(),
+			[], Party.reserve(roster))
+	battle.start()
+	var hero: Combatant = battle.party[0]
+	var bench: Combatant = battle.reserve[0]
+	while battle.next_turn() != hero:
+		battle.act(_command(BattleCommand.Kind.DEFEND), [])
+	var screen := BattleScreen.for_battle(battle)
+	stack.open(screen)
+	var offered: bool = screen.row_texts().has(tr(BattleMenu.FREE_SWAP_KEY))
+	var swap: BattleCommand = _command(BattleCommand.Kind.SWAP)
+	var kept: bool = battle.act(swap, [bench])
+	equal("a free swap says so, and the one coming in takes the same turn",
+		[offered, kept, battle.current(), battle.party, battle.free_swap_used], [true, true, bench, [bench], true])
+	var again: bool = battle.act(swap, [hero])
+	equal("a second swap in the same turn spends it", [again, battle.current(), battle.party], [true, null, [hero]])
+	stack.close_all()
+	BattleSetup.release(battle)
+	Battle.running = null
 	holder.free()
 	stack.free()
-	Flags.clear_all()
 
 
 func _offered(stack: UiRoot, battle: Battle) -> bool:

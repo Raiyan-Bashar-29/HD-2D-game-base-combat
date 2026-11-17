@@ -10,7 +10,10 @@ extends RefCounted
 ## slot at once (`refill`, after every action), so a fight is lost only when nobody is left.
 ## `refill` then lets the encounter's held-back foes arrive (`BattleSetup.reinforce`).
 ##
-## OWNS: who may come in, and the exchange itself.
+## FREE SWAP (C8.22c): with the turn order's `free_swaps`, `Battle` hands the swapping fighter's
+## turn to the one coming in, once a turn. `all_out` says whether a side has anyone left.
+##
+## OWNS: who may come in, the exchange itself, and whether a side has anyone left standing.
 ## MUST NOT: decide whose turn it is, or end the battle. `Battle` does both.
 
 
@@ -66,3 +69,17 @@ static func refill(battle: Battle) -> void:
 		battle.admit(standing[0])
 		Events.party_swapped.emit(fallen.combatant_id, standing[0].combatant_id)
 	BattleSetup.reinforce(battle)
+
+
+## True when everyone on `side` is out of the fight, those named in `skip` aside: fallen,
+## petrified (C8.7a), or obeying the other side (C6.11). `Battle` asks it to decide a winner.
+static func all_out(side: Array[Combatant], skip: Array[StringName] = []) -> bool:
+	for fighter: Combatant in side:
+		if skip.has(fighter.combatant_id):
+			continue
+		var statuses: StatusSet = StatusSet.of(fighter.get_parent())
+		var vitals: Vitals = Vitals.of(fighter.get_parent())
+		if vitals != null and not vitals.is_defeated() and not (statuses != null \
+				and (statuses.fallen() or statuses.obeyed() != &"")):
+			return false
+	return true
