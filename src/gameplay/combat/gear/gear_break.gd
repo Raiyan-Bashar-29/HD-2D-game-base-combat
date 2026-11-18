@@ -34,6 +34,8 @@ static func giver(body: Node, effect: PassiveEffect) -> StringName:
 		if bag != null:
 			bag.remove(item_id)
 		Log.info(CATEGORY, "'%s' broke" % item_id)
+		var wearer: Combatant = Combatant.of(body)
+		Events.gear_broke.emit(wearer.combatant_id if wearer != null else &"", item_id)
 		return item_id
 	return &""
 

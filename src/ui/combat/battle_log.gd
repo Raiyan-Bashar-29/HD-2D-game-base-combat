@@ -22,6 +22,7 @@ extends RefCounted
 const MAX_LINES: int = 4
 const DAMAGE_KEY: String = "ui.battle.log.damage"
 const ATTACKS_KEY: String = "ui.battle.log.attacks"
+const STOLEN_KEY: String = "ui.battle.log.stolen"
 const USES_KEY: String = "ui.battle.log.uses"
 const CRITICAL_KEY: String = "ui.battle.log.critical"
 const HEALED_KEY: String = "ui.battle.log.healed"
@@ -64,6 +65,7 @@ func _init(battle: Battle, namer: Callable) -> void:
 ## Starts listening. The screen calls it when it opens.
 func start() -> void:
 	Events.battle_acted.connect(_on_acted)
+	Events.item_stolen.connect(_on_stolen)
 	Events.combatant_damaged.connect(_on_damaged)
 	Events.attack_missed.connect(_on_missed)
 	Events.attack_blocked.connect(_on_blocked)
@@ -90,7 +92,7 @@ func start() -> void:
 ## Stops listening. The screen calls it when it closes, so a later battle's signals land only
 ## in that battle's own log.
 func stop() -> void:
-	for pair: Array in [[Events.battle_acted, _on_acted], [Events.combatant_damaged, _on_damaged], [Events.attack_missed, _on_missed],
+	for pair: Array in [[Events.battle_acted, _on_acted], [Events.item_stolen, _on_stolen], [Events.combatant_damaged, _on_damaged], [Events.attack_missed, _on_missed],
 			[Events.attack_blocked, _on_blocked],
 			[Events.status_resisted, _on_resisted], [Events.turn_skipped, _on_skipped],
 			[Events.countered, _on_countered], [Events.skill_reflected, _on_reflected],
@@ -193,6 +195,10 @@ func _on_acted(who: StringName, kind: int, used_key: String) -> void:
 		_add(ATTACKS_KEY, {"name": _name(who)})
 	elif used_key != "" and kind in [BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM, BattleCommand.Kind.POWER]:
 		_add(USES_KEY, {"name": _name(who), "what": TranslationServer.translate(used_key)})
+
+
+func _on_stolen(who: StringName, from: StringName, item_id: StringName) -> void:
+	_add(STOLEN_KEY, {"name": _name(who), "from": _name(from), "item": PieceScreen.item_name(item_id)})
 
 
 func _on_swapped(out: StringName, coming: StringName) -> void:

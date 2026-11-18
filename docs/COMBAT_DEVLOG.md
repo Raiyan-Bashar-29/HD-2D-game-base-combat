@@ -5446,3 +5446,13 @@ named (pops made together stack). New `HitFlash` (gameplay) tints the body's `Vi
 probe scene showed "27!" with "Good" above it and the body tinted red.
 **Gaps.** No hit sound (the template ships no audio). A follower's or foe's own timed press is
 not graded.
+
+## 2026-11-18 — C10.13 · The HUD says more
+
+**Did.** `CombatHud._pools` (shared by the player's line and the target's), the doom count in
+`_statuses_text` for a `fatal` status with a duration. Three signals: `item_stolen`,
+`creature_captured` (`Pilfer`) and `gear_broke` (`GearBreak`). New `CombatNotes` (ui, in the game
+root) asks the toast for each; `BattleLog` has a steal line. New `combat_notes_test` (4).
+**Why.** The gaps recorded in C4.6, C8.7a, C8.7b and C9.5b.
+**Verified.** Ladder: 0 warnings; 5327 passed, 0 failed; checkers silent.
+**Gaps.** Poise has no pool of its own to show; the shield is what a break empties.

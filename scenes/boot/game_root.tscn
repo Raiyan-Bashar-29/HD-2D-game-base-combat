@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3]
+[gd_scene load_steps=32 format=3]
 
 [ext_resource type="Script" path="res://src/core/boot/game_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://src/ui/hud/screen_fade.gd" id="2_fade"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://src/ui/combat/combat_hud.gd" id="42_hud"]
 [ext_resource type="Script" path="res://src/ui/combat/defence_cue.gd" id="43_cue"]
 [ext_resource type="Script" path="res://src/ui/combat/hit_numbers.gd" id="43_numbers"]
+[ext_resource type="Script" path="res://src/ui/combat/combat_notes.gd" id="43_notes"]
 [ext_resource type="Script" path="res://src/ui/combat/command_host.gd" id="43_command"]
 [ext_resource type="Script" path="res://src/ui/combat/loadout_host.gd" id="44_loadout"]
 [ext_resource type="Script" path="res://src/ui/combat/craft_host.gd" id="45_craft"]
@@ -58,6 +59,9 @@ script = ExtResource("43_cue")
 
 [node name="HitNumbers" type="Node" parent="UILayer"]
 script = ExtResource("43_numbers")
+
+[node name="CombatNotes" type="Node" parent="UILayer"]
+script = ExtResource("43_notes")
 
 [node name="UiRoot" type="Control" parent="UILayer"]
 anchors_preset = 15

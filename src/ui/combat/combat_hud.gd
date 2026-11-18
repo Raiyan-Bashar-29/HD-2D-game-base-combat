@@ -15,7 +15,8 @@ extends Label
 ## quick slot's key, its power's name, and its cost, or why it cannot be used now (the same words
 ## the command menu uses, from `PowerMenu`). The battlefield line (C6.9g) only while one stands in
 ## the player's fight: each one's name, and the place it gives in brackets. The last line only
-## while something is locked on.
+## while something is locked on, with its other pools (its shield). A deadly status shows its
+## count (C10.13).
 ## It redraws whenever a pool moves, a status starts or ends, the lock changes, or a cooldown's
 ## whole seconds tick down (`Events.power_cooldown_changed`), or a battlefield rises or comes down,
 ## and never polls.
@@ -31,6 +32,8 @@ const COST_KEY: String = "ui.battle.cost"
 const UNAVAILABLE_KEY: String = "ui.battle.unavailable"
 const POOL_KEY: String = "ui.battle.pool"
 const STATUSES_KEY: String = "ui.battle.statuses"
+## A deadly status with its count: "Doom 3" (C10.13).
+const DOOM_KEY: String = "ui.combat_hud.doom"
 const FIELD_KEY: String = "ui.combat_hud.field"
 const FIELD_PLACE_KEY: String = "ui.combat_hud.field_place"
 const VARIATION: StringName = &"HudText"
@@ -85,6 +88,9 @@ func refresh() -> void:
 		var vitals: Vitals = Vitals.of(target.get_parent())
 		var line: String = tr(TARGET_KEY).format({"name": name_of(target),
 			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})
+		# Its other pools too, its shield above all, so a break can be seen coming (C10.13).
+		for pool: String in _pools(target):
+			line += "   " + pool
 		# The target's statuses too, so a pressured or staggered foe shows it (C4.6).
 		var held: String = _statuses_text(target)
 		lines.append(line if held == "" else line + "   " + held)
@@ -94,11 +100,7 @@ func refresh() -> void:
 func _fighter_line(fighter: Combatant) -> String:
 	var vitals: Vitals = Vitals.of(fighter.get_parent())
 	var parts: Array[String] = [tr(HP_KEY).format({"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})]
-	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
-		var pool := StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
-		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
-			parts.append(tr(POOL_KEY).format({"pool": CombatNames.pool(pool),
-				"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	parts.append_array(_pools(fighter))
 	var meter: AtbMeter = AtbMeter.of(fighter.get_parent())
 	if meter != null:
 		parts.append(atb_text(meter.gauge))
@@ -150,11 +152,27 @@ func field_text(fighter: Combatant) -> String:
 
 
 ## The statuses `fighter` holds, as one translated line, or "" when it holds none.
+# Every pool but the damage pool that has a size: "MP 8 / 10".
+func _pools(fighter: Combatant) -> Array[String]:
+	var vitals: Vitals = Vitals.of(fighter.get_parent())
+	var parts: Array[String] = []
+	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
+		var pool := StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
+		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
+			parts.append(tr(POOL_KEY).format({"pool": CombatNames.pool(pool),
+				"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	return parts
+
+
 func _statuses_text(fighter: Combatant) -> String:
 	var names: Array[String] = []
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
 	for effect: StatusEffect in statuses.held() if statuses != null else []:
-		names.append(tr(effect.name_key) if effect.name_key != "" else _tail(effect.id))
+		var shown: String = tr(effect.name_key) if effect.name_key != "" else _tail(effect.id)
+		# A deadly status counts down where it can be seen (C10.13).
+		if effect.fatal and effect.duration > 0.0:
+			shown = tr(DOOM_KEY).format({"name": shown, "left": ceili(statuses.remaining(effect.id))})
+		names.append(shown)
 	return "" if names.is_empty() else tr(STATUSES_KEY).format({"list": ", ".join(names)})
 
 

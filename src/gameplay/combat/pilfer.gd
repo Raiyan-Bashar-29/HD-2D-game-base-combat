@@ -28,6 +28,7 @@ static func steal(user: Combatant, target: Combatant, chance: float, rng: Random
 	target.set_meta(ROBBED_META, true)
 	for item_id: StringName in LootRoll.roll(target.steal_table, rng):
 		_give(user, item_id)
+		Events.item_stolen.emit(user.combatant_id, target.combatant_id, item_id)
 	return true
 
 
@@ -40,6 +41,7 @@ static func capture(user: Combatant, target: Combatant, chance: float, rng: Rand
 	if rng.randf() >= chance * lost:
 		return false
 	_give(user, target.capture_item)
+	Events.creature_captured.emit(user.combatant_id, target.combatant_id, target.capture_item)
 	Flags.advance(captured_flag(target))
 	vitals.set_to(vitals.defeat_pool, 0)
 	return true
