@@ -5543,3 +5543,15 @@ when a strike fells the foe before any battle. New `symbol_openings_test` (4).
 **Why.** The gaps recorded in C5.1.
 **Verified.** Ladder: 0 warnings; 5369 passed, 0 failed; checkers silent.
 **Gaps.** The one-blow reward is not checked end to end by a test (it needs a fitted player).
+
+## 2026-11-18 — C10.22 · Powers in field brains
+
+**Did.** `ActionBrainEntry.power` (a move may then be empty); `ActionDecider.pick` plays the power's
+move and sets `chosen_power`. New `FieldPowerPress.use(body, power, rng)` (gameplay/powers): the
+refusal, the field aim and `PowerUse.use`. `ActionEnemy` and `PartyFollower` use it before the
+move. `PartyFollower._report_move` tells its `PowerSet` of each new swing but the dodge. New
+`power_entry_test` (3).
+**Why.** The gaps recorded in C6.2b, C6.5b, C6.5c and C9.9b.
+**Verified.** Ladder: 0 warnings; 5373 passed, 0 failed; checkers silent.
+**Gaps.** The follower's report and power use have no test of their own; the decider may keep
+picking a refused power until another entry wins the roll.

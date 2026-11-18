@@ -37,6 +37,8 @@ extends CharacterBody3D
 
 const GROUP: StringName = &"party_follower"
 
+# The swing last reported to the kit (C10.22).
+var _reported: int = -1
 ## Who this member is and what they can do, handed back to the player's body on a switch.
 var loadout: ActionLoadout
 ## The body it follows: the player's.
@@ -191,8 +193,19 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 			# IDLE, WANDER and RETURN: no fight here, so back to its place in the line.
 			timeline.cancel()
 	timeline.step(dt)
+	_report_move()
 	_aim_hitbox()
 	return wish
+
+
+# Tells the kit about each move started since last frame, so a form drains per action (C10.22).
+func _report_move() -> void:
+	if timeline.swing == _reported or timeline.move == null:
+		return
+	_reported = timeline.swing
+	var powers: PowerSet = PowerSet.of(self)
+	if powers != null and (loadout == null or loadout.moves == null or timeline.move != loadout.moves.dodge):
+		powers.moved(timeline.move)
 
 
 ## Strikes as whoever is here now, fits the box to each new swing, turns it to face, and sweeps
@@ -217,6 +230,9 @@ func _swing() -> void:
 	var own: Array[ActionMove] = loadout.moves.attack_chain if loadout.moves != null else []
 	if decider.chosen != null:
 		_chaining = not own.is_empty() and own[0] == decider.chosen
+		# A power named by the brain is used first; refused, nothing is swung (C10.22).
+		if decider.chosen_power != null and not FieldPowerPress.use(self, decider.chosen_power, rng):
+			return
 		if not _chaining:
 			timeline.start(decider.chosen)
 	if _chaining:

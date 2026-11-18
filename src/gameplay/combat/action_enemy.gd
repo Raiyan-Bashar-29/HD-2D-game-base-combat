@@ -154,7 +154,8 @@ func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
 	var wish: Vector3 = Vector3.ZERO
 	match state:
 		ActionDecider.State.ATTACK:
-			if decider.chosen != null:
+			# A power named by the brain is used first, and its move plays only if it was (C10.22).
+			if decider.chosen != null and (decider.chosen_power == null or FieldPowerPress.use(self, decider.chosen_power, rng)):
 				_face(to_target)
 				timeline.start(decider.chosen)
 				if _hitbox != null:
