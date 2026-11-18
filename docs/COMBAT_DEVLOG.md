@@ -5565,3 +5565,15 @@ each fighter's note by `BattleScreen._fill`. New `BattlePopups` (ui), a child of
 **Verified.** Ladder: 0 warnings; 5377 passed, 0 failed; checkers silent. A windowed capture of
 the demo's wisp battle showed a green bar under each of the four lines.
 **Gaps.** Only the damage pool has a bar; the other pools stay text. No hit animation.
+
+## 2026-11-18 — C10.25 · A power's move in a battle
+
+**Did.** New `MoveInBattle` (gameplay/powers): `needed(power)` (a striking move, no damaging skill)
+and `land(user, power, aimed, rng)`, `hits` times `Combatant.hit` per foe plus `Weakness.strike`.
+`PowerUse.use` calls it after the mechanism when not real-time. `Power.problems` counts a move as
+doing something. New `move_in_battle_test` (3). Taken before C10.24, as it serves the converted
+characters.
+**Why.** The gaps recorded in C9.11 and C9.9b.
+**Verified.** Ladder: 0 warnings; 5381 passed, 0 failed; checkers silent.
+**Gaps.** The move's shots and effects (its events) are not played in a battle; only its own
+hits land.

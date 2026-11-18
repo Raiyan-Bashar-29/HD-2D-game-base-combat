@@ -131,6 +131,9 @@ static func use(user: Combatant, power: Power, aimed: Array[Combatant],
 		PassiveMoments.skill(user, [])
 	if running != null:
 		running.use(user, aimed, rng)
+	# In a battle, a power whose damage lives in its move lands that move's hits (C10.25).
+	if not user.real_time and MoveInBattle.needed(power):
+		MoveInBattle.land(user, power, aimed, rng)
 	# A power with no skill is done once its mechanism ran (C10.7).
 	if skill == null:
 		PassiveMoments.skill(user, [], true)

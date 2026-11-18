@@ -103,6 +103,8 @@ Say Eto is in her kagune stance and the player presses **2** (Air Strike).
    4. The cooldown starts (`PowerSet.start_cooldown`), a once-per-battle power is marked
       spent, every running mechanism hears `power_used`, and `consumes_statuses` are cured.
 8. **The move.** Back in `press_slot`: if the power has a `move`, `timeline.start(move)` plays it
+In a turn-based battle a power whose damage lives in its `move` lands the move's hits instead
+(`MoveInBattle`, C10.25); one whose skill deals damage keeps to the skill.
    on the fighter's own clock, **replacing whatever swing was running.**
 9. **Every frame after** (`ActionFighter.drive`): statuses tick in seconds, the timeline steps
    through STARTUP → ACTIVE → RECOVERY, the hitbox is fitted to the move and turned to face,

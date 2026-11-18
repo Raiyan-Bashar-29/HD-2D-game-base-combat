@@ -78,8 +78,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has no power_id" % where)
 	if name_key == "":
 		found.append("%s has no name_key" % where)
-	if skill == null and mechanism == null and not passive:
-		found.append("%s does nothing: no skill and no mechanism" % where)
+	if skill == null and mechanism == null and move == null and not passive:
+		found.append("%s does nothing: no skill, no mechanism and no move" % where)
 	if passive and once_per_battle:
 		found.append("%s is passive, so once per battle means nothing" % where)
 	if requires_upgrade < 0:
