@@ -5501,3 +5501,13 @@ numbers) runs `SkillUse._uncurse`. New `gear_upkeep_test` (3).
 **Verified.** Ladder: 0 warnings; 5348 passed, 0 failed; checkers silent.
 **Gaps.** A picked-up piece (not given by a reward or made) still rolls no affixes. A gem the bag
 cannot take back is lost.
+
+## 2026-11-18 — C10.18 · The gear screens say more
+
+**Did.** `PieceScreen.summary(item)` appended to a worn slot's row. `GearScreen.sets_text(gear)`
+as notes under the slots (a set's name from `combat.gear_set.<id>`, else its id). `compare` keeps a
+product of multipliers beside the sums and shows each as a share. `BattleReadout.raised(rewards)`
+under the results. New `gear_readout_test` (4).
+**Why.** The gaps recorded in C7.7a, C7.4b and C9.5d.
+**Verified.** Ladder: 0 warnings; 5353 passed, 0 failed; checkers silent.
+**Gaps.** A set's tiers show their piece counts, not what each gives.

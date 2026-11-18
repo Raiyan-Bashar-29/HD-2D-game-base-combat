@@ -31,6 +31,9 @@ const COST_KEY: String = "combat.piece.cost"
 const FREE_KEY: String = "combat.piece.free"
 const AFFIX_KEY: String = "combat.gear.affix"
 const REFUSED_KEY: String = "combat.loadout.row_refused"
+const SUMMARY_LEVEL_KEY: String = "combat.piece.summary_level"
+const SUMMARY_GEMS_KEY: String = "combat.piece.summary_gems"
+const SUMMARY_FIGHTS_KEY: String = "combat.piece.summary_fights"
 const SOCKET_REFUSAL_PREFIX: String = "combat.piece.socket_refusal."
 const UPGRADE_REFUSAL_PREFIX: String = "combat.piece.upgrade_refusal."
 
@@ -73,6 +76,26 @@ static func item_name(item_id: StringName) -> String:
 		shown = TranslationServer.translate(AFFIX_KEY).format({"item": shown,
 			"affix": TranslationServer.translate(key)})
 	return shown
+
+
+## A piece in short, for a gear row (C10.18): "Lv 2/3  Gems 1/2  Fights 3/5", each part only when
+## the piece has it. Empty for a piece with none.
+static func summary(item_id: StringName) -> String:
+	var piece: GearDefinition = GearDb.for_item(item_id)
+	var parts: PackedStringArray = PackedStringArray()
+	if piece == null:
+		return ""
+	var reached: int = GearUpgrades.level(item_id)
+	if piece.upgrade != null:
+		parts.append(TranslationServer.translate(SUMMARY_LEVEL_KEY).format({"level": reached, "cap": piece.upgrade_cap()}))
+	var held: Array[StringName] = GearSockets.gems(item_id)
+	if not held.is_empty():
+		parts.append(TranslationServer.translate(SUMMARY_GEMS_KEY).format(
+			{"filled": held.size() - held.count(&""), "total": held.size()}))
+	if piece.upgrade != null and reached < piece.upgrade_cap() and piece.upgrade.levels[reached].fights > 0:
+		parts.append(TranslationServer.translate(SUMMARY_FIGHTS_KEY).format(
+			{"won": GearUpgrades.fights_won(item_id), "need": piece.upgrade.levels[reached].fights}))
+	return "  ".join(parts)
 
 
 ## What a cost reads as: "Ore x2, Coin x5", or "free".

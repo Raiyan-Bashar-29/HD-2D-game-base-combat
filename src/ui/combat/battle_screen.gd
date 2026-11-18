@@ -360,6 +360,8 @@ func _reward_notes() -> void:
 		add_note(tr(FOUND_KEY).format({"item": _item_name(item_id)}))
 	for item_id: StringName in rewards.left_behind:
 		add_note(tr(LEFT_KEY).format({"item": _item_name(item_id)}))
+	for line: String in BattleReadout.raised(rewards):
+		add_note(line)
 
 
 func _item_name(item_id: StringName) -> String:

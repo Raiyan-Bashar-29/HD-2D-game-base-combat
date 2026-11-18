@@ -11,6 +11,8 @@ extends RefCounted
 ## OWNS: the line's parts and their order, and which outcome line is shown.
 ## MUST NOT: change the fight, or hold state.
 
+const RAISED_KEY: String = "ui.battle.raised"
+
 
 ## The line for `fighter`, whose name the screen shows as `shown`; `log` names its statuses.
 static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
@@ -38,6 +40,16 @@ static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
 	if not found.is_empty():
 		parts.append(_tr(BattleScreen.WEAK_KEY).format({"list": ", ".join(found)}))
 	return "   ".join(parts)
+
+
+## A line for each piece a won fight raised a level (C9.5d, C10.18): "Coat rose to level 2".
+static func raised(rewards: Rewards) -> Array[String]:
+	var out: Array[String] = []
+	for who: StringName in rewards.upgraded:
+		for piece_id: Variant in rewards.upgraded[who]:
+			out.append(_tr(RAISED_KEY).format({"item": PieceScreen.item_name(StringName(str(piece_id))),
+				"level": GearUpgrades.level(StringName(str(piece_id)))}))
+	return out
 
 
 ## The key of the line that says how `battle` ended (moved from `BattleScreen`, C8.26).

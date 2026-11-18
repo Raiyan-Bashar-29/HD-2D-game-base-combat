@@ -30,6 +30,11 @@ const REFUSED_KEY: String = "combat.loadout.row_refused"
 const SAME_KEY: String = "combat.gear.same"
 const GAIN_KEY: String = "combat.gear.gain"
 const LOSS_KEY: String = "combat.gear.loss"
+const GAIN_PCT_KEY: String = "combat.gear.gain_pct"
+const LOSS_PCT_KEY: String = "combat.gear.loss_pct"
+const SET_KEY: String = "combat.gear.set_line"
+const TIER_ON_KEY: String = "combat.gear.tier_on"
+const SET_PREFIX: String = "combat.gear_set."
 const SLOT_PREFIX: String = "combat.gear.slot."
 const STAT_PREFIX: String = "combat.stat."
 const REFUSAL_PREFIX: String = "combat.gear.refusal."
@@ -73,11 +78,12 @@ static func candidates(body: Node, into: StringName) -> Array[StringName]:
 
 
 ## What swapping `from` (empty for nothing) for `to` changes, stat by stat: "attack +3, speed
-## -1". Added amounts only; a multiplier is not compared.
+## -1", and a multiplier as a share: "attack +20%" (C10.18).
 static func compare(from: StringName, to: StringName) -> String:
 	var diff: Dictionary[StringName, float] = {}
-	_sum(diff, to, 1.0)
-	_sum(diff, from, -1.0)
+	var scale: Dictionary[StringName, float] = {}
+	_sum(diff, to, 1.0, scale)
+	_sum(diff, from, -1.0, scale)
 	var stats: Array[StringName] = diff.keys()
 	stats.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
 	var parts: PackedStringArray = PackedStringArray()
@@ -87,7 +93,34 @@ static func compare(from: StringName, to: StringName) -> String:
 			continue
 		parts.append(TranslationServer.translate(GAIN_KEY if amount > 0.0 else LOSS_KEY).format(
 			{"stat": _named(STAT_PREFIX, stat), "amount": absf(amount)}))
+	for stat: StringName in scale:
+		var share: int = roundi((scale[stat] - 1.0) * 100.0)
+		if share != 0:
+			parts.append(TranslationServer.translate(GAIN_PCT_KEY if share > 0 else LOSS_PCT_KEY).format(
+				{"stat": _named(STAT_PREFIX, stat), "amount": absi(share)}))
 	return ", ".join(parts) if not parts.is_empty() else TranslationServer.translate(SAME_KEY)
+
+
+## One line for each set `gear` wears a piece of (C10.18): its name, how many are worn, and its
+## tiers by their piece counts, the reached ones marked.
+static func sets_text(gear: GearSet) -> Array[String]:
+	var counts: Dictionary[StringName, int] = {}
+	var bonuses: Dictionary[StringName, GearSetBonus] = {}
+	for item_id: StringName in gear.worn_ids():
+		var piece: GearDefinition = GearDb.for_item(item_id)
+		if piece != null and piece.set_bonus != null:
+			bonuses[piece.set_bonus.set_id] = piece.set_bonus
+			counts[piece.set_bonus.set_id] = counts.get(piece.set_bonus.set_id, 0) + 1
+	var out: Array[String] = []
+	for set_id: StringName in bonuses:
+		var tiers: PackedStringArray = PackedStringArray()
+		for tier: GearSetTier in bonuses[set_id].tiers:
+			if tier != null:
+				tiers.append(TranslationServer.translate(TIER_ON_KEY).format({"pieces": tier.pieces})
+					if tier.pieces <= counts[set_id] else str(tier.pieces))
+		out.append(TranslationServer.translate(SET_KEY).format({"set": _named(SET_PREFIX, set_id),
+			"worn": counts[set_id], "tiers": " ".join(tiers)}))
+	return out
 
 
 ## The key that says why a piece cannot be worn.
@@ -106,7 +139,12 @@ func _fill() -> void:
 		var worn: StringName = gear.worn(each) if gear != null else &""
 		var row: Button = add_row(tr(SLOT_ROW_KEY).format({"slot": _named(SLOT_PREFIX, each),
 			"item": _item_name(worn) if worn != &"" else tr(EMPTY_KEY)}), _on_slot.bind(each))
+		# Its level, gems and fights to the next level, in short (C10.18).
+		if worn != &"" and PieceScreen.summary(worn) != "":
+			row.text += "   " + PieceScreen.summary(worn)
 		_tint(row, worn)
+	for line: String in (sets_text(gear) if gear != null else []):
+		add_note(line)
 	if slot != &"" and gear != null:
 		_fill_choices(gear)
 
@@ -136,7 +174,8 @@ func _fill_choices(gear: GearSet) -> void:
 		add_note(tr(NONE_FITS_KEY))
 
 
-static func _sum(diff: Dictionary[StringName, float], item_id: StringName, sign_of: float) -> void:
+static func _sum(diff: Dictionary[StringName, float], item_id: StringName, sign_of: float,
+		scale: Dictionary[StringName, float]) -> void:
 	var piece: GearDefinition = GearDb.for_item(item_id) if item_id != &"" else null
 	var all: Array[StatModifier] = []
 	if piece != null:
@@ -146,6 +185,8 @@ static func _sum(diff: Dictionary[StringName, float], item_id: StringName, sign_
 	for modifier: StatModifier in all:
 		if modifier.op == StatModifier.Op.ADD:
 			diff[modifier.stat] = diff.get(modifier.stat, 0.0) + modifier.value * sign_of
+		elif modifier.op == StatModifier.Op.MULTIPLY and modifier.value > 0.0:
+			scale[modifier.stat] = scale.get(modifier.stat, 1.0) * pow(modifier.value, sign_of)
 
 
 # A slot or stat by its CSV row, else its id.
