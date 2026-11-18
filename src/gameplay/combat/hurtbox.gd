@@ -58,6 +58,8 @@ const GROUP: StringName = &"combat_hurtboxes"
 const PERFECT_WINDOW: StringName = &"perfect_window"
 
 ## What became of a hit: every hit missed, at least one was blocked and none landed, or one landed.
+## The stat that grows a hit on a juggled foe: 0.2 is +20% (C10.24).
+const JUGGLE_BONUS: StringName = &"juggle_bonus"
 enum Outcome { MISSED, BLOCKED, LANDED }
 
 ## The clock of this fighter's own moves; null means it never has i-frames.
@@ -224,7 +226,9 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 	for i: int in (1 if move.hit_gap > 0.0 else maxi(1, move.hits)):
 		# Foresight's observe knows a move by its key (C6.10).
 		Foresight.striking = StringName("move_%d" % move.get_instance_id())
-		var result: DamageResult = attacker.hit(target, move.power * boost, element, rng)
+		# A foe kept in the air takes more from an attacker with `juggle_bonus` (C10.24).
+		var lifted: float = 1.0 + (attacker.sheet.value(JUGGLE_BONUS) if Juggle.airborne(get_parent()) else 0.0)
+		var result: DamageResult = attacker.hit(target, move.power * boost * lifted, element, rng)
 		Foresight.striking = &""
 		if result == null or result.missed:
 			continue

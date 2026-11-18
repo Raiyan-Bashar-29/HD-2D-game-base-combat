@@ -93,7 +93,7 @@ func strike(hurtbox: Hurtbox) -> bool:
 		_clock = timeline
 		forget()
 	var key: int = hurtbox.get_instance_id()
-	if _walled(hurtbox) or not _may_strike(key, timeline):
+	if _walled(hurtbox) or Grab.shielded(hurtbox.get_parent(), self) or not _may_strike(key, timeline):
 		return false
 	var clock: MoveTimeline = timeline
 	var move: ActionMove = timeline.move
@@ -103,7 +103,7 @@ func strike(hurtbox: Hurtbox) -> bool:
 		clock.connected()
 	# A grab (C8.8b): the victim is held and this fighter goes straight into the throw.
 	var victim: Node3D = hurtbox.get_parent() as Node3D
-	if hurtbox.flinched and move.throw_move != null and victim != null and not Grab.held(victim):
+	if hurtbox.flinched and move.throw_move != null and victim != null and not Grab.held(victim) and not Grab.immune(victim):
 		clock.start(move.throw_move)
 		Grab.hold(victim, self, move.throw_move)
 	return counted

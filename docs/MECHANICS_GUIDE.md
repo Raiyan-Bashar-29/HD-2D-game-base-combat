@@ -392,7 +392,8 @@ What each piece teaches, so you can reuse it:
    rule 4 in `POWERS.md` ("every power works in all three formulas"). Don't fix it by giving
    the skill ENEMY power: in the field the skill lands at once AND the move's hitbox hits
    again, so the special would hit twice. The fix needs a rule ("in a battle, a power whose
-   skill has no power strikes with its move's numbers"), and it is on the follow-up list.
+   skill has no power strikes with its move's numbers"). **Fixed in C10.25**: that rule is
+   `MoveInBattle`.
 2. **A kit's `passive_skills` are held in every stance.** Eto's `kakuja_regen` heals her in her
    human stance too. A passive meant for one form belongs on that form's `passive_skills`.
 3. **A skill must do something** (`Skill.problems`): a cost-only skill needs at least a status.

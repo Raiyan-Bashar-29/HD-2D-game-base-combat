@@ -5577,3 +5577,16 @@ characters.
 **Verified.** Ladder: 0 warnings; 5381 passed, 0 failed; checkers silent.
 **Gaps.** The move's shots and effects (its events) are not played in a battle; only its own
 hits land.
+
+## 2026-11-18 — C10.24 · Combos, juggles and grabs
+
+**Did.** New `ComboCounter` (gameplay), added by `ActionHost.equip`; `combo_changed` on the bus; the
+HUD line shows the combo from two hits. `Hurtbox` multiplies a juggled foe's hit by 1 +
+`juggle_bonus`. `Grab.struggle` (called from `ActionFighter.drive` on any press), `immune` (the
+`Hitbox` checks it before holding) and `shielded` (the `Hitbox` checks it before striking).
+`ActionFighter._time_press` took the grading out of `drive` for its budget. New
+`combo_grab_test` (5). Done after C10.25.
+**Why.** The gaps recorded in C8.8a and C8.8b.
+**Verified.** Ladder: 0 warnings; 5387 passed, 0 failed; checkers silent.
+**Gaps.** A combo gives nothing by itself; a game reads `count`. A foe held by the player
+cannot struggle.

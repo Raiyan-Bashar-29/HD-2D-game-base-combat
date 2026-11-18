@@ -343,6 +343,8 @@ signal item_stolen(who: StringName, from: StringName, item_id: StringName)
 signal creature_captured(who: StringName, target: StringName, item_id: StringName)
 ## The piece `item_id` that `who` wore broke and is gone (C10.13). Emitted by `GearBreak`.
 signal gear_broke(who: StringName, item_id: StringName)
+## `who`'s combo is now `count` landed hits; 0 when it ran out (C10.24). Emitted by `ComboCounter`.
+signal combo_changed(who: StringName, count: int)
 ## A real-time hit asks for `who` to be pushed by `push`: the direction times the distance in
 ## metres, flat on the ground. Emitted by `Hurtbox.take` (C3.3); the fighter's body moves (C3.4).
 signal knockback_requested(who: StringName, push: Vector3)

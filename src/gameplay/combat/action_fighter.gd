@@ -115,6 +115,8 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 		statuses.tick_seconds(dt)
 	# Its own time speed (C8.11a): statuses count on the fight's clock, the rest on its own.
 	dt *= FighterTime.rate(get_parent())
+	# Held by a grab, each press is a struggle to break free (C10.24).
+	Grab.struggle(get_parent(), attack or dodge)
 	# A stagger that has just worn off refills the shield (C4.6).
 	var me: Combatant = Combatant.of(get_parent())
 	if me != null:
@@ -138,10 +140,7 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 	elif not stunned() and not _held_by_others() and moves != null:
 		# A press while a move plays is first its timed press, if it has a prompt (C8.8c).
 		if attack and timeline.busy():
-			var graded: bool = timeline.move != null and timeline.move.prompt != null and not timeline.pressed()
-			timeline.time_press()
-			if graded and Combatant.of(get_parent()) != null:
-				Events.prompt_graded.emit(Combatant.of(get_parent()).combatant_id, timeline.move.prompt.grade(timeline.elapsed))
+			_time_press()
 		# Carrying a thing (C8.18b), the attack button throws it instead of swinging.
 		# The press that throws never swings too, nor does the hold that follows it (C8.27a).
 		if attack and not timeline.busy() and Carried.throw(_body, facing):
@@ -236,6 +235,14 @@ func _cue_prompt() -> void:
 	if open != _prompting:
 		_prompting = open
 		Events.defence_prompt.emit(PRESS if open else &"", window.closes - timeline.elapsed if open else 0.0)
+
+
+# The press is timed against the move's prompt, and its grade announced once (C10.12).
+func _time_press() -> void:
+	var graded: bool = timeline.move != null and timeline.move.prompt != null and not timeline.pressed()
+	timeline.time_press()
+	if graded and Combatant.of(get_parent()) != null:
+		Events.prompt_graded.emit(Combatant.of(get_parent()).combatant_id, timeline.move.prompt.grade(timeline.elapsed))
 
 
 # Tells the kit about each move started since last frame, except a dodge (C6.4b).

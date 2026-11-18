@@ -14,16 +14,26 @@ extends Node
 ## - It is let go with no throw when the holder's clock leaves that swing first (the holder
 ##   was hit, staggered or fell), or when the victim is down.
 ##
+## ESCAPING (C10.24): each attack or dodge the held player presses is a `struggle`; `ESCAPE`
+## of them (the project setting `combat/grab/escape_presses`) break free with no throw. A fighter
+## with the stat `grab_immune` above 0 is struck but never held (`immune`). With the setting
+## `combat/grab/shield_held` on, nobody but the holder can hit a held victim (`shielded`).
+##
 ## The `Hitbox` makes this node under the victim's body the first time it is grabbed.
 ##
 ## OWNS: who holds one fighter, and letting go.
 ## MUST NOT: resolve the throw's hit (the `Hurtbox` does) or decide whether a hit grabs (the
 ## `Hitbox` does).
 
+const ESCAPE_SETTING: String = "combat/grab/escape_presses"
+const SHIELD_SETTING: String = "combat/grab/shield_held"
+const IMMUNE: StringName = &"grab_immune"
+
 var _holder: Hitbox
 var _throw: ActionMove
 var _swing: int = -1
 var _offset: Vector3 = Vector3.ZERO
+var _struggles: int = 0
 
 
 func _physics_process(_delta: float) -> void:
@@ -46,6 +56,33 @@ static func held(body: Node) -> bool:
 	return grab != null and grab._holder != null
 
 
+## The held `body` struggles once when `pressed` (an attack or dodge press). True when that broke
+## it free.
+static func struggle(body: Node, pressed: bool = true) -> bool:
+	var grab: Grab = Grab.of(body)
+	if not pressed or grab == null or grab._holder == null:
+		return false
+	grab._struggles += 1
+	var needed: int = ProjectSettings.get_setting(ESCAPE_SETTING, 6)
+	if grab._struggles < needed:
+		return false
+	grab._holder = null
+	return true
+
+
+## True when `body`'s fighter can never be held: its `grab_immune` stat is above 0.
+static func immune(body: Node) -> bool:
+	var fighter: Combatant = Combatant.of(body)
+	return fighter != null and fighter.sheet.value(IMMUNE) > 0.0
+
+
+## True when `body` is held and `by` is not its holder, with `shield_held` on: the hit is ignored.
+static func shielded(body: Node, by: Hitbox) -> bool:
+	var grab: Grab = Grab.of(body)
+	var on: bool = ProjectSettings.get_setting(SHIELD_SETTING, false)
+	return on and grab != null and grab._holder != null and grab._holder != by
+
+
 ## `holder`'s fighter now holds `victim` and is playing `throw` on its clock. The victim drops
 ## its own swing.
 static func hold(victim: Node3D, holder: Hitbox, throw: ActionMove) -> void:
@@ -54,6 +91,7 @@ static func hold(victim: Node3D, holder: Hitbox, throw: ActionMove) -> void:
 		grab = Grab.new()
 		victim.add_child(grab)
 	grab._holder = holder
+	grab._struggles = 0
 	grab._throw = throw
 	grab._swing = holder.timeline.swing
 	grab._offset = victim.global_position - holder.global_position

@@ -34,6 +34,8 @@ const POOL_KEY: String = "ui.battle.pool"
 const STATUSES_KEY: String = "ui.battle.statuses"
 ## A deadly status with its count: "Doom 3" (C10.13).
 const DOOM_KEY: String = "ui.combat_hud.doom"
+## The player's combo, shown from two hits (C10.24).
+const COMBO_KEY: String = "ui.combat_hud.combo"
 const FIELD_KEY: String = "ui.combat_hud.field"
 const FIELD_PLACE_KEY: String = "ui.combat_hud.field_place"
 const VARIATION: StringName = &"HudText"
@@ -57,6 +59,7 @@ func _ready() -> void:
 	Events.status_applied.connect(func(_w: StringName, _s: StringName, _n: int) -> void: refresh())
 	Events.status_expired.connect(func(_w: StringName, _s: StringName) -> void: refresh())
 	Events.lock_on_changed.connect(_on_lock_on_changed)
+	Events.combo_changed.connect(func(_w: StringName, _c: int) -> void: refresh())
 	Events.atb_changed.connect(func(_w: StringName, _v: float, _s: int) -> void: refresh())
 	Events.power_cooldown_changed.connect(func(_w: StringName, _p: StringName, _l: int) -> void: refresh())
 	Events.battlefield_raised.connect(func(_w: StringName, _p: StringName) -> void: refresh())
@@ -107,6 +110,9 @@ func _fighter_line(fighter: Combatant) -> String:
 	var held: String = _statuses_text(fighter)
 	if held != "":
 		parts.append(held)
+	var combo: ComboCounter = ComboCounter.of(fighter.get_parent())
+	if combo != null and combo.count >= 2:
+		parts.append(tr(COMBO_KEY).format({"count": combo.count}))
 	# The worn weapon and its mode (C7.7b).
 	var weapon: String = WeaponLine.text(fighter.get_parent())
 	if weapon != "":
