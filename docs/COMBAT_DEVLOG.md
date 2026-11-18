@@ -5333,7 +5333,7 @@ until the rule or a revive.
 **Did.** New `PieceScreen` (ui): a note with the piece's level, a row per socket (a filled one takes
 the gem out), a row per gem in the bag to put it in, "Upgrade (cost)" and "Awaken into X
 (cost)". Refusals from `GearSockets` and `GearUpgrades` grey a row with the reason, by
-`combat.piece.*_refusal.<name>` keys. The gear screen's choices gain "Work on <piece>" for the
+`ui.piece.*_refusal.<name>` keys. The gear screen's choices gain "Work on <piece>" for the
 worn piece, and borrow `bag_of` and `item_name`. New `piece_screen_test` (8).
 **Why.** The gaps recorded in C7.4c and C7.5: nothing a player could press socketed a gem or
 awakened a piece.

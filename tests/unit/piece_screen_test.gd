@@ -69,12 +69,12 @@ func _sockets(screen: PieceScreen) -> void:
 	_row(screen, _put()).pressed.emit()
 	var put: Button = _row(screen, _put())
 	equal("with both sockets full the put row is greyed with why",
-		[put.disabled, put.text.contains(tr("combat.piece.socket_refusal.no_free_socket"))], [true, true])
+		[put.disabled, put.text.contains(tr("ui.piece.socket_refusal.no_free_socket"))], [true, true])
 	ProjectSettings.set_setting(GearSockets.REMOVER_SETTING, String(REMOVER))
 	screen.refresh()
 	var first: Button = _row(screen, _socket(1, _name(GEM)))
 	equal("taking a gem out needs a remover once one is named",
-		[first.disabled, first.text.contains(tr("combat.piece.socket_refusal.no_remover"))], [true, true])
+		[first.disabled, first.text.contains(tr("ui.piece.socket_refusal.no_remover"))], [true, true])
 	bag.add(REMOVER)
 	screen.refresh()
 	_row(screen, _socket(1, _name(GEM))).pressed.emit()
@@ -89,7 +89,7 @@ func _upgrades(screen: PieceScreen) -> void:
 	var up: Button = _row(screen, tr(PieceScreen.UPGRADE_KEY).format({"cost": cost}))
 	equal("the upgrade row shows the cost and is greyed while the bag cannot pay",
 		[up != null, up.disabled if up != null else false,
-			up.text.contains(tr("combat.piece.upgrade_refusal.cost")) if up != null else false], [true, true, true])
+			up.text.contains(tr("ui.piece.upgrade_refusal.cost")) if up != null else false], [true, true, true])
 	bag.add(ORE, 4)
 	screen.refresh()
 	for i: int in 3:

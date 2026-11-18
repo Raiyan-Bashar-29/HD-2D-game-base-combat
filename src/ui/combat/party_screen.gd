@@ -12,14 +12,14 @@ extends MenuScreen
 ## MUST NOT: keep its own line-up (`Party.arrange` does), or change a member's hp or level.
 
 const SCREEN_ID: StringName = &"party"
-const TITLE_KEY: String = "combat.party.title"
-const HINT_KEY: String = "combat.party.hint"
-const MEMBER_KEY: String = "combat.party.member"
-const FORM_KEY: String = "combat.party.form"
-const PICKED_KEY: String = "combat.party.picked"
-const ACTIVE_KEY: String = "combat.party.active"
-const RESERVE_KEY: String = "combat.party.reserve"
-const BENCH_KEY: String = "combat.party.bench"
+const TITLE_KEY: String = "ui.party.title"
+const HINT_KEY: String = "ui.party.hint"
+const MEMBER_KEY: String = "ui.party.member"
+const FORM_KEY: String = "ui.party.form"
+const PICKED_KEY: String = "ui.party.picked"
+const ACTIVE_KEY: String = "ui.party.active"
+const RESERVE_KEY: String = "ui.party.reserve"
+const BENCH_KEY: String = "ui.party.bench"
 
 ## Every fighter that could join, and the field bodies of those out now (for their form).
 var roster: Array[CombatantDef] = []
