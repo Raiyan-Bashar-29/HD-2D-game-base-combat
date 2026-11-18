@@ -7,7 +7,8 @@ extends RefCounted
 ## item. This file answers the menu's three questions about one `BattleCommand`:
 ## - `targets`: who it would land on. An enemy skill goes to the locked target, or the nearest
 ##   foe in reach; "all enemies" to every foe in reach; a self or ally skill to the user.
-##   `candidates` is everyone it could land on, from which a thinking ally picks (C4.8).
+##   `candidates` is everyone it could land on, from which a thinking ally picks (C4.8), and
+##   `choices` the same list for the player, the default first (C10.1).
 ##   Nobody behind a wall is a candidate (C9.12, `CombatSight`).
 ## - `refusal`: why it cannot be used now, as a `Reason`: no ATB, a status forbids it, the mp is
 ##   short, the item has run out, or there is nobody to aim at. `Reason.NONE` means it can. The
@@ -69,6 +70,21 @@ static func candidates(user: Combatant, command: BattleCommand) -> Array[Combata
 	found.sort_custom(func(a: Combatant, b: Combatant) -> bool:
 		return _distance(here, a) < _distance(here, b))
 	return found
+
+
+## Who the player may aim a one-target `command` at (C10.1): the one `targets` picks first (the
+## locked foe, else the nearest), then the other `candidates`, nearest first. Empty for a command
+## that lands on all of them, or on nobody.
+static func choices(user: Combatant, command: BattleCommand) -> Array[Combatant]:
+	var out: Array[Combatant] = []
+	if command == null or command.skill == null or command.skill.scope != Skill.Scope.ONE:
+		return out
+	out = candidates(user, command)
+	var first: Array[Combatant] = targets(user, command)
+	if not first.is_empty():
+		out.erase(first[0])
+		out.push_front(first[0])
+	return out
 
 
 ## Why `user` cannot use `command` now; `Reason.NONE` when it can.

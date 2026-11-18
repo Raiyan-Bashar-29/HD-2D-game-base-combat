@@ -7,7 +7,7 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-11-17 · **C5.3e: review fixes, settings and triggers.** Combat `0.185.0`, on base 5.22. Next: the PR for this stage, then what the owner unblocks. C7.9 and C7.10 wait on the deferred hero kits and Arima's upload. The order is in `HANDOFF.md` § What is left.
+**Last updated:** 2026-11-18 · **C10.1: pick the target.** Combat `0.186.0`, on base 5.22. Next: C10.2, then the rest of phase C10 (the devlog's recorded gaps), then what the owner unblocks. C7.9 and C7.10 wait on the deferred hero kits and Arima's upload. The order is in `HANDOFF.md` § What is left.
 full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, C2.6 builds a battle from an encounter, C2.7 draws it as a screen over the frozen field, C2.8 rewards a win and grows the party, and C2.9 puts a playable fight in the courtyard. **The turn-based formula is complete. The next row is C3.0, which plans the action formula.**
 
 ## How the two repositories relate
@@ -237,13 +237,21 @@ Classes, job systems, a bestiary and difficulty tuning. **Art stays deferred.**
 `GEAR.md` § Part 5 compares this base with what well-known games do. What is missing became
 rows C8.1 to C8.9. Each is designed in its own row, red first.
 
+### C10 — Gaps the devlog recorded · **in progress**
+
+Each row's devlog entry ends in the gaps it left. A sweep on 2026-11-18 checked all 537 against
+the code: 182 were already fixed and 342 are still open. The open mechanics, rules and screens
+are grouped into rows C10.1 to C10.35, highest value first. Art, balance, the deferred kits and
+the upstream seams are left out. Each row is designed in its own package, red first.
+
 ## Releases
 
 Each row that changes code bumps `[combat] core/version`, with the same promise upstream's
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.185.0** — C5.3e, fixes from a review of base T7.4 to T7.7 and C5.3b to C5.3d. Base 5.22 is merged: its T7.8 makes one pull of a trigger one press (`Actions.pressed_now`), which `CommandHost` and `LoadoutHost` now read through, so a command menu or gear screen bound to a trigger no longer opens and closes once per motion event; its T7.9 reads a setting row by its default's kind. `CombatSettings.install(loadout, battles)` adds a row only where the game has its feature: the difficulty with a difficulty file, auto-battle with a party roster (`has_battles`), lock-on assist and hold to attack with a field loadout, wait mode with one that has ATB rules. `combat_settings_test` 35: the rows a game without the features gets, the project defaults seeding the settings, and every key the combat rows draw.
+- **0.186.0** — C10.1, pick the target. A one-target field command that could land on more than one fighter asks which (`FieldCommands.choices`, the default first; `CommandOverlay`'s target list with distances), so a heal reaches an ally. `BattleCommand.one_target()` and `PowerMechanism.aims_at_one()` (a finisher not striking all, a command, an aimed blink) make the battle menu ask too, and `Battle` lands such a power on the one picked. `CombatHud.name_of` names a field fighter from its definition.
+- 0.185.0 — C5.3e, fixes from a review of base T7.4 to T7.7 and C5.3b to C5.3d. Base 5.22 is merged: its T7.8 makes one pull of a trigger one press (`Actions.pressed_now`), which `CommandHost` and `LoadoutHost` now read through, so a command menu or gear screen bound to a trigger no longer opens and closes once per motion event; its T7.9 reads a setting row by its default's kind. `CombatSettings.install(loadout, battles)` adds a row only where the game has its feature: the difficulty with a difficulty file, auto-battle with a party roster (`has_battles`), lock-on assist and hold to attack with a field loadout, wait mode with one that has ATB rules. `combat_settings_test` 35: the rows a game without the features gets, the project defaults seeding the settings, and every key the combat rows draw.
 - 0.184.0 — C5.3d, hold to attack as a player setting. `accessibility/hold_to_attack` joins upstream's own Accessibility section (T7.4 puts a game's row at the end of the built-in section it names). `ActionFighter` reads it through the new `CombatSettings.flag_or_setting`, as `AutoBattle.on` now does: a save's flag `combat/hold_to_attack` wins until the setting changes, which drops it. `combat_settings_test` 30.
 - 0.183.0 — C5.3b, combat settings. `CombatSettings.install()` (from `ActionHost`) adds four player settings through upstream's `Settings.game.add`, under a Combat section: the difficulty (none and every difficulty file, each by its `name_key`), auto-battle, wait mode for the command menu, and lock-on assist (a lock whose target falls moves to the nearest other foe in reach). `CombatDifficulty.current`, `AutoBattle.on`, `CommandOverlay.slow` and `LockOn.refresh` read them. A save's own `combat/difficulty` or `combat/auto_battle` flag wins until the player changes the setting, which drops it. `combat_settings_test` 25; `difficulty_test` checks the project default with no settings installed.
 - 0.182.0 — C5.3c, triggers on the controls screen. Base 5.21.0 is merged: its T7.5 makes a pad trigger the pad half of a binding, so dodge and lock on show "Right Trigger" and "Left Trigger" in the pad column instead of "—", and a trigger can be chosen when rebinding. Its T7.4 and T7.6 (a game's own settings, with labels) are for C5.3b. `combat_input_test` 28.
@@ -1066,6 +1074,41 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C9.11 | The mechanics guide (owner, 2026-11-15: "analyze the mechanics … write detailed guides") | **DONE**, combat `0.130.0`. `docs/MECHANICS_GUIDE.md`, `docs/POWER_COOKBOOK.md` (its example kit is read by the tool and played), `tools/kit_probe/`. Found: converted specials do no damage in a turn-based battle (the move is never played there); kit passives hold in every stance; Arima's Narukami Pincer lands nothing in the field (a helper) |
 | C9.12 | Eto in a real area (owner, 2026-11-15: "make sure eto handle logics properly like walls maps objects") | **DONE**, combat `0.131.0`. Hits went through walls (no combat code cast a ray); now `CombatSight` checks swings, shots, blasts, blinks, move-event shots and aiming. Lunges went off ledges; now a fighter's own travel stops there. `tests/unit/combat_walls_test.gd`, `kit_probe --wall/--ledge`. Gap: a barrage's pattern may spawn shots past a wall; enemies still pick a target behind a wall (their navmesh walks them round) |
 | C9.8 | Research: fighting-game character files | **DONE**, combat `0.108.0`, documents only: `docs/POWERS.md` § What fighting-game character files teach us; rows C8.16 and C8.8 carry the ideas. The brief was: At the owner's suggestion (2026-11-13): study how fan-made M.U.G.E.N-style characters (Jump Force Mugen and similar) write a character as states, triggers and controllers, and note the ideas worth having in `PASSIVES.md` and `POWERS.md`. The owner's rule (2026-11-13): their character logic may be downloaded, read and used as a guide, since only code is being made now; the logic is rewritten here in GDScript on this engine's parts. No sprite or sound from them enters this repository: the owner will draw the art or ask permission later |
+| C10.1 | Pick the target from the field command menu, and for a skill-less battle finisher | **DONE**, combat `0.186.0`. `FieldCommands.choices`, `CommandOverlay`'s target list, `BattleCommand.one_target`, `PowerMechanism.aims_at_one`. Closes the gaps recorded in C4.3, C4.4, C4.5, C4.7, C4.8, C6.8 |
+| C10.2 | Losing a turn-based battle runs a defeat rule; a fallen lead hands over; no silent stalemate | TODO (M). The gaps recorded in C5.1, C5.2, C4.7, C2.14, C3.8 |
+| C10.3 | A piece screen: socket gems, upgrade and awaken from the gear screen | TODO (M). The gaps recorded in C7.4c, C7.5 |
+| C10.4 | Names for pools, elements, tags and BROKEN | TODO (S). The gaps recorded in C2.19, C2.20 |
+| C10.5 | The battle menu explains a skill; the log says who acted with what | TODO (S). The gaps recorded in C2.13, C2.19 |
+| C10.6 | Battle edge rules: FIGHT_WON, battle dodges, invincible statuses, untouchable guests | TODO (S). The gaps recorded in C9.1, C9.2a, C9.5a, C8.10d |
+| C10.7 | Refuse before paying; battle hits break battlefields | TODO (S). The gaps recorded in C6.11, C9.6b, C6.9c, C9.5b |
+| C10.8 | Followers share the lead's aim; a taunt binds the player's aim too | TODO (S). The gaps recorded in C4.8, C4.9, C4.11, C8.6 |
+| C10.9 | Pools that fill in the field: regen per second, ATB for a block | TODO (S). The gaps recorded in C2.16, C4.2 |
+| C10.10 | Status ticks can hit like hits (opt-in) | TODO (S). The gaps recorded in C1.6, C9.2b, C8.15a, C2.14 |
+| C10.11 | Check that two kits on one fighter, or two pieces of one set, cannot clash | TODO (S). The gaps recorded in C7.3, C6.9e, C7.4b |
+| C10.12 | Damage numbers, block words, prompt grades and hit flashes in the field | TODO (M). The gaps recorded in C8.17, C6.6b, C8.8c, C3.4 |
+| C10.13 | The HUD says more: shield and poise, doom, steals, broken pieces | TODO (M). The gaps recorded in C4.6, C8.7a, C8.7b, C9.5b |
+| C10.14 | Lock-on marker, facing the locked target, fallen foes fade, battlefield tint | TODO (M). The gaps recorded in C3.5, C3.4, C3.8, C6.9f |
+| C10.15 | Walls and ledges, part 2: foes must see, blinks need a floor, walls avoid bodies | TODO (M). The gaps recorded in C3.6, C3.7, C9.12, C8.10a, C6.12a, C8.14a |
+| C10.16 | Field hits: a wrapped skill reports misses, blocks and the prompt boost; multi-hits spaced in time | TODO (M). The gaps recorded in C6.6a, C6.6b, C3.3, C8.8c, C3.2 |
+| C10.17 | Gear upkeep: gems, affixes and curses follow the piece | TODO (M). The gaps recorded in C7.4c, C7.5, C7.6, C9.5b, C7.2b, C7.4a |
+| C10.18 | The gear screen shows sets, sockets, levels and multipliers; results show raised pieces | TODO (M). The gaps recorded in C7.7a, C7.4b, C9.5d |
+| C10.19 | Smarter battle brains: aim at weaknesses, avoid reflect, boost, a better default | TODO (M). The gaps recorded in C2.17, C2.20, C5.4b, C2.15, C2.16, C2.5 |
+| C10.20 | A party screen: levels, pools and forms, and arranging the reserve | TODO (M). The gaps recorded in C2.8, C8.3, C6.5d |
+| C10.21 | Symbol encounters: first strikes and foes felled in one blow | TODO (M). The gaps recorded in C5.1 |
+| C10.22 | Followers and field foes use powers and play a power's move | TODO (M). The gaps recorded in C6.2b, C6.5b, C6.5c, C9.9b |
+| C10.23 | Hp bars and damage pop-ups on the battle screen | TODO (M). The gaps recorded in C2.7 |
+| C10.24 | Combo counter, juggle bonus and escaping a grab | TODO (M). The gaps recorded in C8.8a, C8.8b |
+| C10.25 | A power's move does its damage in a turn-based battle | TODO (M). The gaps recorded in C9.11, C9.9b |
+| C10.26 | Followers dodge | TODO (M). The gaps recorded in C4.9, C4.7 |
+| C10.27 | Enemies fight as a group: attack tokens and surrounding | TODO (M). The gaps recorded in C3.6 |
+| C10.28 | Threat in turn battles, and who a foe is after | TODO (M). The gaps recorded in C8.6 |
+| C10.29 | Loadout and gear from the battle menu | TODO (M). The gaps recorded in C9.7 |
+| C10.30 | ATB time in a turn-based battle | TODO (M). The gaps recorded in C4.10 |
+| C10.31 | Timed hits in turn-based battles | TODO (M). The gaps recorded in C4.10 |
+| C10.32 | Finisher: hold to charge, a line strike, holding still while charging | TODO (M). The gaps recorded in C6.8 |
+| C10.33 | Battlefield shapes: a sphere left at a point, a line, a zone; picking fighters by tag | TODO (M). The gaps recorded in C6.9a |
+| C10.34 | Converter: a super pause that spares the user, and triggers that are no longer always true | TODO (M). The gaps recorded in C8.16b, C9.9a |
+| C10.35 | Converter: read RLE5 and version-1 (PCX) sprite files | TODO (M). The gaps recorded in C9.9c |
 
 **Rules for the rows:** the same as upstream's board (`WORK_PACKAGES.md` § The rules), unchanged:
 

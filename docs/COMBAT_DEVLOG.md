@@ -5291,3 +5291,20 @@ logic), and every key the combat rows draw (`options_test` runs before any case 
 5237 passed, 0 failed; checkers silent; stripped 5123 passed.
 **Gaps.** None new. Rejected findings (13) were refuted by the second agent, among them lock-on
 assist turning to a foe behind (it can, by design: `cycle` does too).
+
+## 2026-11-18 — C10.1 · Pick the target
+
+**Did.** Phase C10 opens: a sweep checked the 537 gaps the devlog records against the code (182
+fixed, 342 open) and grouped the open mechanics, rules and screens into rows C10.1 to C10.35.
+This row: `FieldCommands.choices` lists who a one-target field command may land on, the one it
+would pick first; `CommandOverlay` shows them with their distance when there is more than one,
+and Back spends nothing. `BattleCommand.one_target()` is the one test for "ask which" (the battle
+screen and `Battle._power` share it), and `PowerMechanism.aims_at_one()` says a skill-less power
+strikes one foe (a finisher not striking all, a command, an aimed blink), so the battle menu asks
+and the power lands on the foe picked. `CombatHud.name_of` names a field fighter from its own
+definition or loadout. One CSV row.
+**Why.** Six gaps (C4.3, C4.4, C4.5, C4.7, C4.8, C6.8): a field heal reached only the user, and a
+battle finisher struck the first foe.
+**Verified.** Red first: with the new calls stubbed, 12 failed. Ladder below.
+**Gaps.** A skill-less power in the field still aims at the lock-on, else the nearest. The list's
+distances are those when it was drawn.

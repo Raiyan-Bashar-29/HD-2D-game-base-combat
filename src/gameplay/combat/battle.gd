@@ -347,7 +347,7 @@ func _use(actor: Combatant, command: BattleCommand, targets: Array[Combatant], b
 ## refuses (changing nothing) on a cooldown, the wrong hour, a missing status or a cost.
 func _power(actor: Combatant, command: BattleCommand, targets: Array[Combatant]) -> bool:
 	var skill: Skill = command.skill
-	var single: bool = skill != null and skill.scope == Skill.Scope.ONE
+	var single: bool = command.one_target()
 	if not _legal(command, targets, single):
 		return false
 	var aimed: Array[Combatant] = targets if single else targets_for(command)

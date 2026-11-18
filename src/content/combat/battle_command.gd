@@ -10,7 +10,8 @@ extends Resource
 ## POWER (C6.2a) uses a hero `Power` from the fighter's equipped kit, through `PowerUse`. It also
 ## carries that power's skill in `skill`, so it is aimed exactly like a skill. SWAP (C8.3) trades
 ## the actor for a member of the battle's reserve, aimed at that member. ROW (C8.22b) steps the
-## actor between the front and back rows, aimed at nobody.
+## actor between the front and back rows, aimed at nobody. `one_target` says whether a menu asks
+## which fighter a command lands on (C10.1).
 ##
 ## OWNS: which kind a menu entry is and what it carries.
 ## MUST NOT: run itself. The battle reads it.
@@ -42,6 +43,19 @@ static func for_power(used: Power) -> BattleCommand:
 	command.skill = used.skill if used != null else null
 	command.label_key = used.name_key if used != null else ""
 	return command
+
+
+## True when the player picks one target for this command (C10.1): an attack, a swap, a skill or
+## item that lands on one, or a power with no skill whose mechanism strikes one foe (a finisher, a
+## command, a blink to a foe). DEFEND, FLEE and ROW aim at nobody.
+func one_target() -> bool:
+	if kind == Kind.ATTACK or kind == Kind.SWAP:
+		return true
+	if kind == Kind.DEFEND or kind == Kind.FLEE or kind == Kind.ROW:
+		return false
+	if skill != null:
+		return skill.scope == Skill.Scope.ONE
+	return kind == Kind.POWER and power != null and power.mechanism != null and power.mechanism.aims_at_one()
 
 
 ## Everything wrong with this entry. `context` names where it was authored, since a command has

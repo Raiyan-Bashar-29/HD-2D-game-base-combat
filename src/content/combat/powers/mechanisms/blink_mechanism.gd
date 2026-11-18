@@ -61,6 +61,11 @@ func aims_at_foes() -> bool:
 	return to == To.TARGET or to == To.BEHIND_TARGET or to == To.SWAP or path_strike != null
 
 
+## An aimed blink goes to, or strikes along the way to, one foe (C10.1).
+func aims_at_one() -> bool:
+	return aims_at_foes()
+
+
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = super.problems(context)
 	if distance < 0.0 or height < 0.0 or sooner < 0.0 or path_width <= 0.0:

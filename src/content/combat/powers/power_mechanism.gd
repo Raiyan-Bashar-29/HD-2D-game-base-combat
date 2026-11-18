@@ -35,6 +35,12 @@ func aims_at_foes() -> bool:
 	return false
 
 
+## True when, with no skill, it strikes the one foe it is aimed at, so a battle menu asks which
+## (C10.1). False for most, and for one that strikes every foe.
+func aims_at_one() -> bool:
+	return false
+
+
 ## Empty when it can run. A subclass adds its own checks to this list.
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()

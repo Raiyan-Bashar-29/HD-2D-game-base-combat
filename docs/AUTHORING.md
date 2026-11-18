@@ -1773,8 +1773,11 @@ the first menu.
    turn-based battles). Its `cost` and `cost_pool` (mp) are paid too. A row the player cannot use
    is greyed out with the reason: not enough ATB, not enough mp, no item, no target, or a status
    that forbids it.
-4. **Targets:** a one-target attack goes to the locked-on foe, else the nearest within 8 m; an
-   all-targets one to every foe within 8 m; a heal or a buff to the player.
+4. **Targets:** a one-target command that could land on more than one fighter within 8 m asks
+   which (C10.1): the rows become those fighters with their distance, the locked-on foe (else the
+   nearest) first, then Back. So a heal can go to an ally. With one fighter in reach it lands at
+   once; an all-targets command goes to every one in reach. A turn-based battle asks the same for a
+   power with no skill that strikes one foe (a finisher, a command, a blink to a foe).
 5. **The slow:** `[combat] hybrid/slow` in `project.godot` is how fast the fight runs while the
    menu is open. 0.1 is the default; 0 is a true wait mode; 1 does not slow at all.
 
