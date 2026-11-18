@@ -7,7 +7,7 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-11-18 · **C10.31: timed hits in turn battles.** Combat `0.216.0`, on base 5.22. Next: C10.32, then the rest of phase C10 (the devlog's recorded gaps), then what the owner unblocks. C7.9 and C7.10 wait on the deferred hero kits and Arima's upload. The order is in `HANDOFF.md` § What is left.
+**Last updated:** 2026-11-18 · **C10.34: the converter's super pause.** Combat `0.217.0`, on base 5.22. Next: C10.32, then the rest of phase C10 (the devlog's recorded gaps), then what the owner unblocks. C7.9 and C7.10 wait on the deferred hero kits and Arima's upload. The order is in `HANDOFF.md` § What is left.
 full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, C2.6 builds a battle from an encounter, C2.7 draws it as a screen over the frozen field, C2.8 rewards a win and grows the party, and C2.9 puts a playable fight in the courtyard. **The turn-based formula is complete. The next row is C3.0, which plans the action formula.**
 
 ## How the two repositories relate
@@ -250,7 +250,8 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.216.0** — C10.31, timed hits in turn battles. `Skill.prompt` (a `TimedWindow`): when a member uses such a skill, `BattleTiming` sets the menu aside and waits for a press ("Ready...", then "Now!"); a perfect press grows the skill by the perfect bonus, one in the window by the bonus, none lands it plain (`SkillUse.timed`), and the grade is announced. AI turns never wait; hold-to-attack turns timing off. The results lines moved into `BattleReadout.reward_lines`.
+- **0.217.0** — C10.34, the converter's super pause. `MoveEvent.others_only` makes a PAUSE stop every other real-time fighter's own time (a `time_rate` -1 status for its seconds) while the user's move plays on and the fight's clock runs; the converter marks a `SuperPause` so. A sound the converter cannot find is listed in the build's report (`MugenEvents.missing`).
+- 0.216.0 — C10.31, timed hits in turn battles. `Skill.prompt` (a `TimedWindow`): when a member uses such a skill, `BattleTiming` sets the menu aside and waits for a press ("Ready...", then "Now!"); a perfect press grows the skill by the perfect bonus, one in the window by the bonus, none lands it plain (`SkillUse.timed`), and the grade is announced. AI turns never wait; hold-to-attack turns timing off. The results lines moved into `BattleReadout.reward_lines`.
 - 0.215.0 — C10.30, ATB time in a turn battle. `Encounter.TurnOrder.ATB` builds the CTB queue, and the battle screen's `AtbClock` feeds it `atb_ticks_per_second` ticks a second of real time; the screen takes a turn only when a gauge is full (`AtbClock.ready`). With the wait-mode setting on, the clock stops while a member's menu is open.
 - 0.214.0 — C10.29, the loadout from the battle menu. The player's turn offers a Loadout row that opens `LoadoutScreen` over the battle for the battle's own fighter of that member; closing it returns to the same turn, no turn spent. `CombatActions.LOADOUT` gains a pad button (the second paddle).
 - 0.213.0 — C10.28, threat in turn battles. Every battle fighter gets an `Aggro` table, so a foe remembers who hurt it; `Aggro.top` names the most; the new TargetRule.THREAT aims there (a taunt still wins). The battle line of a fighter with a table says whom it is after, and the HUD's target line names whom a field foe is after (`ActionEnemy.after`).
@@ -1137,7 +1138,7 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C10.31 | Timed hits in turn-based battles | **DONE**, combat `0.216.0`. `Skill.prompt`, `BattleTiming`, `SkillUse.timed`. Closes the gaps recorded in C4.10 |
 | C10.32 | Finisher: hold to charge, a line strike, holding still while charging | TODO (M). The gaps recorded in C6.8 |
 | C10.33 | Battlefield shapes: a sphere left at a point, a line, a zone; picking fighters by tag | TODO (M). The gaps recorded in C6.9a |
-| C10.34 | Converter: a super pause that spares the user, and triggers that are no longer always true | TODO (M). The gaps recorded in C8.16b, C9.9a |
+| C10.34 | Converter: a super pause that spares the user, and triggers that are no longer always true | **DONE**, combat `0.217.0`. `MoveEvent.others_only`, the converter's superpause flag, `MugenEvents.missing`. Closes the gaps recorded in C8.16b, C9.9a |
 | C10.35 | Converter: read RLE5 and version-1 (PCX) sprite files | TODO (M). The gaps recorded in C9.9c |
 
 **Rules for the rows:** the same as upstream's board (`WORK_PACKAGES.md` § The rules), unchanged:

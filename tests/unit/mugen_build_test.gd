@@ -150,7 +150,7 @@ func _small_things() -> void:
 	equal("a note is kept once", [out["problems"], out["fresh"]], [PackedStringArray(["one"]), PackedStringArray(["two"])])
 	equal("the formula gives the events in time order, each once: a sound, a shake (pixels over 20), a pause",
 		made["events"], [{"kind": "sound", "file": "sounds/3_4.wav", "at": 0.2},
-		{"kind": "shake", "seconds": 0.1, "amount": 0.5, "at": 0.3}, {"kind": "pause", "seconds": 0.5, "at": 0.5}])
+		{"kind": "shake", "seconds": 0.1, "amount": 0.5, "at": 0.3}, {"kind": "pause", "seconds": 0.5, "others_only": false, "at": 0.5}])
 	equal("and the first two untouchable stretches, the first armour stretch, and a note for each one dropped",
 		[made["iframes_from"], made["iframes_to"], made["iframes2_from"], made["iframes2_to"], made["armour_from"],
 		made["armour_to"], made["notes"]],

@@ -20,12 +20,12 @@ func run() -> void:
 	encounter.id = &"encounter/fixture_threat"
 	encounter.enemies = [_def(&"fixture_threat_foe", &"side_b", 1.0)]
 	var battle: Battle = BattleSetup.build(encounter,
-		[_def(&"fixture_threat_heavy", &"side_a", 9.0), _def(&"fixture_threat_light", &"side_a", 8.0)], _holder, RandomNumberGenerator.new())
+		[_def(&"fixture_threat_heavy", &"side_a", 9.0), _def(&"fixture_threat_light", &"side_a", 8.0)], _holder, _seeded())
 	var heavy: Combatant = battle.party[0]
 	var light: Combatant = battle.party[1]
 	var foe: Combatant = battle.enemies[0]
-	heavy.hit(foe, 3.0, &"", battle.rng, true)
-	light.hit(foe, 0.5, &"", battle.rng, true)
+	heavy.hit(foe, 6.0, &"", battle.rng, true)
+	light.hit(foe, 0.2, &"", battle.rng, true)
 	var entry := BrainEntry.new()
 	entry.command = BattleCommand.new()
 	entry.target_rule = BrainEntry.TargetRule.THREAT
@@ -51,6 +51,13 @@ func run() -> void:
 	BattleSetup.release(battle)
 	_holder.free()
 	Flags.clear_all()
+
+
+# A fixed seed, so a critical roll never lets the light hit outrank the heavy one.
+func _seeded() -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	return rng
 
 
 func _def(id: StringName, side: StringName, speed: float) -> CombatantDef:

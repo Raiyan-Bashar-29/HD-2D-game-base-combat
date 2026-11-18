@@ -5651,3 +5651,15 @@ screen's new public `act_now` with `SkillUse.timed` set to the grade's multiplie
 **Why.** The gaps recorded in C4.10.
 **Verified.** Ladder: 0 warnings; 5411 passed, 0 failed; checkers silent.
 **Gaps.** No skill in the demo carries a prompt yet. Heals and effects are not grown by a press.
+
+## 2026-11-18 — C10.34 · The converter's super pause
+
+**Did.** `MoveEvent.others_only`; `MoveEvents._stop_others` puts a SECONDS status with `time_rate`
+-1 on every other real-time fighter (`FighterTime`). `MugenState` marks a `superpause`,
+`MugenFormula` passes `others_only`, `MugenEvents.fill` sets it and lists unfound sounds in
+`missing`, which `mugen_build.gd` prints. New `super_pause_test` (3); one converter expectation
+gained the field. Taken before C10.32 and C10.33, as it serves further converted characters.
+**Why.** The gaps recorded in C8.16b.
+**Verified.** Ladder: 0 warnings; 5415 passed, 0 failed; checkers silent.
+**Gaps.** Not done: `p2bodydist` and other non-time triggers are still treated as always true
+(listed in `needs`); a reach condition from them is left for later. Eto's kit was not rebuilt.
