@@ -134,8 +134,7 @@ func act(delta: float) -> ActionDecider.State:
 		if _gone_in <= 0.0 and not is_queued_for_deletion():
 			queue_free()
 	timeline.step(dt)
-	Unseen.fade(self)
-	_fade_out()
+	_after_step()
 	if _hitbox != null:
 		_hitbox.rotation.y = atan2(-facing.x, -facing.z)
 		if timeline.is_hitting():
@@ -154,8 +153,12 @@ func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
 	var wish: Vector3 = Vector3.ZERO
 	match state:
 		ActionDecider.State.ATTACK:
-			# A power named by the brain is used first, and its move plays only if it was (C10.22).
-			if decider.chosen != null and (decider.chosen_power == null or FieldPowerPress.use(self, decider.chosen_power, rng)):
+			# Waiting its turn on the target, it circles instead (C10.27); a power named by the brain
+			# is used first, and its move plays only if it was (C10.22).
+			var turn: bool = _target == null or AttackTokens.take(self, _target.get_parent(), decider.brain.max_attackers)
+			if not turn:
+				wish = _towards(AttackTokens.ring_spot(_target.get_parent() as Node3D, self, decider.brain.attack_range + 1.5)) * speed
+			elif decider.chosen != null and (decider.chosen_power == null or FieldPowerPress.use(self, decider.chosen_power, rng)):
 				_face(to_target)
 				timeline.start(decider.chosen)
 				if _hitbox != null:
@@ -215,8 +218,12 @@ func defeat_flag() -> StringName:
 	return StringName("field_defeated/%s/%s" % [Director.current_area_id, name])
 
 
-# A fallen foe fades out over its linger (C10.14), after the unseen fade has had its say.
-func _fade_out() -> void:
+# After its step: its swing over, or fallen, it gives its turn on the target back (C10.27); an
+# unseen foe is drawn faded; a fallen foe fades out over its linger (C10.14).
+func _after_step() -> void:
+	if not timeline.busy() or _fallen:
+		AttackTokens.release(self)
+	Unseen.fade(self)
 	var visual: CharacterVisual = get_node_or_null(^"Visual") as CharacterVisual
 	if _fallen and linger > 0.0 and visual != null and visual.sprite != null:
 		visual.sprite.modulate.a = clampf(_gone_in / linger, 0.0, 1.0)

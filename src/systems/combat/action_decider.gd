@@ -36,6 +36,8 @@ var chosen_power: Power
 
 var _cooldown: float = 0.0
 var _wander_clock: float = 0.0
+var _retreat_left: float = 0.0
+var _retreat_spent: bool = false
 
 
 func _init(with_brain: ActionBrain = null) -> void:
@@ -103,7 +105,15 @@ func _choose(delta: float, target_distance: float, home_distance: float, hp_frac
 		return State.RETURN
 	if home_distance > brain.leash_radius:
 		return State.RETURN
-	if brain.retreat_below > 0.0 and hp_fraction < brain.retreat_below \
+	# A timed retreat (C10.27) turns back when its time is up, until the hp recovers.
+	if hp_fraction >= brain.retreat_below:
+		_retreat_spent = false
+	if state == State.RETREAT and brain.retreat_for > 0.0:
+		_retreat_left -= delta
+		_retreat_spent = _retreat_left <= 0.0
+	elif brain.retreat_for > 0.0:
+		_retreat_left = brain.retreat_for
+	if brain.retreat_below > 0.0 and hp_fraction < brain.retreat_below and not _retreat_spent \
 			and target_distance < brain.retreat_distance:
 		return State.RETREAT
 	var chasing: bool = state == State.CHASE or state == State.RETREAT

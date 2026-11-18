@@ -25,6 +25,12 @@ extends Resource
 ## Below this fraction of max hp it retreats. 0 means it never does.
 @export_range(0.0, 1.0, 0.01) var retreat_below: float = 0.0
 @export var retreat_distance: float = 3.0
+## Seconds a retreat lasts before it turns back (C10.27); it does not retreat again until its hp
+## is back over `retreat_below`. 0 retreats for as long as the target is near.
+@export var retreat_for: float = 0.0
+## How many foes may swing at one target at once (C10.27, `AttackTokens`); the rest circle it.
+## 0 is no limit.
+@export var max_attackers: int = 0
 ## Threat points an attacker loses each second on this fighter's table (`Aggro`, C8.6).
 @export var threat_fade: float = 1.0
 @export var moves: Array[ActionBrainEntry] = []

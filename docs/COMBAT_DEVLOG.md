@@ -5600,3 +5600,13 @@ remembered until no swing is near) and starts the loadout's dodge when `can_dodg
 **Why.** The gaps recorded in C4.9 and C4.7.
 **Verified.** Ladder: 0 warnings; 5391 passed, 0 failed; checkers silent.
 **Gaps.** Followers do not dodge shots, only swings. No demo follower has a chance set yet.
+
+## 2026-11-18 — C10.27 · Foes fight as a group
+
+**Did.** New `AttackTokens` (gameplay, statics keyed by the target's instance id): `take`,
+`release`, `ring_spot`. `ActionEnemy` asks before its ATTACK swing and gives back in
+`_after_step` (which also took the unseen and fallen fades out of `act`). `ActionDecider` counts a
+timed retreat down and holds it spent until hp is back over the line. New `attack_tokens_test` (3).
+**Why.** The gaps recorded in C3.6.
+**Verified.** Ladder: 0 warnings; 5395 passed, 0 failed; checkers silent.
+**Gaps.** Tokens are for field foes only; followers do not take turns. The ring ignores walls.
