@@ -201,13 +201,7 @@ func _fill() -> void:
 		return
 	# A command is waiting for a target: list the targets, plus Back.
 	if _pending != null:
-		for target: Combatant in battle.targets_for(_pending):
-			add_row(name_of(target), _aim.bind(target))
-		# A free swap may trade a waiting member instead (C8.26): "Bench for Mate".
-		for pair: Array in BattleMenu.free_pairs(battle, _pending):
-			var names: Dictionary = {"in": name_of(pair[1] as Combatant), "out": name_of(pair[0] as Combatant)}
-			add_row(tr(SWAP_PAIR_KEY).format(names), _free_pair.bind(pair))
-		add_row(tr(BACK_KEY), _back)
+		_fill_targets()
 		return
 	# An open submenu: its commands, plus Back.
 	if _category != "":
@@ -231,6 +225,19 @@ func _closed() -> void:
 		battle_log.stop()
 	if battle != null:
 		BattleSetup.release(battle)
+
+
+# The target list: what the command does (C10.5), each target (a fallen one marked), plus Back.
+func _fill_targets() -> void:
+	if BattleMenu.explain(_pending) != "":
+		add_note(BattleMenu.explain(_pending))
+	for target: Combatant in battle.targets_for(_pending):
+		add_row(BattleMenu.target_text(target, name_of(target)), _aim.bind(target))
+	# A free swap may trade a waiting member instead (C8.26): "Bench for Mate".
+	for pair: Array in BattleMenu.free_pairs(battle, _pending):
+		var names: Dictionary = {"in": name_of(pair[1] as Combatant), "out": name_of(pair[0] as Combatant)}
+		add_row(tr(SWAP_PAIR_KEY).format(names), _free_pair.bind(pair))
+	add_row(tr(BACK_KEY), _back)
 
 
 ## The fighter's name: its definition's key, with the number `BattleSetup` gave a duplicate.

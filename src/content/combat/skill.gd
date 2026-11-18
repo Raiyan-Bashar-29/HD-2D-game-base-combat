@@ -30,6 +30,9 @@ enum Filter { NONE, BELOW, ABOVE, MULTIPLE_OF }
 
 ## Localization key for the skill's name in the command menu.
 @export var name_key: String = ""
+## Localization key for a line saying what it does, shown while its target is picked (C10.5).
+## Empty shows only its hits and reach.
+@export var desc_key: String = ""
 ## The pool the cost is spent from, and how much. An empty pool or zero cost is free.
 @export var cost_pool: StringName = &""
 @export var cost: int = 0

@@ -5352,3 +5352,16 @@ with its rows in a translation made in the test; two older tests read the name, 
 **Why.** The gaps recorded in C2.19 and C2.20.
 **Verified.** Ladder: 0 warnings; 5275 passed, 0 failed; checkers silent; stripped 5161 passed.
 **Gaps.** None known.
+
+## 2026-11-18 — C10.5 · The menu explains, the log says who
+
+**Did.** `Skill.desc_key`. `BattleMenu.explain(command)`: description, "3 hits" and the reach
+(`ui.battle.about.reach.<target>[_all]`), shown as a note over the target list, which moved into
+`BattleScreen._fill_targets` to keep `_fill` in budget; `target_text` marks a fallen target.
+`BattleCommand.used_key()`. `Battle._announced` checks the targets for every kind (the ATTACK
+branch's own check went) and emits the new `Events.battle_acted`; `BattleLog` turns it into
+"attacks." or "uses X.". New `battle_explain_test` (5).
+**Why.** The gaps recorded in C2.13 and C2.19.
+**Verified.** Ladder: 0 warnings; 5281 passed, 0 failed; checkers silent; stripped 5167 passed.
+**Gaps.** An ALL skill never opens a target list, so its line is not seen. `battle.gd` is at
+250/250 code lines.
