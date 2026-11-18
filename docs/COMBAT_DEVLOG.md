@@ -5523,3 +5523,13 @@ under the results. New `gear_readout_test` (4).
 **Verified.** Ladder: 0 warnings; 5358 passed, 0 failed; checkers silent.
 **Gaps.** The demo wisps' brain is not changed to use the new rules (balance later). `boost` has
 no test of its own.
+
+## 2026-11-18 — C10.20 · The party screen
+
+**Did.** New `PartyScreen` (ui): `member_line(def, body)` reads `Party`, the saved `vital/<id>/hp`
+and `LookSwap.form_name_key`; `swap` and `_bench` call `Party.arrange`. `CombatActions.PARTY` on P,
+with its CSV label. `LoadoutHost.toggle_party(stack, player, members)` gathers the field bodies
+and the configured roster. New `party_screen_test` (5).
+**Why.** The gaps recorded in C2.8, C8.3 and C6.5d.
+**Verified.** Ladder: 0 warnings; 5364 passed, 0 failed; checkers silent.
+**Gaps.** A level-up still does not top up current hp. Only hp is shown, not every pool.
