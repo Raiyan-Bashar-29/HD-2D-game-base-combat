@@ -123,7 +123,7 @@ func _hud() -> void:
 	attach(hud)
 	hud.refresh()
 	equal("the HUD shows the gauge and its level with no code of its own",
-		[hud.text.contains("FOCUS 30 / 100"), hud.text.contains("fixture_events_low")], [true, true])
+		[hud.text.contains(CombatNames.pool(&"focus") + " 30 / 100"), hud.text.contains("fixture_events_low")], [true, true])
 	hud.free()
 
 

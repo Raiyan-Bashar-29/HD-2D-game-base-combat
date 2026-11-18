@@ -116,7 +116,8 @@ static func _read(ctrl: Dictionary, out: Dictionary, when: Dictionary, anims: Di
 		"changestate":
 			_chain(ctrl, out, when, tick)
 		"superpause", "pause":
-			(out["pauses"] as Array).append({"tick": tick, "time": int(MugenIni.number(ctrl, "time", 30.0))})
+			(out["pauses"] as Array).append({"tick": tick, "time": int(MugenIni.number(ctrl, "time", 30.0)),
+				"others": kind == "superpause"})
 		"envshake":
 			(out["shakes"] as Array).append({"tick": tick, "time": int(MugenIni.number(ctrl, "time", 1.0)),
 				"ampl": absf(MugenIni.number(ctrl, "ampl", -4.0))})

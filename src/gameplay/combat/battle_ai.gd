@@ -45,7 +45,7 @@ static func decide(context: BrainContext, brain: BattleBrain) -> bool:
 		for entry: BrainEntry in allowed:
 			roll -= entry.weight
 			if roll < 0.0:
-				return context.act(entry.command, _aim(context, entry))
+				return context.act(entry.command, _aim(context, entry), entry.boost)
 	return context.fallback()
 
 
@@ -57,6 +57,8 @@ static func _allowed(context: BrainContext, entry: BrainEntry) -> bool:
 	var actor: Combatant = context.actor
 	if entry.below_fraction > 0.0 and not _below(context, entry):
 		return false
+	if entry.above_fraction > 0.0 and _under_by(actor, entry.below_pool, entry.above_fraction):
+		return false
 	# Statuses (silence), cost, ATB and whether the formula has this kind at all (C2.14, C4.8).
 	if not context.allows(entry.command):
 		return false
@@ -67,6 +69,8 @@ static func _allowed(context: BrainContext, entry: BrainEntry) -> bool:
 	var legal: Array[Combatant] = context.targets_for(entry.command)
 	if entry.target_rule == BrainEntry.TargetRule.SELF:
 		return legal.has(actor)
+	if entry.needs_weakness and not legal.any(func(f: Combatant) -> bool: return _weak(f, entry.command, true)):
+		return false
 	return not legal.is_empty()
 
 
@@ -81,6 +85,10 @@ static func _aim(context: BrainContext, entry: BrainEntry) -> Array[Combatant]:
 		return legal
 	# A taunting foe must be the one picked (C8.6).
 	legal = Aggro.narrow(context.actor, legal)
+	# A target that would bounce the skill back is passed over, while another is left (C10.19).
+	if entry.avoids_reflect and entry.command.skill != null:
+		var clear: Array[Combatant] = legal.filter(func(f: Combatant) -> bool: return not _reflects(f, entry.command.skill))
+		legal = clear if not clear.is_empty() else legal
 	# Allowed by the pool test on a target, the pick is among those under the line (C8.27b).
 	if entry.below_any_target and entry.below_fraction > 0.0:
 		var under: Array[Combatant] = []
@@ -93,6 +101,13 @@ static func _aim(context: BrainContext, entry: BrainEntry) -> Array[Combatant]:
 			aimed.append(context.actor)
 		BrainEntry.TargetRule.RANDOM:
 			aimed.append(legal[context.rng.randi_range(0, legal.size() - 1)])
+		BrainEntry.TargetRule.THREAT:
+			var after: StringName = Aggro.top(context.actor.get_parent())
+			var hated: Array[Combatant] = legal.filter(func(f: Combatant) -> bool: return f.combatant_id == after)
+			aimed.append(hated[0] if not hated.is_empty() else legal[0])
+		BrainEntry.TargetRule.WEAK:
+			var weak: Array[Combatant] = legal.filter(func(f: Combatant) -> bool: return _weak(f, entry.command, false))
+			aimed.append(weak[0] if not weak.is_empty() else legal[0])
 		BrainEntry.TargetRule.LOWEST_HP:
 			var weakest: Combatant = legal[0]
 			for fighter: Combatant in legal:
@@ -102,6 +117,30 @@ static func _aim(context: BrainContext, entry: BrainEntry) -> Array[Combatant]:
 		_:
 			aimed.append(legal[0])
 	return aimed
+
+
+# True when `fighter` is weak to something `command` carries; `found` asks only for weaknesses
+# the player has revealed.
+static func _weak(fighter: Combatant, command: BattleCommand, found: bool) -> bool:
+	var keys: Array[StringName] = Weakness.keys_of(command.skill) if command.skill != null else []
+	for key: StringName in keys:
+		if fighter.weak_to.has(key) and (not found or Weakness.revealed(fighter, key)):
+			return true
+	return false
+
+
+# True when `fighter` holds a REFLECT that bounces `skill`.
+static func _reflects(fighter: Combatant, skill: Skill) -> bool:
+	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
+	var mirror: StatusEffect = statuses.reactor(StatusEffect.Reaction.REFLECT) if statuses != null else null
+	return mirror != null and skill.tags.has(mirror.reflect_tag)
+
+
+# True when `fighter`'s `pool` is under `fraction` of its maximum.
+static func _under_by(fighter: Combatant, pool: StringName, fraction: float) -> bool:
+	var vitals: Vitals = Vitals.of(fighter.get_parent())
+	var ceiling: int = vitals.maximum(pool) if vitals != null else 0
+	return ceiling > 0 and float(vitals.current(pool)) < fraction * ceiling
 
 
 static func _hp(fighter: Combatant) -> int:

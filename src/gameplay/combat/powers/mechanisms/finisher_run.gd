@@ -28,6 +28,9 @@ var _targets: Array[Combatant] = []
 ## What is left of the charge: seconds in the field, turns in a battle. Below 0 when not charging.
 var _left: float = -1.0
 var _flourish: Flourish
+# How much a held charge let go early grows the strike (C10.32); 1 for a full one.
+var _grown: float = 1.0
+static var _still: StatusEffect
 
 
 func use(user: Combatant, targets: Array[Combatant], rng: RandomNumberGenerator) -> void:
@@ -45,7 +48,35 @@ func use(user: Combatant, targets: Array[Combatant], rng: RandomNumberGenerator)
 	var statuses: StatusSet = StatusSet.of(user.get_parent())
 	if finisher.charging != null and statuses != null:
 		statuses.apply(finisher.charging)
+	if finisher.holds_still and user.real_time and statuses != null:
+		statuses.apply(_still_status(wait))
 	_listen(finisher.break_damage > 0)
+
+
+## The key of a `hold` finisher was let go (C10.32): before `min_charge` the charge is cancelled;
+## after, it strikes grown by the charge reached.
+func let_go() -> void:
+	var finisher: FinisherMechanism = mechanism as FinisherMechanism
+	if not charging() or not finisher.hold:
+		return
+	var charged: float = finisher.charge_time - _left
+	if charged < finisher.min_charge:
+		_drop()
+		return
+	var share: float = clampf((charged - finisher.min_charge) / maxf(0.001, finisher.charge_time - finisher.min_charge), 0.0, 1.0)
+	_grown = lerpf(finisher.hold_scale, 1.0, share)
+	_release()
+
+
+# The status that keeps the user standing while it charges (C10.32): it halts, for the charge.
+static func _still_status(seconds: float) -> StatusEffect:
+	if _still == null:
+		_still = StatusEffect.new()
+		_still.id = &"status/finisher_still"
+		_still.unit = StatusEffect.Unit.SECONDS
+		_still.blocks = [StatusEffect.Block.SKIP_TURN]
+	_still.duration = seconds + 1.0
+	return _still
 
 
 func tick(amount: float) -> void:
@@ -94,6 +125,8 @@ func _drop() -> void:
 	var statuses: StatusSet = StatusSet.of(_user.get_parent()) if is_instance_valid(_user) else null
 	if finisher.charging != null and statuses != null:
 		statuses.cure(finisher.charging.id)
+	if statuses != null and _still != null:
+		statuses.cure(_still.id)
 
 
 # True when the charge no longer stands: the user fell, or its charging status ended early.
@@ -127,6 +160,10 @@ func _land() -> void:
 # The strike with the power's POWER and HITS scaling read now, on a copy.
 func _scaled() -> ActionMove:
 	var strike: ActionMove = (mechanism as FinisherMechanism).strike
+	if _grown != 1.0:
+		strike = strike.duplicate() as ActionMove
+		strike.power *= _grown
+		_grown = 1.0
 	if power == null or power.scaling.is_empty():
 		return strike
 	var first: Combatant = _targets[0] if not _targets.is_empty() else null
@@ -152,11 +189,22 @@ func _field_targets() -> Array[Hurtbox]:
 			continue
 		if finisher.all_foes:
 			var there: Vector3 = (foe.get_parent() as Node3D).global_position - body.global_position
-			if _user.can_target(foe, FactionTable.Target.ENEMY) and Vector2(there.x, there.z).length() <= finisher.reach:
+			if _user.can_target(foe, FactionTable.Target.ENEMY) and _reaches(finisher, body, there):
 				out.append(hurtbox)
 		elif foe == aim:
 			out.append(hurtbox)
 	return out
+
+
+# True when a foe `there` from the user stands in the strike's reach: a circle, or a line ahead.
+static func _reaches(finisher: FinisherMechanism, body: Node3D, there: Vector3) -> bool:
+	var flat := Vector2(there.x, there.z)
+	if finisher.shape != FinisherMechanism.Shape.LINE:
+		return flat.length() <= finisher.reach
+	var facing: Vector3 = BarrageRun.facing_of(body)
+	var ahead := Vector2(facing.x, facing.z).normalized()
+	var along: float = flat.dot(ahead)
+	return along >= 0.0 and along <= finisher.reach and absf(flat.dot(Vector2(-ahead.y, ahead.x))) <= finisher.width / 2.0
 
 
 # The foes a battle strike lands on: the standing ones it was given, or the first of them.

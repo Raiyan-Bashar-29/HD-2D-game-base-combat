@@ -6,15 +6,19 @@ extends RefCounted
 ## "axis" (the pixel that sits on the fighter's feet), and its pixels packed one of several
 ## ways. Most are 256-colour pictures that name a palette kept elsewhere in the file. `image`
 ## unpacks one sprite into an ordinary RGBA picture; colour 0 of a palette is see-through.
-## - Packings read: raw, RLE8, LZ5, PNG8, PNG24, PNG32, and a sprite that links to another.
-## - Not read: RLE5, and version 1 files (PCX). `problem` or a null picture says so.
+## - Packings read: raw, RLE8, RLE5, LZ5, PNG8, PNG24, PNG32, and a sprite that links to another.
+## - Version 1 files (C10.35): each sprite is a PCX picture with its own palette, or the one
+##   before's when it says so. A file cut short sets `problem`.
 ##
 ## OWNS: the file's bytes, its sprite table and its palettes.
 ## MUST NOT: know about animations or sheets (`MugenSprites` does), or name a character.
 
 const RAW: int = 0
 const RLE8: int = 2
+const RLE5: int = 3
 const LZ5: int = 4
+## A version 1 file's PCX sprite, in this reader's own numbering.
+const PCX: int = 100
 const PNG8: int = 10
 
 ## Why the file could not be read, or "".
@@ -42,8 +46,11 @@ func read(bytes: PackedByteArray) -> void:
 	if bytes.size() < 68 or bytes.slice(0, 11).get_string_from_ascii() != "ElecbyteSpr":
 		problem = "not a sprite file"
 		return
+	if bytes[15] == 1:
+		_read_v1(bytes)
+		return
 	if bytes[15] != 2:
-		problem = "version %d sprite files are not read, only version 2" % bytes[15]
+		problem = "version %d sprite files are not read, only versions 1 and 2" % bytes[15]
 		return
 	_literal = bytes.decode_u32(52)
 	_translate = bytes.decode_u32(60)
@@ -83,6 +90,8 @@ func image(group: int, index: int) -> Image:
 	if node.is_empty() or own.x <= 0 or own.y <= 0:
 		return null
 	var format: int = node["format"]
+	if format == PCX:
+		return _from_pcx(node)
 	# Every packing but raw starts with four bytes of unpacked length.
 	var from: int = DictRead.get_int(node, "at") + (0 if format == RAW else 4)
 	var packed: PackedByteArray = _data.slice(from, DictRead.get_int(node, "at") + DictRead.get_int(node, "length"))
@@ -91,11 +100,55 @@ func image(group: int, index: int) -> Image:
 	var pixels: PackedByteArray = packed
 	if format == RLE8:
 		pixels = MugenPacking.rle8(packed, own.x * own.y)
+	elif format == RLE5:
+		pixels = MugenPacking.rle5(packed, own.x * own.y)
 	elif format == LZ5:
 		pixels = MugenPacking.lz5(packed, own.x * own.y)
 	elif format != RAW:
 		return null
 	return _coloured(pixels, own, _colours(DictRead.get_int(node, "palette")))
+
+
+# A version 1 file: a chain of sprite headers, each followed by its PCX picture (C10.35).
+func _read_v1(bytes: PackedByteArray) -> void:
+	var at: int = bytes.decode_u32(24)
+	for i: int in bytes.decode_u32(20):
+		if at <= 0 or at + 32 > bytes.size():
+			problem = "the sprite file is cut short at sprite %d" % i
+			return
+		var length: int = bytes.decode_u32(at + 4)
+		if at + 32 + length > bytes.size():
+			problem = "the sprite file is cut short at sprite %d" % i
+			return
+		var picture: Dictionary = MugenPacking.pcx(bytes.slice(at + 32, at + 32 + length)) if length > 0 else {}
+		_nodes.append({"format": PCX, "axis": Vector2i(bytes.decode_s16(at + 8), bytes.decode_s16(at + 10)),
+			"link": bytes.decode_u16(at + 16), "shared": bytes[at + 18] != 0, "picture": picture,
+			"size": picture.get("size", Vector2i.ZERO), "length": length})
+		names[Vector2i(bytes.decode_u16(at + 12), bytes.decode_u16(at + 14))] = i
+		at = bytes.decode_u32(at)
+
+
+# A version 1 sprite's picture: its own palette, or the one before's when it shares (C10.35).
+func _from_pcx(node: Dictionary) -> Image:
+	var index: int = _nodes.find(node)
+	var picture: Dictionary = node["picture"]
+	if picture.is_empty() and DictRead.get_int(node, "link") < _nodes.size():
+		picture = _nodes[DictRead.get_int(node, "link")]["picture"]
+	if picture.is_empty():
+		return null
+	var rgb: PackedByteArray = picture["colours"]
+	var back: int = index
+	while back > 0 and DictRead.get_bool(_nodes[back], "shared"):
+		back -= 1
+		var before: Dictionary = _nodes[back]["picture"]
+		if not before.is_empty():
+			rgb = before["colours"]
+	var colours: PackedByteArray = PackedByteArray()
+	for i: int in rgb.size() / 3:
+		colours.append_array(PackedByteArray([rgb[i * 3], rgb[i * 3 + 1], rgb[i * 3 + 2], 0 if i == 0 else 255]))
+	var pixels: PackedByteArray = picture["pixels"]
+	var size_of: Vector2i = picture["size"]
+	return _coloured(pixels, size_of, colours)
 
 
 func _node(group: int, index: int) -> Dictionary:

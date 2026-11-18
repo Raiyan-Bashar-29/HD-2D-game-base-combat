@@ -5328,3 +5328,388 @@ New `battle_defeat_test` (6).
 **Gaps.** A battle's rule has no wait on the ground. Followers who fell stay down after a switch
 until the rule or a revive.
 
+## 2026-11-18 — C10.3 · The piece screen
+
+**Did.** New `PieceScreen` (ui): a note with the piece's level, a row per socket (a filled one takes
+the gem out), a row per gem in the bag to put it in, "Upgrade (cost)" and "Awaken into X
+(cost)". Refusals from `GearSockets` and `GearUpgrades` grey a row with the reason, by
+`ui.piece.*_refusal.<name>` keys. The gear screen's choices gain "Work on <piece>" for the
+worn piece, and borrow `bag_of` and `item_name`. New `piece_screen_test` (8).
+**Why.** The gaps recorded in C7.4c and C7.5: nothing a player could press socketed a gem or
+awakened a piece.
+**Verified.** The case passed once written. Ladder: 0 warnings; 5269 passed, 0 failed; checkers
+silent; stripped 5155 passed.
+**Gaps.** Only the worn piece opens; one in the bag must be worn first. Upgrading works
+anywhere (no station rule). An awakened piece is not worn in its place.
+
+## 2026-11-18 — C10.4 · Names on screen
+
+**Did.** New `CombatNames` (ui): `pool(id)` and `mark(id)` read prefixed rows and fall back to
+today's text. `BattleReadout`, `CombatHud`, `BattleScreen`, `CommandOverlay` and `PowerMenu` use
+them. `Weakness.broken_status()` gets `name_key`. CSV rows for the demo's pools (mp, bp, focus,
+kagune, limit, rc, shield), elements (fire, frost) and the blade tag. New `combat_names_test` (5),
+with its rows in a translation made in the test; two older tests read the name, not capitals.
+**Why.** The gaps recorded in C2.19 and C2.20.
+**Verified.** Ladder: 0 warnings; 5275 passed, 0 failed; checkers silent; stripped 5161 passed.
+**Gaps.** None known.
+
+## 2026-11-18 — C10.5 · The menu explains, the log says who
+
+**Did.** `Skill.desc_key`. `BattleMenu.explain(command)`: description, "3 hits" and the reach
+(`ui.battle.about.reach.<target>[_all]`), shown as a note over the target list, which moved into
+`BattleScreen._fill_targets` to keep `_fill` in budget; `target_text` marks a fallen target.
+`BattleCommand.used_key()`. `Battle._announced` checks the targets for every kind (the ATTACK
+branch's own check went) and emits the new `Events.battle_acted`; `BattleLog` turns it into
+"attacks." or "uses X.". New `battle_explain_test` (5).
+**Why.** The gaps recorded in C2.13 and C2.19.
+**Verified.** Ladder: 0 warnings; 5281 passed, 0 failed; checkers silent; stripped 5167 passed.
+**Gaps.** An ALL skill never opens a target list, so its line is not seen. `battle.gd` is at
+250/250 code lines.
+
+## 2026-11-18 — C10.6 · Battle edge rules
+
+**Did.** `PassiveSet` remembers at battle start whether its holder is in the party
+(`_owed_win`) and wakes FIGHT_WON on a WON end when no last fall did. `Combatant.receive` sends
+`attack_dodged` beside `attack_missed` when not real-time. `HitGuard.refuses`, asked by
+`StatusSet.apply` beside resistance. `Unseen.open` keeps a foe's `INERT` fighter out of an ALL
+skill; an ally-wide skill still reaches it. New `battle_edges_test` (4).
+**Why.** The gaps recorded in C9.1, C9.2a, C9.5a and C8.10d.
+**Verified.** Ladder: 0 warnings; 5286 passed, 0 failed; checkers silent.
+**Gaps.** "Harmful" is the `ailment` and `debuff` tags only. A field miss is still not a dodge.
+An ALL skill no longer hits a foe's crate either (it never chose one).
+
+## 2026-11-18 — C10.7 · Refuse before paying
+
+**Did.** A `refuses(user, targets)` hook on `PowerExecutor`, asked by `PowerUse.use` before it
+pays; `CommandRun` answers with its order test. `PowerUse._drained` refuses entering a form that
+drains an empty pool. A skill-less power sends SKILL_DONE after its mechanism. The battlefield
+break moved from `Hurtbox`'s hit path into `Combatant.hit`, with the element and, for a plain
+blow, the weapon's tags, so every battle hit can break one. New `power_refuse_test` (5).
+**Why.** The gaps recorded in C6.11, C9.6b, C6.9c and C9.5b.
+**Verified.** Ladder: 0 warnings; 5292 passed, 0 failed; checkers silent; stripped 5178 passed.
+**Gaps.** The menus do not grey an order before it is aimed; the refusal shows only as nothing
+happening.
+
+## 2026-11-18 — C10.8 · Followers share the aim
+
+**Did.** `LockOn.held_by(body)`. `FieldCommands.aim_of(user)`: its own lock, else its leader's.
+`Aggro.pick(body, reach, favoured)`: the favoured foe scores above threat and below a taunt;
+`PartyFollower` passes `aim_of`. `FieldBrainContext.targets_for` puts it first and narrows to
+taunting foes; `fighting` skips an `ActionEnemy` whose decider is IDLE, WANDER or RETURN.
+`FieldCommands.targets` narrows by taunt before the lock. New `field_aim_test` (5).
+**Why.** The gaps recorded in C4.8, C4.9, C4.11 and C8.6.
+**Verified.** Ladder: 0 warnings; 5298 passed, 0 failed; checkers silent.
+**Gaps.** The lock-on itself is not moved to a taunting foe; only what a skill lands on is.
+
+## 2026-11-18 — C10.9 · Pools fill in the field
+
+**Did.** `Meters.regen_seconds(fighter, seconds)`, called beside `HitGuard.pass_time` by
+`ActionFighter`, `PartyFollower` and `ActionEnemy`; fractions in `Combatant.regen_carry`; pools
+of the `PowerSet`'s gauges are skipped. `AtbRules.on_block` and `per_swing`; `AtbMeter` hears
+`attack_blocked`, and with `per_swing` pays once until its next `tick`. New `field_regen_test` (6).
+**Why.** The gaps recorded in C2.16 and C4.2.
+**Verified.** Ladder: 0 warnings; 5305 passed, 0 failed; checkers silent.
+**Gaps.** The roster's `regen_bp` and `regen_mp` now also fill in the field, a second at a time;
+tune them when balancing. "One swing" is the hits of one frame.
+
+## 2026-11-18 — C10.10 · Status ticks as hits
+
+**Did.** `StatusEffect.tick_as_hit`. New `StatusTicks.land` (gameplay) builds a `DamageResult`
+(the tick times 1 + `damage_taken`, the status's tags) and calls `receive` with the applier as
+`from`; `StatusSet._tick` asks it first. `tick_turn` and `tick_seconds` read `_held.get` and skip
+a status ended mid-loop. New `status_tick_hit_test` (4).
+**Why.** The gaps recorded in C1.6, C9.2b, C8.15a and C2.14.
+**Verified.** Ladder: 0 warnings; 5310 passed, 0 failed; checkers silent.
+**Gaps.** A ledger's own release still changes the pool directly. Defence is not applied to a
+tick (no formula runs).
+
+## 2026-11-18 — C10.11 · Kits and sets that cannot clash
+
+**Did.** `PowerKit.clashes(others)` (content). `PowerSet._put_on` warns for each clash with the
+kits already on. `GearDb._set_clashes` adds a problem when one set id meets two bonus objects.
+New `kit_clash_test` (4).
+**Why.** The gaps recorded in C7.3, C6.9e and C7.4b.
+**Verified.** Ladder: 0 warnings (the shipped kits do not clash); 5315 passed, 0 failed;
+checkers silent.
+**Gaps.** A clash is only warned about when it happens, not checked across every kit and loadout
+by `check_content`.
+
+## 2026-11-18 — C10.12 · Field feedback
+
+**Did.** New `HitNumbers` (ui) listens to `combatant_damaged`, `attack_blocked`, `attack_missed`,
+`attack_dodged` and the new `prompt_graded`, and floats `Label3D`s beside the real-time fighter
+named (pops made together stack). New `HitFlash` (gameplay) tints the body's `Visual` sprites.
+`TimedWindow.grade`; `ActionFighter` emits the grade on a prompt's first press. New
+`hit_numbers_test` (6).
+**Why.** The gaps recorded in C8.17, C6.6b, C8.8c and C3.4.
+**Verified.** Ladder: 0 warnings; 5322 passed, 0 failed; checkers silent. A windowed capture of a
+probe scene showed "27!" with "Good" above it and the body tinted red.
+**Gaps.** No hit sound (the template ships no audio). A follower's or foe's own timed press is
+not graded.
+
+## 2026-11-18 — C10.13 · The HUD says more
+
+**Did.** `CombatHud._pools` (shared by the player's line and the target's), the doom count in
+`_statuses_text` for a `fatal` status with a duration. Three signals: `item_stolen`,
+`creature_captured` (`Pilfer`) and `gear_broke` (`GearBreak`). New `CombatNotes` (ui, in the game
+root) asks the toast for each; `BattleLog` has a steal line. New `combat_notes_test` (4).
+**Why.** The gaps recorded in C4.6, C8.7a, C8.7b and C9.5b.
+**Verified.** Ladder: 0 warnings; 5327 passed, 0 failed; checkers silent.
+**Gaps.** Poise has no pool of its own to show; the shield is what a break empties.
+
+## 2026-11-18 — C10.14 · The fight seen in the world
+
+**Did.** `LockOn._mark` keeps a placeholder torus under the target's body. `ActionFighter` sends
+`turn_requested` toward the locked target each frame it faces it. `ActionEnemy._fade_out` sets the
+fallen sprite's alpha from the linger left, after `Unseen.fade`. New `PlaceTint` (ui, first under
+the UI layer) shows the first standing place's tint. `BattlefieldRun._lower` clears `_up` before
+it announces. New `world_marks_test` (5).
+**Why.** The gaps recorded in C3.5, C3.4, C3.8 and C6.9f.
+**Verified.** Ladder: 0 warnings; 5333 passed, 0 failed; checkers silent. A windowed capture of a
+probe scene showed the yellow ring under the locked foe.
+**Gaps.** The tint washes the whole view rather than the ground and sky only.
+
+## 2026-11-18 — C10.15 · Walls and ledges, part 2
+
+**Did.** `Aggro._hidden` (a ray from eye to eye) skips a candidate with no threat. `CombatSight.
+last_floor` walks back from a blink's landing half a metre at a time to the first point with
+floor; a start with no floor under it keeps today's behaviour. `ConstructRun._clear` pushes the
+spot along the facing up to 1.5 m; `BarrageRun._fire` pulls each shot's origin short of a wall
+from the target (ring, rain) or the user. New `walls_two_test` (4).
+**Why.** The gaps recorded in C3.6, C3.7, C9.12, C8.10a, C6.12a and C8.14a.
+**Verified.** Ladder: 0 warnings; 5338 passed, 0 failed; checkers silent.
+**Gaps.** The barrage pull has no test of its own. A foe's sight is a single ray, eye to eye.
+
+## 2026-11-18 — C10.16 · Field hits report what happened
+
+**Did.** `SkillUse._hit` records each target and result in two static lists; `Hurtbox._resolve`
+clears them, applies a copy of the skill with its power times the boost, and returns
+`_skill_outcome(target)`. `ActionMove.hit_gap`; `Hitbox._may_strike` counts strikes and their
+times per hurtbox for a gapped move, and `Hurtbox` lands one hit a strike for it. New
+`field_hits_test` (5).
+**Why.** The gaps recorded in C6.6a, C6.6b, C3.3, C8.8c and C3.2.
+**Verified.** Ladder: 0 warnings; 5344 passed, 0 failed; checkers silent.
+**Gaps.** The converter does not yet write `hit_gap` from a source's hit timing.
+
+## 2026-11-18 — C10.17 · Gear upkeep
+
+**Did.** `GearSockets.empty_out(bag, piece)`, called by `Crafting._use_up`, `GearBreak` and
+`GearUpgrades.awaken`; `awaken` also wears the new piece in the old one's slot. `Crafting._give`
+rolls `GearAffixes` for what it makes. `UNCURSE` (appended to the enum, so saved kinds keep their
+numbers) runs `SkillUse._uncurse`. New `gear_upkeep_test` (3).
+**Why.** The gaps recorded in C7.4c, C7.5, C7.6, C9.5b, C7.2b and C7.4a.
+**Verified.** Ladder: 0 warnings; 5348 passed, 0 failed; checkers silent.
+**Gaps.** A picked-up piece (not given by a reward or made) still rolls no affixes. A gem the bag
+cannot take back is lost.
+
+## 2026-11-18 — C10.18 · The gear screens say more
+
+**Did.** `PieceScreen.summary(item)` appended to a worn slot's row. `GearScreen.sets_text(gear)`
+as notes under the slots (a set's name from `combat.gear_set.<id>`, else its id). `compare` keeps a
+product of multipliers beside the sums and shows each as a share. `BattleReadout.raised(rewards)`
+under the results. New `gear_readout_test` (4).
+**Why.** The gaps recorded in C7.7a, C7.4b and C9.5d.
+**Verified.** Ladder: 0 warnings; 5353 passed, 0 failed; checkers silent.
+**Gaps.** A set's tiers show their piece counts, not what each gives.
+
+## 2026-11-18 — C10.19 · Smarter battle brains
+
+**Did.** `BrainEntry`: TargetRule.WEAK (appended), `avoids_reflect`, `boost`, `needs_weakness`,
+`above_fraction`. `BattleAi` reads them (`_weak`, `_reflects`, `_under_by`) and passes the boost to
+`BrainContext.act(command, targets, boost)`; the battle's context drops a boost it cannot afford.
+`AutoBattle.default_for(def)` builds heal and weakness entries from the member's commands. New
+`smart_brains_test` (4). `AUTHORING.md` gains a line.
+**Why.** The gaps recorded in C2.17, C2.20, C5.4b, C2.15, C2.16 and C2.5.
+**Verified.** Ladder: 0 warnings; 5358 passed, 0 failed; checkers silent.
+**Gaps.** The demo wisps' brain is not changed to use the new rules (balance later). `boost` has
+no test of its own.
+
+## 2026-11-18 — C10.20 · The party screen
+
+**Did.** New `PartyScreen` (ui): `member_line(def, body)` reads `Party`, the saved `vital/<id>/hp`
+and `LookSwap.form_name_key`; `swap` and `_bench` call `Party.arrange`. `CombatActions.PARTY` on P,
+with its CSV label. `LoadoutHost.toggle_party(stack, player, members)` gathers the field bodies
+and the configured roster. New `party_screen_test` (5).
+**Why.** The gaps recorded in C2.8, C8.3 and C6.5d.
+**Verified.** Ladder: 0 warnings; 5364 passed, 0 failed; checkers silent.
+**Gaps.** A level-up still does not top up current hp. Only hp is shown, not every pool.
+
+## 2026-11-18 — C10.21 · Symbol encounter openings
+
+**Did.** `SymbolEncounter._challenge(opening)`; `behind(body, other)` reads `BarrageRun.facing_of`.
+On `battle_started` the losing side gets the built-in `status/off_guard` (one turn's SKIP_TURN).
+`_felled` gives the encounter's experience, loot and a loot-table roll through `ActionHost.reward`
+when a strike fells the foe before any battle. New `symbol_openings_test` (4).
+**Why.** The gaps recorded in C5.1.
+**Verified.** Ladder: 0 warnings; 5369 passed, 0 failed; checkers silent.
+**Gaps.** The one-blow reward is not checked end to end by a test (it needs a fitted player).
+
+## 2026-11-18 — C10.22 · Powers in field brains
+
+**Did.** `ActionBrainEntry.power` (a move may then be empty); `ActionDecider.pick` plays the power's
+move and sets `chosen_power`. New `FieldPowerPress.use(body, power, rng)` (gameplay/powers): the
+refusal, the field aim and `PowerUse.use`. `ActionEnemy` and `PartyFollower` use it before the
+move. `PartyFollower._report_move` tells its `PowerSet` of each new swing but the dodge. New
+`power_entry_test` (3).
+**Why.** The gaps recorded in C6.2b, C6.5b, C6.5c and C9.9b.
+**Verified.** Ladder: 0 warnings; 5373 passed, 0 failed; checkers silent.
+**Gaps.** The follower's report and power use have no test of their own; the decider may keep
+picking a refused power until another entry wins the roll.
+
+## 2026-11-18 — C10.23 · Bars and pop-ups on the battle screen
+
+**Did.** `BattleReadout.bar(fighter)`, a `ProgressBar` with flat placeholder colours, added under
+each fighter's note by `BattleScreen._fill`. New `BattlePopups` (ui), a child of the screen from
+`_ready`, places a `Label` by the fighter's line and ages it out. New `battle_bars_test` (3).
+**Why.** The gaps recorded in C2.7.
+**Verified.** Ladder: 0 warnings; 5377 passed, 0 failed; checkers silent. A windowed capture of
+the demo's wisp battle showed a green bar under each of the four lines.
+**Gaps.** Only the damage pool has a bar; the other pools stay text. No hit animation.
+
+## 2026-11-18 — C10.25 · A power's move in a battle
+
+**Did.** New `MoveInBattle` (gameplay/powers): `needed(power)` (a striking move, no damaging skill)
+and `land(user, power, aimed, rng)`, `hits` times `Combatant.hit` per foe plus `Weakness.strike`.
+`PowerUse.use` calls it after the mechanism when not real-time. `Power.problems` counts a move as
+doing something. New `move_in_battle_test` (3). Taken before C10.24, as it serves the converted
+characters.
+**Why.** The gaps recorded in C9.11 and C9.9b.
+**Verified.** Ladder: 0 warnings; 5381 passed, 0 failed; checkers silent.
+**Gaps.** The move's shots and effects (its events) are not played in a battle; only its own
+hits land.
+
+## 2026-11-18 — C10.24 · Combos, juggles and grabs
+
+**Did.** New `ComboCounter` (gameplay), added by `ActionHost.equip`; `combo_changed` on the bus; the
+HUD line shows the combo from two hits. `Hurtbox` multiplies a juggled foe's hit by 1 +
+`juggle_bonus`. `Grab.struggle` (called from `ActionFighter.drive` on any press), `immune` (the
+`Hitbox` checks it before holding) and `shielded` (the `Hitbox` checks it before striking).
+`ActionFighter._time_press` took the grading out of `drive` for its budget. New
+`combo_grab_test` (5). Done after C10.25.
+**Why.** The gaps recorded in C8.8a and C8.8b.
+**Verified.** Ladder: 0 warnings; 5387 passed, 0 failed; checkers silent.
+**Gaps.** A combo gives nothing by itself; a game reads `count`. A foe held by the player
+cannot struggle.
+
+## 2026-11-18 — C10.26 · Followers dodge
+
+**Did.** `ActionBrain.dodge_chance`. `DefenceWatch._swings` became the static `swings_at(body, me)`.
+`PartyFollower._try_dodge`, each frame before it picks a target, rolls once per foe swing (keys
+remembered until no swing is near) and starts the loadout's dodge when `can_dodge`. New
+`follower_dodge_test` (3).
+**Why.** The gaps recorded in C4.9 and C4.7.
+**Verified.** Ladder: 0 warnings; 5391 passed, 0 failed; checkers silent.
+**Gaps.** Followers do not dodge shots, only swings. No demo follower has a chance set yet.
+
+## 2026-11-18 — C10.27 · Foes fight as a group
+
+**Did.** New `AttackTokens` (gameplay, statics keyed by the target's instance id): `take`,
+`release`, `ring_spot`. `ActionEnemy` asks before its ATTACK swing and gives back in
+`_after_step` (which also took the unseen and fallen fades out of `act`). `ActionDecider` counts a
+timed retreat down and holds it spent until hp is back over the line. New `attack_tokens_test` (3).
+**Why.** The gaps recorded in C3.6.
+**Verified.** Ladder: 0 warnings; 5395 passed, 0 failed; checkers silent.
+**Gaps.** Tokens are for field foes only; followers do not take turns. The ring ignores walls.
+
+## 2026-11-18 — C10.28 · Threat in turn battles
+
+**Did.** `BattleSetup._fighter` adds an `Aggro`. `Aggro.top(body)`. TargetRule.THREAT (appended)
+in `BattleAi._aim`. `BattleLog.name_for` lets `BattleReadout.line` name the top of the table.
+`ActionEnemy.after()` and the HUD's target line. New `battle_threat_test` (3).
+**Why.** The gaps recorded in C8.6.
+**Verified.** Ladder: 0 warnings; 5399 passed, 0 failed; checkers silent.
+**Gaps.** Threat in a battle never fades. A party member's line also names its top, when a foe
+has hurt it.
+
+## 2026-11-18 — C10.29 · The loadout from the battle menu
+
+**Did.** `BattleScreen.LOADOUT_KEY` row on the first menu and `_open_loadout`, which pushes
+`LoadoutScreen.for_members` with the current battle fighter and its definition. LOADOUT also binds
+`JOY_BUTTON_PADDLE2`. New `battle_loadout_test` (3).
+**Why.** The gaps recorded in C9.7.
+**Verified.** Ladder: 0 warnings; 5403 passed, 0 failed; checkers silent.
+**Gaps.** The gear screen is not offered in a battle. `battle_screen.gd` is at 249/250 code lines.
+
+## 2026-11-18 — C10.30 · ATB time in a turn battle
+
+**Did.** `TurnOrder.ATB` (appended) and `Encounter.atb_ticks_per_second`; `BattleSetup` builds a
+`CtbScheduler` for anything but ROUNDS. New `AtbClock` (ui), a child of the battle screen, steps
+`CtbScheduler.advance` and calls the screen's `advance` when a gauge fills with no turn open; the
+screen's loop asks `AtbClock.ready` before `next_turn`. New `atb_clock_test` (4).
+**Why.** The gaps recorded in C4.10.
+**Verified.** Ladder: 0 warnings; 5408 passed, 0 failed; checkers silent.
+**Gaps.** No gauge is drawn on the screen; in active mode a foe whose gauge fills during the
+player's menu waits for the player. `battle_screen.gd` is at 250/250.
+
+## 2026-11-18 — C10.31 · Timed hits in turn battles
+
+**Did.** `Skill.prompt`. `BattleScreen._act` hands a timed skill to the new `BattleTiming` (ui),
+which disables the menu rows, shows a cue line, and on a press or the window's end calls the
+screen's new public `act_now` with `SkillUse.timed` set to the grade's multiplier (read in
+`SkillUse._hit`). The results lines moved to `BattleReadout.reward_lines` to make room. New
+`battle_timing_test` (2).
+**Why.** The gaps recorded in C4.10.
+**Verified.** Ladder: 0 warnings; 5411 passed, 0 failed; checkers silent.
+**Gaps.** No skill in the demo carries a prompt yet. Heals and effects are not grown by a press.
+
+## 2026-11-18 — C10.34 · The converter's super pause
+
+**Did.** `MoveEvent.others_only`; `MoveEvents._stop_others` puts a SECONDS status with `time_rate`
+-1 on every other real-time fighter (`FighterTime`). `MugenState` marks a `superpause`,
+`MugenFormula` passes `others_only`, `MugenEvents.fill` sets it and lists unfound sounds in
+`missing`, which `mugen_build.gd` prints. New `super_pause_test` (3); one converter expectation
+gained the field. Taken before C10.32 and C10.33, as it serves further converted characters.
+**Why.** The gaps recorded in C8.16b.
+**Verified.** Ladder: 0 warnings; 5415 passed, 0 failed; checkers silent.
+**Gaps.** Not done: `p2bodydist` and other non-time triggers are still treated as always true
+(listed in `needs`); a reach condition from them is left for later. Eto's kit was not rebuilt.
+
+## 2026-11-18 — C10.32 · The held finisher
+
+**Did.** New finisher settings. `FinisherRun.let_go` cancels or strikes, with the strike's power
+scaled by `_grown` in `_scaled`; `_still_status` (a SECONDS SKIP_TURN, so `halts`) is applied and
+cured with the charge; `_reaches` tests a circle or a line. `ActionFighter` calls
+`PowerSlots.release` when a slot key comes up. New `finisher_hold_test` (4).
+**Why.** The gaps recorded in C6.8.
+**Verified.** Ladder: 0 warnings; 5420 passed, 0 failed; checkers silent.
+**Gaps.** A follower's or foe's hold finisher has no key, so it charges to full. The battle path
+is unchanged.
+
+## 2026-11-18 — C10.33 · Battlefield shapes
+
+**Did.** `BattlefieldMechanism.Shape` with `length`, `width` and `size`; new `BattlefieldShape.covers`
+(gameplay); `BattlefieldRun.use` keeps `_point` and `_facing` and `_reaches` asks the shape.
+`Who.TAGGED` (appended) and `BattlefieldEffect.tag`, matched by `BattlefieldGroups`. `_join`
+applies statuses with the field as applier and `_part` cures only those. New
+`battlefield_shape_test` (4).
+**Why.** The gaps recorded in C6.9a.
+**Verified.** Ladder: 0 warnings; 5425 passed, 0 failed; checkers silent.
+**Gaps.** The wall a field may raise (`BattlefieldWall`) still circles the caster. The kept-status
+rule has no test of its own.
+
+## 2026-11-18 — C10.35 · Older sprite files
+
+**Did.** `MugenPacking.rle5(packed, count)` and `pcx(bytes)` (header, RLE scan lines, the palette
+at the end). `MugenSff.read` sends a version 1 file to `_read_v1`, a chain of 32-byte sprite
+headers, and `image` colours a `PCX` sprite from its own palette or, when it shares, the one
+before's. New `mugen_v1_test` (3), all bytes built by hand. This closes phase C10's board.
+**Why.** The gaps recorded in C9.9c.
+**Verified.** Ladder: 0 warnings; 5429 passed, 0 failed; checkers silent.
+**Gaps.** No real version 1 file has been read yet; a shared-palette PCX with no palette of its
+own is not read.
+
+## 2026-11-18 — C10.36a · Review fixes, gear and the menus
+
+**Did.** `GearUpgrades.awaken` and `Crafting._use_up` empty the sockets before forgetting the
+level, so a gem in a socket a level added comes back and its flag goes. `awaken` takes the
+wearer (the piece screen passes its body), takes the old piece off and wears the new one in its
+slot, a follower's too. `GearSet._revalidate` re-lends a kept set with no bag, so a follower's
+gems and levels count at once; a foe's set is unchanged. `GearScreen._opened` redraws after the
+piece screen closes. `CombatHud` polls only while a doom count shows, and redraws when a whole
+second has gone. `PartyScreen.member_line` reads a field member's hp and maximum from its
+`Vitals`. New `review_a_test` (7); each assertion failed on the old code.
+**Why.** The batch review of C10.3 to C10.35.
+**Verified.** Ladder: 0 warnings; 5437 passed, 0 failed; checkers silent; stripped 5323 passed,
+32 skipped.
+**Gaps.** A follower's worn piece that leaves the bag another way (dismantled, sold, used in a
+recipe) still stays on the follower, as a set with no bag cannot see it go.

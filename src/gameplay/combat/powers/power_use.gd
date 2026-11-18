@@ -12,6 +12,8 @@ extends RefCounted
 ##   the skill stronger or weaker by the power's `scaling`, lands it through `SkillUse.apply`,
 ##   runs the mechanism, starts the cooldown, and takes off the statuses the power uses up. A
 ##   once-per-battle power is written down as spent (C6.5f), and refused with ONCE after that.
+##   Its mechanism may refuse the targets first (`PowerExecutor.refuses`, C10.7), paying nothing.
+## A form that drains a pool is refused with POOL while that pool is empty (C10.7).
 ##
 ## SCALING NEVER CHANGES THE DATA. `scaled_skill` works on a copy, so the next use reads the
 ## kit's own numbers again.
@@ -74,11 +76,26 @@ static func refusal(user: Combatant, power: Power, hour: float = -1.0) -> Reason
 		return Reason.TEAM
 	if power.requires_fraction > 0.0 and _fraction(user, power.requires_pool) < power.requires_fraction:
 		return Reason.POOL
+	if _drained(user, power):
+		return Reason.POOL
 	if statuses != null and statuses.blocker(StatusEffect.Block.NO_SKILLS) != &"":
 		return Reason.BLOCKED
 	if power.skill != null and not SkillUse.affordable(user, power.skill):
 		return Reason.COST
 	return Reason.NONE
+
+
+# A form that drains a pool cannot be entered while that pool is empty; leaving it is free (C10.7).
+static func _drained(user: Combatant, power: Power) -> bool:
+	var form: FormMechanism = power.mechanism as FormMechanism
+	if form == null or form.drain_pool == &"" or maxf(form.drain_per_second,
+			maxf(form.drain_per_turn, form.drain_per_action)) <= 0.0:
+		return false
+	var statuses: StatusSet = StatusSet.of(user.get_parent())
+	if form.status != null and statuses != null and statuses.stacks(form.status.id) > 0:
+		return false
+	var vitals: Vitals = Vitals.of(user.get_parent())
+	return vitals != null and vitals.current(form.drain_pool) <= 0
 
 
 ## Who `power` would land on if `user` used it now in the field: the same aiming as a field
@@ -102,15 +119,24 @@ static func use(user: Combatant, power: Power, aimed: Array[Combatant],
 	if skill != null and aimed.is_empty() and skill.toggle_status == null:
 		return false
 	var body: Node = user.get_parent()
+	var powers: PowerSet = PowerSet.of(body)
+	var running: PowerExecutor = powers.executor(power.power_id)
+	# Its mechanism may refuse these targets before anything is paid (an order not taken, C10.7).
+	if running != null and running.refuses(user, aimed):
+		return false
 	if skill != null:
 		SkillUse.pay(user, skill)
 		SkillUse.apply(user, scaled_skill(user, power, aimed, hour), aimed, rng)
 	else:
 		PassiveMoments.skill(user, [])
-	var powers: PowerSet = PowerSet.of(body)
-	var running: PowerExecutor = powers.executor(power.power_id)
 	if running != null:
 		running.use(user, aimed, rng)
+	# In a battle, a power whose damage lives in its move lands that move's hits (C10.25).
+	if not user.real_time and MoveInBattle.needed(power):
+		MoveInBattle.land(user, power, aimed, rng)
+	# A power with no skill is done once its mechanism ran (C10.7).
+	if skill == null:
+		PassiveMoments.skill(user, [], true)
 	powers.start_cooldown(power)
 	if power.once_per_battle:
 		powers.once.spend(power.power_id)

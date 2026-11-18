@@ -31,9 +31,13 @@ var brain: ActionBrain
 var state: State = State.IDLE
 ## The move picked on entering ATTACK; null otherwise.
 var chosen: ActionMove
+## The power whose move `chosen` is, when the entry named one (C10.22); null for a plain move.
+var chosen_power: Power
 
 var _cooldown: float = 0.0
 var _wander_clock: float = 0.0
+var _retreat_left: float = 0.0
+var _retreat_spent: bool = false
 
 
 func _init(with_brain: ActionBrain = null) -> void:
@@ -66,8 +70,9 @@ func think(delta: float, target_distance: float, home_distance: float, hp_fracti
 func pick(distance: float, hp_fraction: float, rng: RandomNumberGenerator) -> ActionMove:
 	var usable: Array[ActionBrainEntry] = []
 	var total: float = 0.0
+	chosen_power = null
 	for entry: ActionBrainEntry in brain.moves:
-		if entry == null or entry.move == null or entry.weight <= 0.0:
+		if entry == null or _move_of(entry) == null or entry.weight <= 0.0:
 			continue
 		var reach: float = entry.reach if entry.reach > 0.0 else brain.attack_range
 		if distance > reach or distance < entry.min_reach or hp_fraction > entry.only_below:
@@ -80,8 +85,18 @@ func pick(distance: float, hp_fraction: float, rng: RandomNumberGenerator) -> Ac
 	for entry: ActionBrainEntry in usable:
 		roll -= entry.weight
 		if roll < 0.0:
-			return entry.move
-	return usable.back().move
+			chosen_power = entry.power
+			return _move_of(entry)
+	var last: ActionBrainEntry = usable[usable.size() - 1]
+	chosen_power = last.power
+	return _move_of(last)
+
+
+# The move an entry plays: its own, else its power's (C10.22).
+static func _move_of(entry: ActionBrainEntry) -> ActionMove:
+	if entry.move != null:
+		return entry.move
+	return entry.power.move if entry.power != null else null
 
 
 func _choose(delta: float, target_distance: float, home_distance: float, hp_fraction: float,
@@ -90,7 +105,15 @@ func _choose(delta: float, target_distance: float, home_distance: float, hp_frac
 		return State.RETURN
 	if home_distance > brain.leash_radius:
 		return State.RETURN
-	if brain.retreat_below > 0.0 and hp_fraction < brain.retreat_below \
+	# A timed retreat (C10.27) turns back when its time is up, until the hp recovers.
+	if hp_fraction >= brain.retreat_below:
+		_retreat_spent = false
+	if state == State.RETREAT and brain.retreat_for > 0.0:
+		_retreat_left -= delta
+		_retreat_spent = _retreat_left <= 0.0
+	elif brain.retreat_for > 0.0:
+		_retreat_left = brain.retreat_for
+	if brain.retreat_below > 0.0 and hp_fraction < brain.retreat_below and not _retreat_spent \
 			and target_distance < brain.retreat_distance:
 		return State.RETREAT
 	var chasing: bool = state == State.CHASE or state == State.RETREAT

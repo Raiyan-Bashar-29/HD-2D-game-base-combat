@@ -32,8 +32,9 @@ static func hides(fighter: Combatant) -> bool:
 
 
 ## True when `user` may choose `other` under `filter`: the faction table allows it, and
-## `other` is not an unseen foe. A `skill` that hits everyone reaches the unseen too, and a
-## skill with a stat filter keeps only the fighters that fit it.
+## `other` is not an unseen foe. A `skill` that hits everyone reaches the unseen too (not a foe's
+## thing or untouchable guest, `INERT`), and a skill with a stat filter keeps only the fighters
+## that fit it.
 static func open(user: Combatant, other: Combatant, filter: FactionTable.Target,
 		skill: Skill = null) -> bool:
 	if user == null or not user.can_target(other, filter):
@@ -41,8 +42,9 @@ static func open(user: Combatant, other: Combatant, filter: FactionTable.Target,
 	# A skill may keep only targets whose stat fits (C8.15b).
 	if skill != null and not skill.admits(other.sheet.value(skill.filter_stat)):
 		return false
+	# A skill that hits everyone reaches an unseen foe, but never an untouchable guest (C10.6).
 	if skill != null and skill.scope == Skill.Scope.ALL:
-		return true
+		return not (other.is_in_group(INERT) and user.can_target(other, FactionTable.Target.ENEMY))
 	return not (hides(other) and user.can_target(other, FactionTable.Target.ENEMY))
 
 

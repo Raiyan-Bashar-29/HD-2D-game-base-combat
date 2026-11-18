@@ -77,11 +77,31 @@ func _do(event: MoveEvent) -> void:
 			_shoot(body, event)
 		MoveEvent.Kind.SHAKE:
 			Events.camera_shake_requested.emit(event.amount, event.seconds)
+		MoveEvent.Kind.PAUSE when event.others_only:
+			_stop_others(body, event.seconds)
 		MoveEvent.Kind.PAUSE:
 			if CombatClock.scale > 0.0 and event.seconds > 0.0:
 				_before = CombatClock.scale
 				_pause_left = event.seconds
 				CombatClock.set_scale(0.0)
+
+
+# A super pause (C10.34): every other real-time fighter's own time stops for `seconds`, by a status
+# that wears off on the fight's clock (`FighterTime`).
+static func _stop_others(body: Node3D, seconds: float) -> void:
+	var me: Combatant = Combatant.of(body)
+	if me == null or seconds <= 0.0 or not body.is_inside_tree():
+		return
+	var still := StatusEffect.new()
+	still.id = &"status/super_pause"
+	still.unit = StatusEffect.Unit.SECONDS
+	still.duration = seconds
+	still.modifiers = [StatModifier.of(FighterTime.STAT, StatModifier.Op.ADD, -1.0, &"")]
+	for node: Node in body.get_tree().get_nodes_in_group(Combatant.GROUP):
+		var other: Combatant = node as Combatant
+		var statuses: StatusSet = StatusSet.of(other.get_parent()) if other != null else null
+		if other != me and other.real_time and statuses != null:
+			statuses.apply(still)
 
 
 func _sound(stream: AudioStream) -> void:

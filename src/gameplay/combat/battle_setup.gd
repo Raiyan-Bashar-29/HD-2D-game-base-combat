@@ -67,8 +67,9 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 		guests.append(_guest(one, ours, holder))
 	var theirs: Array[Combatant] = _foes(encounter, holder)
 	# The encounter file chooses the turn order: plain rounds, or CTB where speed buys extra turns.
-	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
-			else RoundScheduler.new()
+	# ATB is the same queue with time fed in by the screen's clock (C10.30).
+	var turns: TurnScheduler = RoundScheduler.new() if encounter.turn_order == Encounter.TurnOrder.ROUNDS \
+			else CtbScheduler.new()
 	turns.weakness_extra_turns = encounter.weakness_extra_turns
 	var battle := Battle.new(ours + guests, theirs, turns, rng)
 	battle.encounter = encounter
@@ -181,6 +182,8 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 	# Copies of one definition share a kind, so a weakness revealed on one shows on all.
 	combatant.kind = def.combatant_id
 	actor.add_child(combatant)
+	# A threat table, so a brain can aim at whoever hurt it most (C10.28).
+	actor.add_child(Aggro.new())
 	holder.add_child(actor)
 	# The kit goes on after the actor is in the tree, when the Combatant's sheet is wired up, so
 	# the kit's stat bonuses land on it.

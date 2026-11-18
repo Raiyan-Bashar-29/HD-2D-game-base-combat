@@ -85,6 +85,8 @@ var sheet: StatSheet = StatSheet.new()
 var mercy_left: float = 0.0
 var shield_wait: float = 0.0
 var shield_carry: float = 0.0
+## The parts of a point each pool has regenerated in the field and not yet added (C10.9).
+var regen_carry: Dictionary[StringName, float] = {}
 # The last `field_moves` built, and what it was built from.
 var _merged: MoveSet
 var _merged_own: MoveSet
@@ -213,6 +215,14 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 	Rows.soften(self, target, result)
 	target.receive(result, combatant_id)
 	Rows.shift(target, result)
+	# A landed hit may bring down a battlefield on its target, in a battle too (C6.9c, C10.7): by
+	# its tags, its element, and for a plain blow the worn weapon's tags.
+	if not result.missed and not result.blocked:
+		var keys: Array[StringName] = result.tags.duplicate()
+		keys.append(element)
+		if tags.is_empty():
+			keys.append_array(strike_tags())
+		BattlefieldRun.breaks(target, keys)
 	return result
 
 
@@ -226,6 +236,9 @@ func receive(result: DamageResult, from: StringName) -> int:
 	# A miss changes nothing and wakes nobody; it is announced as a miss, not as 0 damage.
 	if result.missed:
 		Events.attack_missed.emit(combatant_id, from)
+		# In a battle a miss is the target's dodge too, for its DODGE passives (C10.6).
+		if not real_time:
+			Events.attack_dodged.emit(combatant_id, from)
 		return 0
 	var outer: DamageResult = PassiveHits.now
 	PassiveHits.now = result

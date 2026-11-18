@@ -111,6 +111,7 @@ func act(delta: float) -> ActionDecider.State:
 	if me != null:
 		Weakness.recover(me)
 		HitGuard.pass_time(me, dt)
+		Meters.regen_seconds(me, dt)
 		Aggro.of(self).pass_time(dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Staggered, it stands still and drops the swing it was in, as under a knockback.
@@ -133,12 +134,17 @@ func act(delta: float) -> ActionDecider.State:
 		if _gone_in <= 0.0 and not is_queued_for_deletion():
 			queue_free()
 	timeline.step(dt)
-	Unseen.fade(self)
+	_after_step()
 	if _hitbox != null:
 		_hitbox.rotation.y = atan2(-facing.x, -facing.z)
 		if timeline.is_hitting():
 			_hitbox.sweep()
 	return state
+
+
+## The fighter this foe is after now, or null (C10.28: the HUD names it).
+func after() -> Combatant:
+	return _target.fighter() if _target != null and is_instance_valid(_target) else null
 
 
 ## The standing hurtbox this enemy picks, or null: a taunting fighter, then the most threat,
@@ -152,7 +158,12 @@ func _carry_out(state: ActionDecider.State, to_target: Vector3) -> void:
 	var wish: Vector3 = Vector3.ZERO
 	match state:
 		ActionDecider.State.ATTACK:
-			if decider.chosen != null:
+			# Waiting its turn on the target, it circles instead (C10.27); a power named by the brain
+			# is used first, and its move plays only if it was (C10.22).
+			var turn: bool = _target == null or AttackTokens.take(self, _target.get_parent(), decider.brain.max_attackers)
+			if not turn:
+				wish = _towards(AttackTokens.ring_spot(_target.get_parent() as Node3D, self, decider.brain.attack_range + 1.5)) * speed
+			elif decider.chosen != null and (decider.chosen_power == null or FieldPowerPress.use(self, decider.chosen_power, rng)):
 				_face(to_target)
 				timeline.start(decider.chosen)
 				if _hitbox != null:
@@ -210,6 +221,17 @@ func _wander_point() -> Vector3:
 ## The flag that remembers a `remember_defeat` enemy was beaten: its area and its node name.
 func defeat_flag() -> StringName:
 	return StringName("field_defeated/%s/%s" % [Director.current_area_id, name])
+
+
+# After its step: its swing over, or fallen, it gives its turn on the target back (C10.27); an
+# unseen foe is drawn faded; a fallen foe fades out over its linger (C10.14).
+func _after_step() -> void:
+	if not timeline.busy() or _fallen:
+		AttackTokens.release(self)
+	Unseen.fade(self)
+	var visual: CharacterVisual = get_node_or_null(^"Visual") as CharacterVisual
+	if _fallen and linger > 0.0 and visual != null and visual.sprite != null:
+		visual.sprite.modulate.a = clampf(_gone_in / linger, 0.0, 1.0)
 
 
 ## The first think after it falls announces the defeat, once, and starts the `linger` clock

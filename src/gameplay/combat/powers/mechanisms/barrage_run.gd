@@ -157,6 +157,9 @@ func _fire(i: int) -> void:
 			else body.global_position + facing_of(body) * 6.0
 	var start: Transform3D = spot(barrage.pattern, i, _total, body.global_position, at,
 			barrage.radius, barrage.height, _rng)
+	# A shot never starts past a wall: pulled back toward whoever it is spread around (C10.15).
+	var around: bool = barrage.pattern in [BarrageMechanism.Pattern.RING_AROUND_TARGET, BarrageMechanism.Pattern.RAIN]
+	start.origin = CombatSight.short_of(body, (at if around else body.global_position) + Vector3.UP * CHEST, start.origin)
 	var shot := Projectile.new()
 	shot.attacker = _user
 	shot.rng = _rng

@@ -26,6 +26,35 @@ const FLEE_REASON_KEY: String = "ui.battle.reason.no_flee"
 const BOOST_REASON_KEY: String = "ui.battle.reason.no_boost"
 ## The Swap row when it keeps the turn (C8.22c).
 const FREE_SWAP_KEY: String = "ui.battle.swap_free"
+## What a command does, shown over its target list (C10.5).
+const HITS_KEY: String = "ui.battle.about.hits"
+const REACH_PREFIX: String = "ui.battle.about.reach."
+## A fallen fighter in a target list, such as a revive's.
+const FALLEN_KEY: String = "ui.battle.about.fallen"
+
+
+## What `command` does, for the line over its target list (C10.5): its skill's or power's
+## description, its hits when more than one, and whom it reaches. Empty for a plain command.
+static func explain(command: BattleCommand) -> String:
+	var parts: PackedStringArray = PackedStringArray()
+	var skill: Skill = command.skill
+	var desc: String = skill.desc_key if skill != null else ""
+	if desc == "" and command.power != null:
+		desc = command.power.desc_key
+	if desc != "":
+		parts.append(TranslationServer.translate(desc))
+	if skill != null and skill.hits > 1:
+		parts.append(TranslationServer.translate(HITS_KEY).format({"hits": skill.hits}))
+	if skill != null:
+		var reach: String = str(FactionTable.Target.find_key(skill.target)).to_lower()
+		parts.append(TranslationServer.translate(REACH_PREFIX + reach + ("_all" if skill.scope == Skill.Scope.ALL else "")))
+	return "   ".join(parts)
+
+
+## `shown`, the name of `target` in a target list, marked when it has fallen (a revive's).
+static func target_text(target: Combatant, shown: String) -> String:
+	var vitals: Vitals = Vitals.of(target.get_parent())
+	return TranslationServer.translate(FALLEN_KEY).format({"name": shown}) if vitals != null and vitals.is_defeated() else shown
 
 
 ## The first menu, in authored order: a `BattleCommand` for each command with no category, and

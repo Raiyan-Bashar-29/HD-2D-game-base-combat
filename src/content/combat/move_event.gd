@@ -16,7 +16,8 @@ extends Resource
 ##   and one of several `hits` strikes again over its active time, a hit at a time.
 ## - SPEED: from now on the move's travel speed is `amount` metres a second.
 ## - SHAKE: the screen shakes with strength `amount` (0 to 1) for `seconds`.
-## - PAUSE: the whole fight stops for `seconds` (a hit pause).
+## - PAUSE: the whole fight stops for `seconds` (a hit pause). With `others_only` (C10.34, a
+##   super pause) everyone but the user stops instead, so the user's own move plays on.
 ## `offset` is in the body's own space: forward is -z.
 ##
 ## OWNS: the shape of one timed event and what is wrong with it.
@@ -24,6 +25,9 @@ extends Resource
 ## (gameplay) does the rest.
 
 enum Kind { SOUND, EFFECT, SHOT, SPEED, SHAKE, PAUSE }
+
+## PAUSE only: stop everyone but the user, not the whole fight (C10.34).
+@export var others_only: bool = false
 
 @export var at: float = 0.0
 @export var kind: Kind = Kind.SOUND

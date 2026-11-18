@@ -52,6 +52,23 @@ func status(id: StringName) -> StatusEffect:
 	return null
 
 
+## What clashes between this kit and each of `others` worn beside it on one fighter (C10.11):
+## a power id both list (one executor would replace the other's) or a passive status id both
+## hold. Each clash is a line; this kit itself is skipped in `others`.
+func clashes(others: Array[PowerKit]) -> PackedStringArray:
+	var found: PackedStringArray = PackedStringArray()
+	for other: PowerKit in others:
+		if other == null or other == self:
+			continue
+		for entry: Power in powers:
+			if entry != null and other.powers.any(func(p: Power) -> bool: return p != null and p.power_id == entry.power_id):
+				found.append("kits %s and %s both list power %s" % [kit_id, other.kit_id, entry.power_id])
+		for status: StatusEffect in passives:
+			if status != null and other.passives.any(func(s: StatusEffect) -> bool: return s != null and s.id == status.id):
+				found.append("kits %s and %s both hold passive %s" % [kit_id, other.kit_id, status.id])
+	return found
+
+
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
 	var where: String = "%s kit %s" % [context, kit_id]

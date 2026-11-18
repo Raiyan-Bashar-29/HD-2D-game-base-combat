@@ -15,6 +15,10 @@ extends RefCounted
 
 
 ## Fills `move.events` from `made`, the formula's numbers for that move.
+## Every sound file a move named and `fill` could not find, for the build's report (C10.34).
+static var missing: PackedStringArray = PackedStringArray()
+
+
 static func fill(move: ActionMove, made: Dictionary, folder: String, most: float = INF) -> void:
 	for event: Dictionary in DictRead.get_array(made, "events"):
 		var out := MoveEvent.new()
@@ -26,11 +30,15 @@ static func fill(move: ActionMove, made: Dictionary, folder: String, most: float
 				out.kind = MoveEvent.Kind.SOUND
 				out.sound = _sound(folder.path_join(DictRead.get_string(event, "file")))
 				if folder == "" or out.sound == null:
+					# Listed for the build's report, so a missing sound is not silent (C10.34).
+					if not missing.has(DictRead.get_string(event, "file")):
+						missing.append(DictRead.get_string(event, "file"))
 					continue
 			"shake":
 				out.kind = MoveEvent.Kind.SHAKE
 			"pause":
 				out.kind = MoveEvent.Kind.PAUSE
+				out.others_only = DictRead.get_bool(event, "others_only")
 			"effect":
 				out.kind = MoveEvent.Kind.EFFECT
 				out.offset = DictRead.get_vector3(event, "offset")

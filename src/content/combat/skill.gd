@@ -30,6 +30,12 @@ enum Filter { NONE, BELOW, ABOVE, MULTIPLE_OF }
 
 ## Localization key for the skill's name in the command menu.
 @export var name_key: String = ""
+## A timed hit in a turn battle (C10.31): after the target is chosen, a press inside the window
+## grows the skill by its bonus, and one in its perfect centre by more. Null is no press.
+@export var prompt: TimedWindow
+## Localization key for a line saying what it does, shown while its target is picked (C10.5).
+## Empty shows only its hits and reach.
+@export var desc_key: String = ""
 ## The pool the cost is spent from, and how much. An empty pool or zero cost is free.
 @export var cost_pool: StringName = &""
 @export var cost: int = 0

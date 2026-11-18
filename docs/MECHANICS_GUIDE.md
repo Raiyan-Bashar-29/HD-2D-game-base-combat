@@ -103,6 +103,8 @@ Say Eto is in her kagune stance and the player presses **2** (Air Strike).
    4. The cooldown starts (`PowerSet.start_cooldown`), a once-per-battle power is marked
       spent, every running mechanism hears `power_used`, and `consumes_statuses` are cured.
 8. **The move.** Back in `press_slot`: if the power has a `move`, `timeline.start(move)` plays it
+In a turn-based battle a power whose damage lives in its `move` lands the move's hits instead
+(`MoveInBattle`, C10.25); one whose skill deals damage keeps to the skill.
    on the fighter's own clock, **replacing whatever swing was running.**
 9. **Every frame after** (`ActionFighter.drive`): statuses tick in seconds, the timeline steps
    through STARTUP → ACTIVE → RECOVERY, the hitbox is fitted to the move and turned to face,
@@ -390,7 +392,8 @@ What each piece teaches, so you can reuse it:
    rule 4 in `POWERS.md` ("every power works in all three formulas"). Don't fix it by giving
    the skill ENEMY power: in the field the skill lands at once AND the move's hitbox hits
    again, so the special would hit twice. The fix needs a rule ("in a battle, a power whose
-   skill has no power strikes with its move's numbers"), and it is on the follow-up list.
+   skill has no power strikes with its move's numbers"). **Fixed in C10.25**: that rule is
+   `MoveInBattle`.
 2. **A kit's `passive_skills` are held in every stance.** Eto's `kakuja_regen` heals her in her
    human stance too. A passive meant for one form belongs on that form's `passive_skills`.
 3. **A skill must do something** (`Skill.problems`): a cost-only skill needs at least a status.

@@ -74,6 +74,8 @@ const STATUSES_KEY: String = "ui.battle.statuses"
 const WEAK_KEY: String = "ui.battle.weak"
 const AUTO_ON_KEY: String = "ui.battle.auto_on"
 const AUTO_OFF_KEY: String = "ui.battle.auto_off"
+## The row that opens the member's passive loadout mid-battle, at no cost of a turn (C10.29).
+const LOADOUT_KEY: String = "ui.battle.loadout"
 ## Seconds between two turns auto-battle plays.
 const AUTO_DELAY: float = 0.6
 ## How many upcoming turns the order line shows.
@@ -114,6 +116,8 @@ func _ready() -> void:
 	if battle != null:
 		battle_log = BattleLog.new(battle, name_of)
 		battle_log.start()
+		add_child(BattlePopups.for_screen(self))
+		add_child(AtbClock.for_screen(self))
 	advance()
 
 
@@ -125,7 +129,7 @@ func advance() -> void:
 	while battle.outcome() == Battle.Outcome.ONGOING:
 		var actor: Combatant = battle.current()
 		if actor == null:
-			actor = battle.next_turn()
+			actor = battle.next_turn() if AtbClock.ready(battle) else null
 		if actor == null or battle.brain_of(actor) == null or AutoBattle.plays(battle, actor):
 			break
 		BattleAi.take_turn(battle, battle.brain_of(actor))
@@ -160,6 +164,14 @@ func _free_pair(pair: Array) -> void:
 	refresh()
 
 
+# The current member's passive loadout, over the battle; closing it returns to the same turn.
+func _open_loadout() -> void:
+	var fighter: Combatant = battle.current()
+	var def: CombatantDef = battle.defs.get(fighter.combatant_id, null) if fighter != null else null
+	if def != null:
+		push(LoadoutScreen.for_members([fighter.get_parent()] as Array[Node], [def] as Array[CombatantDef]))
+
+
 func _toggle_auto() -> void:
 	AutoBattle.toggle()
 	_auto_wait = AUTO_DELAY
@@ -181,10 +193,12 @@ func _fill() -> void:
 		return
 	for fighter: Combatant in battle.party + battle.enemies:
 		add_note(BattleReadout.line(fighter, name_of(fighter), battle_log))
+		rows.add_child(BattleReadout.bar(fighter))
 	# Over: show the result, the rewards, and one Continue button.
 	if battle.outcome() != Battle.Outcome.ONGOING:
 		add_note(tr(BattleReadout.outcome_key(battle)))
-		_reward_notes()
+		for line: String in BattleReadout.reward_lines(self):
+			add_note(line)
 		add_row(tr(CONTINUE_KEY), request_close)
 		return
 	add_note(tr(ORDER_KEY).format({"names": ", ".join(_upcoming())}))
@@ -201,13 +215,7 @@ func _fill() -> void:
 		return
 	# A command is waiting for a target: list the targets, plus Back.
 	if _pending != null:
-		for target: Combatant in battle.targets_for(_pending):
-			add_row(name_of(target), _aim.bind(target))
-		# A free swap may trade a waiting member instead (C8.26): "Bench for Mate".
-		for pair: Array in BattleMenu.free_pairs(battle, _pending):
-			var names: Dictionary = {"in": name_of(pair[1] as Combatant), "out": name_of(pair[0] as Combatant)}
-			add_row(tr(SWAP_PAIR_KEY).format(names), _free_pair.bind(pair))
-		add_row(tr(BACK_KEY), _back)
+		_fill_targets()
 		return
 	# An open submenu: its commands, plus Back.
 	if _category != "":
@@ -222,6 +230,7 @@ func _fill() -> void:
 			_command_row(entry as BattleCommand)
 		else:
 			add_row(tr(entry as String), _open.bind(entry as String))
+	add_row(tr(LOADOUT_KEY), _open_loadout)
 	add_row(tr(AUTO_ON_KEY if AutoBattle.on() else AUTO_OFF_KEY), _toggle_auto)
 
 
@@ -231,6 +240,19 @@ func _closed() -> void:
 		battle_log.stop()
 	if battle != null:
 		BattleSetup.release(battle)
+
+
+# The target list: what the command does (C10.5), each target (a fallen one marked), plus Back.
+func _fill_targets() -> void:
+	if BattleMenu.explain(_pending) != "":
+		add_note(BattleMenu.explain(_pending))
+	for target: Combatant in battle.targets_for(_pending):
+		add_row(BattleMenu.target_text(target, name_of(target)), _aim.bind(target))
+	# A free swap may trade a waiting member instead (C8.26): "Bench for Mate".
+	for pair: Array in BattleMenu.free_pairs(battle, _pending):
+		var names: Dictionary = {"in": name_of(pair[1] as Combatant), "out": name_of(pair[0] as Combatant)}
+		add_row(tr(SWAP_PAIR_KEY).format(names), _free_pair.bind(pair))
+	add_row(tr(BACK_KEY), _back)
 
 
 ## The fighter's name: its definition's key, with the number `BattleSetup` gave a duplicate.
@@ -265,7 +287,7 @@ func _command_row(command: BattleCommand) -> void:
 	# The cost the fighter really pays, after its kit's discounts (C6.1a).
 	if skill != null and skill.cost > 0 and not SkillUse.stance_on(battle.current(), skill):
 		text = tr(COST_KEY).format({"label": text, "cost": SkillUse.cost_of(battle.current(), skill),
-				"pool": String(skill.cost_pool).to_upper()})
+				"pool": CombatNames.pool(skill.cost_pool)})
 	if reason != "":
 		var args: Dictionary = PowerMenu.reason_args(battle.current(), command)
 		text = tr(UNAVAILABLE_KEY).format({"label": text, "reason": tr(reason).format(args)})
@@ -323,7 +345,16 @@ func _back() -> void:
 	refresh()
 
 
+# A skill with a timed press waits for the press first (C10.31); anything else acts at once.
 func _act(command: BattleCommand, targets: Array[Combatant]) -> void:
+	if BattleTiming.wants(command):
+		add_child(BattleTiming.begin(self, command, targets))
+	else:
+		act_now(command, targets)
+
+
+## The member acts with `command` on `targets` now, and the battle plays on.
+func act_now(command: BattleCommand, targets: Array[Combatant]) -> void:
 	# If the battle refused (e.g. not enough MP), show a line saying so and keep the menu.
 	_refused = not battle.act(command, targets, _boost)
 	if not _refused:
@@ -340,21 +371,3 @@ func _upcoming() -> Array[String]:
 	return names
 
 
-func _reward_notes() -> void:
-	if rewards == null or battle.outcome() != Battle.Outcome.WON:
-		return
-	if rewards.experience > 0:
-		add_note(tr(EXPERIENCE_KEY).format({"amount": rewards.experience}))
-	for fighter: Combatant in battle.party:
-		if rewards.levelled.has(fighter.combatant_id):
-			add_note(tr(LEVEL_UP_KEY).format({"name": name_of(fighter),
-					"level": Party.level_of(fighter.combatant_id)}))
-	for item_id: StringName in rewards.items:
-		add_note(tr(FOUND_KEY).format({"item": _item_name(item_id)}))
-	for item_id: StringName in rewards.left_behind:
-		add_note(tr(LEFT_KEY).format({"item": _item_name(item_id)}))
-
-
-func _item_name(item_id: StringName) -> String:
-	var definition: ItemDefinition = ItemDb.definition(item_id)
-	return tr(definition.name_key) if definition != null else String(item_id)

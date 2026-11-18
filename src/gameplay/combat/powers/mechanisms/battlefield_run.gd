@@ -42,6 +42,9 @@ extends FormRun
 ## MUST NOT: name a character, or touch another battlefield's fighters.
 
 # The fighters inside now, by instance id.
+# Where the field rose and which way the caster faced (C10.33).
+var _point: Vector3 = Vector3.ZERO
+var _facing: Vector3 = Vector3.FORWARD
 var _inside: Dictionary[int, Combatant] = {}
 # Seconds or turns left to stand; 0 or less stands until ended.
 var _left: float = 0.0
@@ -64,6 +67,12 @@ var _broken: bool = false
 func use(user: Combatant, targets: Array[Combatant], rng: RandomNumberGenerator) -> void:
 	if rng != null:
 		_rng = rng
+	# Where and which way it rose, for a shape left behind (C10.33): on the aimed foe, else here.
+	var body: Node3D = user.get_parent() as Node3D
+	if body != null and body.is_inside_tree():
+		_facing = BarrageRun.facing_of(body)
+		var aimed: Node3D = targets[0].get_parent() as Node3D if not targets.is_empty() and is_instance_valid(targets[0]) else null
+		_point = aimed.global_position if aimed != null else body.global_position
 	super.use(user, targets, rng)
 	_settle()
 
@@ -170,9 +179,11 @@ func _raise() -> void:
 
 func _lower() -> void:
 	var me: Combatant = _caster()
-	Events.battlefield_lowered.emit(me.combatant_id if me != null else &"", _power_id(), _broken)
+	var broken: bool = _broken
 	_broken = false
+	# Down before it is announced, so a listener that looks again finds it gone (C10.14).
 	_up = false
+	Events.battlefield_lowered.emit(me.combatant_id if me != null else &"", _power_id(), broken)
 	_left = 0.0
 	if holder != null: holder.release_kit(_source("field_kit/"))
 	_stage.lower()
@@ -218,14 +229,11 @@ func _refresh() -> void:
 
 # True when `other` is within the field's reach of `me`: always in a battle or with no radius.
 func _reaches(me: Combatant, other: Combatant) -> bool:
-	var radius: float = (mechanism as BattlefieldMechanism).radius
 	var from: Node3D = me.get_parent() as Node3D
 	var to: Node3D = other.get_parent() as Node3D
-	if not me.real_time or radius <= 0.0 or from == null or to == null:
+	if not me.real_time or from == null or to == null:
 		return true
-	var gap: Vector3 = to.global_position - from.global_position
-	gap.y = 0.0
-	return gap.length() <= radius
+	return BattlefieldShape.covers(mechanism as BattlefieldMechanism, from.global_position, _point, _facing, to.global_position)
 
 
 # `other` comes inside: each of its effects' modifiers and statuses goes on.
@@ -239,7 +247,7 @@ func _join(other: Combatant) -> void:
 			other.sheet.add(StatModifier.of(modifier.stat, modifier.op, modifier.value, source))
 		if statuses != null:
 			for status: StatusEffect in effect.statuses:
-				statuses.apply(status)
+				statuses.apply(status, null, source)
 	_stage.take_in(other, (mechanism as BattlefieldMechanism).moves_fight and other.real_time)
 	_use_on(other, true)
 
@@ -253,9 +261,11 @@ func _part(other: Combatant) -> void:
 	if statuses != null:
 		# Every status the field could have given comes off, immune or not: a tag gained while
 		# inside must not keep the field's statuses on for good.
+		# One another source gave (C10.33) is left on.
 		for effect: BattlefieldEffect in _effects_for(other, false):
 			for status: StatusEffect in effect.statuses:
-				statuses.cure(status.id)
+				if statuses.applier(status.id) == _source():
+					statuses.cure(status.id)
 	_use_on(other, false)
 
 

@@ -21,6 +21,11 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if Actions.pressed_now(event, CombatActions.PARTY):
+		var root: UiRoot = UiRoot.find(self)
+		if root != null and toggle_party(root, Director.player):
+			get_viewport().set_input_as_handled()
+		return
 	var gear: bool = Actions.pressed_now(event, CombatActions.GEAR)
 	if not gear and not Actions.pressed_now(event, CombatActions.LOADOUT):
 		return
@@ -46,6 +51,28 @@ func toggle(stack: UiRoot, player: Node, gear: bool = false) -> bool:
 	if gear:
 		return stack.open(GearScreen.for_members(bodies, defs))
 	return stack.open(LoadoutScreen.for_members(bodies, defs))
+
+
+## Closes the party screen when it is on top, else opens it for the roster (C10.20), with the
+## bodies of `player` and their followers for the forms they hold. `members` stands in for the
+## configured roster when given. True when something changed.
+func toggle_party(stack: UiRoot, player: Node, members: Array[CombatantDef] = []) -> bool:
+	var top: UiScreen = stack.top()
+	if top != null and top.screen_id == PartyScreen.SCREEN_ID:
+		return stack.close_top()
+	if not stack.is_gameplay_input_allowed():
+		return false
+	var bodies: Array[Node] = []
+	var defs: Array[CombatantDef] = []
+	_gather(player, bodies, defs)
+	var field: Dictionary[StringName, Node] = {}
+	for i: int in defs.size():
+		field[defs[i].combatant_id] = bodies[i]
+	var roster: Array[CombatantDef] = members if not members.is_empty() \
+			else BattleHost.roster_from(str(ProjectSettings.get_setting(BattleHost.ROSTER_SETTING, "")))
+	if roster.is_empty():
+		roster = defs
+	return not roster.is_empty() and stack.open(PartyScreen.for_roster(roster, field))
 
 
 ## Fills the two lists with the controlled member, then each follower in line order. Anyone

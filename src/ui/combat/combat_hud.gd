@@ -15,10 +15,12 @@ extends Label
 ## quick slot's key, its power's name, and its cost, or why it cannot be used now (the same words
 ## the command menu uses, from `PowerMenu`). The battlefield line (C6.9g) only while one stands in
 ## the player's fight: each one's name, and the place it gives in brackets. The last line only
-## while something is locked on.
+## while something is locked on, with its other pools (its shield). A deadly status shows its
+## count (C10.13).
 ## It redraws whenever a pool moves, a status starts or ends, the lock changes, or a cooldown's
-## whole seconds tick down (`Events.power_cooldown_changed`), or a battlefield rises or comes down,
-## and never polls.
+## whole seconds tick down (`Events.power_cooldown_changed`), or a battlefield rises or comes down.
+## It polls only while a doom count is shown, as a status sends nothing while its seconds pass:
+## each frame it reads the counts again and redraws when a whole second has gone (C10.36a).
 ##
 ## OWNS: the rendering of the player's and the locked target's combat state.
 ## MUST NOT: change anything it shows, or find targets (it shows what `LockOn` announces).
@@ -31,6 +33,10 @@ const COST_KEY: String = "ui.battle.cost"
 const UNAVAILABLE_KEY: String = "ui.battle.unavailable"
 const POOL_KEY: String = "ui.battle.pool"
 const STATUSES_KEY: String = "ui.battle.statuses"
+## A deadly status with its count: "Doom 3" (C10.13).
+const DOOM_KEY: String = "ui.combat_hud.doom"
+## The player's combo, shown from two hits (C10.24).
+const COMBO_KEY: String = "ui.combat_hud.combo"
 const FIELD_KEY: String = "ui.combat_hud.field"
 const FIELD_PLACE_KEY: String = "ui.combat_hud.field_place"
 const VARIATION: StringName = &"HudText"
@@ -40,6 +46,9 @@ const PALETTE: StringName = &"UiPalette"
 var subject: Node
 ## The combatant id of the locked target, or `&""` for none.
 var target_id: StringName = &""
+
+# The doom counts drawn last, in whole seconds; empty when none is shown, and then no polling.
+var _doom_drawn: Array[int] = []
 
 
 func _ready() -> void:
@@ -54,6 +63,7 @@ func _ready() -> void:
 	Events.status_applied.connect(func(_w: StringName, _s: StringName, _n: int) -> void: refresh())
 	Events.status_expired.connect(func(_w: StringName, _s: StringName) -> void: refresh())
 	Events.lock_on_changed.connect(_on_lock_on_changed)
+	Events.combo_changed.connect(func(_w: StringName, _c: int) -> void: refresh())
 	Events.atb_changed.connect(func(_w: StringName, _v: float, _s: int) -> void: refresh())
 	Events.power_cooldown_changed.connect(func(_w: StringName, _p: StringName, _l: int) -> void: refresh())
 	Events.battlefield_raised.connect(func(_w: StringName, _p: StringName) -> void: refresh())
@@ -72,6 +82,8 @@ func refresh() -> void:
 	visible = fighter != null
 	if fighter == null:
 		text = ""
+		_doom_drawn.clear()
+		set_process(false)
 		return
 	var lines: Array[String] = [_fighter_line(fighter)]
 	var slots: String = slot_text(fighter)
@@ -85,26 +97,40 @@ func refresh() -> void:
 		var vitals: Vitals = Vitals.of(target.get_parent())
 		var line: String = tr(TARGET_KEY).format({"name": name_of(target),
 			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})
+		# Whom a field foe is after (C10.28).
+		var foe: ActionEnemy = target.get_parent() as ActionEnemy
+		if foe != null and foe.after() != null:
+			line += "   " + tr(BattleReadout.AFTER_KEY).format({"name": name_of(foe.after())})
+		# Its other pools too, its shield above all, so a break can be seen coming (C10.13).
+		for pool: String in _pools(target):
+			line += "   " + pool
 		# The target's statuses too, so a pressured or staggered foe shows it (C4.6).
 		var held: String = _statuses_text(target)
 		lines.append(line if held == "" else line + "   " + held)
 	text = "\n".join(lines)
+	_doom_drawn = _doom_counts()
+	set_process(not _doom_drawn.is_empty())
+
+
+# Only while a doom count is shown: redraws when one of the counts has lost a whole second.
+func _process(_delta: float) -> void:
+	if _doom_counts() != _doom_drawn:
+		refresh()
 
 
 func _fighter_line(fighter: Combatant) -> String:
 	var vitals: Vitals = Vitals.of(fighter.get_parent())
 	var parts: Array[String] = [tr(HP_KEY).format({"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})]
-	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
-		var pool := StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
-		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
-			parts.append(tr(POOL_KEY).format({"pool": String(pool).to_upper(),
-				"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	parts.append_array(_pools(fighter))
 	var meter: AtbMeter = AtbMeter.of(fighter.get_parent())
 	if meter != null:
 		parts.append(atb_text(meter.gauge))
 	var held: String = _statuses_text(fighter)
 	if held != "":
 		parts.append(held)
+	var combo: ComboCounter = ComboCounter.of(fighter.get_parent())
+	if combo != null and combo.count >= 2:
+		parts.append(tr(COMBO_KEY).format({"count": combo.count}))
 	# The worn weapon and its mode (C7.7b).
 	var weapon: String = WeaponLine.text(fighter.get_parent())
 	if weapon != "":
@@ -126,7 +152,7 @@ func slot_text(fighter: Combatant) -> String:
 		var label: String = tr(power.name_key)
 		if power.skill != null and power.skill.cost > 0:
 			label = tr(COST_KEY).format({"label": label, "cost": SkillUse.cost_of(fighter, power.skill),
-				"pool": String(power.skill.cost_pool).to_upper()})
+				"pool": CombatNames.pool(power.skill.cost_pool)})
 		var reason: String = PowerMenu.reason_key(fighter, power)
 		if reason != "":
 			var args: Dictionary = PowerMenu.reason_args(fighter, BattleCommand.for_power(power))
@@ -149,13 +175,42 @@ func field_text(fighter: Combatant) -> String:
 	return "   ".join(parts)
 
 
+# Every pool but the damage pool that has a size: "MP 8 / 10".
+func _pools(fighter: Combatant) -> Array[String]:
+	var vitals: Vitals = Vitals.of(fighter.get_parent())
+	var parts: Array[String] = []
+	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
+		var pool := StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
+		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
+			parts.append(tr(POOL_KEY).format({"pool": CombatNames.pool(pool),
+				"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	return parts
+
+
 ## The statuses `fighter` holds, as one translated line, or "" when it holds none.
 func _statuses_text(fighter: Combatant) -> String:
 	var names: Array[String] = []
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent())
 	for effect: StatusEffect in statuses.held() if statuses != null else []:
-		names.append(tr(effect.name_key) if effect.name_key != "" else _tail(effect.id))
+		var shown: String = tr(effect.name_key) if effect.name_key != "" else _tail(effect.id)
+		# A deadly status counts down where it can be seen (C10.13).
+		if effect.fatal and effect.duration > 0.0:
+			shown = tr(DOOM_KEY).format({"name": shown, "left": ceili(statuses.remaining(effect.id))})
+		names.append(shown)
 	return "" if names.is_empty() else tr(STATUSES_KEY).format({"list": ", ".join(names)})
+
+
+# The whole seconds left on every deadly status of the subject and the locked target, in order.
+func _doom_counts() -> Array[int]:
+	var out: Array[int] = []
+	var who: Node = subject if subject != null else Director.player
+	var shown: Array[Combatant] = [Combatant.of(who) if who != null and is_instance_valid(who) else null, _target()]
+	for fighter: Combatant in shown:
+		var statuses: StatusSet = StatusSet.of(fighter.get_parent()) if fighter != null else null
+		for effect: StatusEffect in statuses.held() if statuses != null else []:
+			if effect.fatal and effect.duration > 0.0:
+				out.append(ceili(statuses.remaining(effect.id)))
+	return out
 
 
 ## The ATB readout: whole bars ready out of all of them, and how full the next one is (100 when

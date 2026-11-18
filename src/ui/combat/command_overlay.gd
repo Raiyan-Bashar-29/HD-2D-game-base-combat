@@ -169,7 +169,7 @@ func _command_row(command: BattleCommand) -> void:
 			text = tr(ATB_COST_KEY).format({"label": text, "bars": skill.atb_cost})
 		if skill.cost > 0 and command.kind != BattleCommand.Kind.ITEM:
 			text = tr(COST_KEY).format({"label": text, "cost": SkillUse.cost_of(user, skill),
-					"pool": String(skill.cost_pool).to_upper()})
+					"pool": CombatNames.pool(skill.cost_pool)})
 	var refused: FieldCommands.Reason = FieldCommands.refusal(user, command)
 	var reason: String = reason_key(refused)
 	if refused == FieldCommands.Reason.POWER:

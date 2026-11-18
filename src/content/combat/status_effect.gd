@@ -48,6 +48,10 @@ enum Reaction { COUNTER, REFLECT, FOLLOW_UP }
 ## The pool a tick changes, and by how much per stack. Empty or zero means no tick.
 @export var tick_pool: StringName = &""
 @export var tick_change: int = 0
+## True: a tick that hurts the holder's damage pool lands like a hit by whoever applied the
+## status (C10.10): `damage_taken`, invincibility, barriers, survival, a ledger and waking a
+## sleeper all apply, and it is announced. False keeps a plain pool change, as before.
+@export var tick_as_hit: bool = false
 ## Seconds between ticks, for a SECONDS status. A TURNS status ticks once a turn.
 @export var tick_interval: float = 1.0
 ## Free labels a skill can match: `buff`, `debuff`, `ailment`, or any name a game uses. A

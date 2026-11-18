@@ -14,6 +14,9 @@ extends Resource
 ## MUST NOT: choose. `ActionDecider` does.
 
 @export var move: ActionMove
+## A hero power to use instead (C10.22): the fighter uses it (`FieldPowerPress`) and plays its
+## `move`. Its reach is still `reach`. With a power, `move` may be left empty.
+@export var power: Power
 @export var weight: float = 1.0
 ## The furthest the target may be for this move, in metres. 0 means the brain's `attack_range`.
 @export var reach: float = 0.0
@@ -25,9 +28,9 @@ extends Resource
 
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
-	if move == null:
+	if move == null and (power == null or power.move == null):
 		found.append("%s has no move" % context)
-	else:
+	elif move != null:
 		found.append_array(move.problems("%s move" % context))
 	if weight <= 0.0:
 		found.append("%s has a weight that is never picked" % context)

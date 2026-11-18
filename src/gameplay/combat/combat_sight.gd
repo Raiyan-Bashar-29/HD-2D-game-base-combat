@@ -10,6 +10,8 @@ extends RefCounted
 ## - `wall_between`: where the line first meets a wall, or `Vector3.INF` when it is clear.
 ## - `short_of`: how far along the line a body or a shot may go, stopping `MARGIN` short of the
 ##   wall, so a blink or a shot never ends inside one.
+## - `last_floor`: the furthest point on a way with floor under it, so a blink never lands in the
+##   air (C10.15).
 ## - `drop_ahead`: whether a step along a way would go over an edge (no floor within `STEP_DOWN`
 ##   below), so a fighter's own lunge or roll stops at a ledge. A knockback is not asked: being
 ##   knocked off is allowed, and `FallNet` deals with it.
@@ -30,6 +32,8 @@ const MARGIN: float = 0.4
 const STEP_DOWN: float = 1.2
 ## Metres ahead of a body's feet the floor is looked for.
 const LOOK_AHEAD: float = 0.6
+## How far apart `last_floor` looks for floor, in metres.
+const FLOOR_STEP: float = 0.5
 
 
 ## Where the line `from` to `to` first meets a wall, or `Vector3.INF` when it is clear (or
@@ -71,6 +75,26 @@ static func drop_ahead(body: Node3D, way: Vector3) -> bool:
 		return false
 	var ahead: Vector3 = body.global_position + flat.normalized() * LOOK_AHEAD
 	return not wall_between(body, ahead + Vector3.UP * 0.5, ahead + Vector3.DOWN * STEP_DOWN).is_finite()
+
+
+## The furthest point from `from` toward `to` (both at the feet) with floor under it, looked for
+## every `FLOOR_STEP` metres back from `to`; `from` itself when there is none (C10.15). A start
+## with no floor under it (in the air, or an empty test space) is left alone: `to` comes back.
+static func last_floor(space: Node3D, from: Vector3, to: Vector3) -> Vector3:
+	if not _floor_under(space, from):
+		return to
+	var length: float = from.distance_to(to)
+	var along: float = length
+	while along > 0.0:
+		var point: Vector3 = from.lerp(to, along / length)
+		if _floor_under(space, point):
+			return point
+		along -= FLOOR_STEP
+	return from
+
+
+static func _floor_under(space: Node3D, at: Vector3) -> bool:
+	return wall_between(space, at + Vector3.UP * 0.5, at + Vector3.DOWN * STEP_DOWN).is_finite()
 
 
 ## The solid bodies directly under `node` (a construct's wall, C8.14a), so a ray aimed at it is

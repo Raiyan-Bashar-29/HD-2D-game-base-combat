@@ -40,6 +40,15 @@ extends FormMechanism
 @export var effects: Array[BattlefieldEffect] = []
 ## Metres around the caster it covers in the field. 0: the whole fight.
 @export var radius: float = 0.0
+## Its shape in the field (C10.33, `BattlefieldShape`): AROUND the caster as it walks, a circle
+## left AT_POINT where it rose, a LINE ahead, or a ZONE box.
+enum Shape { AROUND, AT_POINT, LINE, ZONE }
+@export var shape: Shape = Shape.AROUND
+## A LINE's length and width, in metres.
+@export var length: float = 10.0
+@export var width: float = 2.0
+## A ZONE's size, in metres.
+@export var size: Vector3 = Vector3(6.0, 4.0, 6.0)
 ## How long it stands in the field. 0: until ended.
 @export var seconds: float = 0.0
 ## How many of the caster's own turns it stands in a battle. 0: until ended.

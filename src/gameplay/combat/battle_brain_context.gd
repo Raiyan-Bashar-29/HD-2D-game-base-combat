@@ -32,8 +32,9 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 	return battle.targets_for(command)
 
 
-func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
-	return battle.act(command, targets)
+func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> bool:
+	# A boost it cannot afford is dropped, not refused (C10.19).
+	return battle.act(command, targets, boost if boost > 0 and battle.can_boost(command, boost) else 0)
 
 
 ## With nothing allowed: attack the first foe there is, or defend. DEFEND is always legal, so a

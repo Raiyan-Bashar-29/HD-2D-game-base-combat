@@ -115,4 +115,4 @@ static func reason_args(user: Combatant, command: BattleCommand) -> Dictionary:
 			pool = power.requires_pool
 		var powers: PowerSet = PowerSet.of(user.get_parent())
 		left = ceili(powers.cooldown_left(power.power_id)) if powers != null else 0
-	return {"pool": String(pool).to_upper(), "left": left}
+	return {"pool": CombatNames.pool(pool), "left": left}

@@ -59,6 +59,7 @@ static func equip(body: Node3D, loadout: ActionLoadout) -> ActionFighter:
 	fit_identity(body, loadout)
 	body.add_child(Hitbox.new())
 	body.add_child(LockOn.new())
+	body.add_child(ComboCounter.new())
 	var fighter := ActionFighter.new()
 	fighter.loadout = loadout
 	fighter.moves = loadout.moves

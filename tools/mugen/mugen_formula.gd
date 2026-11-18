@@ -177,7 +177,8 @@ static func _events(facts: Dictionary, length: int, scale: Dictionary) -> Array:
 		out.append({"tick": shake["tick"], "kind": "shake", "seconds": maxi(DictRead.get_int(shake, "time"), 1) / TICKS,
 			"amount": snappedf(clampf(DictRead.get_float(shake, "ampl") / SHAKE_FULL, 0.05, 1.0), 0.01)})
 	for pause: Dictionary in DictRead.get_array(facts, "pauses"):
-		out.append({"tick": pause["tick"], "kind": "pause", "seconds": maxi(DictRead.get_int(pause, "time"), 1) / TICKS})
+		out.append({"tick": pause["tick"], "kind": "pause", "seconds": maxi(DictRead.get_int(pause, "time"), 1) / TICKS,
+			"others_only": DictRead.get_bool(pause, "others")})
 	out.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return DictRead.get_int(a, "tick") < DictRead.get_int(b, "tick"))
 	var seen: Dictionary = {}
 	var kept: Array = []

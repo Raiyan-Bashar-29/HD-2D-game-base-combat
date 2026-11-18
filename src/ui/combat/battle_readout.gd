@@ -11,6 +11,13 @@ extends RefCounted
 ## OWNS: the line's parts and their order, and which outcome line is shown.
 ## MUST NOT: change the fight, or hold state.
 
+const RAISED_KEY: String = "ui.battle.raised"
+## Whom a foe is after: the top of its threat table (C10.28).
+const AFTER_KEY: String = "ui.battle.after"
+## The hp bar's colours (C10.23), a placeholder look until art exists.
+const BAR_FILL: Color = Color(0.45, 0.8, 0.45)
+const BAR_BACK: Color = Color(0.12, 0.12, 0.12, 0.85)
+
 
 ## The line for `fighter`, whose name the screen shows as `shown`; `log` names its statuses.
 static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
@@ -20,8 +27,11 @@ static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
 	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
 		var pool: StringName = StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
 		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
-			parts.append(_tr(BattleScreen.POOL_KEY).format({"pool": String(pool).to_upper(),
+			parts.append(_tr(BattleScreen.POOL_KEY).format({"pool": CombatNames.pool(pool),
 					"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	var after: StringName = Aggro.top(fighter.get_parent())
+	if after != &"" and log != null:
+		parts.append(_tr(AFTER_KEY).format({"name": log.name_for(after)}))
 	var weapon: String = WeaponLine.text(fighter.get_parent())
 	if weapon != "":
 		parts.append(weapon)
@@ -34,10 +44,61 @@ static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
 	var found: Array[String] = []
 	for key: StringName in fighter.weak_to:
 		if Weakness.revealed(fighter, key):
-			found.append(_tr(String(key)))
+			found.append(CombatNames.mark(key))
 	if not found.is_empty():
 		parts.append(_tr(BattleScreen.WEAK_KEY).format({"list": ", ".join(found)}))
 	return "   ".join(parts)
+
+
+## A line for each piece a won fight raised a level (C9.5d, C10.18): "Coat rose to level 2".
+static func raised(rewards: Rewards) -> Array[String]:
+	var out: Array[String] = []
+	for who: StringName in rewards.upgraded:
+		for piece_id: Variant in rewards.upgraded[who]:
+			out.append(_tr(RAISED_KEY).format({"item": PieceScreen.item_name(StringName(str(piece_id))),
+				"level": GearUpgrades.level(StringName(str(piece_id)))}))
+	return out
+
+
+## The results' lines for a won battle on `screen`: experience, who levelled, what was found and
+## what was left, and the pieces raised (moved from `BattleScreen`, C10.31).
+static func reward_lines(screen: BattleScreen) -> Array[String]:
+	var out: Array[String] = []
+	var given: Rewards = screen.rewards
+	if given == null or screen.battle.outcome() != Battle.Outcome.WON:
+		return out
+	if given.experience > 0:
+		out.append(_tr(BattleScreen.EXPERIENCE_KEY).format({"amount": given.experience}))
+	for fighter: Combatant in screen.battle.party:
+		if given.levelled.has(fighter.combatant_id):
+			out.append(_tr(BattleScreen.LEVEL_UP_KEY).format({"name": screen.name_of(fighter),
+				"level": Party.level_of(fighter.combatant_id)}))
+	for item_id: StringName in given.items:
+		out.append(_tr(BattleScreen.FOUND_KEY).format({"item": PieceScreen.item_name(item_id)}))
+	for item_id: StringName in given.left_behind:
+		out.append(_tr(BattleScreen.LEFT_KEY).format({"item": PieceScreen.item_name(item_id)}))
+	out.append_array(raised(given))
+	return out
+
+
+## A bar under `fighter`'s line showing how full its damage pool is (C10.23). Placeholder look:
+## a plain `ProgressBar`; the line above still gives the numbers.
+static func bar(fighter: Combatant) -> ProgressBar:
+	var vitals: Vitals = Vitals.of(fighter.get_parent())
+	var made := ProgressBar.new()
+	made.show_percentage = false
+	made.custom_minimum_size = Vector2(160.0, 6.0)
+	made.max_value = maxf(1.0, float(vitals.maximum(fighter.damage_pool))) if vitals != null else 1.0
+	made.value = float(vitals.current(fighter.damage_pool)) if vitals != null else 0.0
+	made.add_theme_stylebox_override(&"fill", _flat(BAR_FILL))
+	made.add_theme_stylebox_override(&"background", _flat(BAR_BACK))
+	return made
+
+
+static func _flat(colour: Color) -> StyleBoxFlat:
+	var paint := StyleBoxFlat.new()
+	paint.bg_color = colour
+	return paint
 
 
 ## The key of the line that says how `battle` ended (moved from `BattleScreen`, C8.26).

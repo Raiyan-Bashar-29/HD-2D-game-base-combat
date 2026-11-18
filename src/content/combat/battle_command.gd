@@ -47,6 +47,16 @@ static func for_power(used: Power) -> BattleCommand:
 
 ## True for a power with no skill whose mechanism strikes the foes by itself (C6.7), so a battle
 ## offers it the foes.
+## The key naming what this command uses (C10.5): its own label, else its skill's or power's
+## name. Empty for a plain command.
+func used_key() -> String:
+	if label_key != "":
+		return label_key
+	if skill != null:
+		return skill.name_key
+	return power.name_key if power != null else ""
+
+
 func aims_unaided() -> bool:
 	return power != null and power.mechanism != null and power.mechanism.aims_at_foes()
 

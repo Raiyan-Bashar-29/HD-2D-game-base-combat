@@ -37,6 +37,8 @@ extends CharacterBody3D
 
 const GROUP: StringName = &"party_follower"
 
+# The swing last reported to the kit (C10.22).
+var _reported: int = -1
 ## Who this member is and what they can do, handed back to the player's body on a switch.
 var loadout: ActionLoadout
 ## The body it follows: the player's.
@@ -57,6 +59,8 @@ var rng := RandomNumberGenerator.new()
 ## What its `field_brain` does next (C4.9). Rebuilt when the loadout's brain changes, as after
 ## a party switch; null while it has none.
 var decider: ActionDecider
+# The foes' swings already weighed for a dodge (C10.26), so each is rolled for once.
+var _weighed: Dictionary[String, bool] = {}
 ## The clock of its own swings, as a fighter's.
 var timeline: MoveTimeline = MoveTimeline.new()
 ## The way it faces, flat; its hitbox points along it.
@@ -121,6 +125,7 @@ func follow(delta: float) -> void:
 	if me != null:
 		Weakness.recover(me)
 		HitGuard.pass_time(me, dt)
+		Meters.regen_seconds(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	var vitals: Vitals = Vitals.of(self)
 	var fallen: bool = vitals != null and vitals.is_defeated()
@@ -157,7 +162,9 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 		timeline.cancel()
 	if decider == null:
 		return Vector3.INF
-	var target: Hurtbox = Aggro.pick(self)
+	# The leader's locked foe is its target too, unless a taunt pulls it away (C10.8).
+	_try_dodge()
+	var target: Hurtbox = Aggro.pick(self, INF, FieldCommands.aim_of(Combatant.of(self)))
 	var to_target: Vector3 = _flat(target.global_position - global_position) if target != null else Vector3.INF
 	var vitals: Vitals = Vitals.of(self)
 	var hp: float = float(vitals.current(&"hp")) / maxf(1.0, float(vitals.maximum(&"hp"))) if vitals != null else 1.0
@@ -189,8 +196,38 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 			# IDLE, WANDER and RETURN: no fight here, so back to its place in the line.
 			timeline.cancel()
 	timeline.step(dt)
+	_report_move()
 	_aim_hitbox()
 	return wish
+
+
+# Rolls away from a foe's swing winding up at it, at its brain's `dodge_chance`, once a swing
+# (C10.26). The dodge's i-frames make the swing miss, and `attack_dodged` pays its ATB.
+func _try_dodge() -> void:
+	var brain: ActionBrain = loadout.field_brain if loadout != null else null
+	var roll: ActionMove = loadout.moves.dodge if loadout != null and loadout.moves != null else null
+	if brain == null or brain.dodge_chance <= 0.0 or roll == null:
+		return
+	var swings: Dictionary[String, float] = DefenceWatch.swings_at(self, Combatant.of(self))
+	if swings.is_empty():
+		_weighed.clear()
+	for key: String in swings:
+		if _weighed.has(key) or not timeline.can_dodge():
+			continue
+		_weighed[key] = true
+		if rng.randf() < brain.dodge_chance:
+			timeline.start(roll)
+			return
+
+
+# Tells the kit about each move started since last frame, so a form drains per action (C10.22).
+func _report_move() -> void:
+	if timeline.swing == _reported or timeline.move == null:
+		return
+	_reported = timeline.swing
+	var powers: PowerSet = PowerSet.of(self)
+	if powers != null and (loadout == null or loadout.moves == null or timeline.move != loadout.moves.dodge):
+		powers.moved(timeline.move)
 
 
 ## Strikes as whoever is here now, fits the box to each new swing, turns it to face, and sweeps
@@ -215,6 +252,9 @@ func _swing() -> void:
 	var own: Array[ActionMove] = loadout.moves.attack_chain if loadout.moves != null else []
 	if decider.chosen != null:
 		_chaining = not own.is_empty() and own[0] == decider.chosen
+		# A power named by the brain is used first; refused, nothing is swung (C10.22).
+		if decider.chosen_power != null and not FieldPowerPress.use(self, decider.chosen_power, rng):
+			return
 		if not _chaining:
 			timeline.start(decider.chosen)
 	if _chaining:

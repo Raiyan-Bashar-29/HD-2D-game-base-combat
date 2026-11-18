@@ -215,11 +215,16 @@ A foe drops what it wears when its `loot_table` lists the piece (C7.2).
   - Its element counts before the piece's own.
   - Socketing always changes the bag, so every `GearSet` re-lends on `inventory_changed`.
 - **Gaps:**
-  - No screen until C7.7.
   - Rarity doesn't scale a gem.
   - There is no rule limiting a gem to certain slots.
   - Two copies of one piece share their sockets, because the bag counts items by id.
   - A piece that leaves the bag keeps its gems recorded.
+
+**As built (C10.3, 0.188.0): the piece screen.** The gear screen's "Work on" row opens
+`PieceScreen` for the worn piece: a row per socket (press a filled one to take the gem out), a
+row per gem in the bag to put it in, "Upgrade" with the next level's cost, and "Awaken" at a
+piece whose track awakens into another. A refused row is greyed with its reason. It works
+anywhere; a game that wants a smith gives its pieces no track and uses an UPGRADE recipe.
 
 **As built (C7.5, 0.88.0): upgrading and awakening.**
 

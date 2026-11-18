@@ -16,6 +16,11 @@ const FORGOTTEN: StringName = &"status/command_forgotten"
 static var _forgotten: StatusEffect
 
 
+## The foe will not take the order, so the power is not paid for (C10.7).
+func refuses(user: Combatant, targets: Array[Combatant]) -> bool:
+	return _refuses(mechanism as CommandMechanism, user, BarrageRun.aim_of(user, targets))
+
+
 func use(user: Combatant, targets: Array[Combatant], rng: RandomNumberGenerator) -> void:
 	var command: CommandMechanism = mechanism as CommandMechanism
 	var foe: Combatant = BarrageRun.aim_of(user, targets)

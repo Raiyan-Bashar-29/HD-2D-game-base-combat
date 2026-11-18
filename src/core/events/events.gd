@@ -333,6 +333,18 @@ signal perfect_dodge(who: StringName, by: StringName)
 ## The hybrid's defence prompt (C8.20): a foe's hit is about to land on the player. `kind` is
 ## `&"evade"` or `&"block"`, `seconds` the time left; `&""` clears it. Emitted by `DefenceWatch`.
 signal defence_prompt(kind: StringName, seconds: float)
+## `who` pressed a move's timed prompt, graded `perfect`, `good` or `miss` (C10.12,
+## `TimedWindow.grade`). Emitted by `ActionFighter`, so the field can show how well it went.
+signal prompt_graded(who: StringName, grade: StringName)
+## `who` stole `item_id` from `from` (C10.13). Emitted by `Pilfer.steal`, once per item.
+signal item_stolen(who: StringName, from: StringName, item_id: StringName)
+## `who` caught `target`, and its capture item `item_id` went to `who` (C10.13). Emitted by
+## `Pilfer.capture`.
+signal creature_captured(who: StringName, target: StringName, item_id: StringName)
+## The piece `item_id` that `who` wore broke and is gone (C10.13). Emitted by `GearBreak`.
+signal gear_broke(who: StringName, item_id: StringName)
+## `who`'s combo is now `count` landed hits; 0 when it ran out (C10.24). Emitted by `ComboCounter`.
+signal combo_changed(who: StringName, count: int)
 ## A real-time hit asks for `who` to be pushed by `push`: the direction times the distance in
 ## metres, flat on the ground. Emitted by `Hurtbox.take` (C3.3); the fighter's body moves (C3.4).
 signal knockback_requested(who: StringName, push: Vector3)
@@ -368,6 +380,10 @@ signal battle_started(enemy_ids: Array[StringName])
 ## A turn-based battle ended. Emitted by `Battle`, once: `outcome` is a `Battle.Outcome` (WON,
 ## LOST or FLED), carried as an int because the bus lives below gameplay.
 signal battle_ended(outcome: int)
+## `who` acted in a turn-based battle with a command of `kind` (a `BattleCommand.Kind`, as an
+## int) naming `used_key` (`BattleCommand.used_key`), before anything it does lands (C10.5).
+## Emitted by `Battle.act`, so a log can say "Foe uses Spark".
+signal battle_acted(who: StringName, kind: int, used_key: String)
 ## The field asked for a fight. Emitted by an `EncounterPoint`, or a game's own trigger, with an
 ## `encounter/<name>` id; whoever hosts battles (C2.7) builds it with `BattleSetup`.
 signal encounter_requested(encounter_id: StringName)

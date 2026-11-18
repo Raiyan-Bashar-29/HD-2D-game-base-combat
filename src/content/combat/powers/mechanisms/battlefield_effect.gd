@@ -36,7 +36,9 @@ extends Resource
 ## OWNS: the shape of one battlefield rule.
 ## MUST NOT: hold running state. `BattlefieldRun` (gameplay) applies it.
 
-enum Who { CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE, EVERYONE_BUT_CASTER }
+enum Who { CASTER, CASTER_SIDE, OTHER_SIDE, EVERYONE, EVERYONE_BUT_CASTER, TAGGED }
+## With `who` TAGGED (C10.33): only fighters carrying this trait (`Combatant.traits`).
+@export var tag: StringName = &""
 
 @export var who: Who = Who.OTHER_SIDE
 ## Put on the sheet of each fighter in `who` while it is inside: `attack`, `defence`,

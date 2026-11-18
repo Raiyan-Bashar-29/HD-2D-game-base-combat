@@ -25,12 +25,21 @@ extends Resource
 ## Below this fraction of max hp it retreats. 0 means it never does.
 @export_range(0.0, 1.0, 0.01) var retreat_below: float = 0.0
 @export var retreat_distance: float = 3.0
+## Seconds a retreat lasts before it turns back (C10.27); it does not retreat again until its hp
+## is back over `retreat_below`. 0 retreats for as long as the target is near.
+@export var retreat_for: float = 0.0
+## How many foes may swing at one target at once (C10.27, `AttackTokens`); the rest circle it.
+## 0 is no limit.
+@export var max_attackers: int = 0
 ## Threat points an attacker loses each second on this fighter's table (`Aggro`, C8.6).
 @export var threat_fade: float = 1.0
 @export var moves: Array[ActionBrainEntry] = []
 ## True for a foe that only ever chases, never swings: the body of a `SymbolEncounter` (C5.1),
 ## which starts a turn-based battle on touch. Then an empty `moves` is meant, not a mistake.
 @export var chase_only: bool = false
+## A follower's chance (0 to 1) to roll away, with its loadout's dodge, from each foe's swing
+## winding up at it (C10.26). 0 never dodges.
+@export_range(0.0, 1.0, 0.01) var dodge_chance: float = 0.0
 
 
 func problems(context: String) -> PackedStringArray:

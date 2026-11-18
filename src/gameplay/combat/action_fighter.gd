@@ -99,6 +99,8 @@ func _physics_process(delta: float) -> void:
 	for slot: int in CombatActions.SLOTS.size():
 		if Input.is_action_just_pressed(CombatActions.SLOTS[slot]):
 			press_slot(slot)
+		elif Input.is_action_just_released(CombatActions.SLOTS[slot]) and Combatant.of(get_parent()) != null:
+			PowerSlots.release(Combatant.of(get_parent()), slot)
 	var held: bool = CombatSettings.flag_or_setting(HOLD_FLAG, CombatSettings.HOLD_TO_ATTACK) \
 			and Input.is_action_pressed(CombatActions.ATTACK)
 	drive(delta, Input.is_action_just_pressed(CombatActions.ATTACK),
@@ -115,11 +117,14 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 		statuses.tick_seconds(dt)
 	# Its own time speed (C8.11a): statuses count on the fight's clock, the rest on its own.
 	dt *= FighterTime.rate(get_parent())
+	# Held by a grab, each press is a struggle to break free (C10.24).
+	Grab.struggle(get_parent(), attack or dodge)
 	# A stagger that has just worn off refills the shield (C4.6).
 	var me: Combatant = Combatant.of(get_parent())
 	if me != null:
 		Weakness.recover(me)
 		HitGuard.pass_time(me, dt)
+		Meters.regen_seconds(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Berserk (C9.5c): the fighter swings without stopping and cannot roll.
 	if _taken_over():
@@ -128,6 +133,8 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 	# Locked on, the fighter always faces its target, so every swing and roll aims at it (C3.5).
 	if _lock_on != null and _lock_on.target != null and _lock_on.direction() != Vector3.ZERO:
 		facing = _lock_on.direction()
+		# The sprite shows it too, whichever way the body walks (C10.14).
+		Events.turn_requested.emit(_body, _lock_on.target.global_position)
 	var vitals: Vitals = Vitals.of(get_parent())
 	# A fallen or staggered fighter drops whatever swing it was in.
 	if (vitals != null and vitals.is_defeated()) or (statuses != null and statuses.halts()):
@@ -135,7 +142,7 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 	elif not stunned() and not _held_by_others() and moves != null:
 		# A press while a move plays is first its timed press, if it has a prompt (C8.8c).
 		if attack and timeline.busy():
-			timeline.time_press()
+			_time_press()
 		# Carrying a thing (C8.18b), the attack button throws it instead of swinging.
 		# The press that throws never swings too, nor does the hold that follows it (C8.27a).
 		if attack and not timeline.busy() and Carried.throw(_body, facing):
@@ -230,6 +237,14 @@ func _cue_prompt() -> void:
 	if open != _prompting:
 		_prompting = open
 		Events.defence_prompt.emit(PRESS if open else &"", window.closes - timeline.elapsed if open else 0.0)
+
+
+# The press is timed against the move's prompt, and its grade announced once (C10.12).
+func _time_press() -> void:
+	var graded: bool = timeline.move != null and timeline.move.prompt != null and not timeline.pressed()
+	timeline.time_press()
+	if graded and Combatant.of(get_parent()) != null:
+		Events.prompt_graded.emit(Combatant.of(get_parent()).combatant_id, timeline.move.prompt.grade(timeline.elapsed))
 
 
 # Tells the kit about each move started since last frame, except a dodge (C6.4b).

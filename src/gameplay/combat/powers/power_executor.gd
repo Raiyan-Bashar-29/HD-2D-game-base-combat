@@ -9,6 +9,7 @@ extends RefCounted
 ## it needs. The base does nothing, so a hook left alone is harmless.
 ##
 ## THE HOOKS, AND WHO CALLS THEM:
+## - `refuses`: asked by `PowerUse.use` before anything is paid; true stops the use (C10.7);
 ## - `use`: the power was used (`PowerUse.use`), after its skill, if any, has landed;
 ## - `tick`: time passed (`PowerSet`): seconds in the field, 1 per turn in a battle;
 ## - `end`: the kit came off (`PowerSet.unequip`); undo anything still running.
@@ -36,6 +37,12 @@ var holder: PowerSet
 ## The power was used. `targets` are who its skill landed on (empty for a power with no skill).
 func use(_user: Combatant, _targets: Array[Combatant], _rng: RandomNumberGenerator) -> void:
 	pass
+
+
+## True when this power will not work on `targets` now, so nothing is paid (an order the foe
+## will not take).
+func refuses(_user: Combatant, _targets: Array[Combatant]) -> bool:
+	return false
 
 
 ## `amount` passed: seconds in the field, 1 per turn in a battle.

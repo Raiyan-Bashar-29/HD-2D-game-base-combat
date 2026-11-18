@@ -5,6 +5,7 @@ extends RefCounted
 ## IN PLAIN WORDS: three small jobs, each bytes in and bytes out.
 ## - `rle8`: a byte whose top two bits are 01 means "repeat the next byte this many times";
 ##   any other byte is one pixel.
+## - `rle5` and `pcx` (C10.35): see each.
 ## - `lz5`: packets in groups of eight behind a control byte. A clear control bit is a run of
 ##   one colour; a set bit copies pixels already written, from a given distance back.
 ## - `png_with_palette`: a 256-colour PNG, rebuilt with the colours you give it (the sprite
@@ -37,6 +38,58 @@ static func rle8(packed: PackedByteArray, count: int) -> PackedByteArray:
 
 
 ## `packed` as one byte a pixel, `count` pixels long.
+## RLE5 (C10.35): packets of a run length byte, then a data length byte whose top bit says a
+## colour byte follows (else colour 0); that colour is written run+1 times, then each of the data
+## bytes is a run of (byte >> 5)+1 pixels of colour (byte & 31).
+static func rle5(packed: PackedByteArray, count: int) -> PackedByteArray:
+	var out: PackedByteArray = PackedByteArray()
+	var at: int = 0
+	while at + 1 < packed.size() and out.size() < count:
+		var run: int = packed[at]
+		var data: int = packed[at + 1] & 0x7F
+		var colour: int = 0
+		at += 2
+		if packed[at - 1] & 0x80:
+			colour = packed[at] if at < packed.size() else 0
+			at += 1
+		for i: int in run + 1:
+			out.append(colour)
+		for j: int in data:
+			if at >= packed.size():
+				break
+			for i: int in (packed[at] >> 5) + 1:
+				out.append(packed[at] & 0x1F)
+			at += 1
+	out.resize(count)
+	return out
+
+
+## A 256-colour PCX picture (C10.35): `{"size", "pixels", "colours"}`, its own palette as RGB
+## bytes from its end, or an empty dictionary when it is not one.
+static func pcx(bytes: PackedByteArray) -> Dictionary:
+	if bytes.size() < 128 + 769 or bytes[0] != 0x0A or bytes[3] != 8:
+		return {}
+	var size := Vector2i(bytes.decode_u16(8) - bytes.decode_u16(4) + 1, bytes.decode_u16(10) - bytes.decode_u16(6) + 1)
+	var line: int = bytes.decode_u16(66)
+	var rows: PackedByteArray = PackedByteArray()
+	var at: int = 128
+	var end: int = bytes.size() - 769
+	while at < end and rows.size() < line * size.y:
+		var b: int = bytes[at]
+		at += 1
+		if b & 0xC0 == 0xC0 and at < end:
+			for i: int in b & 0x3F:
+				rows.append(bytes[at])
+			at += 1
+		elif b & 0xC0 != 0xC0:
+			rows.append(b)
+	var pixels: PackedByteArray = PackedByteArray()
+	for y: int in size.y:
+		pixels.append_array(rows.slice(y * line, y * line + size.x))
+	pixels.resize(size.x * size.y)
+	return {"size": size, "pixels": pixels, "colours": bytes.slice(end + 1, bytes.size())}
+
+
 static func lz5(packed: PackedByteArray, count: int) -> PackedByteArray:
 	var out: PackedByteArray = PackedByteArray()
 	out.resize(count)

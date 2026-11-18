@@ -23,6 +23,11 @@ extends Node
 ## A request nobody answers (no battle host, no party, an unknown id) is logged and also gives
 ## `grace`: it is never left waiting.
 ##
+## OPENINGS AND ONE BLOW (C10.21). A party strike that lands on its back opens the battle with
+## the party first: every foe loses its first turn (`OFF_GUARD`). The foe touching a member from
+## behind gives the foes the first round the same way. A strike that fells it outright gives the
+## encounter's experience and loot in the field (`ActionHost.reward`), once, instead of a battle.
+##
 ## A FOE THAT SHOULD NEVER SWING gets a brain with no `moves` and `chase_only` set: it then only
 ## chases, and the brain's problems accept the empty list. A foe with
 ## moves both swings in real time and starts the battle on touch, which is a game's choice.
@@ -31,6 +36,8 @@ extends Node
 ## MUST NOT: build the battle (`BattleHost` does), or grant rewards (`Rewards` does).
 
 const CATEGORY: StringName = &"combat"
+## Who acts first when the battle opens (C10.21).
+enum Opening { EVEN, PARTY_FIRST, FOES_FIRST }
 
 ## The encounter it starts, `encounter/<name>`.
 @export var encounter_id: StringName = &""
@@ -40,6 +47,9 @@ const CATEGORY: StringName = &"combat"
 @export var grace: float = 3.0
 
 var _grace_left: float = 0.0
+var _opening: Opening = Opening.EVEN
+var _paid: bool = false
+static var _off_guard: StatusEffect
 var _waiting: bool = false
 var _started: bool = false
 
@@ -60,15 +70,41 @@ func watch(delta: float) -> void:
 	var body: Node3D = get_parent() as Node3D
 	var nearest: Hurtbox = Hurtbox.nearest_hostile(body)
 	if nearest != null and body.global_position.distance_to(nearest.global_position) <= touch_radius:
-		_challenge()
+		# Come on from behind the member, the foes have the first round.
+		var member: Node3D = nearest.get_parent() as Node3D
+		_challenge(Opening.FOES_FIRST if member != null and behind(member, body) else Opening.EVEN)
 
 
 ## A strike from the party starts the battle too, the "first strike" of symbol encounters, so a
 ## follower with a field brain cannot quietly beat the foe in real time. The hit itself lands.
-func _on_damaged(who: StringName, _by: StringName, _amount: int, _critical: bool) -> void:
+func _on_damaged(who: StringName, by: StringName, _amount: int, _critical: bool) -> void:
 	var mine: Combatant = Combatant.of(get_parent())
-	if mine != null and who == mine.combatant_id and _ready_to_challenge():
-		_challenge()
+	if mine == null or who != mine.combatant_id:
+		return
+	if _ready_to_challenge():
+		var striker: Combatant = Combatant.find(get_tree(), by)
+		var from: Node3D = striker.get_parent() as Node3D if striker != null else null
+		_challenge(Opening.PARTY_FIRST if from != null and behind(get_parent() as Node3D, from) else Opening.EVEN)
+	elif not _waiting and not _paid and Vitals.of(get_parent()) != null and Vitals.of(get_parent()).is_defeated():
+		_felled()
+
+
+## True when `other` stands behind `body`: on the far side of the way `body` faces (C10.21).
+static func behind(body: Node3D, other: Node3D) -> bool:
+	var to: Vector3 = other.global_position - body.global_position
+	return Vector3(to.x, 0.0, to.z).dot(BarrageRun.facing_of(body)) < 0.0
+
+
+# Felled in one blow, before any battle: the encounter's rewards are given here, once (C10.21).
+func _felled() -> void:
+	_paid = true
+	var encounter: Encounter = EncounterDb.encounter(encounter_id)
+	if encounter == null:
+		return
+	var loot: Array[StringName] = encounter.loot.duplicate()
+	loot.append_array(LootRoll.roll(encounter.loot_table, RandomNumberGenerator.new()))
+	var player: Node3D = Director.player
+	ActionHost.reward(encounter.experience, loot, player, FieldParty.lead(player) if player != null else null)
 
 
 ## Not already waiting, not in grace, named an encounter, and the body still stands.
@@ -98,7 +134,8 @@ func problems(context: String) -> PackedStringArray:
 
 ## Asks for the encounter once. `Battle` announces `battle_started` while the request is still
 ## being answered, so by the time `emit` returns we know whether a fight opened.
-func _challenge() -> void:
+func _challenge(opening: Opening = Opening.EVEN) -> void:
+	_opening = opening
 	_waiting = true
 	_started = false
 	Events.battle_started.connect(_on_battle_started, CONNECT_ONE_SHOT)
@@ -114,6 +151,26 @@ func _challenge() -> void:
 
 func _on_battle_started(_enemy_ids: Array[StringName]) -> void:
 	_started = true
+	# The side caught off guard loses its first turn (C10.21).
+	var battle: Battle = Battle.running
+	if battle == null or _opening == Opening.EVEN:
+		return
+	for fighter: Combatant in (battle.enemies if _opening == Opening.PARTY_FIRST else battle.party):
+		var statuses: StatusSet = StatusSet.of(fighter.get_parent()) if is_instance_valid(fighter) else null
+		if statuses != null:
+			statuses.apply(off_guard())
+
+
+## The status a side caught off guard holds: its first turn lost.
+static func off_guard() -> StatusEffect:
+	if _off_guard == null:
+		_off_guard = StatusEffect.new()
+		_off_guard.id = &"status/off_guard"
+		_off_guard.name_key = "ui.combat_status.off_guard"
+		_off_guard.unit = StatusEffect.Unit.TURNS
+		_off_guard.duration = 1.0
+		_off_guard.blocks = [StatusEffect.Block.SKIP_TURN]
+	return _off_guard
 
 
 func _on_battle_ended(outcome: int) -> void:

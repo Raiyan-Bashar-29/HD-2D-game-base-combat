@@ -8,6 +8,8 @@ extends MenuScreen
 ##     changes against the worn one ("attack +3, speed -1"). Press one to wear it. One that
 ##     cannot be worn is greyed out with the reason (`GearSet.refusal`).
 ##   - "Take off" empties the slot; it is greyed out for a cursed piece.
+##   - "Work on" opens the worn piece's own screen: gems, upgrades, awakening (`PieceScreen`).
+##     Back from it, every row is drawn again, so what was done there shows here (C10.36a).
 ## A slot or stat with no row in the CSV shows its id, so a game's own stats still read.
 ##
 ## OWNS: the rows and what pressing one does.
@@ -21,6 +23,7 @@ const NEXT_KEY: String = "combat.loadout.next_member"
 const SLOT_ROW_KEY: String = "combat.gear.slot_row"
 const EMPTY_KEY: String = "combat.gear.empty"
 const TAKE_OFF_KEY: String = "combat.gear.take_off"
+const WORK_ON_KEY: String = "combat.gear.work_on"
 const CHOICES_KEY: String = "combat.gear.choices"
 const NONE_FITS_KEY: String = "combat.gear.none_fits"
 const PIECE_KEY: String = "combat.gear.piece"
@@ -28,7 +31,11 @@ const REFUSED_KEY: String = "combat.loadout.row_refused"
 const SAME_KEY: String = "combat.gear.same"
 const GAIN_KEY: String = "combat.gear.gain"
 const LOSS_KEY: String = "combat.gear.loss"
-const AFFIX_KEY: String = "combat.gear.affix"
+const GAIN_PCT_KEY: String = "combat.gear.gain_pct"
+const LOSS_PCT_KEY: String = "combat.gear.loss_pct"
+const SET_KEY: String = "combat.gear.set_line"
+const TIER_ON_KEY: String = "combat.gear.tier_on"
+const SET_PREFIX: String = "combat.gear_set."
 const SLOT_PREFIX: String = "combat.gear.slot."
 const STAT_PREFIX: String = "combat.stat."
 const REFUSAL_PREFIX: String = "combat.gear.refusal."
@@ -61,9 +68,7 @@ static func for_members(member_bodies: Array[Node], member_defs: Array[Combatant
 
 ## The pieces in the bag `body` uses (its own, else the player's) that fit `into`, by id.
 static func candidates(body: Node, into: StringName) -> Array[StringName]:
-	var bag: Inventory = Inventory.of(body)
-	if bag == null and Director.player != null:
-		bag = Inventory.of(Director.player)
+	var bag: Inventory = PieceScreen.bag_of(body)
 	var out: Array[StringName] = []
 	for item_id: StringName in (bag.ids() if bag != null else []):
 		var piece: GearDefinition = GearDb.for_item(item_id)
@@ -74,11 +79,12 @@ static func candidates(body: Node, into: StringName) -> Array[StringName]:
 
 
 ## What swapping `from` (empty for nothing) for `to` changes, stat by stat: "attack +3, speed
-## -1". Added amounts only; a multiplier is not compared.
+## -1", and a multiplier as a share: "attack +20%" (C10.18).
 static func compare(from: StringName, to: StringName) -> String:
 	var diff: Dictionary[StringName, float] = {}
-	_sum(diff, to, 1.0)
-	_sum(diff, from, -1.0)
+	var scale: Dictionary[StringName, float] = {}
+	_sum(diff, to, 1.0, scale)
+	_sum(diff, from, -1.0, scale)
 	var stats: Array[StringName] = diff.keys()
 	stats.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
 	var parts: PackedStringArray = PackedStringArray()
@@ -88,7 +94,34 @@ static func compare(from: StringName, to: StringName) -> String:
 			continue
 		parts.append(TranslationServer.translate(GAIN_KEY if amount > 0.0 else LOSS_KEY).format(
 			{"stat": _named(STAT_PREFIX, stat), "amount": absf(amount)}))
+	for stat: StringName in scale:
+		var share: int = roundi((scale[stat] - 1.0) * 100.0)
+		if share != 0:
+			parts.append(TranslationServer.translate(GAIN_PCT_KEY if share > 0 else LOSS_PCT_KEY).format(
+				{"stat": _named(STAT_PREFIX, stat), "amount": absi(share)}))
 	return ", ".join(parts) if not parts.is_empty() else TranslationServer.translate(SAME_KEY)
+
+
+## One line for each set `gear` wears a piece of (C10.18): its name, how many are worn, and its
+## tiers by their piece counts, the reached ones marked.
+static func sets_text(gear: GearSet) -> Array[String]:
+	var counts: Dictionary[StringName, int] = {}
+	var bonuses: Dictionary[StringName, GearSetBonus] = {}
+	for item_id: StringName in gear.worn_ids():
+		var piece: GearDefinition = GearDb.for_item(item_id)
+		if piece != null and piece.set_bonus != null:
+			bonuses[piece.set_bonus.set_id] = piece.set_bonus
+			counts[piece.set_bonus.set_id] = counts.get(piece.set_bonus.set_id, 0) + 1
+	var out: Array[String] = []
+	for set_id: StringName in bonuses:
+		var tiers: PackedStringArray = PackedStringArray()
+		for tier: GearSetTier in bonuses[set_id].tiers:
+			if tier != null:
+				tiers.append(TranslationServer.translate(TIER_ON_KEY).format({"pieces": tier.pieces})
+					if tier.pieces <= counts[set_id] else str(tier.pieces))
+		out.append(TranslationServer.translate(SET_KEY).format({"set": _named(SET_PREFIX, set_id),
+			"worn": counts[set_id], "tiers": " ".join(tiers)}))
+	return out
 
 
 ## The key that says why a piece cannot be worn.
@@ -107,7 +140,12 @@ func _fill() -> void:
 		var worn: StringName = gear.worn(each) if gear != null else &""
 		var row: Button = add_row(tr(SLOT_ROW_KEY).format({"slot": _named(SLOT_PREFIX, each),
 			"item": _item_name(worn) if worn != &"" else tr(EMPTY_KEY)}), _on_slot.bind(each))
+		# Its level, gems and fights to the next level, in short (C10.18).
+		if worn != &"" and PieceScreen.summary(worn) != "":
+			row.text += "   " + PieceScreen.summary(worn)
 		_tint(row, worn)
+	for line: String in (sets_text(gear) if gear != null else []):
+		add_note(line)
 	if slot != &"" and gear != null:
 		_fill_choices(gear)
 
@@ -120,6 +158,7 @@ func _fill_choices(gear: GearSet) -> void:
 			_on_take_off.bind(worn))
 		var piece: GearDefinition = GearDb.for_item(worn)
 		off.disabled = piece != null and piece.cursed
+		add_row(tr(WORK_ON_KEY).format({"item": _item_name(worn)}), _on_work_on.bind(worn))
 	var shown: int = 0
 	for item_id: StringName in candidates(bodies[index], slot):
 		if item_id == worn:
@@ -136,7 +175,8 @@ func _fill_choices(gear: GearSet) -> void:
 		add_note(tr(NONE_FITS_KEY))
 
 
-static func _sum(diff: Dictionary[StringName, float], item_id: StringName, sign_of: float) -> void:
+static func _sum(diff: Dictionary[StringName, float], item_id: StringName, sign_of: float,
+		scale: Dictionary[StringName, float]) -> void:
 	var piece: GearDefinition = GearDb.for_item(item_id) if item_id != &"" else null
 	var all: Array[StatModifier] = []
 	if piece != null:
@@ -146,6 +186,8 @@ static func _sum(diff: Dictionary[StringName, float], item_id: StringName, sign_
 	for modifier: StatModifier in all:
 		if modifier.op == StatModifier.Op.ADD:
 			diff[modifier.stat] = diff.get(modifier.stat, 0.0) + modifier.value * sign_of
+		elif modifier.op == StatModifier.Op.MULTIPLY and modifier.value > 0.0:
+			scale[modifier.stat] = scale.get(modifier.stat, 1.0) * pow(modifier.value, sign_of)
 
 
 # A slot or stat by its CSV row, else its id.
@@ -156,12 +198,7 @@ static func _named(prefix: String, id: StringName) -> String:
 
 
 func _item_name(item_id: StringName) -> String:
-	var item: ItemDefinition = ItemDb.definition(item_id)
-	var shown: String = tr(item.name_key) if item != null else String(item_id)
-	# A piece's rolled affixes follow its name, such as "Coat of Embers" (C7.2b).
-	for key: String in GearAffixes.names(item_id):
-		shown = tr(AFFIX_KEY).format({"item": shown, "affix": tr(key)})
-	return shown
+	return PieceScreen.item_name(item_id)
 
 
 # A row in its piece's rarity colour.
@@ -187,6 +224,16 @@ func _on_take_off(item_id: StringName) -> void:
 	var gear: GearSet = GearSet.of(bodies[index])
 	if gear != null and gear.take_off(item_id):
 		refresh()
+
+
+func _on_work_on(item_id: StringName) -> void:
+	push(PieceScreen.for_piece(bodies[index], item_id))
+
+
+# Back on top, after the piece screen closes too: redraw, so an awakened piece, a new gem or a
+# level shows, and no row still names a piece that left the bag (C10.36a).
+func _opened() -> void:
+	refresh()
 
 
 func _on_next() -> void:

@@ -26,6 +26,14 @@ extends RefCounted
 ## The stat that cuts a SLAY effect's chance: 0 none, 1 immune (C8.7a).
 const DEATH_RESIST: StringName = &"resist_death"
 
+## Every hit the latest skills landed, and on whom, so a field move that wraps a skill can say
+## whether it missed or was blocked (C10.16). Whoever reads it clears it first.
+static var struck: Array[Combatant] = []
+## What a timed press made of the skill landing now (C10.31): its hits are this much stronger.
+## The battle screen sets it around one use; 1 otherwise.
+static var timed: float = 1.0
+static var results: Array[DamageResult] = []
+
 
 ## What `skill` really costs `user`: its `cost`, changed by the user's `cost_mult_<pool>` stat
 ## (C6.1a). The stat is added to 1, the way `poise_taken` is, so -0.5 halves the cost, -1 makes
@@ -195,6 +203,8 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 			Delayed.heal(target, roundi(effect.amount * scale))
 		SkillEffect.Kind.RESTORE:
 			vitals.change(effect.pool, roundi(effect.amount * scale))
+		SkillEffect.Kind.UNCURSE:
+			_uncurse(target)
 		SkillEffect.Kind.DRAIN:
 			# Measure what the target really lost (a nearly-dead target gives back less), then
 			# hand the user its share.
@@ -241,11 +251,23 @@ static func _slay(target: Combatant, chance: float, rng: RandomNumberGenerator) 
 static func _hit(user: Combatant, skill: Skill, target: Combatant, power: float,
 		rng: RandomNumberGenerator) -> void:
 	Foresight.striking = skill.id
-	var result: DamageResult = user.hit(target, power, skill.element, rng, skill.sure_hit, skill.tags)
+	var result: DamageResult = user.hit(target, power * timed, skill.element, rng, skill.sure_hit, skill.tags)
 	Foresight.striking = &""
+	if result != null:
+		struck.append(target)
+		results.append(result)
 	# A hit a barrier stopped whole touched nothing, so it finds no weakness either (C6.6a).
 	if result != null and not result.missed and not result.blocked:
 		Weakness.strike(target, Weakness.keys_of(skill))
+
+
+# Takes every cursed piece `target` wears off it (C10.17).
+static func _uncurse(target: Combatant) -> void:
+	var gear: GearSet = GearSet.of(target.get_parent())
+	for piece_id: StringName in (gear.worn_ids() if gear != null else []):
+		var piece: GearDefinition = GearDb.for_item(piece_id)
+		if piece != null and piece.cursed:
+			gear.take_off(piece_id, true)
 
 
 static func _vitals(fighter: Combatant) -> Vitals:

@@ -13,6 +13,8 @@ extends RefCounted
 ## 4. `pass_time`: the mercy time counts down, and the overshield refills by `overshield_regen`
 ##    points each second (or turn) once `overshield_delay` has passed with no hit.
 ## Every number is a stat, so a passive, a status, a worn piece or a form can give any of them.
+## 5. `refuses` (C10.6): while invincible, a harmful status (tagged `ailment` or `debuff`) is
+##    refused as resisted; a buff still lands.
 ##
 ## A DODGE'S I-FRAMES AND A BARRIER ARE NOT HERE. The first is a move's (`ActionMove`, C3.2), the
 ## second a power's (`BarrierMechanism`, C6.6).
@@ -50,6 +52,16 @@ static func soak(vitals: Vitals, result: DamageResult) -> int:
 	vitals.change(POOL, -soaked)
 	result.amount -= soaked
 	return soaked
+
+
+## True when `statuses` holds an `invincible` status and `effect` is harmful (C10.6).
+static func refuses(statuses: StatusSet, effect: StatusEffect) -> bool:
+	if not (effect.tags.has(&"ailment") or effect.tags.has(&"debuff")):
+		return false
+	for held: StatusEffect in statuses.held():
+		if held.invincible:
+			return true
+	return false
 
 
 ## A hit just took `lost` points from `target`, its overshield's share counted.

@@ -59,6 +59,8 @@ var _woken: Dictionary[PassiveTrigger, int] = {}
 var _waited: Dictionary[PassiveTrigger, float] = {}
 var _just_fell: StringName = &""
 var _battling: bool = false
+## True in a battle while this holder's party has not yet won it by a last fall (C10.6).
+var _owed_win: bool = false
 # The triggers whose effects are running right now. A trigger never wakes inside itself.
 var _running: Array[PassiveTrigger] = []
 # The holder's HP share before and after the last change, for the HP-line events.
@@ -284,6 +286,7 @@ func _on_game_loaded(_slot: int) -> void:
 func _on_battle_started(_enemy_ids: Array[StringName]) -> void:
 	_battling = true
 	var me: Combatant = Combatant.of(get_parent())
+	_owed_win = me != null and Battle.running != null and Battle.running.party.has(me)
 	if me != null and not me.real_time:
 		_wake(PassiveTrigger.Event.FIGHT_START, null, 0)
 
@@ -327,6 +330,7 @@ func _on_defeated(who: StringName) -> void:
 	if me.can_target(fallen, FactionTable.Target.ALLY):
 		_wake(PassiveTrigger.Event.ALLY_DEFEATED, fallen, 0)
 	elif me.can_target(fallen, FactionTable.Target.ENEMY) and PassiveEffects.side(me, true).is_empty():
+		_owed_win = false
 		_wake(PassiveTrigger.Event.FIGHT_WON, fallen, 0)
 
 
@@ -335,8 +339,12 @@ func _on_revived(who: StringName) -> void:
 		_just_fell = &""
 
 
-func _on_battle_ended(_outcome: int) -> void:
+# A battle won with no last fall (a forgotten or caught last foe) still wakes FIGHT_WON once.
+func _on_battle_ended(outcome: int) -> void:
 	_battling = false
+	if _owed_win and outcome == Battle.Outcome.WON:
+		_wake(PassiveTrigger.Event.FIGHT_WON, null, 0)
+	_owed_win = false
 
 
 func _on_dodged(who: StringName, by: StringName) -> void:

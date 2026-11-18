@@ -26,4 +26,6 @@ func _init() -> void:
 		print("  add to strings.csv: %s" % key)
 	for problem: String in result["problems"]:
 		print("  PROBLEM: %s" % problem)
+	for file: String in MugenEvents.missing:
+		print("  sound not found, left out: %s" % file)
 	quit(0 if not (result["written"] as PackedStringArray).is_empty() else 1)

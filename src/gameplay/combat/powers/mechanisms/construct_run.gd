@@ -13,6 +13,9 @@ extends PowerExecutor
 
 static var _made: int = 0
 
+## How wide a fighter stands, for keeping a wall out of it (C10.15).
+const BODY: float = 0.4
+
 var _up: Array[ArenaThing] = []
 var _left: Array[float] = []
 var _owed: float = 0.0
@@ -34,7 +37,9 @@ func use(user: Combatant, _targets: Array[Combatant], _rng: RandomNumberGenerato
 	wall.size = build.size
 	wall.solid = true
 	var parent: Node3D = body.get_parent() as Node3D
-	var spot: Vector3 = body.global_position + facing * build.distance
+	var spot: Vector3 = _clear(body, body.global_position + facing * build.distance, facing, build.size)
+	if not spot.is_finite():
+		return
 	wall.position = parent.to_local(spot) if parent != null else spot
 	wall.rotation.y = atan2(-facing.x, -facing.z)
 	body.get_parent().add_child(wall)
@@ -44,6 +49,26 @@ func use(user: Combatant, _targets: Array[Combatant], _rng: RandomNumberGenerato
 	while build.cap > 0 and _up.size() > build.cap:
 		_take_down(0)
 	_listen(true)
+
+
+# A wall never rises inside a fighter (C10.15): it is pushed on along `facing`, half a metre at
+# a time, until no fighter stands in it; `Vector3.INF` when it cannot be cleared.
+static func _clear(body: Node3D, spot: Vector3, facing: Vector3, size: Vector3) -> Vector3:
+	var right: Vector3 = facing.cross(Vector3.UP).normalized()
+	for step: int in 4:
+		var at: Vector3 = spot + facing * 0.5 * step
+		var blocked: bool = false
+		for node: Node in body.get_tree().get_nodes_in_group(Hurtbox.GROUP):
+			var other: Node3D = node.get_parent() as Node3D
+			var fighter: Combatant = Combatant.of(other)
+			if other == null or other == body or fighter == null or fighter.is_in_group(Unseen.INERT):
+				continue
+			var offset: Vector3 = other.global_position - at
+			if absf(offset.dot(right)) < size.x / 2.0 + BODY and absf(offset.dot(facing)) < size.z / 2.0 + BODY:
+				blocked = true
+		if not blocked:
+			return at
+	return Vector3.INF
 
 
 ## Seconds passed: each clock runs down, and the upkeep is paid in whole points.

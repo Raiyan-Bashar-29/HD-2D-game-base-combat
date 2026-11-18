@@ -52,6 +52,7 @@ static func broken_status() -> StatusEffect:
 	if _default == null:
 		_default = StatusEffect.new()
 		_default.id = &"status/broken"
+		_default.name_key = "ui.combat_status.broken"
 		_default.duration = 1.0
 		_default.blocks = [StatusEffect.Block.SKIP_TURN]
 		_default.tags = [&"broken"]

@@ -97,7 +97,7 @@ static func of(who: Node) -> StatusSet:
 func apply(effect: StatusEffect, rng: RandomNumberGenerator = null, by: StringName = &"") -> bool:
 	if effect == null or not effect.problems().is_empty():
 		return false
-	if _resists(effect, rng):
+	if _resists(effect, rng) or HitGuard.refuses(self, effect):
 		Events.status_resisted.emit(owner_id, effect.id)
 		return false
 	# First time this status lands: start its timer and put its stat changes on the sheet.
@@ -252,13 +252,14 @@ func cure_tagged(tag: StringName) -> int:
 ## One turn passes for every TURNS status: each ticks, then loses a turn.
 func tick_turn() -> void:
 	for status_id: StringName in _ids():
-		var held: Held = _held[status_id]
-		if held.effect.unit != StatusEffect.Unit.TURNS:
+		# A tick landed as a hit may have ended another status (a sleep) on the way (C10.10).
+		var held: Held = _held.get(status_id)
+		if held == null or held.effect.unit != StatusEffect.Unit.TURNS:
 			continue
 		# Apply the per-turn effect first, so the last turn of poison still hurts.
 		_tick(held)
 		# A duration of 0 means "until cured", so it never counts down.
-		if held.effect.duration > 0.0:
+		if held.effect.duration > 0.0 and _held.has(status_id):
 			held.remaining -= 1.0
 			if held.remaining <= 0.0:
 				_run_out(status_id)
@@ -267,8 +268,8 @@ func tick_turn() -> void:
 ## `delta` seconds pass for every SECONDS status. Never ticks past its own expiry.
 func tick_seconds(delta: float) -> void:
 	for status_id: StringName in _ids():
-		var held: Held = _held[status_id]
-		if held.effect.unit != StatusEffect.Unit.SECONDS:
+		var held: Held = _held.get(status_id)
+		if held == null or held.effect.unit != StatusEffect.Unit.SECONDS:
 			continue
 		var lasting: bool = held.effect.duration > 0.0
 		# Never count more time than the status has left, so a long frame cannot over-tick it.
@@ -280,7 +281,7 @@ func tick_seconds(delta: float) -> void:
 			while held.carry >= interval:
 				held.carry -= interval
 				_tick(held)
-		if lasting:
+		if lasting and _held.has(status_id):
 			held.remaining -= step
 			if held.remaining <= 0.0:
 				_run_out(status_id)
@@ -296,8 +297,8 @@ func _tick(held: Held) -> void:
 	if held.effect.tick_change == 0 or held.effect.tick_pool == &"":
 		return
 	var vitals: Vitals = Vitals.of(get_parent())
-	if vitals != null:
-		# Three stacks of poison hurt three times as much.
+	# Three stacks of poison hurt three times as much; one marked `tick_as_hit` lands as a hit.
+	if vitals != null and not StatusTicks.land(get_parent(), held.effect, held.effect.tick_change * held.stacks, held.by):
 		vitals.change(held.effect.tick_pool, held.effect.tick_change * held.stacks)
 
 

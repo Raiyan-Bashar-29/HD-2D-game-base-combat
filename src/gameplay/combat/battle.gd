@@ -254,12 +254,12 @@ func act(command: BattleCommand, targets: Array[Combatant], boost: int = 0) -> b
 		return false
 	var actor: Combatant = _current
 	command = _as_done(actor, command)
+	if not _announced(actor, command, targets):
+		return false
 	match command.kind:
 		# A basic hit with no extra power: the attacker's attack stat against the target's defence.
 		# Each Boost level adds `attack_boost_hits` more swings.
 		BattleCommand.Kind.ATTACK:
-			if not _legal(command, targets, true):
-				return false
 			var landed: DamageResult = null
 			# A worn weapon may lend the attack an element and weakness tags (C7.1c).
 			var element: StringName = actor.strike_element(&"")
@@ -377,9 +377,16 @@ func _as_done(actor: Combatant, command: BattleCommand) -> BattleCommand:
 
 ## A ONE command needs exactly one allowed target; an ALL command ignores what it is given.
 func _legal(command: BattleCommand, targets: Array[Combatant], single: bool) -> bool:
-	if not single:
-		return true
-	return targets.size() == 1 and targets_for(command).has(targets[0])
+	return not single or (targets.size() == 1 and targets_for(command).has(targets[0]))
+
+
+## True when `targets` suit `command`; it then tells the bus who acts with what, before anything
+## lands, so a log reads "Foe uses Spark" above the damage (C10.5).
+func _announced(actor: Combatant, command: BattleCommand, targets: Array[Combatant]) -> bool:
+	if not _legal(command, targets, command.one_target()):
+		return false
+	Events.battle_acted.emit(actor.combatant_id, command.kind, command.used_key())
+	return true
 
 
 ## Removes the fallen from the queue, puts anyone revived back in it, and decides whether the
