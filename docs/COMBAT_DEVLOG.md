@@ -5629,3 +5629,14 @@ has hurt it.
 **Why.** The gaps recorded in C9.7.
 **Verified.** Ladder: 0 warnings; 5403 passed, 0 failed; checkers silent.
 **Gaps.** The gear screen is not offered in a battle. `battle_screen.gd` is at 249/250 code lines.
+
+## 2026-11-18 — C10.30 · ATB time in a turn battle
+
+**Did.** `TurnOrder.ATB` (appended) and `Encounter.atb_ticks_per_second`; `BattleSetup` builds a
+`CtbScheduler` for anything but ROUNDS. New `AtbClock` (ui), a child of the battle screen, steps
+`CtbScheduler.advance` and calls the screen's `advance` when a gauge fills with no turn open; the
+screen's loop asks `AtbClock.ready` before `next_turn`. New `atb_clock_test` (4).
+**Why.** The gaps recorded in C4.10.
+**Verified.** Ladder: 0 warnings; 5408 passed, 0 failed; checkers silent.
+**Gaps.** No gauge is drawn on the screen; in active mode a foe whose gauge fills during the
+player's menu waits for the player. `battle_screen.gd` is at 250/250.

@@ -67,8 +67,9 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 		guests.append(_guest(one, ours, holder))
 	var theirs: Array[Combatant] = _foes(encounter, holder)
 	# The encounter file chooses the turn order: plain rounds, or CTB where speed buys extra turns.
-	var turns: TurnScheduler = CtbScheduler.new() if encounter.turn_order == Encounter.TurnOrder.CTB \
-			else RoundScheduler.new()
+	# ATB is the same queue with time fed in by the screen's clock (C10.30).
+	var turns: TurnScheduler = RoundScheduler.new() if encounter.turn_order == Encounter.TurnOrder.ROUNDS \
+			else CtbScheduler.new()
 	turns.weakness_extra_turns = encounter.weakness_extra_turns
 	var battle := Battle.new(ours + guests, theirs, turns, rng)
 	battle.encounter = encounter

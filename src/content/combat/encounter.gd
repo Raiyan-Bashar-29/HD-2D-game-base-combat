@@ -11,10 +11,13 @@ extends ContentEntry
 ## OWNS: the shape of one encounter.
 ## MUST NOT: build anything, or know who the party is.
 
-enum TurnOrder { ROUNDS, CTB }
+enum TurnOrder { ROUNDS, CTB, ATB }
 
 @export var enemies: Array[CombatantDef] = []
 @export var turn_order: TurnOrder = TurnOrder.ROUNDS
+## For ATB (C10.30): the CTB ticks a second of real time is worth. A fighter of speed 1 waits
+## 100 ticks, so 50 gives it a turn every two seconds.
+@export var atb_ticks_per_second: float = 50.0
 ## Above 0, hitting a foe's weakness earns one more turn, up to this many in a row (C8.1).
 @export var weakness_extra_turns: int = 0
 ## True makes a SWAP free: the one coming in takes the swapping fighter's turn at once, once a

@@ -117,6 +117,7 @@ func _ready() -> void:
 		battle_log = BattleLog.new(battle, name_of)
 		battle_log.start()
 		add_child(BattlePopups.for_screen(self))
+		add_child(AtbClock.for_screen(self))
 	advance()
 
 
@@ -128,7 +129,7 @@ func advance() -> void:
 	while battle.outcome() == Battle.Outcome.ONGOING:
 		var actor: Combatant = battle.current()
 		if actor == null:
-			actor = battle.next_turn()
+			actor = battle.next_turn() if AtbClock.ready(battle) else null
 		if actor == null or battle.brain_of(actor) == null or AutoBattle.plays(battle, actor):
 			break
 		BattleAi.take_turn(battle, battle.brain_of(actor))

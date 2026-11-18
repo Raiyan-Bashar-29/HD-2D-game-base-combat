@@ -7,7 +7,7 @@
 - **[`CONTEXT.md`](CONTEXT.md), `ROADMAP.md`, `WORK_PACKAGES.md` and `DEVLOG.md`:** the upstream
   base's record, still true for every system inherited from it.
 
-**Last updated:** 2026-11-18 · **C10.29: the loadout from the battle menu.** Combat `0.214.0`, on base 5.22. Next: C10.30, then the rest of phase C10 (the devlog's recorded gaps), then what the owner unblocks. C7.9 and C7.10 wait on the deferred hero kits and Arima's upload. The order is in `HANDOFF.md` § What is left.
+**Last updated:** 2026-11-18 · **C10.30: ATB time in a turn battle.** Combat `0.215.0`, on base 5.22. Next: C10.31, then the rest of phase C10 (the devlog's recorded gaps), then what the owner unblocks. C7.9 and C7.10 wait on the deferred hero kits and Arima's upload. The order is in `HANDOFF.md` § What is left.
 full history kept, `template` remote set; upstream `5.16.3` merged in cleanly the same day. **The shared core is complete and proven in the game: a training dummy in the courtyard takes a resolved hit and toasts it. Phase C2, the turn-based formula, is planned as rows C2.1 to C2.9, C2.1 and C2.2 shipped two interchangeable turn schedulers, rounds and CTB, C2.3 made skills and commands data, C2.4's `Battle` runs a whole fight with no frames, C2.5's `BattleAi` plays a side from data, C2.6 builds a battle from an encounter, C2.7 draws it as a screen over the frozen field, C2.8 rewards a win and grows the party, and C2.9 puts a playable fight in the courtyard. **The turn-based formula is complete. The next row is C3.0, which plans the action formula.**
 
 ## How the two repositories relate
@@ -250,7 +250,8 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 `CHANGELOG.md` makes. **A bold version in this file is a claim about the CURRENT one** and
 `combat_record_test.gd` holds it to that; every other spelling is a record of what was.
 
-- **0.214.0** — C10.29, the loadout from the battle menu. The player's turn offers a Loadout row that opens `LoadoutScreen` over the battle for the battle's own fighter of that member; closing it returns to the same turn, no turn spent. `CombatActions.LOADOUT` gains a pad button (the second paddle).
+- **0.215.0** — C10.30, ATB time in a turn battle. `Encounter.TurnOrder.ATB` builds the CTB queue, and the battle screen's `AtbClock` feeds it `atb_ticks_per_second` ticks a second of real time; the screen takes a turn only when a gauge is full (`AtbClock.ready`). With the wait-mode setting on, the clock stops while a member's menu is open.
+- 0.214.0 — C10.29, the loadout from the battle menu. The player's turn offers a Loadout row that opens `LoadoutScreen` over the battle for the battle's own fighter of that member; closing it returns to the same turn, no turn spent. `CombatActions.LOADOUT` gains a pad button (the second paddle).
 - 0.213.0 — C10.28, threat in turn battles. Every battle fighter gets an `Aggro` table, so a foe remembers who hurt it; `Aggro.top` names the most; the new TargetRule.THREAT aims there (a taunt still wins). The battle line of a fighter with a table says whom it is after, and the HUD's target line names whom a field foe is after (`ActionEnemy.after`).
 - 0.212.0 — C10.27, foes fight as a group. `ActionBrain.max_attackers`: a field foe asks `AttackTokens` for a turn on its target before it swings, and without one circles the target on a ring spread by angle; the token comes back when its swing ends or it falls. `ActionBrain.retreat_for` ends a retreat after that many seconds until the hp recovers.
 - 0.211.0 — C10.26, followers dodge. `ActionBrain.dodge_chance`: a follower rolls away with its loadout's dodge from each foe's swing winding up at it (`DefenceWatch.swings_at`, now static), once a swing; the dodge's i-frames make the swing miss, and `attack_dodged` pays its ATB.
@@ -1131,7 +1132,7 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C10.27 | Enemies fight as a group: attack tokens and surrounding | **DONE**, combat `0.212.0`. `AttackTokens`, `ActionBrain.max_attackers` and `retreat_for`. Closes the gaps recorded in C3.6 |
 | C10.28 | Threat in turn battles, and who a foe is after | **DONE**, combat `0.213.0`. `Aggro` on battle fighters, `Aggro.top`, TargetRule.THREAT, the after lines. Closes the gaps recorded in C8.6 |
 | C10.29 | Loadout and gear from the battle menu | **DONE**, combat `0.214.0`. `BattleScreen`'s Loadout row, the LOADOUT pad binding. Closes the gaps recorded in C9.7 |
-| C10.30 | ATB time in a turn-based battle | TODO (M). The gaps recorded in C4.10 |
+| C10.30 | ATB time in a turn-based battle | **DONE**, combat `0.215.0`. `Encounter.TurnOrder.ATB`, `atb_ticks_per_second`, `AtbClock`. Closes the gaps recorded in C4.10 |
 | C10.31 | Timed hits in turn-based battles | TODO (M). The gaps recorded in C4.10 |
 | C10.32 | Finisher: hold to charge, a line strike, holding still while charging | TODO (M). The gaps recorded in C6.8 |
 | C10.33 | Battlefield shapes: a sphere left at a point, a line, a zone; picking fighters by tag | TODO (M). The gaps recorded in C6.9a |
