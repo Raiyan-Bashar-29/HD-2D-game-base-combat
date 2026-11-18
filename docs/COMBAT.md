@@ -1143,6 +1143,11 @@ Each row that changes code bumps `[combat] core/version`, with the same promise 
 | C10.33 | Battlefield shapes: a sphere left at a point, a line, a zone; picking fighters by tag | **DONE**, combat `0.219.0`. `BattlefieldMechanism.shape`, `BattlefieldShape`, Who.TAGGED, statuses cured only when the field gave them. Closes the gaps recorded in C6.9a |
 | C10.34 | Converter: a super pause that spares the user, and triggers that are no longer always true | **DONE**, combat `0.217.0`. `MoveEvent.others_only`, the converter's superpause flag, `MugenEvents.missing`. Closes the gaps recorded in C8.16b, C9.9a |
 | C10.35 | Converter: read RLE5 and version-1 (PCX) sprite files | **DONE**, combat `0.220.0`. `MugenPacking.rle5` and `pcx`, `MugenSff`'s version 1 path. Closes the gaps recorded in C9.9c |
+| C10.36a | Review fixes, part 1: gear and the menus (awakening and dismantling keep every gem, a follower's piece, the gear screen after the piece screen, the doom count, party hp) | TODO (M). The batch review of C10.3 to C10.35 |
+| C10.36b | Review fixes, part 2: battle rules (the timed bonus stays on the player's skill, a refused AI pick spends its turn, no "uses" line for a refused act, a power's move and a follower's wide skill reach the right fighters) | TODO (M). The batch review of C10.3 to C10.35 |
+| C10.36c | Review fixes, part 3: ATB and the battle screen (no fast-forward past a skipped turn, an owed turn starts at once, pop-ups beside their line, threat names a standing fighter) | TODO (M). The batch review of C10.3 to C10.35 |
+| C10.36d | Review fixes, part 4: field fighting (facing of foes and followers, a follower's dodge timing and time rate, breaking free stops the throw, the ring around a busy target, the retreat timer, hit numbers, lock ring, one-blow loot) | TODO (M). The batch review of C10.3 to C10.35 |
+| C10.36e | Review fixes, part 5: battlefield shapes and the converter (walls, drift and clashes follow the shape, a wall with no room refuses before paying, status owners, linked and shared-palette version 1 sprites) | TODO (M). The batch review of C10.3 to C10.35 |
 
 **Rules for the rows:** the same as upstream's board (`WORK_PACKAGES.md` § The rules), unchanged:
 
