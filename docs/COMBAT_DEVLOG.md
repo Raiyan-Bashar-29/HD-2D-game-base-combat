@@ -5640,3 +5640,14 @@ screen's loop asks `AtbClock.ready` before `next_turn`. New `atb_clock_test` (4)
 **Verified.** Ladder: 0 warnings; 5408 passed, 0 failed; checkers silent.
 **Gaps.** No gauge is drawn on the screen; in active mode a foe whose gauge fills during the
 player's menu waits for the player. `battle_screen.gd` is at 250/250.
+
+## 2026-11-18 — C10.31 · Timed hits in turn battles
+
+**Did.** `Skill.prompt`. `BattleScreen._act` hands a timed skill to the new `BattleTiming` (ui),
+which disables the menu rows, shows a cue line, and on a press or the window's end calls the
+screen's new public `act_now` with `SkillUse.timed` set to the grade's multiplier (read in
+`SkillUse._hit`). The results lines moved to `BattleReadout.reward_lines` to make room. New
+`battle_timing_test` (2).
+**Why.** The gaps recorded in C4.10.
+**Verified.** Ladder: 0 warnings; 5411 passed, 0 failed; checkers silent.
+**Gaps.** No skill in the demo carries a prompt yet. Heals and effects are not grown by a press.

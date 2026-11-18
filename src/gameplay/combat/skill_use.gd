@@ -29,6 +29,9 @@ const DEATH_RESIST: StringName = &"resist_death"
 ## Every hit the latest skills landed, and on whom, so a field move that wraps a skill can say
 ## whether it missed or was blocked (C10.16). Whoever reads it clears it first.
 static var struck: Array[Combatant] = []
+## What a timed press made of the skill landing now (C10.31): its hits are this much stronger.
+## The battle screen sets it around one use; 1 otherwise.
+static var timed: float = 1.0
 static var results: Array[DamageResult] = []
 
 
@@ -248,7 +251,7 @@ static func _slay(target: Combatant, chance: float, rng: RandomNumberGenerator) 
 static func _hit(user: Combatant, skill: Skill, target: Combatant, power: float,
 		rng: RandomNumberGenerator) -> void:
 	Foresight.striking = skill.id
-	var result: DamageResult = user.hit(target, power, skill.element, rng, skill.sure_hit, skill.tags)
+	var result: DamageResult = user.hit(target, power * timed, skill.element, rng, skill.sure_hit, skill.tags)
 	Foresight.striking = &""
 	if result != null:
 		struck.append(target)

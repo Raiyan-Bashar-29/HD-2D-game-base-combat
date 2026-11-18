@@ -136,6 +136,7 @@ const LIST: Array[String] = [
 	"res://tests/unit/battle_threat_test.gd",
 	"res://tests/unit/battle_loadout_test.gd",
 	"res://tests/unit/atb_clock_test.gd",
+	"res://tests/unit/battle_timing_test.gd",
 	"res://tests/unit/weapon_line_test.gd",
 	"res://tests/unit/craft_screen_test.gd",
 	"res://tests/unit/one_more_test.gd",

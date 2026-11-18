@@ -197,7 +197,8 @@ func _fill() -> void:
 	# Over: show the result, the rewards, and one Continue button.
 	if battle.outcome() != Battle.Outcome.ONGOING:
 		add_note(tr(BattleReadout.outcome_key(battle)))
-		_reward_notes()
+		for line: String in BattleReadout.reward_lines(self):
+			add_note(line)
 		add_row(tr(CONTINUE_KEY), request_close)
 		return
 	add_note(tr(ORDER_KEY).format({"names": ", ".join(_upcoming())}))
@@ -344,7 +345,16 @@ func _back() -> void:
 	refresh()
 
 
+# A skill with a timed press waits for the press first (C10.31); anything else acts at once.
 func _act(command: BattleCommand, targets: Array[Combatant]) -> void:
+	if BattleTiming.wants(command):
+		add_child(BattleTiming.begin(self, command, targets))
+	else:
+		act_now(command, targets)
+
+
+## The member acts with `command` on `targets` now, and the battle plays on.
+func act_now(command: BattleCommand, targets: Array[Combatant]) -> void:
 	# If the battle refused (e.g. not enough MP), show a line saying so and keep the menu.
 	_refused = not battle.act(command, targets, _boost)
 	if not _refused:
@@ -361,23 +371,3 @@ func _upcoming() -> Array[String]:
 	return names
 
 
-func _reward_notes() -> void:
-	if rewards == null or battle.outcome() != Battle.Outcome.WON:
-		return
-	if rewards.experience > 0:
-		add_note(tr(EXPERIENCE_KEY).format({"amount": rewards.experience}))
-	for fighter: Combatant in battle.party:
-		if rewards.levelled.has(fighter.combatant_id):
-			add_note(tr(LEVEL_UP_KEY).format({"name": name_of(fighter),
-					"level": Party.level_of(fighter.combatant_id)}))
-	for item_id: StringName in rewards.items:
-		add_note(tr(FOUND_KEY).format({"item": _item_name(item_id)}))
-	for item_id: StringName in rewards.left_behind:
-		add_note(tr(LEFT_KEY).format({"item": _item_name(item_id)}))
-	for line: String in BattleReadout.raised(rewards):
-		add_note(line)
-
-
-func _item_name(item_id: StringName) -> String:
-	var definition: ItemDefinition = ItemDb.definition(item_id)
-	return tr(definition.name_key) if definition != null else String(item_id)

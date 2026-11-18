@@ -60,6 +60,27 @@ static func raised(rewards: Rewards) -> Array[String]:
 	return out
 
 
+## The results' lines for a won battle on `screen`: experience, who levelled, what was found and
+## what was left, and the pieces raised (moved from `BattleScreen`, C10.31).
+static func reward_lines(screen: BattleScreen) -> Array[String]:
+	var out: Array[String] = []
+	var given: Rewards = screen.rewards
+	if given == null or screen.battle.outcome() != Battle.Outcome.WON:
+		return out
+	if given.experience > 0:
+		out.append(_tr(BattleScreen.EXPERIENCE_KEY).format({"amount": given.experience}))
+	for fighter: Combatant in screen.battle.party:
+		if given.levelled.has(fighter.combatant_id):
+			out.append(_tr(BattleScreen.LEVEL_UP_KEY).format({"name": screen.name_of(fighter),
+				"level": Party.level_of(fighter.combatant_id)}))
+	for item_id: StringName in given.items:
+		out.append(_tr(BattleScreen.FOUND_KEY).format({"item": PieceScreen.item_name(item_id)}))
+	for item_id: StringName in given.left_behind:
+		out.append(_tr(BattleScreen.LEFT_KEY).format({"item": PieceScreen.item_name(item_id)}))
+	out.append_array(raised(given))
+	return out
+
+
 ## A bar under `fighter`'s line showing how full its damage pool is (C10.23). Placeholder look:
 ## a plain `ProgressBar`; the line above still gives the numbers.
 static func bar(fighter: Combatant) -> ProgressBar:
