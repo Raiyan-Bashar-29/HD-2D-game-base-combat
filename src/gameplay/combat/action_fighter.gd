@@ -129,6 +129,8 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 	# Locked on, the fighter always faces its target, so every swing and roll aims at it (C3.5).
 	if _lock_on != null and _lock_on.target != null and _lock_on.direction() != Vector3.ZERO:
 		facing = _lock_on.direction()
+		# The sprite shows it too, whichever way the body walks (C10.14).
+		Events.turn_requested.emit(_body, _lock_on.target.global_position)
 	var vitals: Vitals = Vitals.of(get_parent())
 	# A fallen or staggered fighter drops whatever swing it was in.
 	if (vitals != null and vitals.is_defeated()) or (statuses != null and statuses.halts()):

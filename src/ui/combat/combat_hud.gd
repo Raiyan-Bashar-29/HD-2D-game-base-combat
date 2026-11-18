@@ -151,7 +151,6 @@ func field_text(fighter: Combatant) -> String:
 	return "   ".join(parts)
 
 
-## The statuses `fighter` holds, as one translated line, or "" when it holds none.
 # Every pool but the damage pool that has a size: "MP 8 / 10".
 func _pools(fighter: Combatant) -> Array[String]:
 	var vitals: Vitals = Vitals.of(fighter.get_parent())
@@ -164,6 +163,7 @@ func _pools(fighter: Combatant) -> Array[String]:
 	return parts
 
 
+## The statuses `fighter` holds, as one translated line, or "" when it holds none.
 func _statuses_text(fighter: Combatant) -> String:
 	var names: Array[String] = []
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent())

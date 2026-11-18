@@ -135,6 +135,7 @@ func act(delta: float) -> ActionDecider.State:
 			queue_free()
 	timeline.step(dt)
 	Unseen.fade(self)
+	_fade_out()
 	if _hitbox != null:
 		_hitbox.rotation.y = atan2(-facing.x, -facing.z)
 		if timeline.is_hitting():
@@ -211,6 +212,13 @@ func _wander_point() -> Vector3:
 ## The flag that remembers a `remember_defeat` enemy was beaten: its area and its node name.
 func defeat_flag() -> StringName:
 	return StringName("field_defeated/%s/%s" % [Director.current_area_id, name])
+
+
+# A fallen foe fades out over its linger (C10.14), after the unseen fade has had its say.
+func _fade_out() -> void:
+	var visual: CharacterVisual = get_node_or_null(^"Visual") as CharacterVisual
+	if _fallen and linger > 0.0 and visual != null and visual.sprite != null:
+		visual.sprite.modulate.a = clampf(_gone_in / linger, 0.0, 1.0)
 
 
 ## The first think after it falls announces the defeat, once, and starts the `linger` clock

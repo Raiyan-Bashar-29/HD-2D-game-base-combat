@@ -170,9 +170,11 @@ func _raise() -> void:
 
 func _lower() -> void:
 	var me: Combatant = _caster()
-	Events.battlefield_lowered.emit(me.combatant_id if me != null else &"", _power_id(), _broken)
+	var broken: bool = _broken
 	_broken = false
+	# Down before it is announced, so a listener that looks again finds it gone (C10.14).
 	_up = false
+	Events.battlefield_lowered.emit(me.combatant_id if me != null else &"", _power_id(), broken)
 	_left = 0.0
 	if holder != null: holder.release_kit(_source("field_kit/"))
 	_stage.lower()

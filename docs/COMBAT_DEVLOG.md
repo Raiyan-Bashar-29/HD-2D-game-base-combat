@@ -5456,3 +5456,15 @@ root) asks the toast for each; `BattleLog` has a steal line. New `combat_notes_t
 **Why.** The gaps recorded in C4.6, C8.7a, C8.7b and C9.5b.
 **Verified.** Ladder: 0 warnings; 5327 passed, 0 failed; checkers silent.
 **Gaps.** Poise has no pool of its own to show; the shield is what a break empties.
+
+## 2026-11-18 — C10.14 · The fight seen in the world
+
+**Did.** `LockOn._mark` keeps a placeholder torus under the target's body. `ActionFighter` sends
+`turn_requested` toward the locked target each frame it faces it. `ActionEnemy._fade_out` sets the
+fallen sprite's alpha from the linger left, after `Unseen.fade`. New `PlaceTint` (ui, first under
+the UI layer) shows the first standing place's tint. `BattlefieldRun._lower` clears `_up` before
+it announces. New `world_marks_test` (5).
+**Why.** The gaps recorded in C3.5, C3.4, C3.8 and C6.9f.
+**Verified.** Ladder: 0 warnings; 5333 passed, 0 failed; checkers silent. A windowed capture of a
+probe scene showed the yellow ring under the locked foe.
+**Gaps.** The tint washes the whole view rather than the ground and sky only.

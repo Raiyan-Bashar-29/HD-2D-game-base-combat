@@ -9,14 +9,18 @@ extends Node
 ## dropped on the next `refresh`; with the player's lock-on assist on (C5.3b), one that FELL is
 ## replaced by the nearest other hostile in reach. Every change is announced by `Events.lock_on_changed`.
 ##
-## While locked, `ActionFighter` turns the fighter to face the target, so every swing aims at it.
+## While locked, `ActionFighter` turns the fighter to face the target, so every swing aims at it,
+## and a ring lies under the target's feet (`marker`, C10.14).
 ##
 ## TARGETS ARE FOUND THROUGH THE `Hurtbox.GROUP` GROUP, not the physics engine: a lock-on is a
 ## choice among fighters, not a collision, and a test can place fixture nodes and ask.
 ##
-## OWNS: which fighter is locked, and when to let go.
+## OWNS: which fighter is locked, its ring, and when to let go.
 ## MUST NOT: turn or move the body (the fighter does), or decide what counts as hostile (the
 ## faction table, through `Combatant.can_target`).
+
+## The lock ring's colour (C10.14).
+const MARK_COLOUR: Color = Color(1.0, 0.85, 0.3)
 
 ## Metres within which a target may be picked.
 var reach: float = 10.0
@@ -27,6 +31,8 @@ var leash: float = 1.3
 var cone: float = 70.0
 
 var target: Hurtbox
+## The ring under the locked target's feet (C10.14), or null.
+var marker: MeshInstance3D
 
 
 ## The fighter the lock-on under `body` holds, or null (C10.8: followers aim with it too).
@@ -119,9 +125,35 @@ func _hold(next: Hurtbox) -> void:
 	if next == target:
 		return
 	target = next
+	_mark(next)
 	var me: Combatant = Combatant.of(get_parent())
 	var them: StringName = next.fighter().combatant_id if next != null and next.fighter() != null else &""
 	Events.lock_on_changed.emit(me.combatant_id if me != null else &"", them)
+
+
+# Puts the ring under `next`'s body, or takes it away. A placeholder look: a flat torus.
+func _mark(next: Hurtbox) -> void:
+	if next == null or next.get_parent() == null:
+		if is_instance_valid(marker):
+			marker.queue_free()
+		marker = null
+		return
+	if not is_instance_valid(marker):
+		marker = MeshInstance3D.new()
+		marker.name = "LockMarker"
+		var ring := TorusMesh.new()
+		ring.inner_radius = 0.45
+		ring.outer_radius = 0.55
+		var paint := StandardMaterial3D.new()
+		paint.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		paint.albedo_color = MARK_COLOUR
+		ring.material = paint
+		marker.mesh = ring
+		marker.scale = Vector3(1.0, 0.1, 1.0)
+	if marker.get_parent() != null:
+		marker.get_parent().remove_child(marker)
+	next.get_parent().add_child(marker)
+	marker.position = Vector3(0.0, 0.05, 0.0)
 
 
 func _origin() -> Vector3:
