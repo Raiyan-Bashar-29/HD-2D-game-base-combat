@@ -5620,3 +5620,12 @@ in `BattleAi._aim`. `BattleLog.name_for` lets `BattleReadout.line` name the top 
 **Verified.** Ladder: 0 warnings; 5399 passed, 0 failed; checkers silent.
 **Gaps.** Threat in a battle never fades. A party member's line also names its top, when a foe
 has hurt it.
+
+## 2026-11-18 — C10.29 · The loadout from the battle menu
+
+**Did.** `BattleScreen.LOADOUT_KEY` row on the first menu and `_open_loadout`, which pushes
+`LoadoutScreen.for_members` with the current battle fighter and its definition. LOADOUT also binds
+`JOY_BUTTON_PADDLE2`. New `battle_loadout_test` (3).
+**Why.** The gaps recorded in C9.7.
+**Verified.** Ladder: 0 warnings; 5403 passed, 0 failed; checkers silent.
+**Gaps.** The gear screen is not offered in a battle. `battle_screen.gd` is at 249/250 code lines.

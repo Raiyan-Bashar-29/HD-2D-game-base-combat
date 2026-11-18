@@ -74,6 +74,8 @@ const STATUSES_KEY: String = "ui.battle.statuses"
 const WEAK_KEY: String = "ui.battle.weak"
 const AUTO_ON_KEY: String = "ui.battle.auto_on"
 const AUTO_OFF_KEY: String = "ui.battle.auto_off"
+## The row that opens the member's passive loadout mid-battle, at no cost of a turn (C10.29).
+const LOADOUT_KEY: String = "ui.battle.loadout"
 ## Seconds between two turns auto-battle plays.
 const AUTO_DELAY: float = 0.6
 ## How many upcoming turns the order line shows.
@@ -161,6 +163,14 @@ func _free_pair(pair: Array) -> void:
 	refresh()
 
 
+# The current member's passive loadout, over the battle; closing it returns to the same turn.
+func _open_loadout() -> void:
+	var fighter: Combatant = battle.current()
+	var def: CombatantDef = battle.defs.get(fighter.combatant_id, null) if fighter != null else null
+	if def != null:
+		push(LoadoutScreen.for_members([fighter.get_parent()] as Array[Node], [def] as Array[CombatantDef]))
+
+
 func _toggle_auto() -> void:
 	AutoBattle.toggle()
 	_auto_wait = AUTO_DELAY
@@ -218,6 +228,7 @@ func _fill() -> void:
 			_command_row(entry as BattleCommand)
 		else:
 			add_row(tr(entry as String), _open.bind(entry as String))
+	add_row(tr(LOADOUT_KEY), _open_loadout)
 	add_row(tr(AUTO_ON_KEY if AutoBattle.on() else AUTO_OFF_KEY), _toggle_auto)
 
 

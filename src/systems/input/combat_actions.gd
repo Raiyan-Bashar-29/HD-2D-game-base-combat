@@ -70,7 +70,7 @@ static func install() -> void:
 	_define(LOCK_CYCLE, [_key(KEY_R), _pad(JOY_BUTTON_RIGHT_STICK)])
 	_define(COMMAND, [_key(KEY_F), _pad(JOY_BUTTON_MISC1)])
 	_define(SWITCH, [_key(KEY_C), _pad(JOY_BUTTON_PADDLE1)])
-	_define(LOADOUT, [_key(KEY_L)])
+	_define(LOADOUT, [_key(KEY_L), _pad(JOY_BUTTON_PADDLE2)])
 	_define(GEAR, [_key(KEY_G)])
 	_define(PARTY, [_key(KEY_P)])
 	_define(POWER_1, [_key(KEY_1)])
