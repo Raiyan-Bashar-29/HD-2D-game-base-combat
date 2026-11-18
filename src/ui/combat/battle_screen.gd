@@ -114,6 +114,7 @@ func _ready() -> void:
 	if battle != null:
 		battle_log = BattleLog.new(battle, name_of)
 		battle_log.start()
+		add_child(BattlePopups.for_screen(self))
 	advance()
 
 
@@ -181,6 +182,7 @@ func _fill() -> void:
 		return
 	for fighter: Combatant in battle.party + battle.enemies:
 		add_note(BattleReadout.line(fighter, name_of(fighter), battle_log))
+		rows.add_child(BattleReadout.bar(fighter))
 	# Over: show the result, the rewards, and one Continue button.
 	if battle.outcome() != Battle.Outcome.ONGOING:
 		add_note(tr(BattleReadout.outcome_key(battle)))

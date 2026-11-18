@@ -12,6 +12,9 @@ extends RefCounted
 ## MUST NOT: change the fight, or hold state.
 
 const RAISED_KEY: String = "ui.battle.raised"
+## The hp bar's colours (C10.23), a placeholder look until art exists.
+const BAR_FILL: Color = Color(0.45, 0.8, 0.45)
+const BAR_BACK: Color = Color(0.12, 0.12, 0.12, 0.85)
 
 
 ## The line for `fighter`, whose name the screen shows as `shown`; `log` names its statuses.
@@ -50,6 +53,26 @@ static func raised(rewards: Rewards) -> Array[String]:
 			out.append(_tr(RAISED_KEY).format({"item": PieceScreen.item_name(StringName(str(piece_id))),
 				"level": GearUpgrades.level(StringName(str(piece_id)))}))
 	return out
+
+
+## A bar under `fighter`'s line showing how full its damage pool is (C10.23). Placeholder look:
+## a plain `ProgressBar`; the line above still gives the numbers.
+static func bar(fighter: Combatant) -> ProgressBar:
+	var vitals: Vitals = Vitals.of(fighter.get_parent())
+	var made := ProgressBar.new()
+	made.show_percentage = false
+	made.custom_minimum_size = Vector2(160.0, 6.0)
+	made.max_value = maxf(1.0, float(vitals.maximum(fighter.damage_pool))) if vitals != null else 1.0
+	made.value = float(vitals.current(fighter.damage_pool)) if vitals != null else 0.0
+	made.add_theme_stylebox_override(&"fill", _flat(BAR_FILL))
+	made.add_theme_stylebox_override(&"background", _flat(BAR_BACK))
+	return made
+
+
+static func _flat(colour: Color) -> StyleBoxFlat:
+	var paint := StyleBoxFlat.new()
+	paint.bg_color = colour
+	return paint
 
 
 ## The key of the line that says how `battle` ended (moved from `BattleScreen`, C8.26).

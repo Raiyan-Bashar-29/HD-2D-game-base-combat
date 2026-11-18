@@ -5555,3 +5555,13 @@ move. `PartyFollower._report_move` tells its `PowerSet` of each new swing but th
 **Verified.** Ladder: 0 warnings; 5373 passed, 0 failed; checkers silent.
 **Gaps.** The follower's report and power use have no test of their own; the decider may keep
 picking a refused power until another entry wins the roll.
+
+## 2026-11-18 — C10.23 · Bars and pop-ups on the battle screen
+
+**Did.** `BattleReadout.bar(fighter)`, a `ProgressBar` with flat placeholder colours, added under
+each fighter's note by `BattleScreen._fill`. New `BattlePopups` (ui), a child of the screen from
+`_ready`, places a `Label` by the fighter's line and ages it out. New `battle_bars_test` (3).
+**Why.** The gaps recorded in C2.7.
+**Verified.** Ladder: 0 warnings; 5377 passed, 0 failed; checkers silent. A windowed capture of
+the demo's wisp battle showed a green bar under each of the four lines.
+**Gaps.** Only the damage pool has a bar; the other pools stay text. No hit animation.
