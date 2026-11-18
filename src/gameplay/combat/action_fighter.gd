@@ -136,7 +136,10 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 	elif not stunned() and not _held_by_others() and moves != null:
 		# A press while a move plays is first its timed press, if it has a prompt (C8.8c).
 		if attack and timeline.busy():
+			var graded: bool = timeline.move != null and timeline.move.prompt != null and not timeline.pressed()
 			timeline.time_press()
+			if graded and Combatant.of(get_parent()) != null:
+				Events.prompt_graded.emit(Combatant.of(get_parent()).combatant_id, timeline.move.prompt.grade(timeline.elapsed))
 		# Carrying a thing (C8.18b), the attack button throws it instead of swinging.
 		# The press that throws never swings too, nor does the hold that follows it (C8.27a).
 		if attack and not timeline.busy() and Carried.throw(_body, facing):

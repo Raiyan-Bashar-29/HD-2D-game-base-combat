@@ -5433,3 +5433,16 @@ New `kit_clash_test` (4).
 checkers silent.
 **Gaps.** A clash is only warned about when it happens, not checked across every kit and loadout
 by `check_content`.
+
+## 2026-11-18 — C10.12 · Field feedback
+
+**Did.** New `HitNumbers` (ui) listens to `combatant_damaged`, `attack_blocked`, `attack_missed`,
+`attack_dodged` and the new `prompt_graded`, and floats `Label3D`s beside the real-time fighter
+named (pops made together stack). New `HitFlash` (gameplay) tints the body's `Visual` sprites.
+`TimedWindow.grade`; `ActionFighter` emits the grade on a prompt's first press. New
+`hit_numbers_test` (6).
+**Why.** The gaps recorded in C8.17, C6.6b, C8.8c and C3.4.
+**Verified.** Ladder: 0 warnings; 5322 passed, 0 failed; checkers silent. A windowed capture of a
+probe scene showed "27!" with "Good" above it and the body tinted red.
+**Gaps.** No hit sound (the template ships no audio). A follower's or foe's own timed press is
+not graded.

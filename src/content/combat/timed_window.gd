@@ -41,6 +41,14 @@ func multiplier(pressed_at: float) -> float:
 	return bonus
 
 
+## How a press `pressed_at` seconds in reads on screen (C10.12): `perfect` in the centre,
+## `good` in the window, `miss` outside it.
+func grade(pressed_at: float) -> StringName:
+	if not inside(pressed_at):
+		return &"miss"
+	return &"perfect" if multiplier(pressed_at) == perfect_bonus and perfect > 0.0 else &"good"
+
+
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
 	if closes < opens:

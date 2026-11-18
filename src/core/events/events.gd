@@ -333,6 +333,9 @@ signal perfect_dodge(who: StringName, by: StringName)
 ## The hybrid's defence prompt (C8.20): a foe's hit is about to land on the player. `kind` is
 ## `&"evade"` or `&"block"`, `seconds` the time left; `&""` clears it. Emitted by `DefenceWatch`.
 signal defence_prompt(kind: StringName, seconds: float)
+## `who` pressed a move's timed prompt, graded `perfect`, `good` or `miss` (C10.12,
+## `TimedWindow.grade`). Emitted by `ActionFighter`, so the field can show how well it went.
+signal prompt_graded(who: StringName, grade: StringName)
 ## A real-time hit asks for `who` to be pushed by `push`: the direction times the distance in
 ## metres, flat on the ground. Emitted by `Hurtbox.take` (C3.3); the fighter's body moves (C3.4).
 signal knockback_requested(who: StringName, push: Vector3)
