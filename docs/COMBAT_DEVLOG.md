@@ -5377,3 +5377,15 @@ skill; an ally-wide skill still reaches it. New `battle_edges_test` (4).
 **Verified.** Ladder: 0 warnings; 5286 passed, 0 failed; checkers silent.
 **Gaps.** "Harmful" is the `ailment` and `debuff` tags only. A field miss is still not a dodge.
 An ALL skill no longer hits a foe's crate either (it never chose one).
+
+## 2026-11-18 — C10.7 · Refuse before paying
+
+**Did.** A `refuses(user, targets)` hook on `PowerExecutor`, asked by `PowerUse.use` before it
+pays; `CommandRun` answers with its order test. `PowerUse._drained` refuses entering a form that
+drains an empty pool. A skill-less power sends SKILL_DONE after its mechanism. The battlefield
+break moved from `Hurtbox`'s hit path into `Combatant.hit`, with the element and, for a plain
+blow, the weapon's tags, so every battle hit can break one. New `power_refuse_test` (5).
+**Why.** The gaps recorded in C6.11, C9.6b, C6.9c and C9.5b.
+**Verified.** Ladder: 0 warnings; 5292 passed, 0 failed; checkers silent; stripped 5178 passed.
+**Gaps.** The menus do not grey an order before it is aimed; the refusal shows only as nothing
+happening.

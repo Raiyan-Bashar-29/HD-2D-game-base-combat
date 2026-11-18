@@ -213,8 +213,6 @@ func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 		else:
 			outcome = Outcome.LANDED
 			Weakness.strike(target, keys)
-			# A landed hit may bring down a battlefield on its target (C6.9c).
-			BattlefieldRun.breaks(target, result.tags)
 	return outcome
 
 

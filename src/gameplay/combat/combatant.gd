@@ -213,6 +213,14 @@ func hit(target: Combatant, power: float, element: StringName, rng: RandomNumber
 	Rows.soften(self, target, result)
 	target.receive(result, combatant_id)
 	Rows.shift(target, result)
+	# A landed hit may bring down a battlefield on its target, in a battle too (C6.9c, C10.7): by
+	# its tags, its element, and for a plain blow the worn weapon's tags.
+	if not result.missed and not result.blocked:
+		var keys: Array[StringName] = result.tags.duplicate()
+		keys.append(element)
+		if tags.is_empty():
+			keys.append_array(strike_tags())
+		BattlefieldRun.breaks(target, keys)
 	return result
 
 
