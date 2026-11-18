@@ -5411,3 +5411,14 @@ of the `PowerSet`'s gauges are skipped. `AtbRules.on_block` and `per_swing`; `At
 **Verified.** Ladder: 0 warnings; 5305 passed, 0 failed; checkers silent.
 **Gaps.** The roster's `regen_bp` and `regen_mp` now also fill in the field, a second at a time;
 tune them when balancing. "One swing" is the hits of one frame.
+
+## 2026-11-18 — C10.10 · Status ticks as hits
+
+**Did.** `StatusEffect.tick_as_hit`. New `StatusTicks.land` (gameplay) builds a `DamageResult`
+(the tick times 1 + `damage_taken`, the status's tags) and calls `receive` with the applier as
+`from`; `StatusSet._tick` asks it first. `tick_turn` and `tick_seconds` read `_held.get` and skip
+a status ended mid-loop. New `status_tick_hit_test` (4).
+**Why.** The gaps recorded in C1.6, C9.2b, C8.15a and C2.14.
+**Verified.** Ladder: 0 warnings; 5310 passed, 0 failed; checkers silent.
+**Gaps.** A ledger's own release still changes the pool directly. Defence is not applied to a
+tick (no formula runs).
