@@ -1680,7 +1680,11 @@ or `options_test` fails.
    - `defeat_rule`: what the player's fall means, after `delay` seconds on the ground.
      RESPAWN_AT_ENTRY (the default) gets up with `revive_fraction` of max hp at the area's
      entrance, with every enemy back; REVIVE_IN_PLACE gets up where they fell; RELOAD_SAVE loads
-     the last save, or respawns at the entry when there is none.
+     the last save, or respawns at the entry when there is none. With `switch_first` (on by
+     default) a fallen lead hands the body to a party member still standing, and the rule waits
+     until nobody is left (C10.2). An `Encounter`'s own `defeat_rule` is what losing that
+     turn-based battle does: the party gets up with its `revive_fraction` and its kind is carried
+     out when the screen closes. With none, they stand up at 1 hp and play goes on.
 2. **A move** (`ActionMove`) is timing, a hit, and a shape:
 
    | Field | What it does |
@@ -1773,8 +1777,11 @@ the first menu.
    turn-based battles). Its `cost` and `cost_pool` (mp) are paid too. A row the player cannot use
    is greyed out with the reason: not enough ATB, not enough mp, no item, no target, or a status
    that forbids it.
-4. **Targets:** a one-target attack goes to the locked-on foe, else the nearest within 8 m; an
-   all-targets one to every foe within 8 m; a heal or a buff to the player.
+4. **Targets:** a one-target command that could land on more than one fighter within 8 m asks
+   which (C10.1): the rows become those fighters with their distance, the locked-on foe (else the
+   nearest) first, then Back. So a heal can go to an ally. With one fighter in reach it lands at
+   once; an all-targets command goes to every one in reach. A turn-based battle asks the same for a
+   power with no skill that strikes one foe (a finisher, a command, a blink to a foe).
 5. **The slow:** `[combat] hybrid/slow` in `project.godot` is how fast the fight runs while the
    menu is open. 0.1 is the default; 0 is a true wait mode; 1 does not slow at all.
 

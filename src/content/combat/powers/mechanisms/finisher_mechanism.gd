@@ -53,6 +53,11 @@ func kind() -> StringName:
 
 
 ## A finisher aims at the foes, so a battle offers them as its targets.
+## One foe unless it strikes them all (C10.1).
+func aims_at_one() -> bool:
+	return not all_foes
+
+
 func aims_at_foes() -> bool:
 	return true
 

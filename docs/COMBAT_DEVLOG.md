@@ -5291,3 +5291,40 @@ logic), and every key the combat rows draw (`options_test` runs before any case 
 5237 passed, 0 failed; checkers silent; stripped 5123 passed.
 **Gaps.** None new. Rejected findings (13) were refuted by the second agent, among them lock-on
 assist turning to a foe behind (it can, by design: `cycle` does too).
+
+## 2026-11-18 — C10.1 · Pick the target
+
+**Did.** Phase C10 opens: a sweep checked the 537 gaps the devlog records against the code (182
+fixed, 342 open) and grouped the open mechanics, rules and screens into rows C10.1 to C10.35.
+This row: `FieldCommands.choices` lists who a one-target field command may land on, the one it
+would pick first; `CommandOverlay` shows them with their distance when there is more than one,
+and Back spends nothing. `BattleCommand.one_target()` is the one test for "ask which" (the battle
+screen and `Battle._power` share it), and `PowerMechanism.aims_at_one()` says a skill-less power
+strikes one foe (a finisher not striking all, a command, an aimed blink), so the battle menu asks
+and the power lands on the foe picked. `CombatHud.name_of` names a field fighter from its own
+definition or loadout. One CSV row.
+**Why.** Six gaps (C4.3, C4.4, C4.5, C4.7, C4.8, C6.8): a field heal reached only the user, and a
+battle finisher struck the first foe.
+**Verified.** Red first: with the new calls stubbed, 12 failed. Ladder: 0 warnings; 5254 passed,
+0 failed; checkers silent; stripped 5140 passed.
+**Gaps.** A skill-less power in the field still aims at the lock-on, else the nearest. The list's
+distances are those when it was drawn.
+
+## 2026-11-18 — C10.2 · Losing
+
+**Did.** `Encounter.defeat_rule`: a lost battle stands the party up with its `revive_fraction`
+(`BattleSetup.release`), then `FieldDefeat.after_battle` carries out its kind (the area entered
+again, the latest save loaded, or play going on). With none, they stand at 1 hp, as before.
+`FieldDefeat` ignores a fall by a fighter in the running battle: the lead shares the field body's
+id, so a lead felled in a won battle used to start the field's wait and reload the area.
+`DefeatRule.switch_first` (on by default) hands a fallen lead's body to a standing member
+(`FieldParty.switch`) on the next tick. Everyone asleep for good now ends the battle LOST, so the
+screen shows the result instead of no menu. `BattleCommand.aims_unaided` frees `battle.gd` lines.
+New `battle_defeat_test` (6).
+**Why.** The gaps recorded in C5.1, C5.2, C4.7, C2.14 and C3.8.
+**Verified.** Red first was skipped to save time; the new case passed once written, and
+`field_defeat_test` caught a too-wide first guard (a battle left running by another case). Ladder:
+0 warnings; 5260 passed, 0 failed; checkers silent.
+**Gaps.** A battle's rule has no wait on the ground. Followers who fell stay down after a switch
+until the rule or a revive.
+

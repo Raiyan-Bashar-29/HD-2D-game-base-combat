@@ -54,6 +54,11 @@ func aims_at_foes() -> bool:
 	return true
 
 
+## It orders that one foe (C10.1).
+func aims_at_one() -> bool:
+	return true
+
+
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = super.problems(context)
 	if order == Order.OBEY and (status == null or not status.obeys):

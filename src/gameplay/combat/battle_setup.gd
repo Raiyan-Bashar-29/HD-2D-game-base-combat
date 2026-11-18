@@ -93,15 +93,21 @@ static func build(encounter: Encounter, party: Array[CombatantDef], holder: Node
 
 
 ## Frees every fighter node the battle held and erases the enemies' pool flags. A party member
-## left at zero stands back up at 1 hp: the template default until C5's defeat flow, so a lost
-## or a costly fight never leaves the next one starting already lost.
+## left at zero stands back up at 1 hp, so a lost or a costly fight never leaves the next one
+## starting already lost. A lost battle whose encounter names a `defeat_rule` (C10.2) stands them
+## up with its `revive_fraction` instead, and `FieldDefeat.after_battle` carries the rule out.
 static func release(battle: Battle) -> void:
 	for fighter: Combatant in battle.enemies + battle.party:
 		if battle.enemies.has(fighter) or fighter.is_in_group(SUMMONED):
 			_forget_pools(fighter)
+	var lost: bool = battle.outcome() == Battle.Outcome.LOST and battle.encounter != null
+	var rule: DefeatRule = battle.encounter.defeat_rule if lost else null
 	for fighter: Combatant in battle.party + battle.reserve:
+		var vitals: Vitals = Vitals.of(fighter.get_parent())
 		if not battle.guests.has(fighter.combatant_id):
-			Vitals.of(fighter.get_parent()).revive(1)
+			vitals.revive(1 if rule == null else roundi(vitals.maximum(vitals.defeat_pool) * rule.revive_fraction))
+	if rule != null:
+		FieldDefeat.after_battle(rule, Director.player)
 	for fighter: Combatant in battle.party + battle.enemies + battle.reserve:
 		var actor: Node = fighter.get_parent()
 		if is_instance_valid(actor):

@@ -294,17 +294,13 @@ func _open(category: String) -> void:
 	refresh()
 
 
-# A one-target command asks for a target first; anything else acts immediately. A stance acts
-# at once on its user.
+# A one-target command asks for a target first (a skill-less finisher too, C10.1); anything else
+# acts immediately. A stance acts at once on its user.
 func _choose(command: BattleCommand) -> void:
 	if command.skill != null and command.skill.toggle_status != null:
 		_act(command, [battle.current()])
 		return
-	var single: bool = command.kind == BattleCommand.Kind.ATTACK or command.kind == BattleCommand.Kind.SWAP \
-			or (command.skill != null
-			and command.skill.scope == Skill.Scope.ONE and command.kind != BattleCommand.Kind.DEFEND
-			and command.kind != BattleCommand.Kind.FLEE)
-	if single:
+	if command.one_target():
 		_pending = command
 		_refused = false
 		refresh()

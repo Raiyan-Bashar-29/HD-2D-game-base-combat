@@ -83,7 +83,7 @@ func refresh() -> void:
 	var target: Combatant = _target()
 	if target != null:
 		var vitals: Vitals = Vitals.of(target.get_parent())
-		var line: String = tr(TARGET_KEY).format({"name": _name_of(target),
+		var line: String = tr(TARGET_KEY).format({"name": name_of(target),
 			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})
 		# The target's statuses too, so a pressured or staggered foe shows it (C4.6).
 		var held: String = _statuses_text(target)
@@ -178,12 +178,24 @@ func _target() -> Combatant:
 	return null
 
 
-## A real-time enemy's translated name, or the last part of its id.
-func _name_of(target: Combatant) -> String:
-	var enemy: ActionEnemy = target.get_parent() as ActionEnemy
-	if enemy != null and enemy.fighter != null and enemy.fighter.name_key != "":
-		return tr(enemy.fighter.name_key)
+## A field fighter's translated name: its definition's `name_key` (a field enemy's own, or the
+## loadout of the player or a follower, C10.1), else the last part of its id.
+static func name_of(target: Combatant) -> String:
+	var def: CombatantDef = _def_of(target.get_parent())
+	if def != null and def.name_key != "":
+		return TranslationServer.translate(def.name_key)
 	return _tail(target.kind if target.kind != &"" else target.combatant_id)
+
+
+static func _def_of(body: Node) -> CombatantDef:
+	if body is ActionEnemy:
+		return (body as ActionEnemy).fighter
+	var loadout: ActionLoadout = (body as PartyFollower).loadout if body is PartyFollower else null
+	if body != null and loadout == null:
+		for child: Node in body.get_children():
+			if child is ActionFighter:
+				loadout = (child as ActionFighter).loadout
+	return loadout.fighter if loadout != null else null
 
 
 func _on_lock_on_changed(_who: StringName, target: StringName) -> void:

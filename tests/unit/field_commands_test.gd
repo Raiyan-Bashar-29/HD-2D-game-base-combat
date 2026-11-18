@@ -3,7 +3,8 @@ extends TestCase
 ## every foe in reach and a self skill at the user; each reason a command is refused (no ATB, a
 ## status, short mp, no item, nobody to aim at) is the one the player reads; a use spends the
 ## bar and the cost, lands the skill and takes the item; a refused use changes nothing; and the
-## loadout and skill report their field problems.
+## loadout and skill report their field problems. A one-target command offers its `choices`, the
+## one it would land on first (C10.1).
 ##
 ## OWNS: assertions about `FieldCommands`, `ActionLoadout.commands` and `Skill.atb_cost`.
 ## MUST NOT: name a game's skills or items, or wait for frames.
@@ -16,7 +17,7 @@ var _actors: Array[Node] = []
 
 
 func run() -> void:
-	plan(15)
+	plan(19)
 	SaveFixture.activate()
 	Fixtures.activate()
 	Flags.clear_all()
@@ -48,6 +49,14 @@ func _aiming() -> void:
 		_ids(FieldCommands.targets(_hero, storm)), [&"fixture_near", &"fixture_far"])
 	var mend := _command(_skill(Skill.Scope.ONE, FactionTable.Target.SELF, -4.0), BattleCommand.Kind.SKILL)
 	equal("a self skill lands on the user", _ids(FieldCommands.targets(_hero, mend)), [&"fixture_hero"])
+	_lock().target = _hurtbox(_far)
+	equal("the choices put the locked foe first (C10.1)", _ids(FieldCommands.choices(_hero, bolt)),
+		[&"fixture_far", &"fixture_near"])
+	_lock().target = null
+	equal("with nothing locked, the nearest first", _ids(FieldCommands.choices(_hero, bolt)),
+		[&"fixture_near", &"fixture_far"])
+	equal("an all-foes skill offers no choice", FieldCommands.choices(_hero, storm).is_empty(), true)
+	equal("a self skill offers only the user", _ids(FieldCommands.choices(_hero, mend)), [&"fixture_hero"])
 
 
 func _refusing() -> void:

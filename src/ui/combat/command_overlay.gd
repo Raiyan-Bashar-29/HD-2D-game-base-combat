@@ -9,6 +9,11 @@ extends MenuScreen
 ## bars and in mp. A row that cannot be used right now is greyed out with the reason beside it.
 ## Picking a usable row does it (`FieldCommands.use`) and closes the menu.
 ##
+## A ONE-TARGET COMMAND ASKS WHICH (C10.1) when it could land on more than one fighter: the rows
+## become those fighters (`FieldCommands.choices`), each with its distance, the one it would have
+## picked by itself first (the locked foe, else the nearest), then Back. So a heal can go to an
+## ally and a bolt to the far foe. Nothing is spent until a fighter is picked.
+##
 ## THE WORLD KEEPS GOING, SLOWLY. `pauses_world` is false, so the area, the weather and the clock
 ## run as normal. Only the fight slows: `CombatClock` drops to `[combat] hybrid/slow` (0.1 by
 ## default; 0 is "wait mode", where the fight stops until the menu closes) when the menu opens,
@@ -34,6 +39,8 @@ const ATB_REASON_KEY: String = "ui.field_command.reason.atb"
 const COST_KEY: String = "ui.battle.cost"
 const UNAVAILABLE_KEY: String = "ui.battle.unavailable"
 const BACK_KEY: String = "ui.battle.back"
+## A fighter in the target list: its name and how far away it stands.
+const TARGET_KEY: String = "ui.field_command.target"
 ## How slow the fight runs while the menu is open, as a fraction of full speed.
 const SLOW_SETTING: String = "combat/hybrid/slow"
 const SLOW_DEFAULT: float = 0.1
@@ -43,6 +50,8 @@ var user: Combatant
 var commands: Array[BattleCommand] = []
 ## The open category's key; empty on the first menu.
 var _category: String = ""
+## A one-target command waiting for the player to pick who (C10.1), or null.
+var _pending: BattleCommand = null
 ## The bar count the rows were last drawn with, so a bar filling redraws them.
 var _bars: int = -1
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -95,6 +104,14 @@ static func reason_key(reason: FieldCommands.Reason) -> String:
 	return ""
 
 
+## A row of the target list: `target`'s name and its distance from the user, in whole metres.
+func target_text(target: Combatant) -> String:
+	var here: Node3D = user.get_parent() as Node3D
+	var there: Node3D = target.get_parent() as Node3D
+	var metres: int = roundi(here.global_position.distance_to(there.global_position)) if here != null and there != null else 0
+	return tr(TARGET_KEY).format({"name": CombatHud.name_of(target), "metres": metres})
+
+
 func _ready() -> void:
 	_rng.randomize()
 	super()
@@ -123,6 +140,11 @@ func _fill() -> void:
 	_bars = meter.gauge.full_segments() if meter != null else 0
 	if meter != null:
 		add_note(CombatHud.atb_text(meter.gauge))
+	if _pending != null:
+		for target: Combatant in FieldCommands.choices(user, _pending):
+			add_row(target_text(target), _aim.bind(target))
+		add_row(tr(BACK_KEY), _back)
+		return
 	if _category != "":
 		for command: BattleCommand in BattleMenu.in_category(_offered(), _category):
 			_command_row(command)
@@ -164,10 +186,24 @@ func _offered() -> Array[BattleCommand]:
 
 
 func _choose(command: BattleCommand) -> void:
+	if FieldCommands.choices(user, command).size() > 1:
+		_pending = command
+		refresh()
+		return
+	_use(command, [])
+
+
+func _aim(target: Combatant) -> void:
+	var command: BattleCommand = _pending
+	_pending = null
+	_use(command, [target])
+
+
+func _use(command: BattleCommand, aim: Array[Combatant]) -> void:
 	# A fighter who fell while the menu was up does nothing; the menu just goes.
 	var vitals: Vitals = Vitals.of(user.get_parent())
 	if vitals == null or not vitals.is_defeated():
-		FieldCommands.use(user, command, _rng)
+		FieldCommands.use(user, command, _rng, aim)
 	request_close()
 
 
@@ -176,8 +212,12 @@ func _open(category: String) -> void:
 	refresh()
 
 
+# Back from the target list returns to the commands it came from; from a category, to the first.
 func _back() -> void:
-	_category = ""
+	if _pending != null:
+		_pending = null
+	else:
+		_category = ""
 	refresh()
 
 

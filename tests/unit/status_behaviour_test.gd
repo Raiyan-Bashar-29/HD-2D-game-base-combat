@@ -154,7 +154,8 @@ func _everyone_asleep_does_not_hang() -> void:
 	coma.breaks_on_hit = true
 	_statuses(one).apply(coma)
 	_statuses(two).apply(coma)
-	equal("with everyone asleep for good, next_turn gives up instead of looping", battle.next_turn(), null)
+	equal("with everyone asleep for good, next_turn gives up and the battle is lost (C10.2)",
+		[battle.next_turn(), battle.outcome()], [null, Battle.Outcome.LOST])
 	_free_all()
 
 
