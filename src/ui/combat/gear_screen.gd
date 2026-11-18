@@ -8,6 +8,7 @@ extends MenuScreen
 ##     changes against the worn one ("attack +3, speed -1"). Press one to wear it. One that
 ##     cannot be worn is greyed out with the reason (`GearSet.refusal`).
 ##   - "Take off" empties the slot; it is greyed out for a cursed piece.
+##   - "Work on" opens the worn piece's own screen: gems, upgrades, awakening (`PieceScreen`).
 ## A slot or stat with no row in the CSV shows its id, so a game's own stats still read.
 ##
 ## OWNS: the rows and what pressing one does.
@@ -21,6 +22,7 @@ const NEXT_KEY: String = "combat.loadout.next_member"
 const SLOT_ROW_KEY: String = "combat.gear.slot_row"
 const EMPTY_KEY: String = "combat.gear.empty"
 const TAKE_OFF_KEY: String = "combat.gear.take_off"
+const WORK_ON_KEY: String = "combat.gear.work_on"
 const CHOICES_KEY: String = "combat.gear.choices"
 const NONE_FITS_KEY: String = "combat.gear.none_fits"
 const PIECE_KEY: String = "combat.gear.piece"
@@ -28,7 +30,6 @@ const REFUSED_KEY: String = "combat.loadout.row_refused"
 const SAME_KEY: String = "combat.gear.same"
 const GAIN_KEY: String = "combat.gear.gain"
 const LOSS_KEY: String = "combat.gear.loss"
-const AFFIX_KEY: String = "combat.gear.affix"
 const SLOT_PREFIX: String = "combat.gear.slot."
 const STAT_PREFIX: String = "combat.stat."
 const REFUSAL_PREFIX: String = "combat.gear.refusal."
@@ -61,9 +62,7 @@ static func for_members(member_bodies: Array[Node], member_defs: Array[Combatant
 
 ## The pieces in the bag `body` uses (its own, else the player's) that fit `into`, by id.
 static func candidates(body: Node, into: StringName) -> Array[StringName]:
-	var bag: Inventory = Inventory.of(body)
-	if bag == null and Director.player != null:
-		bag = Inventory.of(Director.player)
+	var bag: Inventory = PieceScreen.bag_of(body)
 	var out: Array[StringName] = []
 	for item_id: StringName in (bag.ids() if bag != null else []):
 		var piece: GearDefinition = GearDb.for_item(item_id)
@@ -120,6 +119,7 @@ func _fill_choices(gear: GearSet) -> void:
 			_on_take_off.bind(worn))
 		var piece: GearDefinition = GearDb.for_item(worn)
 		off.disabled = piece != null and piece.cursed
+		add_row(tr(WORK_ON_KEY).format({"item": _item_name(worn)}), _on_work_on.bind(worn))
 	var shown: int = 0
 	for item_id: StringName in candidates(bodies[index], slot):
 		if item_id == worn:
@@ -156,12 +156,7 @@ static func _named(prefix: String, id: StringName) -> String:
 
 
 func _item_name(item_id: StringName) -> String:
-	var item: ItemDefinition = ItemDb.definition(item_id)
-	var shown: String = tr(item.name_key) if item != null else String(item_id)
-	# A piece's rolled affixes follow its name, such as "Coat of Embers" (C7.2b).
-	for key: String in GearAffixes.names(item_id):
-		shown = tr(AFFIX_KEY).format({"item": shown, "affix": tr(key)})
-	return shown
+	return PieceScreen.item_name(item_id)
 
 
 # A row in its piece's rarity colour.
@@ -187,6 +182,10 @@ func _on_take_off(item_id: StringName) -> void:
 	var gear: GearSet = GearSet.of(bodies[index])
 	if gear != null and gear.take_off(item_id):
 		refresh()
+
+
+func _on_work_on(item_id: StringName) -> void:
+	push(PieceScreen.for_piece(bodies[index], item_id))
 
 
 func _on_next() -> void:
