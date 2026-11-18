@@ -44,15 +44,19 @@ func run() -> void:
 	_body(&"fixture_pop_turns", false, Vector3.ZERO)
 	Events.combatant_damaged.emit(&"fixture_pop_turns", &"fixture_pop_foe", 5, false)
 	equal("a fighter that is not real-time shows nothing here", numbers.shown.size(), 0)
+	_grades()
+	numbers.free()
+	for body: Node in _bodies:
+		body.free()
+
+
+func _grades() -> void:
 	var window := TimedWindow.new()
 	window.opens = 0.3
 	window.closes = 0.5
 	window.perfect = 0.06
 	equal("a press is graded perfect in the centre, good in the window and a miss outside",
 		[window.grade(0.4), window.grade(0.32), window.grade(0.6)], [&"perfect", &"good", &"miss"])
-	numbers.free()
-	for body: Node in _bodies:
-		body.free()
 
 
 func _body(id: StringName, real_time: bool, at: Vector3) -> Node3D:
