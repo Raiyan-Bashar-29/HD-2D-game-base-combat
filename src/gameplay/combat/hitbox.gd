@@ -27,6 +27,9 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _shape: CollisionShape3D
 ## The instance ids of the hurtboxes struck during swing `_swing`.
 var _struck: Dictionary[int, bool] = {}
+# For a move with `hit_gap` (C10.16): how often this swing struck each hurtbox, and when last.
+var _counts: Dictionary[int, int] = {}
+var _last: Dictionary[int, float] = {}
 var _swing: int = -1
 ## The clock `_swing` was counted on: a new clock counts from 1 again, so it also forgets.
 var _clock: MoveTimeline
@@ -78,6 +81,8 @@ func sweep() -> int:
 ## (C8.16d, `Projectile`) calls it between its hits.
 func forget() -> void:
 	_struck.clear()
+	_counts.clear()
+	_last.clear()
 
 
 func strike(hurtbox: Hurtbox) -> bool:
@@ -86,11 +91,10 @@ func strike(hurtbox: Hurtbox) -> bool:
 	if _swing != timeline.swing or _clock != timeline:
 		_swing = timeline.swing
 		_clock = timeline
-		_struck.clear()
+		forget()
 	var key: int = hurtbox.get_instance_id()
-	if _struck.has(key) or _walled(hurtbox):
+	if _walled(hurtbox) or not _may_strike(key, timeline):
 		return false
-	_struck[key] = true
 	var clock: MoveTimeline = timeline
 	var move: ActionMove = timeline.move
 	var counted: bool = hurtbox.take(attacker, timeline.move, rng, global_position, timeline.boost)
@@ -103,6 +107,23 @@ func strike(hurtbox: Hurtbox) -> bool:
 		clock.start(move.throw_move)
 		Grab.hold(victim, self, move.throw_move)
 	return counted
+
+
+# True when this swing may strike `key` now, and counts it: once a swing, or for a move with a
+# `hit_gap` up to its `hits` times, that far apart in its own time (C10.16).
+func _may_strike(key: int, clock: MoveTimeline) -> bool:
+	var gap: float = clock.move.hit_gap if clock.move != null else 0.0
+	if gap <= 0.0:
+		if _struck.has(key):
+			return false
+		_struck[key] = true
+		return true
+	var count: int = _counts.get(key, 0)
+	if count >= clock.move.hits or clock.elapsed - _last.get(key, -INF) < gap - 0.0001:
+		return false
+	_counts[key] = count + 1
+	_last[key] = clock.elapsed
+	return true
 
 
 ## Where this hit comes from, for the wall check (C9.12): the attacker's middle. A shot or a

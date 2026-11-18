@@ -186,21 +186,42 @@ func _counter(attacker: Combatant, target: Combatant, rng: RandomNumberGenerator
 	return true
 
 
+# What a wrapped skill's hits on `target` came to: landed if any landed, else blocked if any was,
+# else missed. A skill with no hit (a pure status) has landed.
+static func _skill_outcome(target: Combatant) -> Outcome:
+	var outcome: Outcome = Outcome.LANDED if not SkillUse.struck.has(target) else Outcome.MISSED
+	for i: int in SkillUse.struck.size():
+		if SkillUse.struck[i] != target or SkillUse.results[i].missed:
+			continue
+		if not SkillUse.results[i].blocked:
+			return Outcome.LANDED
+		outcome = Outcome.BLOCKED
+	return outcome
+
+
 ## Resolves the hit itself, and says what became of it.
 func _resolve(attacker: Combatant, move: ActionMove, target: Combatant,
 		rng: RandomNumberGenerator, boost: float) -> Outcome:
 	if move.skill != null:
-		# A skill lands the way it does in a battle: power, effects, statuses, reflect and all.
-		# It does not report misses one by one, so poise and knockback treat it as landed.
-		SkillUse.apply(attacker, move.skill, [target], rng)
+		# A skill lands the way it does in a battle: power, effects, statuses, reflect and all,
+		# grown by a timed press, and says whether its hits on `target` missed or were blocked
+		# (C10.16), so poise and knockback follow what really happened.
+		var skill: Skill = move.skill
+		if boost != 1.0:
+			skill = move.skill.duplicate() as Skill
+			skill.power *= boost
+		SkillUse.struck.clear()
+		SkillUse.results.clear()
+		SkillUse.apply(attacker, skill, [target], rng)
 		BattlefieldRun.breaks(target, move.skill.tags)
-		return Outcome.LANDED
+		return _skill_outcome(target)
 	# A move with no element of its own takes the worn weapon's, and its tags too (C7.1c).
 	var element: StringName = attacker.strike_element(move.element)
 	var keys: Array[StringName] = [element]
 	keys.append_array(attacker.strike_tags())
 	var outcome: Outcome = Outcome.MISSED
-	for i: int in maxi(1, move.hits):
+	# Hits spaced in time land one a strike; the hitbox strikes again after the gap (C10.16).
+	for i: int in (1 if move.hit_gap > 0.0 else maxi(1, move.hits)):
 		# Foresight's observe knows a move by its key (C6.10).
 		Foresight.striking = StringName("move_%d" % move.get_instance_id())
 		var result: DamageResult = attacker.hit(target, move.power * boost, element, rng)

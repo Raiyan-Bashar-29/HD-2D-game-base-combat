@@ -5479,3 +5479,14 @@ from the target (ring, rain) or the user. New `walls_two_test` (4).
 **Why.** The gaps recorded in C3.6, C3.7, C9.12, C8.10a, C6.12a and C8.14a.
 **Verified.** Ladder: 0 warnings; 5338 passed, 0 failed; checkers silent.
 **Gaps.** The barrage pull has no test of its own. A foe's sight is a single ray, eye to eye.
+
+## 2026-11-18 — C10.16 · Field hits report what happened
+
+**Did.** `SkillUse._hit` records each target and result in two static lists; `Hurtbox._resolve`
+clears them, applies a copy of the skill with its power times the boost, and returns
+`_skill_outcome(target)`. `ActionMove.hit_gap`; `Hitbox._may_strike` counts strikes and their
+times per hurtbox for a gapped move, and `Hurtbox` lands one hit a strike for it. New
+`field_hits_test` (5).
+**Why.** The gaps recorded in C6.6a, C6.6b, C3.3, C8.8c and C3.2.
+**Verified.** Ladder: 0 warnings; 5344 passed, 0 failed; checkers silent.
+**Gaps.** The converter does not yet write `hit_gap` from a source's hit timing.

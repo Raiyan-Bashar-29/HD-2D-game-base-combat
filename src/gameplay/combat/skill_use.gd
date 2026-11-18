@@ -26,6 +26,11 @@ extends RefCounted
 ## The stat that cuts a SLAY effect's chance: 0 none, 1 immune (C8.7a).
 const DEATH_RESIST: StringName = &"resist_death"
 
+## Every hit the latest skills landed, and on whom, so a field move that wraps a skill can say
+## whether it missed or was blocked (C10.16). Whoever reads it clears it first.
+static var struck: Array[Combatant] = []
+static var results: Array[DamageResult] = []
+
 
 ## What `skill` really costs `user`: its `cost`, changed by the user's `cost_mult_<pool>` stat
 ## (C6.1a). The stat is added to 1, the way `poise_taken` is, so -0.5 halves the cost, -1 makes
@@ -243,6 +248,9 @@ static func _hit(user: Combatant, skill: Skill, target: Combatant, power: float,
 	Foresight.striking = skill.id
 	var result: DamageResult = user.hit(target, power, skill.element, rng, skill.sure_hit, skill.tags)
 	Foresight.striking = &""
+	if result != null:
+		struck.append(target)
+		results.append(result)
 	# A hit a barrier stopped whole touched nothing, so it finds no weakness either (C6.6a).
 	if result != null and not result.missed and not result.blocked:
 		Weakness.strike(target, Weakness.keys_of(skill))

@@ -56,6 +56,9 @@ extends Resource
 @export var power: float = 0.0
 @export var element: StringName = &""
 @export var hits: int = 1
+## Seconds between the hits of a several-hit move on one foe (C10.16): each lands that long after
+## the last while the move is active. 0 lands them all at once.
+@export var hit_gap: float = 0.0
 @export var poise: int = 0
 @export var knockback: float = 0.0
 ## Seconds a landed hit holds its victim in the air, unable to act (a launcher, C8.8a). Hits on
