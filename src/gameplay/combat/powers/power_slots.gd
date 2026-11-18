@@ -52,6 +52,17 @@ static func _in_another_form(held: PowerSet, statuses: StatusSet, power: Power) 
 
 ## Uses the power in `slot` (0 is the first). False, changing nothing, when the slot is empty or
 ## the power is refused right now (cooling, too costly, nobody to aim at).
+## The key of quick slot `slot` was let go: a held finisher there strikes or is cancelled (C10.32).
+static func release(user: Combatant, slot: int) -> void:
+	var slotted: Array[Power] = powers(user)
+	var held: PowerSet = PowerSet.of(user.get_parent()) if user != null else null
+	if slot < 0 or slot >= slotted.size() or held == null:
+		return
+	var run: FinisherRun = held.executor(slotted[slot].power_id) as FinisherRun
+	if run != null:
+		run.let_go()
+
+
 static func press(user: Combatant, slot: int, rng: RandomNumberGenerator) -> bool:
 	var slotted: Array[Power] = powers(user)
 	if slot < 0 or slot >= slotted.size():

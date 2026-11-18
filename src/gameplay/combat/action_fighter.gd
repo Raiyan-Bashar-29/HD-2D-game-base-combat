@@ -99,6 +99,8 @@ func _physics_process(delta: float) -> void:
 	for slot: int in CombatActions.SLOTS.size():
 		if Input.is_action_just_pressed(CombatActions.SLOTS[slot]):
 			press_slot(slot)
+		elif Input.is_action_just_released(CombatActions.SLOTS[slot]) and Combatant.of(get_parent()) != null:
+			PowerSlots.release(Combatant.of(get_parent()), slot)
 	var held: bool = CombatSettings.flag_or_setting(HOLD_FLAG, CombatSettings.HOLD_TO_ATTACK) \
 			and Input.is_action_pressed(CombatActions.ATTACK)
 	drive(delta, Input.is_action_just_pressed(CombatActions.ATTACK),

@@ -24,6 +24,12 @@ extends PowerMechanism
 ## POWER FROM A POOL: the power's own POWER and HITS scaling are read as it lands, so a
 ## POOL_FRACTION rule makes a fuller gauge hit harder. `drain_pool`, when set, is then emptied.
 ##
+## HOLD, LINE AND STILL (C10.32, field only). With `hold` the charge runs while the power's key
+## is held: let go before `min_charge` seconds and it is cancelled, nothing landing; later, and it
+## strikes grown by the charge reached (`hold_scale` at `min_charge`, full at `charge_time`);
+## held to the end it strikes on its own. A LINE `shape` reaches the foes ahead of the user within
+## `reach` and `width`, not a circle. `holds_still` keeps the user standing while it charges.
+##
 ## OWNS: the shape of a finisher.
 ## MUST NOT: hold running state. `FinisherRun` (gameplay) runs it, and `Flourish` stops the fight.
 
@@ -46,6 +52,20 @@ extends PowerMechanism
 @export var reach: float = 10.0
 ## A pool emptied when the strike lands, after the scaling has read it. Empty for none.
 @export var drain_pool: StringName = &""
+
+## Where an all-foes strike reaches in the field (C10.32): a circle, or a line ahead.
+enum Shape { CIRCLE, LINE }
+@export var shape: Shape = Shape.CIRCLE
+## A LINE's width, in metres.
+@export var width: float = 2.0
+## True: the charge runs while the key is held, and letting go strikes or cancels (C10.32).
+@export var hold: bool = false
+## With `hold`: seconds of charge before a let-go strikes; earlier, it is cancelled.
+@export var min_charge: float = 0.0
+## With `hold`: how strong a strike let go at `min_charge` is, against a full one (1).
+@export_range(0.0, 1.0, 0.01) var hold_scale: float = 0.5
+## True keeps the user standing still while it charges, in the field (C10.32).
+@export var holds_still: bool = false
 
 
 func kind() -> StringName:

@@ -5663,3 +5663,14 @@ gained the field. Taken before C10.32 and C10.33, as it serves further converted
 **Verified.** Ladder: 0 warnings; 5415 passed, 0 failed; checkers silent.
 **Gaps.** Not done: `p2bodydist` and other non-time triggers are still treated as always true
 (listed in `needs`); a reach condition from them is left for later. Eto's kit was not rebuilt.
+
+## 2026-11-18 — C10.32 · The held finisher
+
+**Did.** New finisher settings. `FinisherRun.let_go` cancels or strikes, with the strike's power
+scaled by `_grown` in `_scaled`; `_still_status` (a SECONDS SKIP_TURN, so `halts`) is applied and
+cured with the charge; `_reaches` tests a circle or a line. `ActionFighter` calls
+`PowerSlots.release` when a slot key comes up. New `finisher_hold_test` (4).
+**Why.** The gaps recorded in C6.8.
+**Verified.** Ladder: 0 warnings; 5420 passed, 0 failed; checkers silent.
+**Gaps.** A follower's or foe's hold finisher has no key, so it charges to full. The battle path
+is unchanged.
