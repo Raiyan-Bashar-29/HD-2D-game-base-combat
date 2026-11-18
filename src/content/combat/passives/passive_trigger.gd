@@ -9,13 +9,14 @@ extends Resource
 ##
 ## EACH EVENT MEANS THE SAME IN BOTH FORMULAS:
 ## - FIGHT_START: a battle begins; in the field, an area is entered.
-## - FIGHT_WON: the last standing foe of the holder falls.
+## - FIGHT_WON: the last standing foe of the holder falls. In a battle, also a battle the
+##   holder's party wins with no last fall (the last foe forgotten or caught, C10.6).
 ## - TURN_START: the holder's battle turn begins; in the field, every `interval` seconds.
 ## - HIT_DEALT, HIT_TAKEN: a hit by, or on, the holder landed.
 ## - KILL: a foe fell to the holder's hit.
 ## - ALLY_DEFEATED: an ally of the holder fell.
 ## - CRIT_DEALT: a hit by the holder was critical (it wakes after HIT_DEALT).
-## - DODGE: a hit passed through the holder's i-frames. GUARD: a barrier or a perfect block of
+## - DODGE: a hit passed through the holder's i-frames, or missed it in a battle (C10.6). GUARD: a barrier or a perfect block of
 ##   the holder stopped a hit whole.
 ## - HP_BELOW, HP_ABOVE: the holder's HP share crossed `threshold` downward, or upward. It wakes
 ##   once per crossing, not for as long as the HP stays there.

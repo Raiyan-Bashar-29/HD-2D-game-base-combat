@@ -97,7 +97,7 @@ static func of(who: Node) -> StatusSet:
 func apply(effect: StatusEffect, rng: RandomNumberGenerator = null, by: StringName = &"") -> bool:
 	if effect == null or not effect.problems().is_empty():
 		return false
-	if _resists(effect, rng):
+	if _resists(effect, rng) or HitGuard.refuses(self, effect):
 		Events.status_resisted.emit(owner_id, effect.id)
 		return false
 	# First time this status lands: start its timer and put its stat changes on the sheet.

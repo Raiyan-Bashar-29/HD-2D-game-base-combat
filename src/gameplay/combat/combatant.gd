@@ -226,6 +226,9 @@ func receive(result: DamageResult, from: StringName) -> int:
 	# A miss changes nothing and wakes nobody; it is announced as a miss, not as 0 damage.
 	if result.missed:
 		Events.attack_missed.emit(combatant_id, from)
+		# In a battle a miss is the target's dodge too, for its DODGE passives (C10.6).
+		if not real_time:
+			Events.attack_dodged.emit(combatant_id, from)
 		return 0
 	var outer: DamageResult = PassiveHits.now
 	PassiveHits.now = result

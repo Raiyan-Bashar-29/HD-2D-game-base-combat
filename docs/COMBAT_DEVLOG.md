@@ -5365,3 +5365,15 @@ branch's own check went) and emits the new `Events.battle_acted`; `BattleLog` tu
 **Verified.** Ladder: 0 warnings; 5281 passed, 0 failed; checkers silent; stripped 5167 passed.
 **Gaps.** An ALL skill never opens a target list, so its line is not seen. `battle.gd` is at
 250/250 code lines.
+
+## 2026-11-18 — C10.6 · Battle edge rules
+
+**Did.** `PassiveSet` remembers at battle start whether its holder is in the party
+(`_owed_win`) and wakes FIGHT_WON on a WON end when no last fall did. `Combatant.receive` sends
+`attack_dodged` beside `attack_missed` when not real-time. `HitGuard.refuses`, asked by
+`StatusSet.apply` beside resistance. `Unseen.open` keeps a foe's `INERT` fighter out of an ALL
+skill; an ally-wide skill still reaches it. New `battle_edges_test` (4).
+**Why.** The gaps recorded in C9.1, C9.2a, C9.5a and C8.10d.
+**Verified.** Ladder: 0 warnings; 5286 passed, 0 failed; checkers silent.
+**Gaps.** "Harmful" is the `ailment` and `debuff` tags only. A field miss is still not a dodge.
+An ALL skill no longer hits a foe's crate either (it never chose one).
