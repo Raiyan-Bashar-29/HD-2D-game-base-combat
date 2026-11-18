@@ -86,7 +86,9 @@ static func _past_walls(blink: BlinkMechanism, body: Node3D, to: Vector3) -> Vec
 	var from: Vector3 = body.global_position + lift
 	if blink.to == BlinkMechanism.To.SWAP:
 		return Vector3.INF if CombatSight.wall_between(body, from, to + lift).is_finite() else to
-	return CombatSight.short_of(body, from, to + lift) - lift
+	var past: Vector3 = CombatSight.short_of(body, from, to + lift) - lift
+	# Nor does it land in the air or off a ledge, unless it means to rise (C10.15).
+	return past if blink.to == BlinkMechanism.To.UP else CombatSight.last_floor(body, body.global_position, past)
 
 
 func _battle(user: Combatant, aim: Combatant, rng: RandomNumberGenerator) -> void:

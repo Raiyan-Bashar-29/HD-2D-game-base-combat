@@ -5468,3 +5468,14 @@ it announces. New `world_marks_test` (5).
 **Verified.** Ladder: 0 warnings; 5333 passed, 0 failed; checkers silent. A windowed capture of a
 probe scene showed the yellow ring under the locked foe.
 **Gaps.** The tint washes the whole view rather than the ground and sky only.
+
+## 2026-11-18 — C10.15 · Walls and ledges, part 2
+
+**Did.** `Aggro._hidden` (a ray from eye to eye) skips a candidate with no threat. `CombatSight.
+last_floor` walks back from a blink's landing half a metre at a time to the first point with
+floor; a start with no floor under it keeps today's behaviour. `ConstructRun._clear` pushes the
+spot along the facing up to 1.5 m; `BarrageRun._fire` pulls each shot's origin short of a wall
+from the target (ring, rain) or the user. New `walls_two_test` (4).
+**Why.** The gaps recorded in C3.6, C3.7, C9.12, C8.10a, C6.12a and C8.14a.
+**Verified.** Ladder: 0 warnings; 5338 passed, 0 failed; checkers silent.
+**Gaps.** The barrage pull has no test of its own. A foe's sight is a single ray, eye to eye.

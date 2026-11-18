@@ -89,6 +89,11 @@ static func pick(body: Node3D, reach: float = INF, favoured: Combatant = null) -
 		if vitals != null and vitals.is_defeated():
 			continue
 		var distance: float = body.global_position.distance_to(hurtbox.global_position)
+		# A foe behind a wall is not seen, unless it already earned threat, say by hitting from
+		# cover (C10.15).
+		var earned: float = table.toward(hurtbox.fighter().combatant_id) if table != null else 0.0
+		if earned <= 0.0 and _hidden(body, hurtbox):
+			continue
 		# Nearer always wins a tie; a rank of threat or a taunt outweighs any distance.
 		var score: float = -distance
 		if distance <= reach:
@@ -102,6 +107,11 @@ static func pick(body: Node3D, reach: float = INF, favoured: Combatant = null) -
 			best = hurtbox
 			best_score = score
 	return best
+
+
+static func _hidden(body: Node3D, hurtbox: Hurtbox) -> bool:
+	var there: Node3D = hurtbox.get_parent() as Node3D
+	return there != null and CombatSight.wall_between(body, CombatSight.aim(body), CombatSight.aim(there)).is_finite()
 
 
 ## `legal` cut down to the taunting foes of `actor`, when there are any; otherwise `legal`.
