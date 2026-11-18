@@ -45,6 +45,12 @@ static func for_power(used: Power) -> BattleCommand:
 	return command
 
 
+## True for a power with no skill whose mechanism strikes the foes by itself (C6.7), so a battle
+## offers it the foes.
+func aims_unaided() -> bool:
+	return power != null and power.mechanism != null and power.mechanism.aims_at_foes()
+
+
 ## True when the player picks one target for this command (C10.1): an attack, a swap, a skill or
 ## item that lands on one, or a power with no skill whose mechanism strikes one foe (a finisher, a
 ## command, a blink to a foe). DEFEND, FLEE and ROW aim at nobody.

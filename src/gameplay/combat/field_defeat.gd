@@ -19,6 +19,12 @@ extends Node
 ## A PETRIFIED PLAYER (C8.18) is treated as fallen: a held status that `counts_as_fallen` starts the
 ## same wait and rule, and getting up cures it.
 ##
+## A FALL INSIDE A TURN-BASED BATTLE IS NOT A FIELD FALL (C10.2). The lead's battle fighter shares
+## the field body's id, so its defeat is heard here, and is ignored while it is in `Battle.running`. A lost
+## battle runs its encounter's own rule through `after_battle`. And with the rule's `switch_first`,
+## a lead who falls while a party member stands hands the body over (`FieldParty.switch`) on the
+## next tick instead of waiting out the rule.
+##
 ## OWNS: the wait on the ground and carrying out the rule.
 ## MUST NOT: choose the rule (the loadout does) or decide what an enemy's defeat means.
 
@@ -49,6 +55,10 @@ func tick(delta: float) -> void:
 		if statuses != null and statuses.fallen() and not Vitals.of(get_parent()).is_defeated():
 			_lie_down()
 		return
+	if rule.switch_first and get_parent() is Node3D and FieldParty.switch(get_parent() as Node3D):
+		_waiting = -1.0
+		_release()
+		return
 	_waiting -= delta
 	if _waiting <= 0.0:
 		_waiting = -1.0
@@ -57,7 +67,7 @@ func tick(delta: float) -> void:
 
 func _on_defeated(who: StringName) -> void:
 	var mine: Combatant = Combatant.of(get_parent())
-	if mine == null or who != mine.combatant_id or _waiting >= 0.0:
+	if mine == null or who != mine.combatant_id or _waiting >= 0.0 or _in_battle(who):
 		return
 	_lie_down()
 
@@ -78,7 +88,34 @@ func _carry_out() -> void:
 	# Get up only once the area is entered again (`_on_area_entered`). Getting up first would
 	# leave the player standing among the same enemies for the whole fade, and they would fall
 	# again.
-	var slot: int = SaveSystem.latest_slot() if rule.kind == DefeatRule.Kind.RELOAD_SAVE else -1
+	_leave(rule.kind)
+
+
+## A lost turn-based battle's `rule` (C10.2), once its screen has closed and its members are up:
+## in place, play goes on; otherwise the area is entered again, or the latest save loaded, as for
+## a fall in the field. `player`'s own `FieldDefeat`, when it has one, records it in `applied`.
+static func after_battle(battle_rule: DefeatRule, player: Node) -> void:
+	for child: Node in player.get_children() if player != null else []:
+		if child is FieldDefeat:
+			(child as FieldDefeat).applied = battle_rule.kind
+	Log.info("combat", "The party lost a battle: %s" % DefeatRule.Kind.keys()[battle_rule.kind])
+	if battle_rule.kind != DefeatRule.Kind.REVIVE_IN_PLACE and Director.current_area_id != &"":
+		_leave(battle_rule.kind)
+
+
+# True when `who` is fighting in the running turn-based battle, so the fall is that battle's.
+static func _in_battle(who: StringName) -> bool:
+	if Battle.running == null:
+		return false
+	for fighter: Combatant in Battle.running.party + Battle.running.reserve:
+		if is_instance_valid(fighter) and fighter.combatant_id == who:
+			return true
+	return false
+
+
+# The area entered again, or the latest save loaded; with no save, the area entered again.
+static func _leave(kind: DefeatRule.Kind) -> void:
+	var slot: int = SaveSystem.latest_slot() if kind == DefeatRule.Kind.RELOAD_SAVE else -1
 	if slot < 0 or SaveSystem.load_from_slot(slot) != OK:
 		Director.reload_current_area()
 
@@ -98,6 +135,10 @@ func _get_up() -> void:
 	for effect: StatusEffect in statuses.held() if statuses != null else []:
 		if effect.counts_as_fallen:
 			statuses.cure(effect.id)
+	_release()
+
+
+func _release() -> void:
 	var player: PlayerController = get_parent() as PlayerController
 	if player != null:
 		player.release_input(LOCK)

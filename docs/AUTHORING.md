@@ -1680,7 +1680,11 @@ or `options_test` fails.
    - `defeat_rule`: what the player's fall means, after `delay` seconds on the ground.
      RESPAWN_AT_ENTRY (the default) gets up with `revive_fraction` of max hp at the area's
      entrance, with every enemy back; REVIVE_IN_PLACE gets up where they fell; RELOAD_SAVE loads
-     the last save, or respawns at the entry when there is none.
+     the last save, or respawns at the entry when there is none. With `switch_first` (on by
+     default) a fallen lead hands the body to a party member still standing, and the rule waits
+     until nobody is left (C10.2). An `Encounter`'s own `defeat_rule` is what losing that
+     turn-based battle does: the party gets up with its `revive_fraction` and its kind is carried
+     out when the screen closes. With none, they stand up at 1 hp and play goes on.
 2. **A move** (`ActionMove`) is timing, a hit, and a shape:
 
    | Field | What it does |

@@ -41,6 +41,10 @@ enum TurnOrder { ROUNDS, CTB }
 ## Loot that is rolled on a win, on top of `loot` (C7.2). Each enemy's own `loot_table` is
 ## rolled too. Null means none.
 @export var loot_table: LootTable
+## What losing this battle does (C10.2): the members get up with the rule's `revive_fraction` and
+## the rule's `kind` is carried out once the screen closes (the area entered again, the latest save
+## loaded, or play going on). Null keeps the template's default: everyone stands up at 1 hp.
+@export var defeat_rule: DefeatRule
 
 
 func problems() -> PackedStringArray:

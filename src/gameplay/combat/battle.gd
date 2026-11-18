@@ -165,6 +165,8 @@ func next_turn() -> Combatant:
 			Events.turn_skipped.emit(actor.combatant_id, sleeper)
 			skips_left -= 1
 			if skips_left <= 0:
+				# Nobody can act for good (all asleep for ever): the party has lost (C10.2).
+				_end(Outcome.LOST)
 				return null
 			continue
 		_current = actor
@@ -204,7 +206,7 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 		BattleCommand.Kind.SKILL, BattleCommand.Kind.ITEM, BattleCommand.Kind.POWER:
 			# A power that is all mechanism has no skill, and so aims at nobody, unless its
 			# mechanism strikes the foes by itself (a barrage, C6.7).
-			if command.skill == null and not _aims_at_foes(command):
+			if command.skill == null and not command.aims_unaided():
 				return out
 			if command.skill != null:
 				filter = command.skill.target
@@ -357,12 +359,6 @@ func _power(actor: Combatant, command: BattleCommand, targets: Array[Combatant])
 	if skill != null and skill.delay > 0.0 and scheduler is CtbScheduler:
 		(scheduler as CtbScheduler).delay_by(actor.combatant_id, skill.delay)
 	return true
-
-
-# True for a power with no skill whose mechanism strikes the foes by itself (C6.7).
-static func _aims_at_foes(command: BattleCommand) -> bool:
-	return command.power != null and command.power.mechanism != null \
-			and command.power.mechanism.aims_at_foes()
 
 
 # What `command` really does for `actor`: a plain ATTACK made while a form says it becomes a
