@@ -59,6 +59,8 @@ var rng := RandomNumberGenerator.new()
 ## What its `field_brain` does next (C4.9). Rebuilt when the loadout's brain changes, as after
 ## a party switch; null while it has none.
 var decider: ActionDecider
+# The foes' swings already weighed for a dodge (C10.26), so each is rolled for once.
+var _weighed: Dictionary[String, bool] = {}
 ## The clock of its own swings, as a fighter's.
 var timeline: MoveTimeline = MoveTimeline.new()
 ## The way it faces, flat; its hitbox points along it.
@@ -161,6 +163,7 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 	if decider == null:
 		return Vector3.INF
 	# The leader's locked foe is its target too, unless a taunt pulls it away (C10.8).
+	_try_dodge()
 	var target: Hurtbox = Aggro.pick(self, INF, FieldCommands.aim_of(Combatant.of(self)))
 	var to_target: Vector3 = _flat(target.global_position - global_position) if target != null else Vector3.INF
 	var vitals: Vitals = Vitals.of(self)
@@ -196,6 +199,25 @@ func _fight(dt: float, still: bool, fallen: bool) -> Vector3:
 	_report_move()
 	_aim_hitbox()
 	return wish
+
+
+# Rolls away from a foe's swing winding up at it, at its brain's `dodge_chance`, once a swing
+# (C10.26). The dodge's i-frames make the swing miss, and `attack_dodged` pays its ATB.
+func _try_dodge() -> void:
+	var brain: ActionBrain = loadout.field_brain if loadout != null else null
+	var roll: ActionMove = loadout.moves.dodge if loadout != null and loadout.moves != null else null
+	if brain == null or brain.dodge_chance <= 0.0 or roll == null:
+		return
+	var swings: Dictionary[String, float] = DefenceWatch.swings_at(self, Combatant.of(self))
+	if swings.is_empty():
+		_weighed.clear()
+	for key: String in swings:
+		if _weighed.has(key) or not timeline.can_dodge():
+			continue
+		_weighed[key] = true
+		if rng.randf() < brain.dodge_chance:
+			timeline.start(roll)
+			return
 
 
 # Tells the kit about each move started since last frame, so a form drains per action (C10.22).

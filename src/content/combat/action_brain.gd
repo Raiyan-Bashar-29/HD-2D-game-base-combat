@@ -31,6 +31,9 @@ extends Resource
 ## True for a foe that only ever chases, never swings: the body of a `SymbolEncounter` (C5.1),
 ## which starts a turn-based battle on touch. Then an empty `moves` is meant, not a mistake.
 @export var chase_only: bool = false
+## A follower's chance (0 to 1) to roll away, with its loadout's dodge, from each foe's swing
+## winding up at it (C10.26). 0 never dodges.
+@export_range(0.0, 1.0, 0.01) var dodge_chance: float = 0.0
 
 
 func problems(context: String) -> PackedStringArray:

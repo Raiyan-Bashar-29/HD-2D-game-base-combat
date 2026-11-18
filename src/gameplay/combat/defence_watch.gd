@@ -39,7 +39,7 @@ func watch() -> void:
 	var me: Combatant = Combatant.of(body) if body != null else null
 	if me == null:
 		return
-	var threats: Dictionary[String, float] = _swings(body, me)
+	var threats: Dictionary[String, float] = swings_at(body, me)
 	threats.merge(_shots(body, me))
 	for key: String in threats:
 		if not _seen.has(key):
@@ -54,9 +54,13 @@ func watch() -> void:
 
 
 # Foes winding up a swing that reaches the player: key -> seconds before it lands.
-func _swings(body: Node3D, me: Combatant) -> Dictionary[String, float]:
+## The foes' swings winding up within reach of `body` (fighter `me`), each keyed by the foe and
+## its swing, with the seconds left before it is live. A follower's dodge reads it too (C10.26).
+static func swings_at(body: Node3D, me: Combatant) -> Dictionary[String, float]:
 	var out: Dictionary[String, float] = {}
-	for node: Node in get_tree().get_nodes_in_group(Hurtbox.GROUP):
+	if body == null or me == null or not body.is_inside_tree():
+		return out
+	for node: Node in body.get_tree().get_nodes_in_group(Hurtbox.GROUP):
 		var hurtbox: Hurtbox = node as Hurtbox
 		var foe: Combatant = hurtbox.fighter() if hurtbox != null else null
 		var clock: MoveTimeline = hurtbox.timeline if hurtbox != null else null
@@ -96,5 +100,5 @@ func _kind(body: Node3D) -> StringName:
 	return EVADE
 
 
-func _flat(v: Vector3) -> Vector3:
+static func _flat(v: Vector3) -> Vector3:
 	return Vector3(v.x, 0.0, v.z)

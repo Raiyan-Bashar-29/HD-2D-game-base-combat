@@ -5590,3 +5590,13 @@ HUD line shows the combo from two hits. `Hurtbox` multiplies a juggled foe's hit
 **Verified.** Ladder: 0 warnings; 5387 passed, 0 failed; checkers silent.
 **Gaps.** A combo gives nothing by itself; a game reads `count`. A foe held by the player
 cannot struggle.
+
+## 2026-11-18 — C10.26 · Followers dodge
+
+**Did.** `ActionBrain.dodge_chance`. `DefenceWatch._swings` became the static `swings_at(body, me)`.
+`PartyFollower._try_dodge`, each frame before it picks a target, rolls once per foe swing (keys
+remembered until no swing is near) and starts the loadout's dodge when `can_dodge`. New
+`follower_dodge_test` (3).
+**Why.** The gaps recorded in C4.9 and C4.7.
+**Verified.** Ladder: 0 warnings; 5391 passed, 0 failed; checkers silent.
+**Gaps.** Followers do not dodge shots, only swings. No demo follower has a chance set yet.
