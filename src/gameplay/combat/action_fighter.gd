@@ -120,6 +120,7 @@ func drive(delta: float, attack: bool, dodge: bool, held: bool = false) -> void:
 	if me != null:
 		Weakness.recover(me)
 		HitGuard.pass_time(me, dt)
+		Meters.regen_seconds(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Berserk (C9.5c): the fighter swings without stopping and cannot roll.
 	if _taken_over():

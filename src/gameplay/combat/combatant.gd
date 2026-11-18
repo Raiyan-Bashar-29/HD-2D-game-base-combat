@@ -85,6 +85,8 @@ var sheet: StatSheet = StatSheet.new()
 var mercy_left: float = 0.0
 var shield_wait: float = 0.0
 var shield_carry: float = 0.0
+## The parts of a point each pool has regenerated in the field and not yet added (C10.9).
+var regen_carry: Dictionary[StringName, float] = {}
 # The last `field_moves` built, and what it was built from.
 var _merged: MoveSet
 var _merged_own: MoveSet

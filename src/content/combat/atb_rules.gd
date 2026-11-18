@@ -20,12 +20,16 @@ extends Resource
 @export var on_hit_dealt: float = 12.0
 ## Points gained for each attack this fighter dodges.
 @export var on_dodge: float = 10.0
+## Points gained for each hit this fighter blocks whole: a timed block or a barrier (C10.9).
+@export var on_block: float = 0.0
+## True: one swing that lands on several foes pays `on_hit_dealt` once, not once a foe (C10.9).
+@export var per_swing: bool = false
 
 
 func problems(context: String) -> PackedStringArray:
 	var found: PackedStringArray = PackedStringArray()
 	if segments < 1 or segment_size <= 0.0:
 		found.append("%s has no bars to fill" % context)
-	if per_second < 0.0 or on_hit_dealt < 0.0 or on_dodge < 0.0:
+	if per_second < 0.0 or on_hit_dealt < 0.0 or on_dodge < 0.0 or on_block < 0.0:
 		found.append("%s has a negative fill rate" % context)
 	return found

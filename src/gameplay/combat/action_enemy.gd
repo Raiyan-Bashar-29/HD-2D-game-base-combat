@@ -111,6 +111,7 @@ func act(delta: float) -> ActionDecider.State:
 	if me != null:
 		Weakness.recover(me)
 		HitGuard.pass_time(me, dt)
+		Meters.regen_seconds(me, dt)
 		Aggro.of(self).pass_time(dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	# Staggered, it stands still and drops the swing it was in, as under a knockback.

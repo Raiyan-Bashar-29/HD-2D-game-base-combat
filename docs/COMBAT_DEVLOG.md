@@ -5400,3 +5400,14 @@ taunting foes; `fighting` skips an `ActionEnemy` whose decider is IDLE, WANDER o
 **Why.** The gaps recorded in C4.8, C4.9, C4.11 and C8.6.
 **Verified.** Ladder: 0 warnings; 5298 passed, 0 failed; checkers silent.
 **Gaps.** The lock-on itself is not moved to a taunting foe; only what a skill lands on is.
+
+## 2026-11-18 — C10.9 · Pools fill in the field
+
+**Did.** `Meters.regen_seconds(fighter, seconds)`, called beside `HitGuard.pass_time` by
+`ActionFighter`, `PartyFollower` and `ActionEnemy`; fractions in `Combatant.regen_carry`; pools
+of the `PowerSet`'s gauges are skipped. `AtbRules.on_block` and `per_swing`; `AtbMeter` hears
+`attack_blocked`, and with `per_swing` pays once until its next `tick`. New `field_regen_test` (6).
+**Why.** The gaps recorded in C2.16 and C4.2.
+**Verified.** Ladder: 0 warnings; 5305 passed, 0 failed; checkers silent.
+**Gaps.** The roster's `regen_bp` and `regen_mp` now also fill in the field, a second at a time;
+tune them when balancing. "One swing" is the hits of one frame.

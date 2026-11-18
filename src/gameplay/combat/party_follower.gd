@@ -121,6 +121,7 @@ func follow(delta: float) -> void:
 	if me != null:
 		Weakness.recover(me)
 		HitGuard.pass_time(me, dt)
+		Meters.regen_seconds(me, dt)
 	_stun_left = maxf(0.0, _stun_left - dt)
 	var vitals: Vitals = Vitals.of(self)
 	var fallen: bool = vitals != null and vitals.is_defeated()

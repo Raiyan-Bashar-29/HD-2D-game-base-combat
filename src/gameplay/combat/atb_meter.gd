@@ -6,7 +6,9 @@ extends Node
 ## IN PLAIN WORDS: every physics frame it adds the passive fill for that much FIGHT time, so a
 ## fight slowed or stopped by `CombatClock` fills slowly or not at all. When its fighter lands
 ## a hit (`combatant_damaged` names it as the attacker) or dodges one (`attack_dodged` names it
-## as the target), it adds that reward. A fallen fighter gains nothing.
+## as the target), it adds that reward; a hit it blocks whole (`attack_blocked`) adds `on_block`
+## (C10.9). With `per_swing`, the hits landed between two frames pay once. A fallen fighter
+## gains nothing.
 ##
 ## IT ANNOUNCES ITSELF ONLY WHEN SOMETHING VISIBLE CHANGES: a whole point, or a whole bar. So a
 ## HUD redraws a few times a second, not every frame.
@@ -17,6 +19,8 @@ extends Node
 var gauge: AtbGauge = AtbGauge.new()
 var _told_value: int = -1
 var _told_bars: int = -1
+# True once this frame's landed hits were paid for, with `per_swing` (C10.9).
+var _paid: bool = false
 
 
 ## The meter under `who`, or null.
@@ -33,6 +37,7 @@ static func of(who: Node) -> AtbMeter:
 func _ready() -> void:
 	Events.combatant_damaged.connect(_on_damaged)
 	Events.attack_dodged.connect(_on_dodged)
+	Events.attack_blocked.connect(_on_blocked)
 
 
 func _physics_process(delta: float) -> void:
@@ -41,6 +46,7 @@ func _physics_process(delta: float) -> void:
 
 ## `delta` seconds of real time pass; the gauge fills for that much fight time.
 func tick(delta: float) -> void:
+	_paid = false
 	if not _down():
 		gauge.fill(CombatClock.scaled(delta) * FighterTime.rate(get_parent()))
 	_announce()
@@ -54,8 +60,15 @@ func spend(bars: int) -> bool:
 
 
 func _on_damaged(_who: StringName, by: StringName, amount: int, _critical: bool) -> void:
-	if amount > 0 and by != &"" and by == _id() and not _down():
+	if amount > 0 and by != &"" and by == _id() and not _down() and not _paid:
 		gauge.gain(gauge.rules.on_hit_dealt)
+		_paid = gauge.rules.per_swing
+		_announce()
+
+
+func _on_blocked(who: StringName, _by: StringName) -> void:
+	if who != &"" and who == _id() and not _down():
+		gauge.gain(gauge.rules.on_block)
 		_announce()
 
 
