@@ -553,6 +553,7 @@ combat.gear.loss_pct,,{stat} -{amount}%,[~~{stat} -{amount}%~~]
 combat.gear.set_line,,{set}: {worn} worn   tiers {tiers},[~~{set}: {worn} worn   tiers {tiers}~~]
 combat.gear.tier_on,,[{pieces}],[~~[{pieces}]~~]
 ui.battle.raised,,{item} rose to level {level},[~~{item} rose to level {level}~~]
+ui.battle.after,,after {name},[~~after {name}~~]
 ui.piece.title,,Piece,[~~Piece~~]
 ui.piece.hint,,"Put gems in, take them out, upgrade or awaken.","[~~Put gems in, take them out, upgrade or awaken.~~]"
 ui.piece.level,,{item}: level {level} of {cap},[~~{item}: level {level} of {cap}~~]

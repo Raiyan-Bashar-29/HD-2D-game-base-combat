@@ -101,6 +101,10 @@ static func _aim(context: BrainContext, entry: BrainEntry) -> Array[Combatant]:
 			aimed.append(context.actor)
 		BrainEntry.TargetRule.RANDOM:
 			aimed.append(legal[context.rng.randi_range(0, legal.size() - 1)])
+		BrainEntry.TargetRule.THREAT:
+			var after: StringName = Aggro.top(context.actor.get_parent())
+			var hated: Array[Combatant] = legal.filter(func(f: Combatant) -> bool: return f.combatant_id == after)
+			aimed.append(hated[0] if not hated.is_empty() else legal[0])
 		BrainEntry.TargetRule.WEAK:
 			var weak: Array[Combatant] = legal.filter(func(f: Combatant) -> bool: return _weak(f, entry.command, false))
 			aimed.append(weak[0] if not weak.is_empty() else legal[0])

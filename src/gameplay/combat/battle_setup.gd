@@ -181,6 +181,8 @@ static func _fighter(def: CombatantDef, id: StringName, holder: Node, fresh: boo
 	# Copies of one definition share a kind, so a weakness revealed on one shows on all.
 	combatant.kind = def.combatant_id
 	actor.add_child(combatant)
+	# A threat table, so a brain can aim at whoever hurt it most (C10.28).
+	actor.add_child(Aggro.new())
 	holder.add_child(actor)
 	# The kit goes on after the actor is in the tree, when the Combatant's sheet is wired up, so
 	# the kit's stat bonuses land on it.

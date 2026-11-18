@@ -5610,3 +5610,13 @@ timed retreat down and holds it spent until hp is back over the line. New `attac
 **Why.** The gaps recorded in C3.6.
 **Verified.** Ladder: 0 warnings; 5395 passed, 0 failed; checkers silent.
 **Gaps.** Tokens are for field foes only; followers do not take turns. The ring ignores walls.
+
+## 2026-11-18 — C10.28 · Threat in turn battles
+
+**Did.** `BattleSetup._fighter` adds an `Aggro`. `Aggro.top(body)`. TargetRule.THREAT (appended)
+in `BattleAi._aim`. `BattleLog.name_for` lets `BattleReadout.line` name the top of the table.
+`ActionEnemy.after()` and the HUD's target line. New `battle_threat_test` (3).
+**Why.** The gaps recorded in C8.6.
+**Verified.** Ladder: 0 warnings; 5399 passed, 0 failed; checkers silent.
+**Gaps.** Threat in a battle never fades. A party member's line also names its top, when a foe
+has hurt it.

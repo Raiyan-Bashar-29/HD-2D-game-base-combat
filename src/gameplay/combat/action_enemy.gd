@@ -142,6 +142,11 @@ func act(delta: float) -> ActionDecider.State:
 	return state
 
 
+## The fighter this foe is after now, or null (C10.28: the HUD names it).
+func after() -> Combatant:
+	return _target.fighter() if _target != null and is_instance_valid(_target) else null
+
+
 ## The standing hurtbox this enemy picks, or null: a taunting fighter, then the most threat,
 ## then the nearest (`Aggro`, C8.6).
 func nearest_hostile() -> Hurtbox:

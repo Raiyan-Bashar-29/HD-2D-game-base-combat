@@ -60,6 +60,16 @@ func toward(id: StringName) -> float:
 	return threat.get(id, 0.0)
 
 
+## The id with the most threat in `body`'s table, or empty when it has none (C10.28).
+static func top(body: Node) -> StringName:
+	var table: Aggro = Aggro.of(body)
+	var best: StringName = &""
+	for id: StringName in (table.threat.keys() if table != null else []):
+		if table.threat[id] > 0.0 and (best == &"" or table.threat[id] > table.threat[best]):
+			best = id
+	return best
+
+
 ## True while `fighter` holds a status tagged `taunt`.
 static func taunting(fighter: Combatant) -> bool:
 	var statuses: StatusSet = StatusSet.of(fighter.get_parent()) if fighter != null else null

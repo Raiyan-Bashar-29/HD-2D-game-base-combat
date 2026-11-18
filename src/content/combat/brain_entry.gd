@@ -13,8 +13,9 @@ extends Resource
 ## MUST NOT: evaluate itself. `BattleAi` (gameplay) does, because the pool test reads `Vitals`.
 
 ## How a ONE-target command picks among the legal targets. SELF aims at the user. WEAK (C10.19)
-## aims at the first foe weak to what the command carries, else the first.
-enum TargetRule { FIRST, RANDOM, LOWEST_HP, SELF, WEAK }
+## aims at the first foe weak to what the command carries, else the first. THREAT (C10.28) aims
+## at whoever has the most threat on the user's table, else the first.
+enum TargetRule { FIRST, RANDOM, LOWEST_HP, SELF, WEAK, THREAT }
 
 @export var command: BattleCommand
 ## Relative chance among the entries allowed this turn. Zero never fires.

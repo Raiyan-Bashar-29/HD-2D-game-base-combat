@@ -130,6 +130,11 @@ func _add(key: String, values: Dictionary) -> void:
 		lines.pop_front()
 
 
+## The name the screen shows for the fighter `who` (C10.28).
+func name_for(who: StringName) -> String:
+	return _name(who)
+
+
 func _name(who: StringName) -> String:
 	var fighter: Combatant = _fighter(who)
 	return _namer.call(fighter) as String if fighter != null else String(who)

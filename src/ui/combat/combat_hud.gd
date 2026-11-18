@@ -91,6 +91,10 @@ func refresh() -> void:
 		var vitals: Vitals = Vitals.of(target.get_parent())
 		var line: String = tr(TARGET_KEY).format({"name": name_of(target),
 			"hp": vitals.current(&"hp"), "max": vitals.maximum(&"hp")})
+		# Whom a field foe is after (C10.28).
+		var foe: ActionEnemy = target.get_parent() as ActionEnemy
+		if foe != null and foe.after() != null:
+			line += "   " + tr(BattleReadout.AFTER_KEY).format({"name": name_of(foe.after())})
 		# Its other pools too, its shield above all, so a break can be seen coming (C10.13).
 		for pool: String in _pools(target):
 			line += "   " + pool

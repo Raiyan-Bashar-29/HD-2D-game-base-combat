@@ -12,6 +12,8 @@ extends RefCounted
 ## MUST NOT: change the fight, or hold state.
 
 const RAISED_KEY: String = "ui.battle.raised"
+## Whom a foe is after: the top of its threat table (C10.28).
+const AFTER_KEY: String = "ui.battle.after"
 ## The hp bar's colours (C10.23), a placeholder look until art exists.
 const BAR_FILL: Color = Color(0.45, 0.8, 0.45)
 const BAR_BACK: Color = Color(0.12, 0.12, 0.12, 0.85)
@@ -27,6 +29,9 @@ static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
 		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
 			parts.append(_tr(BattleScreen.POOL_KEY).format({"pool": CombatNames.pool(pool),
 					"current": vitals.current(pool), "max": vitals.maximum(pool)}))
+	var after: StringName = Aggro.top(fighter.get_parent())
+	if after != &"" and log != null:
+		parts.append(_tr(AFTER_KEY).format({"name": log.name_for(after)}))
 	var weapon: String = WeaponLine.text(fighter.get_parent())
 	if weapon != "":
 		parts.append(weapon)
