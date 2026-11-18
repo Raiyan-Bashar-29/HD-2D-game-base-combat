@@ -39,8 +39,9 @@ func targets_for(_command: BattleCommand) -> Array[Combatant]:
 	return []
 
 
-## `actor` uses `command` on `targets`. False, changing nothing, when it cannot.
-func act(_command: BattleCommand, _targets: Array[Combatant]) -> bool:
+## `actor` uses `command` on `targets`, with `boost` levels where the formula has Boost (C10.19).
+## False, changing nothing, when it cannot.
+func act(_command: BattleCommand, _targets: Array[Combatant], _boost: int = 0) -> bool:
 	return false
 
 

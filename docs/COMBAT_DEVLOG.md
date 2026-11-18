@@ -5511,3 +5511,15 @@ under the results. New `gear_readout_test` (4).
 **Why.** The gaps recorded in C7.7a, C7.4b and C9.5d.
 **Verified.** Ladder: 0 warnings; 5353 passed, 0 failed; checkers silent.
 **Gaps.** A set's tiers show their piece counts, not what each gives.
+
+## 2026-11-18 — C10.19 · Smarter battle brains
+
+**Did.** `BrainEntry`: TargetRule.WEAK (appended), `avoids_reflect`, `boost`, `needs_weakness`,
+`above_fraction`. `BattleAi` reads them (`_weak`, `_reflects`, `_under_by`) and passes the boost to
+`BrainContext.act(command, targets, boost)`; the battle's context drops a boost it cannot afford.
+`AutoBattle.default_for(def)` builds heal and weakness entries from the member's commands. New
+`smart_brains_test` (4). `AUTHORING.md` gains a line.
+**Why.** The gaps recorded in C2.17, C2.20, C5.4b, C2.15, C2.16 and C2.5.
+**Verified.** Ladder: 0 warnings; 5358 passed, 0 failed; checkers silent.
+**Gaps.** The demo wisps' brain is not changed to use the new rules (balance later). `boost` has
+no test of its own.

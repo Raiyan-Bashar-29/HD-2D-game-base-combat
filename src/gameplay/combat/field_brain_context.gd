@@ -38,7 +38,7 @@ func targets_for(command: BattleCommand) -> Array[Combatant]:
 	return Aggro.narrow(actor, found)
 
 
-func act(command: BattleCommand, targets: Array[Combatant]) -> bool:
+func act(command: BattleCommand, targets: Array[Combatant], _boost: int = 0) -> bool:
 	return FieldCommands.use(actor, command, rng, targets)
 
 

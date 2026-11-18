@@ -12,13 +12,22 @@ extends Resource
 ## OWNS: the shape of one choice.
 ## MUST NOT: evaluate itself. `BattleAi` (gameplay) does, because the pool test reads `Vitals`.
 
-## How a ONE-target command picks among the legal targets. SELF aims at the user.
-enum TargetRule { FIRST, RANDOM, LOWEST_HP, SELF }
+## How a ONE-target command picks among the legal targets. SELF aims at the user. WEAK (C10.19)
+## aims at the first foe weak to what the command carries, else the first.
+enum TargetRule { FIRST, RANDOM, LOWEST_HP, SELF, WEAK }
 
 @export var command: BattleCommand
 ## Relative chance among the entries allowed this turn. Zero never fires.
 @export var weight: float = 1.0
 @export var target_rule: TargetRule = TargetRule.FIRST
+## True passes over a target that would bounce the command's skill back (a REFLECT it carries
+## the tag of, C10.19).
+@export var avoids_reflect: bool = false
+## Boost levels spent on the command when the user has them (C10.19). Zero never boosts.
+@export var boost: int = 0
+## True allows the entry only while a target it may aim at has a weakness it carries that the
+## player has found (C10.19), so "use fire on what is weak to fire" is data.
+@export var needs_weakness: bool = false
 
 @export_group("Condition")
 @export var condition_flag: StringName = &""
@@ -30,6 +39,9 @@ enum TargetRule { FIRST, RANDOM, LOWEST_HP, SELF }
 ## True asks the pool test of each target the command may aim at, not of the user: allowed while
 ## any of them is under `below_fraction` (C8.25).
 @export var below_any_target: bool = false
+## Allowed only while the user's `below_pool` is at or above this fraction of its maximum
+## (C10.19): "spend mp freely while it is over half". Zero is off.
+@export_range(0.0, 1.0, 0.01) var above_fraction: float = 0.0
 
 
 func problems(context: String) -> PackedStringArray:
@@ -38,6 +50,8 @@ func problems(context: String) -> PackedStringArray:
 		found.append("%s has an entry with no command" % context)
 	else:
 		found.append_array(command.problems(context))
+	if boost < 0:
+		found.append("%s has an entry with a negative boost" % context)
 	if weight < 0.0:
 		found.append("%s has an entry with a negative weight" % context)
 	if condition_test != GameEnums.FlagTest.ALWAYS and condition_flag == &"":
