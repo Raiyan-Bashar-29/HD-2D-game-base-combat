@@ -5533,3 +5533,13 @@ and the configured roster. New `party_screen_test` (5).
 **Why.** The gaps recorded in C2.8, C8.3 and C6.5d.
 **Verified.** Ladder: 0 warnings; 5364 passed, 0 failed; checkers silent.
 **Gaps.** A level-up still does not top up current hp. Only hp is shown, not every pool.
+
+## 2026-11-18 — C10.21 · Symbol encounter openings
+
+**Did.** `SymbolEncounter._challenge(opening)`; `behind(body, other)` reads `BarrageRun.facing_of`.
+On `battle_started` the losing side gets the built-in `status/off_guard` (one turn's SKIP_TURN).
+`_felled` gives the encounter's experience, loot and a loot-table roll through `ActionHost.reward`
+when a strike fells the foe before any battle. New `symbol_openings_test` (4).
+**Why.** The gaps recorded in C5.1.
+**Verified.** Ladder: 0 warnings; 5369 passed, 0 failed; checkers silent.
+**Gaps.** The one-blow reward is not checked end to end by a test (it needs a fitted player).
