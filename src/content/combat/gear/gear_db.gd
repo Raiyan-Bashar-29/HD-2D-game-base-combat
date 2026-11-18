@@ -68,3 +68,19 @@ static func _ensure_loaded() -> void:
 				% [_by_item[piece.item_id].id, id, piece.item_id])
 			continue
 		_by_item[piece.item_id] = piece
+	_problems.append_array(_set_clashes())
+
+
+# Two pieces of one set that carry different bonus files (C10.11): the set would read
+# differently depending on which piece was looked at.
+static func _set_clashes() -> PackedStringArray:
+	var found: PackedStringArray = PackedStringArray()
+	var bonus_of: Dictionary[StringName, GearSetBonus] = {}
+	for piece: GearDefinition in _by_id.values():
+		if piece.set_bonus == null:
+			continue
+		var seen: GearSetBonus = bonus_of.get(piece.set_bonus.set_id)
+		if seen != null and seen != piece.set_bonus:
+			found.append("set %s is given two different bonus files (one by %s)" % [piece.set_bonus.set_id, piece.id])
+		bonus_of[piece.set_bonus.set_id] = piece.set_bonus
+	return found

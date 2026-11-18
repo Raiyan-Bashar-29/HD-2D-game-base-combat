@@ -5422,3 +5422,14 @@ a status ended mid-loop. New `status_tick_hit_test` (4).
 **Verified.** Ladder: 0 warnings; 5310 passed, 0 failed; checkers silent.
 **Gaps.** A ledger's own release still changes the pool directly. Defence is not applied to a
 tick (no formula runs).
+
+## 2026-11-18 — C10.11 · Kits and sets that cannot clash
+
+**Did.** `PowerKit.clashes(others)` (content). `PowerSet._put_on` warns for each clash with the
+kits already on. `GearDb._set_clashes` adds a problem when one set id meets two bonus objects.
+New `kit_clash_test` (4).
+**Why.** The gaps recorded in C7.3, C6.9e and C7.4b.
+**Verified.** Ladder: 0 warnings (the shipped kits do not clash); 5315 passed, 0 failed;
+checkers silent.
+**Gaps.** A clash is only warned about when it happens, not checked across every kit and loadout
+by `check_content`.

@@ -216,6 +216,8 @@ func status(status_id: StringName) -> StatusEffect:
 # Puts one kit's parts on the fighter. Its stat bonuses are held under `source`, so taking the
 # kit off removes exactly these.
 func _put_on(added: PowerKit, source: StringName) -> void:
+	for clash: String in added.clashes(kits()):
+		Log.warn("powers", clash)
 	var sheet: StatSheet = _sheet()
 	if sheet != null:
 		for bonus: StatModifier in added.stat_bonuses:
