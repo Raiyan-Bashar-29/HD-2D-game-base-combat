@@ -29,6 +29,17 @@ var cone: float = 70.0
 var target: Hurtbox
 
 
+## The fighter the lock-on under `body` holds, or null (C10.8: followers aim with it too).
+static func held_by(body: Node) -> Combatant:
+	if body == null or not is_instance_valid(body):
+		return null
+	for child: Node in body.get_children():
+		var lock: LockOn = child as LockOn
+		if lock != null and lock.target != null and is_instance_valid(lock.target):
+			return lock.target.fighter()
+	return null
+
+
 func _physics_process(_delta: float) -> void:
 	var fighter: ActionFighter = _fighter()
 	var facing: Vector3 = fighter.facing if fighter != null else Vector3.FORWARD

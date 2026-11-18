@@ -38,13 +38,24 @@ static func targets(user: Combatant, command: BattleCommand) -> Array[Combatant]
 	var found: Array[Combatant] = candidates(user, command)
 	if found.is_empty() or command.skill.scope == Skill.Scope.ALL:
 		return found
-	# One target: the locked one, when it is a fair target, else the nearest.
-	var locked: Combatant = _locked(user)
-	if locked != null and found.has(locked):
-		out.append(locked)
-	else:
-		out.append(found[0])
+	# One target: a taunting foe binds the aim (C10.8); then the locked one (the leader's, for a
+	# follower) when it is a fair target; else the nearest.
+	var fair: Array[Combatant] = Aggro.narrow(user, found)
+	var locked: Combatant = aim_of(user)
+	out.append(locked if locked != null and fair.has(locked) else fair[0])
 	return out
+
+
+## The fighter `user` aims at by choice (C10.8): its own lock-on's, else, for a follower, its
+## leader's. Null when neither holds one.
+static func aim_of(user: Combatant) -> Combatant:
+	if user == null:
+		return null
+	var own: Combatant = LockOn.held_by(user.get_parent())
+	var follower: PartyFollower = user.get_parent() as PartyFollower
+	if own == null and follower != null and is_instance_valid(follower.leader):
+		return LockOn.held_by(follower.leader)
+	return own
 
 
 ## Everyone `command` COULD land on: each fighter in `REACH` the skill may aim at, nearest
@@ -153,18 +164,9 @@ static func _power_refusal(user: Combatant, command: BattleCommand) -> Reason:
 	return Reason.NONE
 
 
-## The fighter `user`'s lock-on holds, or null.
 # True when no wall stands between the two bodies (C9.12): a spell is not cast through a wall.
 static func _in_sight(from: Node3D, to: Node3D) -> bool:
 	return not CombatSight.wall_between(from, CombatSight.aim(from), CombatSight.aim(to)).is_finite()
-
-
-static func _locked(user: Combatant) -> Combatant:
-	for child: Node in user.get_parent().get_children():
-		var lock: LockOn = child as LockOn
-		if lock != null and lock.target != null:
-			return lock.target.fighter()
-	return null
 
 
 static func _distance(from: Vector3, fighter: Combatant) -> float:

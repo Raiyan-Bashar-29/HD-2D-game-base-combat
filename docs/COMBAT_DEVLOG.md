@@ -5389,3 +5389,14 @@ blow, the weapon's tags, so every battle hit can break one. New `power_refuse_te
 **Verified.** Ladder: 0 warnings; 5292 passed, 0 failed; checkers silent; stripped 5178 passed.
 **Gaps.** The menus do not grey an order before it is aimed; the refusal shows only as nothing
 happening.
+
+## 2026-11-18 — C10.8 · Followers share the aim
+
+**Did.** `LockOn.held_by(body)`. `FieldCommands.aim_of(user)`: its own lock, else its leader's.
+`Aggro.pick(body, reach, favoured)`: the favoured foe scores above threat and below a taunt;
+`PartyFollower` passes `aim_of`. `FieldBrainContext.targets_for` puts it first and narrows to
+taunting foes; `fighting` skips an `ActionEnemy` whose decider is IDLE, WANDER or RETURN.
+`FieldCommands.targets` narrows by taunt before the lock. New `field_aim_test` (5).
+**Why.** The gaps recorded in C4.8, C4.9, C4.11 and C8.6.
+**Verified.** Ladder: 0 warnings; 5298 passed, 0 failed; checkers silent.
+**Gaps.** The lock-on itself is not moved to a taunting foe; only what a skill lands on is.

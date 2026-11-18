@@ -72,8 +72,9 @@ static func taunting(fighter: Combatant) -> bool:
 
 
 ## The standing hurtbox `body`'s fighter should attack, or null: within `reach` metres a
-## taunting fighter first, then the most threat; failing both, the nearest at any distance.
-static func pick(body: Node3D, reach: float = INF) -> Hurtbox:
+## taunting fighter first; then `favoured` (the leader's locked foe, for a follower, C10.8) at
+## any distance; then the most threat; failing all, the nearest at any distance.
+static func pick(body: Node3D, reach: float = INF, favoured: Combatant = null) -> Hurtbox:
 	var me: Combatant = Combatant.of(body)
 	if me == null or not body.is_inside_tree():
 		return null
@@ -95,6 +96,8 @@ static func pick(body: Node3D, reach: float = INF) -> Hurtbox:
 				score += 2000000.0
 			elif table != null and table.toward(hurtbox.fighter().combatant_id) > 0.0:
 				score = 1000000.0 + table.toward(hurtbox.fighter().combatant_id)
+		if favoured != null and hurtbox.fighter() == favoured:
+			score = maxf(score, 1500000.0 - distance)
 		if score > best_score:
 			best = hurtbox
 			best_score = score
