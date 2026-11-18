@@ -32,6 +32,8 @@ static func effects_for(me: Combatant, field: BattlefieldMechanism, other: Comba
 				match_found = true
 			BattlefieldEffect.Who.EVERYONE_BUT_CASTER:
 				match_found = not mine
+			BattlefieldEffect.Who.TAGGED:
+				match_found = effect.tag != &"" and other.traits.has(effect.tag)
 		if match_found and not (immunity and _holds_any(other, effect.immune_tags)):
 			out.append(effect)
 	return out

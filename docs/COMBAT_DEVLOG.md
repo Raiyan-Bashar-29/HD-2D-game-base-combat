@@ -5674,3 +5674,15 @@ cured with the charge; `_reaches` tests a circle or a line. `ActionFighter` call
 **Verified.** Ladder: 0 warnings; 5420 passed, 0 failed; checkers silent.
 **Gaps.** A follower's or foe's hold finisher has no key, so it charges to full. The battle path
 is unchanged.
+
+## 2026-11-18 — C10.33 · Battlefield shapes
+
+**Did.** `BattlefieldMechanism.Shape` with `length`, `width` and `size`; new `BattlefieldShape.covers`
+(gameplay); `BattlefieldRun.use` keeps `_point` and `_facing` and `_reaches` asks the shape.
+`Who.TAGGED` (appended) and `BattlefieldEffect.tag`, matched by `BattlefieldGroups`. `_join`
+applies statuses with the field as applier and `_part` cures only those. New
+`battlefield_shape_test` (4).
+**Why.** The gaps recorded in C6.9a.
+**Verified.** Ladder: 0 warnings; 5425 passed, 0 failed; checkers silent.
+**Gaps.** The wall a field may raise (`BattlefieldWall`) still circles the caster. The kept-status
+rule has no test of its own.
