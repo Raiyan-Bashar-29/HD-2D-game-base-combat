@@ -5686,3 +5686,14 @@ applies statuses with the field as applier and `_part` cures only those. New
 **Verified.** Ladder: 0 warnings; 5425 passed, 0 failed; checkers silent.
 **Gaps.** The wall a field may raise (`BattlefieldWall`) still circles the caster. The kept-status
 rule has no test of its own.
+
+## 2026-11-18 — C10.35 · Older sprite files
+
+**Did.** `MugenPacking.rle5(packed, count)` and `pcx(bytes)` (header, RLE scan lines, the palette
+at the end). `MugenSff.read` sends a version 1 file to `_read_v1`, a chain of 32-byte sprite
+headers, and `image` colours a `PCX` sprite from its own palette or, when it shares, the one
+before's. New `mugen_v1_test` (3), all bytes built by hand. This closes phase C10's board.
+**Why.** The gaps recorded in C9.9c.
+**Verified.** Ladder: 0 warnings; 5429 passed, 0 failed; checkers silent.
+**Gaps.** No real version 1 file has been read yet; a shared-palette PCX with no palette of its
+own is not read.
