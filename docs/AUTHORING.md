@@ -1463,6 +1463,8 @@ events on the move itself (`ActionMove.events`). `ArtSwap` shows it in the field
 - **Weakness and Break:** `weak_to` lists elements or skill tags. Each landed hit on one takes a
   `shield` point, and the last one breaks the fighter: it loses a turn and takes +50% damage.
   `attack_tags` is what its plain attack counts as. Give it `max_shield`, or nothing breaks.
+- **Names on screen (C10.4):** a pool reads its `combat.pool.<id>` row (else its id in
+  capitals); an element or tag reads its `combat.element.<id>` or `combat.tag.<id>` row.
 - **Boost:** any fighter with `max_bp` gets a Boost row; `regen_bp` 1 is Octopath's rule.
 - **Menus:** a command's `category` (a localization key) files it under a submenu, such as
   Magic or Special. Commands without one stay on the first menu.

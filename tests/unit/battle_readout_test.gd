@@ -70,7 +70,7 @@ func _fighter_lines(screen: BattleScreen) -> void:
 	var line: String = _line_of(screen, screen.name_of(foe))
 	equal("a fighter's line names its statuses", line.contains(tr("fixture.status.dazed")), true)
 	equal("and shows its shield", line.contains(tr(BattleScreen.POOL_KEY).format(
-		{"pool": "SHIELD", "current": 1, "max": 2})), true)
+		{"pool": CombatNames.pool(&"shield"), "current": 1, "max": 2})), true)
 	equal("and the weaknesses already revealed", line.contains("fixture_fire"), true)
 	equal("but not the ones still hidden", line.contains("fixture_ice"), false)
 	equal("a hero's line shows its other pools, such as MP",

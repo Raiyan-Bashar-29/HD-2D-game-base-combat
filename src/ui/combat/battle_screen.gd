@@ -265,7 +265,7 @@ func _command_row(command: BattleCommand) -> void:
 	# The cost the fighter really pays, after its kit's discounts (C6.1a).
 	if skill != null and skill.cost > 0 and not SkillUse.stance_on(battle.current(), skill):
 		text = tr(COST_KEY).format({"label": text, "cost": SkillUse.cost_of(battle.current(), skill),
-				"pool": String(skill.cost_pool).to_upper()})
+				"pool": CombatNames.pool(skill.cost_pool)})
 	if reason != "":
 		var args: Dictionary = PowerMenu.reason_args(battle.current(), command)
 		text = tr(UNAVAILABLE_KEY).format({"label": text, "reason": tr(reason).format(args)})

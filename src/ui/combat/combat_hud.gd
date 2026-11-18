@@ -97,7 +97,7 @@ func _fighter_line(fighter: Combatant) -> String:
 	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
 		var pool := StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
 		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
-			parts.append(tr(POOL_KEY).format({"pool": String(pool).to_upper(),
+			parts.append(tr(POOL_KEY).format({"pool": CombatNames.pool(pool),
 				"current": vitals.current(pool), "max": vitals.maximum(pool)}))
 	var meter: AtbMeter = AtbMeter.of(fighter.get_parent())
 	if meter != null:
@@ -126,7 +126,7 @@ func slot_text(fighter: Combatant) -> String:
 		var label: String = tr(power.name_key)
 		if power.skill != null and power.skill.cost > 0:
 			label = tr(COST_KEY).format({"label": label, "cost": SkillUse.cost_of(fighter, power.skill),
-				"pool": String(power.skill.cost_pool).to_upper()})
+				"pool": CombatNames.pool(power.skill.cost_pool)})
 		var reason: String = PowerMenu.reason_key(fighter, power)
 		if reason != "":
 			var args: Dictionary = PowerMenu.reason_args(fighter, BattleCommand.for_power(power))

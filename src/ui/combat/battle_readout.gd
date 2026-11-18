@@ -20,7 +20,7 @@ static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
 	for stat: StringName in fighter.sheet.mentioned(Vitals.MAX_PREFIX):
 		var pool: StringName = StringName(String(stat).trim_prefix(Vitals.MAX_PREFIX))
 		if pool != fighter.damage_pool and vitals.maximum(pool) > 0:
-			parts.append(_tr(BattleScreen.POOL_KEY).format({"pool": String(pool).to_upper(),
+			parts.append(_tr(BattleScreen.POOL_KEY).format({"pool": CombatNames.pool(pool),
 					"current": vitals.current(pool), "max": vitals.maximum(pool)}))
 	var weapon: String = WeaponLine.text(fighter.get_parent())
 	if weapon != "":
@@ -34,7 +34,7 @@ static func line(fighter: Combatant, shown: String, log: BattleLog) -> String:
 	var found: Array[String] = []
 	for key: StringName in fighter.weak_to:
 		if Weakness.revealed(fighter, key):
-			found.append(_tr(String(key)))
+			found.append(CombatNames.mark(key))
 	if not found.is_empty():
 		parts.append(_tr(BattleScreen.WEAK_KEY).format({"list": ", ".join(found)}))
 	return "   ".join(parts)

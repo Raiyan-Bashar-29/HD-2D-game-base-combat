@@ -5341,3 +5341,14 @@ awakened a piece.
 silent; stripped 5155 passed.
 **Gaps.** Only the worn piece opens; one in the bag must be worn first. Upgrading works
 anywhere (no station rule). An awakened piece is not worn in its place.
+
+## 2026-11-18 — C10.4 · Names on screen
+
+**Did.** New `CombatNames` (ui): `pool(id)` and `mark(id)` read prefixed rows and fall back to
+today's text. `BattleReadout`, `CombatHud`, `BattleScreen`, `CommandOverlay` and `PowerMenu` use
+them. `Weakness.broken_status()` gets `name_key`. CSV rows for the demo's pools (mp, bp, focus,
+kagune, limit, rc, shield), elements (fire, frost) and the blade tag. New `combat_names_test` (5),
+with its rows in a translation made in the test; two older tests read the name, not capitals.
+**Why.** The gaps recorded in C2.19 and C2.20.
+**Verified.** Ladder: 0 warnings; 5275 passed, 0 failed; checkers silent; stripped 5161 passed.
+**Gaps.** None known.
