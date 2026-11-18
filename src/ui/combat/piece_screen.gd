@@ -179,6 +179,7 @@ func _on_upgrade() -> void:
 
 func _on_awaken() -> void:
 	var into: StringName = GearDb.for_item(piece_id).upgrade.awaken_into
-	if GearUpgrades.awaken(bag_of(body), piece_id):
+	# The body shown wears it, a follower too, so the new piece goes on in its slot (C10.36a).
+	if GearUpgrades.awaken(bag_of(body), piece_id, body if is_instance_valid(body) else null):
 		piece_id = into
 		refresh()

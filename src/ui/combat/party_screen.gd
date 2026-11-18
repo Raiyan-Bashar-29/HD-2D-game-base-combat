@@ -4,7 +4,7 @@ extends MenuScreen
 ##
 ## IN PLAIN WORDS: the party key (P) opens it. Two lists, the members in the fight and those
 ## waiting in reserve. Each row reads "Name  Lv 3  Exp 40/90  HP 25/30", with the form a member
-## holds after it. Press one member, then another: they trade places, across the lines or within
+## holds after it; a member out in the field gives its own hp, its gear counted (C10.36a). Press one member, then another: they trade places, across the lines or within
 ## one. A member in the fight, picked, can also be sent to wait, unless it is the last one there,
 ## so the fighting line is never empty.
 ##
@@ -46,16 +46,21 @@ static func for_roster(members: Array[CombatantDef], field: Dictionary[StringNam
 
 
 ## One member's line: name, level, experience to the next level, hp, and the form `body` holds.
+## A member out in the field reads its hp from its body, whose maximum counts its gear (C10.36a).
 static func member_line(def: CombatantDef, body: Node) -> String:
 	var id: StringName = def.combatant_id
 	var level: int = Party.level_of(id)
 	var stats: Dictionary[StringName, float] = Party.at_level(def).base_stats
 	var most: int = roundi(stats[&"max_hp"]) if stats.has(&"max_hp") else 0
 	var hp_flag := StringName(Vitals.PREFIX + String(id) + "/hp")
+	var hp: int = Flags.get_int(hp_flag) if Flags.has_flag(hp_flag) else most
+	var vitals: Vitals = Vitals.of(body) if body != null and is_instance_valid(body) else null
+	if vitals != null:
+		most = vitals.maximum(&"hp")
+		hp = vitals.current(&"hp")
 	var line: String = TranslationServer.translate(MEMBER_KEY).format({"name": TranslationServer.translate(def.name_key),
 		"level": level, "exp": Party.experience_of(id),
-		"next": def.level_curve.exp_for(level + 1) if def.level_curve != null else 0,
-		"hp": Flags.get_int(hp_flag) if Flags.has_flag(hp_flag) else most, "max": most})
+		"next": def.level_curve.exp_for(level + 1) if def.level_curve != null else 0, "hp": hp, "max": most})
 	var form: String = LookSwap.form_name_key(body) if body != null and is_instance_valid(body) else ""
 	if form != "":
 		line = TranslationServer.translate(FORM_KEY).format({"line": line, "form": TranslationServer.translate(form)})

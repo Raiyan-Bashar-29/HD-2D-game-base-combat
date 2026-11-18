@@ -18,8 +18,9 @@ extends Label
 ## while something is locked on, with its other pools (its shield). A deadly status shows its
 ## count (C10.13).
 ## It redraws whenever a pool moves, a status starts or ends, the lock changes, or a cooldown's
-## whole seconds tick down (`Events.power_cooldown_changed`), or a battlefield rises or comes down,
-## and never polls.
+## whole seconds tick down (`Events.power_cooldown_changed`), or a battlefield rises or comes down.
+## It polls only while a doom count is shown, as a status sends nothing while its seconds pass:
+## each frame it reads the counts again and redraws when a whole second has gone (C10.36a).
 ##
 ## OWNS: the rendering of the player's and the locked target's combat state.
 ## MUST NOT: change anything it shows, or find targets (it shows what `LockOn` announces).
@@ -45,6 +46,9 @@ const PALETTE: StringName = &"UiPalette"
 var subject: Node
 ## The combatant id of the locked target, or `&""` for none.
 var target_id: StringName = &""
+
+# The doom counts drawn last, in whole seconds; empty when none is shown, and then no polling.
+var _doom_drawn: Array[int] = []
 
 
 func _ready() -> void:
@@ -78,6 +82,8 @@ func refresh() -> void:
 	visible = fighter != null
 	if fighter == null:
 		text = ""
+		_doom_drawn.clear()
+		set_process(false)
 		return
 	var lines: Array[String] = [_fighter_line(fighter)]
 	var slots: String = slot_text(fighter)
@@ -102,6 +108,14 @@ func refresh() -> void:
 		var held: String = _statuses_text(target)
 		lines.append(line if held == "" else line + "   " + held)
 	text = "\n".join(lines)
+	_doom_drawn = _doom_counts()
+	set_process(not _doom_drawn.is_empty())
+
+
+# Only while a doom count is shown: redraws when one of the counts has lost a whole second.
+func _process(_delta: float) -> void:
+	if _doom_counts() != _doom_drawn:
+		refresh()
 
 
 func _fighter_line(fighter: Combatant) -> String:
@@ -184,6 +198,19 @@ func _statuses_text(fighter: Combatant) -> String:
 			shown = tr(DOOM_KEY).format({"name": shown, "left": ceili(statuses.remaining(effect.id))})
 		names.append(shown)
 	return "" if names.is_empty() else tr(STATUSES_KEY).format({"list": ", ".join(names)})
+
+
+# The whole seconds left on every deadly status of the subject and the locked target, in order.
+func _doom_counts() -> Array[int]:
+	var out: Array[int] = []
+	var who: Node = subject if subject != null else Director.player
+	var shown: Array[Combatant] = [Combatant.of(who) if who != null and is_instance_valid(who) else null, _target()]
+	for fighter: Combatant in shown:
+		var statuses: StatusSet = StatusSet.of(fighter.get_parent()) if fighter != null else null
+		for effect: StatusEffect in statuses.held() if statuses != null else []:
+			if effect.fatal and effect.duration > 0.0:
+				out.append(ceili(statuses.remaining(effect.id)))
+	return out
 
 
 ## The ATB readout: whole bars ready out of all of them, and how full the next one is (100 when

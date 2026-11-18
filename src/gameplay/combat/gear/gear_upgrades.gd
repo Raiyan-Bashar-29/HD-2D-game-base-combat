@@ -13,7 +13,8 @@ extends RefCounted
 ##     fight for every such piece a member wears, and raises the piece when the count is full.
 ##   - `awaken`, at the cap, turns the piece into the one its track names, paying the track's
 ##     awakening cost. The new piece starts at level 0, is worn in the old one's slot if that was
-##     worn, and the old one's gems come back to the bag (C10.17).
+##     worn, and the old one's gems come back to the bag (C10.17), every one of them, those in
+##     the sockets its levels added too, and on a follower's piece as well (C10.36a).
 ##
 ## IT KEEPS NO LIST OF ITS OWN. A piece's level is one entry in `Flags`:
 ##     upgrade/<piece item id>  ->  the level
@@ -136,16 +137,21 @@ static func awaken_refusal(bag: Inventory, piece_id: StringName) -> Refusal:
 
 
 ## Turns `piece_id` in `bag` into the piece its track awakens into, paying the track's cost.
-## The old piece's level is forgotten. Returns whether it did.
-static func awaken(bag: Inventory, piece_id: StringName) -> bool:
+## The old piece's level is forgotten. `wearer` is the body wearing it (a follower, whose set has
+## no bag of its own); left null, the bag's owner. Returns whether it did.
+static func awaken(bag: Inventory, piece_id: StringName, wearer: Node = null) -> bool:
 	if awaken_refusal(bag, piece_id) != Refusal.NONE:
 		return false
 	var track: UpgradeTrack = GearDb.for_item(piece_id).upgrade
 	# Worn, the new piece goes on in the old one's slot; its gems come back to the bag (C10.17).
-	var gear: GearSet = GearSet.of(bag.get_parent())
+	var gear: GearSet = GearSet.of(wearer if wearer != null else bag.get_parent())
 	var slot: StringName = gear.slot_of(piece_id) if gear != null else &""
-	forget(piece_id)
+	# The gems before the level, so the sockets the levels added are still counted (C10.36a).
 	GearSockets.empty_out(bag, piece_id)
+	forget(piece_id)
+	# Taken off here, as a set with no bag never notices the piece leave it.
+	if slot != &"":
+		gear.take_off(piece_id, true)
 	_pay(bag, track.awaken_items)
 	bag.remove(piece_id)
 	bag.add(track.awaken_into)

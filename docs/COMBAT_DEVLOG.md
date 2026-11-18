@@ -5697,3 +5697,19 @@ before's. New `mugen_v1_test` (3), all bytes built by hand. This closes phase C1
 **Verified.** Ladder: 0 warnings; 5429 passed, 0 failed; checkers silent.
 **Gaps.** No real version 1 file has been read yet; a shared-palette PCX with no palette of its
 own is not read.
+
+## 2026-11-18 — C10.36a · Review fixes, gear and the menus
+
+**Did.** `GearUpgrades.awaken` and `Crafting._use_up` empty the sockets before forgetting the
+level, so a gem in a socket a level added comes back and its flag goes. `awaken` takes the
+wearer (the piece screen passes its body), takes the old piece off and wears the new one in its
+slot, a follower's too. `GearSet._revalidate` re-lends a kept set with no bag, so a follower's
+gems and levels count at once; a foe's set is unchanged. `GearScreen._opened` redraws after the
+piece screen closes. `CombatHud` polls only while a doom count shows, and redraws when a whole
+second has gone. `PartyScreen.member_line` reads a field member's hp and maximum from its
+`Vitals`. New `review_a_test` (7); each assertion failed on the old code.
+**Why.** The batch review of C10.3 to C10.35.
+**Verified.** Ladder: 0 warnings; 5437 passed, 0 failed; checkers silent; stripped 5323 passed,
+32 skipped.
+**Gaps.** A follower's worn piece that leaves the bag another way (dismantled, sold, used in a
+recipe) still stays on the follower, as a set with no bag cannot see it go.

@@ -9,6 +9,7 @@ extends MenuScreen
 ##     cannot be worn is greyed out with the reason (`GearSet.refusal`).
 ##   - "Take off" empties the slot; it is greyed out for a cursed piece.
 ##   - "Work on" opens the worn piece's own screen: gems, upgrades, awakening (`PieceScreen`).
+##     Back from it, every row is drawn again, so what was done there shows here (C10.36a).
 ## A slot or stat with no row in the CSV shows its id, so a game's own stats still read.
 ##
 ## OWNS: the rows and what pressing one does.
@@ -227,6 +228,12 @@ func _on_take_off(item_id: StringName) -> void:
 
 func _on_work_on(item_id: StringName) -> void:
 	push(PieceScreen.for_piece(bodies[index], item_id))
+
+
+# Back on top, after the piece screen closes too: redraw, so an awakened piece, a new gem or a
+# level shows, and no row still names a piece that left the bag (C10.36a).
+func _opened() -> void:
+	refresh()
 
 
 func _on_next() -> void:

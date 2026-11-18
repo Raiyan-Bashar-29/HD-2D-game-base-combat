@@ -13,8 +13,9 @@ extends RefCounted
 ##     (0 means the tier is never taken apart). `dismantle(bag, piece_id)` does it.
 ##
 ## An UPGRADE recipe hands the work to `GearUpgrades`, so the level, its cost and its gains are
-## the track's. A piece used up by AWAKEN or DISMANTLE loses its recorded level. Taking the
-## piece out of the bag takes it off whoever wears it (`GearSet` does that itself).
+## the track's. A piece used up by AWAKEN or DISMANTLE gives back every gem, those in the sockets
+## its levels added too (C10.36a), and loses its recorded level. Taking the piece out of the bag
+## takes it off whoever wears it (`GearSet` does that itself).
 ##
 ## IT KEEPS NOTHING. What is known is `Flags`; what is held is the bag.
 ##
@@ -166,11 +167,13 @@ static func _fits(bag: Inventory, given: Dictionary[StringName, int]) -> bool:
 	return true
 
 
-# The level is forgotten first, so a set woken by the bag's change no longer counts it.
+# The gems come out while the level still counts the sockets it added (C10.36a); the piece is
+# still in the bag then, so the re-lend the gems' return wakes is harmless. Then the level is
+# forgotten, so a set woken by the piece leaving the bag no longer counts it.
 static func _use_up(bag: Inventory, piece_id: StringName) -> void:
+	GearSockets.empty_out(bag, piece_id)
 	GearUpgrades.forget(piece_id)
 	GearAffixes.forget(piece_id)
-	GearSockets.empty_out(bag, piece_id)
 	bag.remove(piece_id)
 
 

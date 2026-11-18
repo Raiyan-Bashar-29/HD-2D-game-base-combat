@@ -58,7 +58,8 @@ extends Node
 ##
 ## SOCKETS (C7.4c). A worn piece's socketed gems give their stat changes (under `gems`) and an
 ## element. Socketing always changes the bag, so `inventory_changed` re-lends, and
-## `GearSockets` puts the gems on through `GearLending`.
+## `GearSockets` puts the gems on through `GearLending`. A kept set with no bag (a follower's)
+## re-lends on it too (C10.36a).
 ##
 ## The lending itself (element, tags, moves, kits) is done by `GearLending`.
 ##
@@ -339,12 +340,13 @@ func _start() -> void:
 
 # Takes off anything that left the bag. This is the price of leaving the item in the bag, paid
 # here once and not by everyone who removes an item. Then it re-lends, because a gem socketed or
-# taken out changed the bag too (C7.4c).
+# taken out changed the bag too (C7.4c). A follower has no bag of its own but works on its pieces
+# from the player's, so a kept set re-lends with no bag as well (C10.36a); a foe's never does.
 func _revalidate() -> void:
 	var bag: Inventory = Inventory.of(get_parent())
-	if bag == null:
+	if bag == null and not kept:
 		return
-	for item_id: StringName in worn_ids():
+	for item_id: StringName in (worn_ids() if bag != null else []):
 		if not innate.has(item_id) and not bag.has(item_id):
 			take_off(item_id, true)
 	_lend()
