@@ -7,6 +7,7 @@ extends RefCounted
 ##     upgrade levels add (`GearUpgrades.extra_sockets`, C7.5).
 ##   - Socketing a gem uses the gem item up. While the piece is worn, the gem's stat changes are
 ##     on the wearer, and a gem with an element gives the piece's plain attack that element.
+##   - A piece used up, broken or awakened gives its gems back first (`empty_out`, C10.17).
 ##   - Taking a gem out gives the item back. When the project setting `combat/gear/gem_remover`
 ##     names an item, taking one out also uses up one of those (a remover). Empty means free.
 ##
@@ -109,6 +110,18 @@ static func unsocket(bag: Inventory, piece_id: StringName, index: int) -> bool:
 		bag.remove(remover_id())
 	bag.add(gem_id)
 	return true
+
+
+## Gives every gem in `piece_id` back to `bag` and forgets its sockets (C10.17): the piece is being
+## used up, broken or remade. A gem the bag cannot take is lost. Returns the gems given back.
+static func empty_out(bag: Inventory, piece_id: StringName) -> Array[StringName]:
+	var back: Array[StringName] = []
+	var held: Array[StringName] = gems(piece_id)
+	for index: int in held.size():
+		Flags.erase_flag(_key(piece_id, index))
+		if held[index] != &"" and bag != null and bag.add(held[index]):
+			back.append(held[index])
+	return back
 
 
 ## The remover item, or empty when taking a gem out is free.

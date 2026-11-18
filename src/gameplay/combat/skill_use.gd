@@ -200,6 +200,8 @@ static func _effect(user: Combatant, skill: Skill, target: Combatant, effect: Sk
 			Delayed.heal(target, roundi(effect.amount * scale))
 		SkillEffect.Kind.RESTORE:
 			vitals.change(effect.pool, roundi(effect.amount * scale))
+		SkillEffect.Kind.UNCURSE:
+			_uncurse(target)
 		SkillEffect.Kind.DRAIN:
 			# Measure what the target really lost (a nearly-dead target gives back less), then
 			# hand the user its share.
@@ -254,6 +256,15 @@ static func _hit(user: Combatant, skill: Skill, target: Combatant, power: float,
 	# A hit a barrier stopped whole touched nothing, so it finds no weakness either (C6.6a).
 	if result != null and not result.missed and not result.blocked:
 		Weakness.strike(target, Weakness.keys_of(skill))
+
+
+# Takes every cursed piece `target` wears off it (C10.17).
+static func _uncurse(target: Combatant) -> void:
+	var gear: GearSet = GearSet.of(target.get_parent())
+	for piece_id: StringName in (gear.worn_ids() if gear != null else []):
+		var piece: GearDefinition = GearDb.for_item(piece_id)
+		if piece != null and piece.cursed:
+			gear.take_off(piece_id, true)
 
 
 static func _vitals(fighter: Combatant) -> Vitals:

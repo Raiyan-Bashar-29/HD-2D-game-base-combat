@@ -19,6 +19,7 @@ extends Resource
 ##   The chance is `amount` times the share of hp the target has lost, so a fresh foe never goes.
 ## - SLAY: instant death (C8.7a). `amount` is the chance (0 to 1) the target falls at once. The
 ##   target's `resist_death` stat cuts the chance (1 is immune), and an invincible status stops it.
+## - UNCURSE: takes every cursed piece the target wears off it (C10.17), which nothing else can.
 ##
 ## It is authored inline inside a skill's `.tres`, never as a file of its own, the way a
 ## command is authored inside a combatant definition.
@@ -26,7 +27,7 @@ extends Resource
 ## OWNS: the shape of one effect and what is wrong with it.
 ## MUST NOT: apply itself, or know who uses it. `SkillUse` (gameplay) does that.
 
-enum Kind { DAMAGE, HEAL, RESTORE, DRAIN, CURE, DISPEL, REVIVE, SLAY, STEAL, SCAN, CAPTURE }
+enum Kind { DAMAGE, HEAL, RESTORE, DRAIN, CURE, DISPEL, REVIVE, SLAY, STEAL, SCAN, CAPTURE, UNCURSE }
 
 @export var kind: Kind = Kind.DAMAGE
 ## Power for DAMAGE and DRAIN, points for HEAL and RESTORE, a fraction of max hp for REVIVE,

@@ -32,6 +32,8 @@ static func giver(body: Node, effect: PassiveEffect) -> StringName:
 		gear.take_off(item_id, true)
 		var bag: Inventory = Inventory.of(body)
 		if bag != null:
+			# Its gems are not lost with it (C10.17).
+			GearSockets.empty_out(bag, item_id)
 			bag.remove(item_id)
 		Log.info(CATEGORY, "'%s' broke" % item_id)
 		var wearer: Combatant = Combatant.of(body)

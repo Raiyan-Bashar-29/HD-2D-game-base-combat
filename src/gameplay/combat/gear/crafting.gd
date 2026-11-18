@@ -170,9 +170,12 @@ static func _fits(bag: Inventory, given: Dictionary[StringName, int]) -> bool:
 static func _use_up(bag: Inventory, piece_id: StringName) -> void:
 	GearUpgrades.forget(piece_id)
 	GearAffixes.forget(piece_id)
+	GearSockets.empty_out(bag, piece_id)
 	bag.remove(piece_id)
 
 
 static func _give(bag: Inventory, given: Dictionary[StringName, int]) -> void:
 	for item_id: StringName in given:
 		bag.add(item_id, given[item_id])
+		# A unique piece made here rolls its affixes, as one given by a reward does (C10.17).
+		GearAffixes.roll(item_id)

@@ -5490,3 +5490,14 @@ times per hurtbox for a gapped move, and `Hurtbox` lands one hit a strike for it
 **Why.** The gaps recorded in C6.6a, C6.6b, C3.3, C8.8c and C3.2.
 **Verified.** Ladder: 0 warnings; 5344 passed, 0 failed; checkers silent.
 **Gaps.** The converter does not yet write `hit_gap` from a source's hit timing.
+
+## 2026-11-18 — C10.17 · Gear upkeep
+
+**Did.** `GearSockets.empty_out(bag, piece)`, called by `Crafting._use_up`, `GearBreak` and
+`GearUpgrades.awaken`; `awaken` also wears the new piece in the old one's slot. `Crafting._give`
+rolls `GearAffixes` for what it makes. `UNCURSE` (appended to the enum, so saved kinds keep their
+numbers) runs `SkillUse._uncurse`. New `gear_upkeep_test` (3).
+**Why.** The gaps recorded in C7.4c, C7.5, C7.6, C9.5b, C7.2b and C7.4a.
+**Verified.** Ladder: 0 warnings; 5348 passed, 0 failed; checkers silent.
+**Gaps.** A picked-up piece (not given by a reward or made) still rolls no affixes. A gem the bag
+cannot take back is lost.
